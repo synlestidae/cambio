@@ -13,41 +13,122 @@ correspondence_id INTEGER;
 asset_type_id INTEGER;
 account_period_id INTEGER;
 BEGIN
-    SELECT id INTO asset_type_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var LIMIT 1;
+    SELECT asset_type.id INTO asset_type_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var LIMIT 1;
     IF asset_type_id IS NULL THEN
-        RAISE EXCEPTION 'Cannot move asset with unknown asset type';
+        RAISE EXCEPTION 'Cannot move asset with unknown asset type (% in %s)', asset_code_var, asset_denom_var; 
     END IF;
-    SELECT id INTO account_period_id FROM accounting_period WHERE account_period_start = from_date AND account_period_start = to_date LIMIT 1;
+    SELECT id INTO account_period_id FROM accounting_period WHERE account_period_start = from_date AND account_period_end = to_date LIMIT 1;
     IF account_period_id IS NULL THEN
-        RAISE EXCEPTION 'Cannot move asset with unknown asset type (% in %s)', asset_code_var, asset_denom_var;
+        RAISE EXCEPTION 'Not match for accounting period';
     END IF;
     correspondence_id := (SELECT COUNT(*) FROM JOURNAL);
-    INSERT INTO journal(accounting_period, account_id, asset_type_id, correspondence_id, credit, debit)
+    INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit)
     VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null), 
            (account_period_id, credit_account, asset_type_id, correspondence_id, null, units);
 
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION open_credit_normal_account(
+CREATE OR REPLACE FUNCTION get_asset_id(
     asset_code_var VARCHAR(4),
-    asset_denom_var VARCHAR(4),
-    owner_email VARCHAR(256)
-) RETURNS VOID AS
-$$
+    asset_denom_var VARCHAR(6)
+)
+RETURNS INTEGER AS $$
 DECLARE 
-owner_id INTEGER;
-asset_type_id INTEGER;
+asset_id INTEGER;
 BEGIN
-    SELECT id INTO owner_id FROM account_owner WHERE email_address = owner_email LIMIT 1;
-    IF owner_id IS NULL THEN
-        INSERT INTO account_owner(email_address) VALUES (owner_email);
-        SELECT id INTO owner_id FROM account_owner WHERE email_address = owner_email LIMIT 1;
+    SELECT id INTO asset_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var;
+    return asset_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION make_sell_order(
+    -- identify the user
+    email_address_var VARCHAR(128),
+    user_session_id VARCHAR(128),
+
+    -- identify the entity authorising the transaction
+    username_var VARCHAR(128),
+    internal_user_session_id_var VARCHAR(128),
+
+    -- what the user wants to sell
+    sell_asset_type VARCHAR(4),
+    sell_asset_denom VARCHAR(6),
+    sell_units UINT,
+
+    -- what the user wants to buy
+    deposit_asset_type VARCHAR(4),
+    deposit_asset_denom VARCHAR(6),
+    buy_units UINT,
+
+    -- for completing the order
+    credit_account INTEGER,
+    debit_account INTEGER
+
+)
+RETURNS VOID AS $$
+DECLARE 
+user_id INTEGER;
+internal_user_id INTEGER;
+sell_asset_id INTEGER;
+buy_asset_id INTEGER;
+order_info_id INTEGER;
+authorship_id INTEGER;
+desired_ttl_milliseconds UINT;
+BEGIN
+    PERFORM check_user_session(email_address_var, user_session_id);
+    PERFORM check_internal_user_session(username_var, internal_user_session_id_var);
+
+    -- get the asset ID - will check the asset types match up
+
+    SELECT * INTO sell_asset_id FROM get_asset_id(sell_asset_type, sell_asset_denom);
+    SELECT * INTO buy_asset_id FROM get_asset_id(buy_asset_type, buy_asset_denom);
+
+    SELECT users.id INTO user_id FROM users 
+        JOIN user_role ON users.id = user_role.user_id
+        JOIN user_session ON users.id = user_session.user_id 
+        JOIN session_info ON user_session.session_info_id = session_info.id
+        WHERE user_role.user_role_type = 'make_order' AND
+              users.email_address = email_address_var;
+
+    SELECT internal_users.id INTO internal_user_id FROM internal_users 
+        JOIN internal_user_roles ON internal_users.id = internal_user_roles.internal_user_id
+        JOIN app_session ON internal_users.id = app_session.internal_user_id
+        JOIN session_info ON app_session.session_info_id = session_info.id
+        WHERE internal_user_roles.app_role_type = 'create_order' AND
+              internal_user.username = username_var;
+
+    IF (user_id IS NULL OR internal_user_id IS NULL) THEN
+        RAISE EXCEPTION 'Error UserAccountMatchError: Cannot find a match for both user and internal user';
     END IF;
-    SELECT id INTO asset_type_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var LIMIT 1;
-    IF asset_type_id IS NULL THEN
-        RAISE EXCEPTION 'Cannot create account with unknown asset type';
+
+    -- Check the debit account exists
+    IF (NOT EXISTS(SELECT * FROM account
+      JOIN account_owner ON account.owner_id = account_owner.id
+      JOIN account_owner ON account_owner.user_id = user_id 
+    WHERE account.id = debit_account AND 
+          account.asset_type = sell_asset_id)) THEN
+        RAISE EXCEPTION 'Error DebitAccountMatchError: Cannot find an account matching the owning user and/or with the specified asset type';
     END IF;
-    INSERT INTO account(owner_id, asset_type, account_type) VALUES (owner_id, asset_type_id, 'credit_normal');
+
+    -- Check the credit account exists
+    IF (NOT EXISTS(SELECT * FROM account
+      JOIN account_owner ON account.owner_id = account_owner.id
+      JOIN account_owner ON account_owner.user_id = user_id 
+    WHERE account.id = debit_account AND 
+          account.asset_type = sell_asset_id)) THEN
+        RAISE EXCEPTION 'Error CreditAccountMatchError: Cannot find an account matching the owning user and/or with the specified asset type';
+    END IF;
+
+    -- author the order
+    INSERT INTO authorship(business_ends, authoring_user, authoring_user_session, approved_by, approving_session) 
+        VALUES('asset_transfer_user_to_user', user_id, user_session_id, internal_user_id, internal_user_session_id)
+        RETURNING id INTO authorship_id;
+
+    INSERT INTO order_info(splittable) VALUES(FALSE) 
+        RETURNING id INTO order_info_id;
+
+    INSERT INTO asset_order(sell_units, buy_units, sell_asset_id, buy_asset_id, debit_account, credit_account, order_info, author_info, ttl_milliseconds, status)
+        VALUES(sell_units, buy_units, sell_asset_id, buy_asset_id, debit_account_id, credit_account_id, order_info_id, author_info_id, desired_ttl_milliseconds, 'active');
 END;
 $$ LANGUAGE plpgsql;
