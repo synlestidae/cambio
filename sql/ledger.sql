@@ -33,12 +33,19 @@ CREATE TABLE account_owner (
     UNIQUE(internal_user_id, user_id)
 );
 
+CREATE TYPE account_status_type AS ENUM (
+    'active',
+    'frozen',
+    'closed'
+);
+
 CREATE TABLE account (
     id SERIAL NOT NULL PRIMARY KEY,
     owner_id SERIAL REFERENCES account_owner(id),
     asset_type SERIAL REFERENCES asset_type(id),
-    account_type ACCOUNT_TYPE NOT NULL ,
-    account_business_type account_business_type NOT NULL 
+    account_type ACCOUNT_TYPE NOT NULL,
+    account_business_type account_business_type NOT NULL,
+    account_status account_status_type NOT NULL DEFAULT 'active'
 );
 
 CREATE TABLE journal (

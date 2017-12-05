@@ -41,9 +41,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION user_login(
-    email_address_var VARCHAR(64),
-    password_hash_var TEXT 
+CREATE OR REPLACE FUNCTION activate_user_session (
+    email_address_var VARCHAR(64)
 )
 RETURNS VARCHAR(128) AS $$
 DECLARE 
@@ -54,21 +53,20 @@ BEGIN
     -- check that password matches bcrypt
     -- insert new session into session table
     -- return that session token
-    IF (EXISTS(SELECT * FROM users WHERE users.email_address = email_address_var AND users.password_hash = password_hash_var)) THEN
+    IF (EXISTS(SELECT * FROM users WHERE users.email_address = email_address_var)) THEN
         session_token = random_string(128);
 
         -- invalidate other sessions for this user
         UPDATE session_info 
         SET session_state = 'invalidated' 
-        FROM app_session,
-             user_session,
+        FROM user_session,
              users 
         WHERE users.email_address = email_address_var AND
               user_session.user_id = users.id AND
               user_session.session_info_id = session_info.id;
 
         -- get the user's id
-        SELECT id INTO user_id FROM users WHERE email_address = email_address_var AND password_hash = password_hash_var;
+        SELECT id INTO user_id FROM users WHERE email_address = email_address_var;
 
         -- create the new session
         INSERT INTO session_info (session_token, started_at, session_state, ttl_milliseconds) 
