@@ -1,4 +1,6 @@
 use serde_derive;
+use postgres::rows::Row;
+use db::{TryFromRow, TryFromRowError};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum AssetType {
@@ -13,5 +15,13 @@ impl ToString for AssetType {
             &AssetType::BTC => "btc"
         };
         asset_type_str.to_owned()
+    }
+}
+
+impl TryFromRow for AssetType {
+    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        for c in row.columns() {
+        }
+        unimplemented!();
     }
 }

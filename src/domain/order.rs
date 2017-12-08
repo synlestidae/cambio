@@ -4,6 +4,7 @@ use domain::denom::Denom;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Order {
+    pub id: Option<u64>,
     pub sell_asset_units: u64,
     pub buy_asset_units: u64,
     pub sell_asset_type: AssetType,

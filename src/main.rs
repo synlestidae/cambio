@@ -43,14 +43,20 @@ fn register_user(req: &mut Request) -> IronResult<Response> {
         Err(err) => return Ok(Response::with((iron::status::BadRequest, format!("Cannot parse your request: {:?}", err))))
     };
 
-    let email_address = user_obj.email_address;
-    let password_hash = hash(&user_obj.password, DEFAULT_COST).unwrap();
-    let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
-    
-    conn.execute("SELECT register_user($1, $2);", 
-        &[&email_address, &password_hash]).unwrap();
+    // TODO use the db helper
 
-    Ok(Response::with(status::Ok))
+    /*let email_address = user_obj.email_address;
+    if user_obj.password.is_some() {
+        let password_hash = hash(&user_obj.password.unwrap(), DEFAULT_COST).unwrap();
+        let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
+        
+        conn.execute("SELECT register_user($1, $2);", 
+            &[&email_address, &password_hash]).unwrap();
+
+        return Ok(Response::with(status::Ok));
+    }*/
+
+    Ok(Response::with(status::BadRequest))
 }
 
 
@@ -62,18 +68,46 @@ fn log_in_user(req: &mut Request) -> IronResult<Response> {
         Err(err) => return Ok(Response::with((iron::status::BadRequest, format!("Cannot parse your request: {:?}", err))))
     };
 
-    let email_address = user_obj.email_address;
+    let user_obj_password = match user_obj.password {
+        Some(ref password) => password.clone(),
+        None => return Ok(Response::with((status::Unauthorized, "Password is a required field")))
+    }
+
+    // let email_address = user_obj.email_address;
     let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
+    let db = PostgresHelperImpl::new(conn);
 
-    println!("Selecting {}", email_address);
+    let query_result = db.query("SELECT email_address, password_hash FROM users WHERE email_address = $1;", 
+        &[&email_address]);
 
-    for row in conn.query("SELECT email_address, password_hash FROM users WHERE email_address = $1;", 
+    match query_result {
+        Ok(matching_users) => {
+            let user_match = matching_users.pop();
+            match user_match {
+                Some(user) => {
+                    if (user.hash_matches_password(user_obj_password)) {
+                        // Create a new session for the user
+                    } else {
+                        // Stop immediately and return an unauthorised response
+                    }
+                },
+                None => unimplemented!(),
+            }
+        },
+        _ => Ok(Response::with((status::Unauthorized, "User not found")))
+    }
+
+    //println!("Selecting {}", email_address);
+
+    // TODO use the DB helper
+
+    /*for row in conn.query("SELECT email_address, password_hash FROM users WHERE email_address = $1;", 
         &[&email_address]).unwrap().iter() {
         
         let db_email_address:String  = row.get(0);
         let db_password_hash:String = row.get(1);
 
-        println!("Verifying {} with {}", user_obj.password, db_password_hash);
+        println!("Verifying {:?} with {}", user_obj.password, db_password_hash);
 
         if db_email_address == email_address && verify(&user_obj.password, &db_password_hash).is_ok() {
             for row in conn.query("SELECT activate_user_session($1);", &[&email_address]).unwrap().iter() {
@@ -86,7 +120,7 @@ fn log_in_user(req: &mut Request) -> IronResult<Response> {
                         session_token))));
             }
         }
-    }
+    }*/
     Ok(Response::with((status::Unauthorized, "User not found")))
 }
 
