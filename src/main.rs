@@ -5,6 +5,8 @@ extern crate bodyparser;
 extern crate serde;
 extern crate serde_json;
 extern crate router;
+extern crate chrono;
+
 #[macro_use] extern crate serde_derive;
 
 mod db;
@@ -16,118 +18,75 @@ use iron::status;
 use router::{Router};
 use bcrypt::{DEFAULT_COST, hash, verify};
 use postgres::{Connection, TlsMode};
-use domain::{User, Order};
+use domain::{User, Order, ApiError, Session};
+use db::{PostgresHelperImpl, PostgresHelper};
+use std::error::Error;
 
-fn make_order(req: &mut Request) -> IronResult<Response> { 
-    let order = req.get::<bodyparser::Struct<Order>>().unwrap().unwrap();
-    let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
-
-    let buy_asset_id: u32;
-    let sell_asset_id: u32;
-
-    let asset_query = conn.execute("SELECT get_asset_id($1, $2) UNION get_asset_id($3, $4)", &[
-        &order.sell_asset_type.to_string(), 
-        &order.sell_asset_denom.to_string(), 
-        &order.buy_asset_type.to_string(), 
-        &order.buy_asset_denom.to_string()
-    ]).unwrap();
-
-    unimplemented!();
-}
-
-fn register_user(req: &mut Request) -> IronResult<Response> {  
-    let struct_body = req.get::<bodyparser::Struct<User>>();
-    let user_obj = match struct_body {
-        Ok(Some(user)) => user,
-        Ok(None) => return Ok(Response::with((iron::status::BadRequest, "No data supplied"))),
-        Err(err) => return Ok(Response::with((iron::status::BadRequest, format!("Cannot parse your request: {:?}", err))))
-    };
-
-    // TODO use the db helper
-
-    /*let email_address = user_obj.email_address;
-    if user_obj.password.is_some() {
-        let password_hash = hash(&user_obj.password.unwrap(), DEFAULT_COST).unwrap();
-        let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
-        
-        conn.execute("SELECT register_user($1, $2);", 
-            &[&email_address, &password_hash]).unwrap();
-
-        return Ok(Response::with(status::Ok));
-    }*/
-
-    Ok(Response::with(status::BadRequest))
-}
-
-
-fn log_in_user(req: &mut Request) -> IronResult<Response> {  
-    let struct_body = req.get::<bodyparser::Struct<User>>();
-    let user_obj = match struct_body {
-        Ok(Some(user)) => user,
-        Ok(None) => return Ok(Response::with((iron::status::BadRequest, "No data supplied"))),
-        Err(err) => return Ok(Response::with((iron::status::BadRequest, format!("Cannot parse your request: {:?}", err))))
-    };
-
-    let user_obj_password = match user_obj.password {
+fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {  
+    let user_obj_password = match unauthed_user.password {
         Some(ref password) => password.clone(),
-        None => return Ok(Response::with((status::Unauthorized, "Password is a required field")))
-    }
+        None => return Err(ApiError::missing_field_or_param("Missing password field"))
+    };
 
     // let email_address = user_obj.email_address;
     let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
     let db = PostgresHelperImpl::new(conn);
 
+    let user: User;
+    let not_found_error = Err(ApiError::invalid_login("Failed to find your email address in the database"));
     let query_result = db.query("SELECT email_address, password_hash FROM users WHERE email_address = $1;", 
-        &[&email_address]);
+        &[&unauthed_user.email_address]);
 
-    match query_result {
-        Ok(matching_users) => {
-            let user_match = matching_users.pop();
-            match user_match {
-                Some(user) => {
-                    if (user.hash_matches_password(user_obj_password)) {
-                        // Create a new session for the user
-                    } else {
-                        // Stop immediately and return an unauthorised response
-                    }
-                },
-                None => unimplemented!(),
-            }
-        },
-        _ => Ok(Response::with((status::Unauthorized, "User not found")))
+    if let Ok(matching_users) = query_result {
+        if let Some(user_match) = matching_users.pop() {
+            user = user_match;
+        } else {
+            return not_found_error;
+        }
+    } else {
+        return not_found_error;
     }
 
-    //println!("Selecting {}", email_address);
+    // this should never happen, but we double check what the database gave us
+    if (user.email_address != unauthed_user.email_address) {
+        return not_found_error;
+    }
 
-    // TODO use the DB helper
+    if (!user.hash_matches_password(&user_obj_password)) {
+        return not_found_error;
+    }
 
-    /*for row in conn.query("SELECT email_address, password_hash FROM users WHERE email_address = $1;", 
-        &[&email_address]).unwrap().iter() {
-        
-        let db_email_address:String  = row.get(0);
-        let db_password_hash:String = row.get(1);
+    // all code after this point is authorised. the user has proven their identity
+    match db.query("SELECT session_token FROM activate_user_session($1);", &[&user.email_address]) {
+        Ok(result) => {
+            let session_token_error = Err(ApiError::query_result_format("Could not get your session token from the database"));
+            for row in result.iter() {
+                let session_token_option: Option<String>; 
+                session_token_option = row.get(row, "session_token");
 
-        println!("Verifying {:?} with {}", user_obj.password, db_password_hash);
+                if let Some(session_token) = session_token_option {
+                    return Ok(Session {
+                        session_token: session_token,
+                        email_address: user.email_address,
+                        expires_at: None
+                    });
+                }
 
-        if db_email_address == email_address && verify(&user_obj.password, &db_password_hash).is_ok() {
-            for row in conn.query("SELECT activate_user_session($1);", &[&email_address]).unwrap().iter() {
-                println!("Session boiz: {:?}", row);//, other);
-                println!("Session toix: {:?}", row.columns());//, other);
-                let session_token: String = row.get("user_login");
-                return Ok(Response::with((status::Ok, 
-                    format!("{{\"email_address\": \"{}\", \"session_token\": \"{}\"}}", 
-                        email_address, 
-                        session_token))));
+                return session_token_error;
             }
+
+            return session_token_error;
+        },
+        Err(error) => {
+            let err_msg = format!("Could not connect to the database: {}", error.description());
+            return Err(ApiError::database_driver(&err_msg));
         }
-    }*/
-    Ok(Response::with((status::Unauthorized, "User not found")))
+    }
 }
 
 fn main() {
     const MAX_BODY_LENGTH:usize = 1024 * 512; //max 512 Kb
     let mut router = Router::new();
-    router.post("/user/register", register_user, "register_user");
-    router.post("/user/login", log_in_user, "login_user");
+    //router.post("/user/login", log_in_user, "login_user");
     Iron::new(router).http("localhost:3000").unwrap();
 }
