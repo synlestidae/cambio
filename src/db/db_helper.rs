@@ -10,28 +10,29 @@ use std::error;
 use std::fmt;
 
 pub trait PostgresHelper {
-   fn query<T: TryFromRow>(&self, query: &str, params: &[&ToSql]) -> 
-       Result<Vec<T>, PostgresHelperError>;
-   fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64>;
-   fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows>;
+    fn query<T: TryFromRow>(
+        &self,
+        query: &str,
+        params: &[&ToSql],
+    ) -> Result<Vec<T>, PostgresHelperError>;
+    fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64>;
+    fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows>;
 }
 
 pub struct PostgresHelperImpl {
-    connection: Connection
+    connection: Connection,
 }
 
 
 
 #[derive(Debug, Clone)]
 pub struct PostgresHelperError {
-    desc: String
+    desc: String,
 }
 
-impl PostgresHelperError  {
+impl PostgresHelperError {
     pub fn new(desc: &str) -> Self {
-        Self {
-            desc: desc.to_owned()
-        }
+        Self { desc: desc.to_owned() }
     }
 }
 
@@ -53,44 +54,47 @@ impl fmt::Display for PostgresHelperError {
 
 impl PostgresHelperImpl {
     pub fn new(conn: Connection) -> PostgresHelperImpl {
-        PostgresHelperImpl {
-            connection: conn
-        }
+        PostgresHelperImpl { connection: conn }
     }
 }
 
 impl PostgresHelper for PostgresHelperImpl {
-   fn query<T: TryFromRow>(&self, query: &str, params: &[&ToSql]) -> 
-       Result<Vec<T>, PostgresHelperError> 
-   {
-       match (self.connection.transaction(), self.connection.query(query, params)) {
-           (Ok(transaction), Ok(query_result)) => {
-               let mut result_objs = Vec::new();
-               for row in query_result.iter() {
-                   match T::try_from_row(&row) {
-                       Ok(obj) => result_objs.push(obj),
-                       Err(_) => return Err(PostgresHelperError::new("Error serialialising row"))
-                   }
-               }
-               transaction.commit();
-               Ok(result_objs)
-           },
-           (Err(_), _) => {
-               // is an error trying to start the transaction
-               unimplemented!();
-           },
-           (_, Err(_)) => {
-               // an error with getting the query
-               unimplemented!();
-           }
-       }
-   }
+    fn query<T: TryFromRow>(
+        &self,
+        query: &str,
+        params: &[&ToSql],
+    ) -> Result<Vec<T>, PostgresHelperError> {
+        match (
+            self.connection.transaction(),
+            self.connection.query(query, params),
+        ) {
+            (Ok(transaction), Ok(query_result)) => {
+                let mut result_objs = Vec::new();
+                for row in query_result.iter() {
+                    match T::try_from_row(&row) {
+                        Ok(obj) => result_objs.push(obj),
+                        Err(_) => return Err(PostgresHelperError::new("Error serialialising row")),
+                    }
+                }
+                transaction.commit();
+                Ok(result_objs)
+            }
+            (Err(_), _) => {
+                // is an error trying to start the transaction
+                unimplemented!();
+            }
+            (_, Err(_)) => {
+                // an error with getting the query
+                unimplemented!();
+            }
+        }
+    }
 
-   fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows> {
-       self.connection.query(query, params)
-   }
+    fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows> {
+        self.connection.query(query, params)
+    }
 
-   fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64> {
-       self.connection.execute(query, params)
-   }
+    fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64> {
+        self.connection.execute(query, params)
+    }
 }

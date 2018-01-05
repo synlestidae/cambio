@@ -1,2 +1,1 @@
-pub struct TryFromRowError {
-}
+pub struct TryFromRowError {}

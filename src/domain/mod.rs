@@ -10,4 +10,3 @@ pub use self::order::Order;
 pub use self::order::OrderInfo;
 pub use self::api_error::{ApiError, ErrorType};
 pub use self::session::Session;
-

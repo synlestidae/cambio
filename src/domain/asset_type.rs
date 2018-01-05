@@ -5,14 +5,14 @@ use db::{TryFromRow, TryFromRowError};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum AssetType {
     NZD,
-    BTC
+    BTC,
 }
 
 impl ToString for AssetType {
     fn to_string(&self) -> String {
         let asset_type_str = match self {
             &AssetType::NZD => "nzd",
-            &AssetType::BTC => "btc"
+            &AssetType::BTC => "btc",
         };
         asset_type_str.to_owned()
     }
@@ -20,8 +20,7 @@ impl ToString for AssetType {
 
 impl TryFromRow for AssetType {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        for c in row.columns() {
-        }
+        for c in row.columns() {}
         unimplemented!();
     }
 }

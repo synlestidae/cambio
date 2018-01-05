@@ -4,7 +4,7 @@ use std::fmt;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiError {
     desc: String,
-    error_type: ErrorType
+    error_type: ErrorType,
 }
 
 impl fmt::Display for ApiError {
@@ -17,7 +17,7 @@ impl ApiError {
     pub fn new(description: String, errType: ErrorType) -> Self {
         ApiError {
             desc: description,
-            error_type: errType
+            error_type: errType,
         }
     }
 
@@ -48,16 +48,15 @@ impl ApiError {
     pub fn query_result_format(description: &str) -> Self {
         Self::new(description.to_owned(), ErrorType::QueryResultFormat)
     }
-
 }
 
 impl Error for ApiError {
     fn description(&self) -> &str {
-        return &self.desc
+        return &self.desc;
     }
 
-    fn cause(&self) -> Option<&Error> { 
-        None 
+    fn cause(&self) -> Option<&Error> {
+        None
     }
 }
 
@@ -68,5 +67,5 @@ pub enum ErrorType {
     InvalidLogin,
     BadFormat,
     MissingFieldOrParam,
-    QueryResultFormat
+    QueryResultFormat,
 }

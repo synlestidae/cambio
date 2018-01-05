@@ -1,2 +1,1 @@
-pub struct RowConvertErr {
-}
+pub struct RowConvertErr {}

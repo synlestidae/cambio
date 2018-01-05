@@ -20,5 +20,5 @@ pub struct Order {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct OrderInfo {
-    pub splittable: bool
+    pub splittable: bool,
 }
