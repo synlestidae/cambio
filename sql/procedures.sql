@@ -12,19 +12,44 @@ DECLARE
 correspondence_id INTEGER;
 asset_type_id INTEGER;
 account_period_id INTEGER;
+last_debit_account_balance INT8;
+last_credit_account_balance INT8;
 BEGIN
     SELECT asset_type.id INTO asset_type_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var LIMIT 1;
     IF asset_type_id IS NULL THEN
         RAISE EXCEPTION 'Cannot move asset with unknown asset type (% in %s)', asset_code_var, asset_denom_var; 
     END IF;
+
     SELECT id INTO account_period_id FROM accounting_period WHERE account_period_start = from_date AND account_period_end = to_date LIMIT 1;
     IF account_period_id IS NULL THEN
         RAISE EXCEPTION 'Not match for accounting period';
     END IF;
-    correspondence_id := (SELECT COUNT(*) FROM JOURNAL);
-    INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit)
-    VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null), 
-           (account_period_id, credit_account, asset_type_id, correspondence_id, null, units);
+
+    SELECT MAX(id), balance INTO last_debit_account_balance FROM journal 
+        JOIN account ON journal.account_id = account.id 
+        WHERE account.id = debit_account;
+      
+    SELECT MAX(id), balance INTO last_credit_account_balance FROM journal 
+        JOIN account ON journal.account_id = account.id 
+        WHERE account.id = credit_account;
+
+    IF last_debit_account_balance IS NULL THEN
+       last_debit_account_balance = 0;
+    END IF;
+
+    IF last_credit_account_balance IS NULL THEN
+       last_credit_account_balance = 0;
+    END IF;
+
+    -- Still need to do the whole authorship thing
+    
+
+    -- Ready to get correspondence_id
+    correspondence_id := Select nextval(pg_get_serial_sequence('journal', 'correspondence_id'));
+
+    INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit, balance)
+    VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, last_credit_account_balance + units), 
+           (account_period_id, credit_account, asset_type_id, correspondence_id, null, units, last_debit_account_balance - units);
 
 END;
 $$ LANGUAGE plpgsql;
@@ -42,7 +67,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION make_sell_order(
+CREATE OR REPLACE FUNCTION make_order(
     -- identify the user
     email_address_var VARCHAR(128),
     user_session_id VARCHAR(128),
@@ -54,12 +79,14 @@ CREATE OR REPLACE FUNCTION make_sell_order(
     -- what the user wants to sell
     sell_asset_type VARCHAR(4),
     sell_asset_denom VARCHAR(6),
-    sell_units UINT,
+    min_sell_units UINT,
+    max_sell_units UINT,
 
     -- what the user wants to buy
     deposit_asset_type VARCHAR(4),
     deposit_asset_denom VARCHAR(6),
-    buy_units UINT,
+    min_buy_units UINT,
+    max_buy_units UINT,
 
     -- for completing the order
     credit_account INTEGER,

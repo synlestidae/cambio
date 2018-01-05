@@ -6,6 +6,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate router;
 extern crate chrono;
+extern crate time;
 
 #[macro_use] extern crate serde_derive;
 
@@ -19,68 +20,39 @@ use router::{Router};
 use bcrypt::{DEFAULT_COST, hash, verify};
 use postgres::{Connection, TlsMode};
 use domain::{User, Order, ApiError, Session};
-use db::{PostgresHelperImpl, PostgresHelper};
+use db::{PostgresHelperImpl, PostgresHelper, UserRepository};
 use std::error::Error;
 
-fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {  
-    let user_obj_password = match unauthed_user.password {
-        Some(ref password) => password.clone(),
-        None => return Err(ApiError::missing_field_or_param("Missing password field"))
-    };
-
-    // let email_address = user_obj.email_address;
+fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Session, ApiError> {
+    // stored procedure handles most of this 
     let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
     let db = PostgresHelperImpl::new(conn);
 
-    let user: User;
-    let not_found_error = Err(ApiError::invalid_login("Failed to find your email address in the database"));
-    let query_result = db.query("SELECT email_address, password_hash FROM users WHERE email_address = $1;", 
-        &[&unauthed_user.email_address]);
+    // this code is authorised
+    unimplemented!()
 
-    if let Ok(matching_users) = query_result {
-        if let Some(user_match) = matching_users.pop() {
-            user = user_match;
-        } else {
-            return not_found_error;
-        }
-    } else {
-        return not_found_error;
-    }
+}
 
-    // this should never happen, but we double check what the database gave us
-    if (user.email_address != unauthed_user.email_address) {
-        return not_found_error;
-    }
+fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {  
+    let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None).unwrap();
+    let db = PostgresHelperImpl::new(conn);
+    let mut user_repository = UserRepository::new(db);
+    let password = match unauthed_user.password {
+        None => return Err(ApiError::missing_field_or_param("Password was not supplied")),
+        Some(ref password) => password.to_owned()
+    };
+    let session_result = user_repository.log_user_in(&unauthed_user.email_address, password);
 
-    if (!user.hash_matches_password(&user_obj_password)) {
-        return not_found_error;
-    }
-
-    // all code after this point is authorised. the user has proven their identity
-    match db.query("SELECT session_token FROM activate_user_session($1);", &[&user.email_address]) {
-        Ok(result) => {
-            let session_token_error = Err(ApiError::query_result_format("Could not get your session token from the database"));
-            for row in result.iter() {
-                let session_token_option: Option<String>; 
-                session_token_option = row.get(row, "session_token");
-
-                if let Some(session_token) = session_token_option {
-                    return Ok(Session {
-                        session_token: session_token,
-                        email_address: user.email_address,
-                        expires_at: None
-                    });
-                }
-
-                return session_token_error;
-            }
-
-            return session_token_error;
-        },
+    match session_result {
+        Ok(None) => Err(ApiError::invalid_login("Invalid username and password combination")),
         Err(error) => {
-            let err_msg = format!("Could not connect to the database: {}", error.description());
-            return Err(ApiError::database_driver(&err_msg));
-        }
+            let msg = format!("Error logging in: {}", error.description());
+            Err(ApiError::invalid_login(&msg))
+        },
+        Ok(None) => {
+            Err(ApiError::invalid_login("Error logging in: account does not exist"))
+        },
+        Ok(Some(session)) => Ok(session)
     }
 }
 

@@ -23,9 +23,16 @@ CREATE TYPE app_role_type AS ENUM (
 );
 
 CREATE TYPE business_ends_type AS ENUM (
-    'asset_transfer_user_to_user', -- assets will be transferred between two users i.e. a trade
-    'asset_transfer_user_cashin', -- user depositing money into their account
-    'asset_transfer_user_cashout' -- money leaving our system to the user
+    /*'asset_transfer_bch_sat', -- blockchain transfer of bitcoin cash
+    'asset_transfer_eth_eth', -- blockchain transfer of ether
+    'cashout_eth_eth', 
+    'cashout_bch_sat',
+    'cashout_eth_eth',
+    'cashin_bch_sat',
+    'cashin_eth_eth' */
+    'asset_deposit_nzd',
+    'asset_withdrawal_nzd',
+    'asset_transfer_nzd'
 );
 
 CREATE TABLE users (
@@ -66,7 +73,6 @@ CREATE TABLE session_info (
     CHECK (ttl_milliseconds < 86400000) -- right now, no sessions longer than a day
 );
 
-
 CREATE TABLE user_session (
     id SERIAL NOT NULL PRIMARY KEY,
     user_id SERIAL REFERENCES users(id),
@@ -85,5 +91,12 @@ CREATE TABLE authorship (
     authoring_user SERIAL REFERENCES users(id) NOT NULL, 
     authoring_user_session SERIAL REFERENCES user_session(id) NOT NULL,
     approved_by SERIAL REFERENCES internal_user(id) NOT NULL,
-    approving_session SERIAL REFERENCES app_session(id) NOT NULL
+    approving_session SERIAL REFERENCES app_session(id) NOT NULL,
+    entry SERIAL UNIQUE REFERENCES relevant_entry NOT NULL
 );
+
+CREATE TABLE entry (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_payment REFERENCES user_payment(id),
+    CONSTRAINT one_associated_table CHECK user_payment IS NOT NULL
+)

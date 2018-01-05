@@ -1,9 +1,10 @@
-use postgres::rows::Row;
+use postgres::rows::{Row, Rows};
 use postgres::Connection;
 use postgres::types::ToSql;
 use postgres;
 use db::row_convert_err::RowConvertErr;
 use db::try_from_row::TryFromRow;
+use db::user_repository::UserRepository;
 use std::error::Error;
 use std::error;
 use std::fmt;
@@ -12,6 +13,7 @@ pub trait PostgresHelper {
    fn query<T: TryFromRow>(&self, query: &str, params: &[&ToSql]) -> 
        Result<Vec<T>, PostgresHelperError>;
    fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64>;
+   fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows>;
 }
 
 pub struct PostgresHelperImpl {
@@ -26,7 +28,7 @@ pub struct PostgresHelperError {
 }
 
 impl PostgresHelperError  {
-    fn new(desc: &str) -> Self {
+    pub fn new(desc: &str) -> Self {
         Self {
             desc: desc.to_owned()
         }
@@ -82,6 +84,10 @@ impl PostgresHelper for PostgresHelperImpl {
                unimplemented!();
            }
        }
+   }
+
+   fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows> {
+       self.connection.query(query, params)
    }
 
    fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64> {

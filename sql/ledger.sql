@@ -53,9 +53,11 @@ CREATE TABLE journal (
     accounting_period SERIAL REFERENCES accounting_period(id),
     account_id SERIAL NOT NULL REFERENCES account(id),
     asset_type SERIAL NOT NULL REFERENCES asset_type(id), 
+    transaction_time TIMESTAMP NOT NULL,
     correspondence_id SERIAL NOT NULL,
     credit UINT,
     debit UINT,
+    balance INT8,
     authorship_id SERIAL REFERENCES authorship(id),
     CHECK((credit IS NOT NULL AND debit IS NULL) OR (credit IS NULL AND debit IS NOT NULL))
 );
@@ -73,25 +75,6 @@ END;
 $$
 LANGUAGE 'plpgsql' IMMUTABLE;
 
-/*CREATE OR REPLACE FUNCTION check_insert_double() RETURNS TRIGGER AS 
-$$
-  BEGIN
-    -- Check that row1[credit] = row2[debit]
-    IF EXISTS(
-        SELECT * FROM INSERTED 
-        GROUP BY accounting_period, asset_type, correspondence_id
-        HAVING SUM(debit) != sum(credit) OR COUNT(*) !== 2
-        ) THEN
-        RAISE EXCEPTION 'Each inserted transaction must have exactly ONE corresponding transaction with maching currency, account period, and where debit == credit';
-    END IF;
-END;
-$$
-LANGUAGE 'plpgsql' IMMUTABLE;*/
-
 CREATE TRIGGER zero_balance
 BEFORE INSERT OR UPDATE ON journal
 EXECUTE PROCEDURE check_zero_balance();
-
-/*CREATE TRIGGER double_entry
-AFTER INSERT ON journal
-EXECUTE PROCEDURE check_insert_double();*/
