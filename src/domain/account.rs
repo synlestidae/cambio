@@ -28,7 +28,6 @@ impl TryFromRow for Account {
         let account_role_match: Option<AccountRole> = row.get("account_role");
         let account_role = try!(account_role_match.ok_or(TryFromRowError{}));
 
-
         let account_business_type_match: Option<AccountBusinessType> = row.get("account_business_type");
         let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError{}));
 

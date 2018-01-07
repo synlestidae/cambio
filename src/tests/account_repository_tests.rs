@@ -20,8 +20,6 @@ fn test_gets_main_wallet_account_for_registered_user() {
         let accounts = account_repository.get_accounts_for_user(email_address).unwrap();
         let account = &accounts[0];
 
-        assert!(false);
-
         assert_eq!(user.id.unwrap(), account.owner_user_id.unwrap());
         assert_eq!(AssetType::NZD, account.asset_type);
         assert_eq!(Denom::Cent, account.asset_denom);

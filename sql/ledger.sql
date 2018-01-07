@@ -12,8 +12,6 @@ CREATE TABLE accounting_period (
 CREATE TYPE account_business_type AS ENUM (
     'user_cash_wallet',
     'system_fees_paid',
-    'user_generic_asset',
-    'user_cashout_credit'
     'accounting_concept'
 );
 
