@@ -6,6 +6,7 @@ use db::{TryFromRow, TryFromRowError};
 pub enum AssetType {
     NZD,
     BTC,
+    ETH
 }
 
 impl ToString for AssetType {
@@ -13,6 +14,7 @@ impl ToString for AssetType {
         let asset_type_str = match self {
             &AssetType::NZD => "nzd",
             &AssetType::BTC => "btc",
+            &AssetType::ETH => "eth"
         };
         asset_type_str.to_owned()
     }
@@ -20,7 +22,15 @@ impl ToString for AssetType {
 
 impl TryFromRow for AssetType {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        for c in row.columns() {}
-        unimplemented!();
+        let asset_type_match: Option<String> = row.get("asset_code");
+        if asset_type_match.is_none() {
+            return Err(TryFromRowError {});
+        }
+        match asset_type_match.unwrap().as_ref() {
+            "eth" => Ok(AssetType::ETH),
+            "btc" => Ok(AssetType::BTC),
+            "nzd" => Ok(AssetType::NZD),
+            _ => Err(TryFromRowError {})
+        }
     }
 }

@@ -166,12 +166,8 @@ BEGIN
     SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('nzd', 'cents');
     SELECT * INTO nzd_asset_type_id FROM get_asset_id('btc', 'sat');
 
-    -- create an account for bitcoins
-    INSERT INTO account (owner_id, asset_type, account_type, account_business_type)
-        VALUES(owner_id, bitcoin_asset_type_id, 'credit_normal', 'user_asset');
-
     -- create an account for nzd 
-    INSERT INTO account (owner_id, asset_type, account_type, account_business_type)
-        VALUES(owner_id, nzd_asset_type_id, 'credit_normal', 'user_asset');
+    INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)
+        VALUES(owner_id, nzd_asset_type_id, 'credit_normal', 'user_cash_wallet', 'primary', 'active');
 END;
 $$ LANGUAGE plpgsql;

@@ -1,0 +1,79 @@
+use db::{PostgresHelper, PostgresHelperError};
+use std::error::Error;
+use domain::{Account, Id, AccountStatement, Transaction};
+
+const LATEST_STATEMENT_QUERY: &'static str = "
+    SELECT * FROM users
+        JOIN account_owner ON users.id = account_owner.user_id
+        JOIN account ON account_owner.id = account.owner_id 
+        JOIN accounting_period ON account.accounting_period = accounting_period.id
+        JOIN journal ON account.id = journal.account_id 
+        JOIN authorhip ON journal.authorship_id = authorship.id
+    WHERE
+        account.id = $1 AND
+        accounting_period = (SELECT MAX(id) FROM accounting_period) 
+";
+
+const ACCOUNT_QUERY: &'static str = "
+    SELECT * FROM account 
+        JOIN account_owner ON account.owner_id = account_owner.id
+        JOIN users ON account.user_id = users.id
+    WHERE 
+       users.email_address = $1";
+
+pub struct AccountRepository<T: PostgresHelper> {
+    db_helper: T,
+}
+
+impl<T: PostgresHelper> AccountRepository<T> {
+    pub fn new(db_helper: T) -> AccountRepository<T> {
+        AccountRepository {
+            db_helper: db_helper
+        }
+    }
+
+    pub fn get_accounts_for_user(&mut self, email_address: &str) -> Result<Vec<Account>, PostgresHelperError> {
+        match self.db_helper.query(ACCOUNT_QUERY, &[&email_address]) {
+            Ok(accounts) => Ok(accounts),
+            Err(err) => {
+                Err(PostgresHelperError::new(err.description()))
+            }
+        }
+    }
+
+    pub fn get_account(&mut self, account_id: Id) -> Result<Account, PostgresHelperError> {
+        unimplemented!()
+    }
+
+    pub fn get_latest_statement(&mut self, account_id: Id) 
+        -> Result<AccountStatement, PostgresHelperError> {
+        let transactions = try!(self.get_transactions_for_account(account_id));
+        let account = try!(self.get_account(account_id));
+
+        transactions.sort_by_key(|t: &Transaction| t.id);
+
+        let mut statement = AccountStatement {
+            account: account,
+            opening_balance: 0,
+            closing_balance: 0,
+            transactions: transactions
+        };
+
+        if transactions.len() > 0 {
+            statement.opening_balance = transactions[0].balance;
+            statement.closing_balance = transactions[transactions.len() - 1].balance;
+        }
+
+        Ok(statement)
+    }
+
+    pub fn get_transactions_for_account(&mut self, account_id: Id) -> Result<Vec<Transaction>, PostgresHelperError> {
+        match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
+            Ok(transactions) => Ok(transactions),
+            Err(err) => {
+                Err(PostgresHelperError::new(err.description()))
+            }
+        }
+    }
+
+}

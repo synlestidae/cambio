@@ -1,4 +1,6 @@
 use std::fmt;
+use postgres::rows::Row;
+use db::{TryFromRow, TryFromRowError};
 
 pub enum BusinessEnds {
     WalletDeposit,
@@ -15,6 +17,19 @@ impl BusinessEnds {
             "system_fee_charge" => Some(BusinessEnds::SystemFeeCharge),
             "cryptocurrency_purchase" => Some(BusinessEnds::CryptocurrencyPurchase),
             _ => None
+        }
+    }
+}
+
+impl TryFromRow for BusinessEnds {
+    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        let business_ends_string:Option<String> = row.get("business_ends");
+        if business_ends_string.is_none() {
+            return Err(TryFromRowError {});
+        }
+        match BusinessEnds::parse(&business_ends_string.unwrap()) {
+            Some(business_ends) => Ok(business_ends),
+            None => Err(TryFromRowError {}),
         }
     }
 }
