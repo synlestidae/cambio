@@ -1,5 +1,8 @@
 use std::fmt;
+use db::{TryFromRow, TryFromRowError};
+use postgres::rows::Row;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AccountStatus {
     Active,
     Frozen,
@@ -13,6 +16,20 @@ impl AccountStatus {
             "frozen" => Some(AccountStatus::Frozen),
             "closed" => Some(AccountStatus::Closed),
             _ => None
+        }
+    }
+}
+
+impl TryFromRow for AccountStatus {
+    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        let account_status_match: Option<String> = row.get("account_status");
+        let account_status = try!(account_status_match.ok_or(TryFromRowError{}));
+
+        match account_status.as_ref() {
+            "active" => Ok(AccountStatus::Active),
+            "frozen" => Ok(AccountStatus::Frozen),
+            "closed" => Ok(AccountStatus::Closed),
+            _ => Err(TryFromRowError{})
         }
     }
 }

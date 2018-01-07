@@ -47,10 +47,18 @@ impl<T: PostgresHelper> AccountRepository<T> {
 
     pub fn get_latest_statement(&mut self, account_id: Id) 
         -> Result<AccountStatement, PostgresHelperError> {
-        let transactions = try!(self.get_transactions_for_account(account_id));
+        let mut transactions = try!(self.get_transactions_for_account(account_id));
         let account = try!(self.get_account(account_id));
 
         transactions.sort_by_key(|t: &Transaction| t.id);
+
+        let mut opening_balance = 0;
+        let mut closing_balance = 0;
+
+        if transactions.len() > 0 {
+            opening_balance = (&transactions[0]).balance;
+            closing_balance = (&transactions[transactions.len() - 1]).balance;
+        }
 
         let mut statement = AccountStatement {
             account: account,
@@ -59,10 +67,6 @@ impl<T: PostgresHelper> AccountRepository<T> {
             transactions: transactions
         };
 
-        if transactions.len() > 0 {
-            statement.opening_balance = transactions[0].balance;
-            statement.closing_balance = transactions[transactions.len() - 1].balance;
-        }
 
         Ok(statement)
     }

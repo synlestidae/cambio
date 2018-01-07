@@ -1,5 +1,8 @@
 use std::fmt;
+use db::{TryFromRow, TryFromRowError};
+use postgres::rows::Row;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AccountBusinessType {
     UserCashWallet,
     UserCashoutCredit,
@@ -31,5 +34,17 @@ impl fmt::Display for AccountBusinessType {
              &AccountBusinessType::AccountingConcept => "accounting_concept",
         };
         write!(f, "{}", string)
+    }
+}
+
+impl TryFromRow for AccountBusinessType {
+    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        let account_business_type_match: Option<String> = row.get("account_business_type");
+        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError{}));
+
+        match AccountBusinessType::parse(&account_business_type) {
+            Some(b) => Ok(b),
+            _ => Err(TryFromRowError {})
+        }
     }
 }

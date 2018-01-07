@@ -2,7 +2,7 @@ use serde_derive;
 use postgres::rows::Row;
 use db::{TryFromRow, TryFromRowError};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum AssetType {
     NZD,
     BTC,

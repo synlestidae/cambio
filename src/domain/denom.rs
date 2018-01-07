@@ -2,7 +2,7 @@ use serde_derive;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum Denom {
     Dollar,
     Cent,
