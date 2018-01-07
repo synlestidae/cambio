@@ -3,7 +3,7 @@ use std::error::Error;
 use domain::{Account, Id, AccountStatement, Transaction};
 
 const LATEST_STATEMENT_QUERY: &'static str = "
-    SELECT * FROM users
+    SELECT *, users.id as user_id FROM users
         JOIN account_owner ON users.id = account_owner.user_id
         JOIN account ON account_owner.id = account.owner_id 
         JOIN accounting_period ON account.accounting_period = accounting_period.id
@@ -15,9 +15,10 @@ const LATEST_STATEMENT_QUERY: &'static str = "
 ";
 
 const ACCOUNT_QUERY: &'static str = "
-    SELECT * FROM account 
+    SELECT *, account.id as account_id FROM account 
         JOIN account_owner ON account.owner_id = account_owner.id
-        JOIN users ON account.user_id = users.id
+        JOIN users ON account_owner.user_id = users.id
+        JOIN asset_type ON account.asset_type = asset_type.id
     WHERE 
        users.email_address = $1";
 
@@ -36,6 +37,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
         match self.db_helper.query(ACCOUNT_QUERY, &[&email_address]) {
             Ok(accounts) => Ok(accounts),
             Err(err) => {
+                println!("An error while getting {:?}", err);
                 Err(PostgresHelperError::new(err.description()))
             }
         }
@@ -47,6 +49,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
 
     pub fn get_latest_statement(&mut self, account_id: Id) 
         -> Result<AccountStatement, PostgresHelperError> {
+        println!("Getting transactions");
         let mut transactions = try!(self.get_transactions_for_account(account_id));
         let account = try!(self.get_account(account_id));
 
@@ -75,6 +78,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
         match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
             Ok(transactions) => Ok(transactions),
             Err(err) => {
+                println!("Error {:?}", err);
                 Err(PostgresHelperError::new(err.description()))
             }
         }

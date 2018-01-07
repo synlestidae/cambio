@@ -66,6 +66,7 @@ impl<T: PostgresHelper> UserRepository<T> {
                 err.description())));
         }
 
+
         self.get_user_by_email(email_address)
     }
 

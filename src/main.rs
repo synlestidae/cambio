@@ -1,5 +1,6 @@
 extern crate bcrypt;
 extern crate iron;
+#[macro_use]
 extern crate postgres;
 extern crate bodyparser;
 extern crate serde;
@@ -8,6 +9,8 @@ extern crate router;
 extern crate chrono;
 extern crate time;
 extern crate checkmail;
+#[macro_use]
+extern crate postgres_derive;
 
 #[macro_use]
 extern crate serde_derive;

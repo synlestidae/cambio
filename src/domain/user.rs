@@ -3,11 +3,12 @@ use bcrypt::{DEFAULT_COST, hash, verify};
 use db::TryFromRow;
 use db::TryFromRowError;
 use std;
+use domain::Id;
 use postgres::rows::Row;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct User {
-    pub id: Option<i64>,
+    pub id: Option<Id>,
     pub email_address: String,
     pub password: Option<String>,
     pub password_hash: Option<String>,
@@ -34,17 +35,18 @@ impl TryFromRow for User {
     where
         Self: std::marker::Sized,
     {
-        println!("Converting user");
         let email_address_match: Option<String> = row.get("email_address");
         let password_hash_match: Option<String> = row.get("password_hash");
         let id: Option<i32> = row.get("id");
         match (email_address_match, password_hash_match, id) {
-            (Some(email_address), Some(password_hash), Some(id)) => Ok(User {
-                id: Some(id as i64),
-                email_address: email_address,
-                password_hash: Some(password_hash),
-                password: None,
-            }),
+            (Some(email_address), Some(password_hash), Some(id)) => {
+                return Ok(User {
+                    id: Some(id),
+                    email_address: email_address,
+                    password_hash: Some(password_hash),
+                    password: None,
+                });
+            },
             _ => Err(TryFromRowError {}),
         }
     }

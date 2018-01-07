@@ -2,9 +2,12 @@ use db::{TryFromRow, TryFromRowError};
 use std::fmt;
 use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[postgres(name = "account_role")]
 pub enum AccountRole {
+    #[postgres(name = "primary")]
     Primary,
+    #[postgres(name = "system")]
     System
 }
 

@@ -2,13 +2,19 @@ use std::fmt;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[postgres(name = "account_business_type")]
 pub enum AccountBusinessType {
+    #[postgres(name = "user_cash_wallet")]
     UserCashWallet,
-    UserCashoutCredit,
+    #[postgres(name = "system_fees_paid")]
     SystemFeesPaid,
+    #[postgres(name = "user_generic_asset")]
     UserGenericAsset,
-    AccountingConcept
+    #[postgres(name = "accounting_concept")]
+    AccountingConcept,
+    #[postgres(name = "user_cashout_credit")]
+    UserCashoutCredit,
 }
 
 impl AccountBusinessType {

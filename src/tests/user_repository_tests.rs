@@ -1,11 +1,8 @@
 use db::{PostgresHelper, PostgresHelperImpl, UserRepository};
-use postgres::{Connection, TlsMode};
-use std::process::Command;
-use std::env::current_dir;
 use chrono::prelude::*;
-use std::panic::catch_unwind;
 use std::process;
 use std;
+use tests::test_utils::*;
 
 #[test]
 fn test_get_user_returns_none_for_nonexistent_user() {
@@ -76,39 +73,6 @@ fn test_register_user_allows_login_and_logout() {
 fn do_login_logout_test() {
 }
 
-fn setup() {
-    let conn = Connection::connect("postgresql://mate@localhost:5432", TlsMode::None).unwrap();
-    conn.execute("CREATE DATABASE test_database_only;", &[]);
-    let output = Command::new("bash")
-        .arg("src/tests/setup_db.sh")
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .spawn()
-        .unwrap()
-        .wait().unwrap();
-}
-
-fn teardown() {
-    let conn = Connection::connect("postgresql://mate@localhost:5432", TlsMode::None).unwrap();
-    conn.execute("DROP DATABASE test_database_only;", &[]);
-}
-
-fn run_test<T: std::panic::UnwindSafe>(test: T) -> ()
-    where T: FnOnce() -> ()
-{
-    setup();
-
-    catch_unwind(|| {
-        test()
-    }).unwrap();
-
-    teardown();
-}
-
 fn get_repository() -> UserRepository<PostgresHelperImpl> {
-    let conn = Connection::connect("postgres://mate@localhost:5432/test_database_only", TlsMode::None)
-        .unwrap();
-    let db = PostgresHelperImpl::new(conn);
-    UserRepository::new(db)
-
+    UserRepository::new(get_db_helper())
 }

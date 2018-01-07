@@ -17,12 +17,21 @@ impl TryFromRow for Account {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let account_id: Option<Id> = row.get("account_id");
         let account_user_id_match: Option<Id> = row.get("user_id");
-
         let asset_type = try!(AssetType::try_from_row(row));
         let denom = try!(Denom::try_from_row(row));
-        let account_status = try!(AccountStatus::try_from_row(row));
-        let account_business_type = try!(AccountBusinessType::try_from_row(row));
-        let account_role = try!(AccountRole::try_from_row(row));
+
+        let account_status_match:Option<AccountStatus> = row.get("account_status");
+        let account_status = try!(account_status_match.ok_or(TryFromRowError{}));
+
+        println!("Statty {}", account_status);
+
+        let account_role_match: Option<AccountRole> = row.get("account_role");
+        let account_role = try!(account_role_match.ok_or(TryFromRowError{}));
+
+
+        let account_business_type_match: Option<AccountBusinessType> = row.get("account_business_type");
+        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError{}));
+
 
         Ok(Account {
             id: account_id,

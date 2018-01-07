@@ -11,14 +11,15 @@ CREATE TABLE accounting_period (
 
 CREATE TYPE account_business_type AS ENUM (
     'user_cash_wallet',
-    'user_cashout_credit'
     'system_fees_paid',
     'user_generic_asset',
+    'user_cashout_credit'
     'accounting_concept'
 );
 
 CREATE TYPE account_role AS ENUM (
-    'primary'
+    'primary',
+    'system'
 );
 
 CREATE TABLE account_owner (

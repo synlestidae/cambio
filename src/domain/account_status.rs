@@ -2,10 +2,14 @@ use std::fmt;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[postgres(name = "account_status_type")]
 pub enum AccountStatus {
+    #[postgres(name = "active")]
     Active,
+    #[postgres(name = "frozen")]
     Frozen,
+    #[postgres(name = "closed")]
     Closed
 }
 
@@ -22,7 +26,9 @@ impl AccountStatus {
 
 impl TryFromRow for AccountStatus {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        println!("getting the stat");
         let account_status_match: Option<String> = row.get("account_status");
+        println!("making the stat");
         let account_status = try!(account_status_match.ok_or(TryFromRowError{}));
 
         match account_status.as_ref() {

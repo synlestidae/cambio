@@ -163,8 +163,8 @@ BEGIN
     -- give them a way to own accounts
     INSERT INTO account_owner(user_id, internal_user_id) VALUES(user_id, NULL) RETURNING id into owner_id;
 
-    SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('nzd', 'cents');
-    SELECT * INTO nzd_asset_type_id FROM get_asset_id('btc', 'sat');
+    SELECT * INTO nzd_asset_type_id FROM get_asset_id('nzd', 'cent');
+    SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('btc', 'sat');
 
     -- create an account for nzd 
     INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)
