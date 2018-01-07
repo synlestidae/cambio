@@ -1,5 +1,5 @@
 CREATE TABLE vendor (
-    id SERIAL NOT NULL,
+    id SERIAL NOT NULL PRIMARY KEY,
     name VARCHAR(256) NOT NULL
 );
 
@@ -8,7 +8,7 @@ CREATE TABLE user_payment (
     vendor SERIAL NOT NULL REFERENCES vendor(id),
     payment_datetime TIMESTAMP NOT NULL,
     asset_type SERIAL NOT NULL REFERENCES asset_type(id),
-    units UINT NOT NULL,
+    units INT8 NOT NULL,
     unique_id VARCHAR(256) NOT NULL,
-    CONSTRAINT User_payment_no_duplicates UNIQUE(vendor, unique_id)
-)
+    CONSTRAINT Unique_payment_each_vendor UNIQUE(vendor, unique_id)
+);

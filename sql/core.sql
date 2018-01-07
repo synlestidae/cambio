@@ -85,6 +85,11 @@ CREATE TABLE app_session (
     session_info_id SERIAL REFERENCES session_info(id)
 );
 
+CREATE TABLE entry (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_payment SERIAL NOT NULL REFERENCES user_payment(id)
+);
+
 CREATE TABLE authorship (
     id SERIAL NOT NULL PRIMARY KEY,
     business_ends business_ends_type NOT NULL,
@@ -92,11 +97,6 @@ CREATE TABLE authorship (
     authoring_user_session SERIAL REFERENCES user_session(id) NOT NULL,
     approved_by SERIAL REFERENCES internal_user(id) NOT NULL,
     approving_session SERIAL REFERENCES app_session(id) NOT NULL,
-    entry SERIAL UNIQUE REFERENCES relevant_entry NOT NULL
+    entry SERIAL UNIQUE REFERENCES entry NOT NULL
 );
 
-CREATE TABLE entry (
-    id SERIAL NOT NULL PRIMARY KEY,
-    user_payment REFERENCES user_payment(id),
-    CONSTRAINT one_associated_table CHECK user_payment IS NOT NULL
-)

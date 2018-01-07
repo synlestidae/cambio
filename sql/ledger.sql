@@ -2,14 +2,6 @@ CREATE TYPE ACCOUNT_TYPE AS ENUM (
     'credit_normal',
     'debit_normal'
 );
-
-CREATE TABLE asset_type (
-    id SERIAL NOT NULL PRIMARY KEY,
-    asset_code VARCHAR(4) NOT NULL,
-    denom VARCHAR(6) NOT NULL,
-    unique(asset_code, denom)
-);
-
 CREATE TABLE accounting_period (
     id SERIAL PRIMARY KEY,
     from_date DATE,

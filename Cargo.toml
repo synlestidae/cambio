@@ -13,6 +13,7 @@ serde_derive = "1.0"
 serde_json = "1.0"
 chrono =  { version = "0.4", features = ["serde"] }
 time = "*"
+checkmail = "0.1.1"
 
 [dependencies.bodyparser]
 git = "https://github.com/iron/body-parser.git"

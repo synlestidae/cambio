@@ -45,7 +45,7 @@ BEGIN
     
 
     -- Ready to get correspondence_id
-    correspondence_id := Select nextval(pg_get_serial_sequence('journal', 'correspondence_id'));
+    correspondence_id := nextval(pg_get_serial_sequence('journal', 'correspondence_id'));
 
     INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit, balance)
     VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, last_credit_account_balance + units), 

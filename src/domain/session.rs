@@ -2,10 +2,11 @@ use chrono::prelude::{DateTime, Utc};
 use time::Duration;
 use db::TryFromRow;
 use db::TryFromRowError;
+use chrono::NaiveDateTime;
 use std;
 use postgres::rows::Row;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Session {
     pub session_token: String,
     pub email_address: String,
@@ -19,7 +20,7 @@ impl TryFromRow for Session {
     {
         let email_address_match: Option<String> = row.get("email_address");
         let session_token_match: Option<String> = row.get("session_token");
-        let started_at_match: Option<DateTime<Utc>> = row.get("started_at");
+        let started_at_match: Option<NaiveDateTime> = row.get("started_at");
         let ttl_milliseconds_match: Option<i64> = row.get("ttl_milliseconds");
         match (
             email_address_match,
@@ -31,11 +32,10 @@ impl TryFromRow for Session {
              Some(session_token),
              Some(started_at),
              Some(ttl_milliseconds)) => {
-                let expiry_date = started_at + Duration::milliseconds(ttl_milliseconds);
                 Ok(Session {
                     session_token: session_token,
                     email_address: email_address,
-                    expires_at: expiry_date,
+                    expires_at: DateTime::from_utc(started_at, Utc) + Duration::milliseconds(ttl_milliseconds)
                 })
             }
             _ => Err(TryFromRowError {}),

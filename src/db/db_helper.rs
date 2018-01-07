@@ -25,7 +25,7 @@ pub struct PostgresHelperImpl {
 
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PostgresHelperError {
     desc: String,
 }
@@ -64,11 +64,15 @@ impl PostgresHelper for PostgresHelperImpl {
         query: &str,
         params: &[&ToSql],
     ) -> Result<Vec<T>, PostgresHelperError> {
-        match (
-            self.connection.transaction(),
-            self.connection.query(query, params),
-        ) {
-            (Ok(transaction), Ok(query_result)) => {
+        let transaction_result = self.connection.transaction();
+        if !transaction_result.is_ok() {
+            let error = transaction_result.err().unwrap();
+            let msg = format!("Failed to start transaction: {}", error.description());
+            return Err(PostgresHelperError::new(&msg));
+        }
+        let transaction = transaction_result.ok().unwrap();
+        match self.connection.query(query, params) {
+            Ok(query_result) => {
                 let mut result_objs = Vec::new();
                 for row in query_result.iter() {
                     match T::try_from_row(&row) {
@@ -78,14 +82,10 @@ impl PostgresHelper for PostgresHelperImpl {
                 }
                 transaction.commit();
                 Ok(result_objs)
-            }
-            (Err(_), _) => {
-                // is an error trying to start the transaction
-                unimplemented!();
-            }
-            (_, Err(_)) => {
-                // an error with getting the query
-                unimplemented!();
+            },
+            Err(error) => {
+                let msg = format!("Error while running query: {}", error.description());
+                return Err(PostgresHelperError::new(&msg));
             }
         }
     }

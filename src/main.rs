@@ -7,12 +7,14 @@ extern crate serde_json;
 extern crate router;
 extern crate chrono;
 extern crate time;
+extern crate checkmail;
 
 #[macro_use]
 extern crate serde_derive;
 
 mod db;
 mod domain;
+mod tests;
 
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult};
