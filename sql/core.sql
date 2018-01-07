@@ -23,16 +23,10 @@ CREATE TYPE app_role_type AS ENUM (
 );
 
 CREATE TYPE business_ends_type AS ENUM (
-    /*'asset_transfer_bch_sat', -- blockchain transfer of bitcoin cash
-    'asset_transfer_eth_eth', -- blockchain transfer of ether
-    'cashout_eth_eth', 
-    'cashout_bch_sat',
-    'cashout_eth_eth',
-    'cashin_bch_sat',
-    'cashin_eth_eth' */
-    'asset_deposit_nzd',
-    'asset_withdrawal_nzd',
-    'asset_transfer_nzd'
+    'wallet_deposit',
+    'wallet_withdrawal',
+    'system_fee_charge',
+    'cryptocurrency_purchase'
 );
 
 CREATE TABLE users (
@@ -95,6 +89,7 @@ CREATE TABLE authorship (
     business_ends business_ends_type NOT NULL,
     authoring_user SERIAL REFERENCES users(id) NOT NULL, 
     authoring_user_session SERIAL REFERENCES user_session(id) NOT NULL,
+    message: TEXT NOT NULL,
     approved_by SERIAL REFERENCES internal_user(id) NOT NULL,
     approving_session SERIAL REFERENCES app_session(id) NOT NULL,
     entry SERIAL UNIQUE REFERENCES entry NOT NULL

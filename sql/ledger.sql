@@ -10,11 +10,15 @@ CREATE TABLE accounting_period (
 );
 
 CREATE TYPE account_business_type AS ENUM (
-    'user_asset',
-    'fee_cashin',
-    'fee_cashout',
-    'cashin_from_user',
-    'cashout_to_user'
+    'user_cash_wallet',
+    'user_cashout_credit'
+    'system_fees_paid',
+    'user_generic_asset',
+    'accounting_concept'
+);
+
+CREATE TYPE account_role AS ENUM (
+    'primary'
 );
 
 CREATE TABLE account_owner (
@@ -37,6 +41,7 @@ CREATE TABLE account (
     asset_type SERIAL REFERENCES asset_type(id),
     account_type ACCOUNT_TYPE NOT NULL,
     account_business_type account_business_type NOT NULL,
+    account_role account_role NOT NULL,
     account_status account_status_type NOT NULL DEFAULT 'active'
 );
 

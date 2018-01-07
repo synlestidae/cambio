@@ -4,9 +4,17 @@ mod denom;
 mod asset_type;
 mod session;
 mod api_error;
+mod id;
+mod account_status;
+mod account_business_type;
+mod account_role;
 
 pub use self::user::User;
 pub use self::order::Order;
 pub use self::order::OrderInfo;
 pub use self::api_error::{ApiError, ErrorType};
 pub use self::session::Session;
+pub use self::id::Id;
+pub use self::account_status::AccountStatus;
+pub use self::account_business_type::AccountBusinessType;
+pub use self::account_role::AccountRole;
