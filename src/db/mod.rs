@@ -4,6 +4,7 @@ mod try_from_row;
 mod try_from_row_error;
 mod user_repository;
 mod account_repository;
+mod payment_repository;
 
 pub use self::db_helper::{PostgresHelper, PostgresHelperImpl, PostgresHelperError};
 pub use self::try_from_row::TryFromRow;

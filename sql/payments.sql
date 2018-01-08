@@ -54,7 +54,7 @@ BEGIN
         JOIN account_owner ON account.owner_id = account_owner.id
         JOIN users ON account_owner.user_id = users.id
     WHERE 
-        users.id = user_id AND users.email_address = email_address;
+        users.id = user_id AND users.email_address = email_address AND account.id = credited_account_id;
 
     IF user_credited_account IS NULL THEN
         RAISE EXCEPTION 'Could not find the account to credit (or debit) with payment';
@@ -66,7 +66,16 @@ BEGIN
 
     INSERT INTO entry VALUES(user_payment) RETURNING id INTO entry_id;
 
-    SELECT INTO internal_user_session_token 
+    -- check that the process is authorised by our "app" being logged in
+
+    SELECT session_info.session_token INTO internal_user_session_token 
+      FROM session_info
+          JOIN app_session ON session_info.id = app_session.session_info_id
+          JOIN internal_user ON app_session.internal_user_id = internal_user.id;
+
+    IF internal_user_session_token IS NULL THEN
+        RAISE EXCEPTION 'Internal user is not logged in or token is invalid';
+    END IF;
 
     -- declare why the transfer of assets is made
     INSERT INTO authorship(business_ends, authoring_user, authoring_user_session, message, approved_by, approving_session, entry)
@@ -79,7 +88,7 @@ BEGIN
         SELECT transfer_asset(asset_type, asset_denom, account_period_start, 
             account_period_end, intake_account, user_credited_account, abs(units), authorship_id);
     ELSE 
-    -- possible uses are reversals, refunds, chargebacks
+    -- otherwise the transaction is a reversal, refund, chargeback
         SELECT transfer_asset(asset_type, asset_denom, account_period_start, 
             account_period_end, user_credited_account, intake_account, abs(units), authorship_id);
     END IF;
