@@ -59,15 +59,12 @@ fn test_register_user_allows_login_and_logout() {
         let session = user_repository.log_user_in(email, password.to_owned()).unwrap().unwrap();
         let other_session = user_repository.get_existing_session(email, &session.session_token).unwrap().unwrap();
 
-        println!("Other session {:?}", other_session);
-
-        /*assert!(session.session_token.len() > 32);
+        assert!(session.session_token.len() > 32);
         assert_eq!(session.email_address, email);
         assert!(session.expires_at > Utc::now());
-        assert_eq!(session, other_session);*/
+        assert_eq!(session, other_session);
 
         user_repository.log_user_out(email).unwrap();
-        println!("Aight user is logged out now");
         assert_eq!(Ok(None), user_repository.get_existing_session(email, &session.session_token));
     });
 }
