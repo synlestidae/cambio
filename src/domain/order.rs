@@ -1,4 +1,3 @@
-use serde_derive;
 use domain::asset_type::AssetType;
 use domain::denom::Denom;
 

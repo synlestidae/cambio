@@ -13,13 +13,13 @@ const ACTIVATE_USER_SESSION_QUERY: &'static str = "SELECT * FROM activate_user_s
 const GET_SESSION_QUERY: &'static str = 
     "SELECT users.email_address, session_info.session_token, session_info.started_at, session_info.ttl_milliseconds
     FROM users, session_info
-    WHERE users.email_address = $1 AND session_info.session_token = $2 AND session_info.session_state = 'valid'";
+    WHERE users.email_address = $1 AND session_info.session_token = $2 AND session_info.session_state = 'valid' AND
+        now() at time zone 'utc' < session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL))";
 
-const LOG_USER_OUT_QUERY: &'static str = "UPDATE 
-    session_info si
-    JOIN user_session ON user_session.session_info_id = session_info.id
+const LOG_USER_OUT_QUERY: &'static str = "UPDATE session_info 
+    SET session_state = 'invalidated'
+    FROM user_session
     JOIN users ON users.id = user_session.user_id
-    SET si.session_state = 'invalidated'
     WHERE users.email_address = $1";
 
 const REGISTER_USER: &'static str = "SELECT register_user($1, $2);";
@@ -117,7 +117,8 @@ impl<T: PostgresHelper> UserRepository<T> {
     }
 
     pub fn log_user_out(&mut self, email_address: &str) -> Result<(), PostgresHelperError> {
-        if let Err(error) = self.db_helper.execute(LOG_USER_OUT_QUERY, &[]) {
+        if let Err(error) = self.db_helper.execute(LOG_USER_OUT_QUERY, &[&email_address]) {
+            println!("Done! {:?}", error);
             return Err(PostgresHelperError::new(
                 &format!("Error logging user out: {}", error.description()),
             ));

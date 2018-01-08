@@ -29,6 +29,7 @@ use domain::{User, Order, ApiError, Session};
 use db::{PostgresHelperImpl, PostgresHelper, UserRepository};
 use std::error::Error;
 
+#[allow(dead_code)]
 fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Session, ApiError> {
     // stored procedure handles most of this
     let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None)
@@ -40,6 +41,7 @@ fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Se
 
 }
 
+#[allow(dead_code)]
 fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {
     let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None)
         .unwrap();
@@ -73,8 +75,6 @@ fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {
 }
 
 fn main() {
-    const MAX_BODY_LENGTH: usize = 1024 * 512; //max 512 Kb
-    let mut router = Router::new();
-    //router.post("/user/login", log_in_user, "login_user");
+    let router = Router::new();
     Iron::new(router).http("localhost:3000").unwrap();
 }

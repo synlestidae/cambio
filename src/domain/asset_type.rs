@@ -1,4 +1,3 @@
-use serde_derive;
 use postgres::rows::Row;
 use db::{TryFromRow, TryFromRowError};
 

@@ -1,6 +1,5 @@
-use serde_derive;
-use bcrypt::{DEFAULT_COST, hash, verify};
 use db::TryFromRow;
+use bcrypt::{verify};
 use db::TryFromRowError;
 use std;
 use domain::Id;

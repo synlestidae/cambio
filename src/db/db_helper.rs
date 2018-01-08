@@ -1,12 +1,11 @@
-use postgres::rows::{Row, Rows};
+use postgres::rows::{Rows};
 use postgres::Connection;
 use postgres::types::ToSql;
 use postgres;
-use db::row_convert_err::RowConvertErr;
 use db::try_from_row::TryFromRow;
 use db::user_repository::UserRepository;
-use std::error::Error;
 use std::error;
+use std::error::Error;
 use std::fmt;
 
 pub trait PostgresHelper {
@@ -64,23 +63,18 @@ impl PostgresHelper for PostgresHelperImpl {
         query: &str,
         params: &[&ToSql],
     ) -> Result<Vec<T>, PostgresHelperError> {
-
-        println!("Running query {}", query);
         match self.connection.query(query, params) {
             Ok(query_result) => {
                 let mut result_objs = Vec::new();
                 for row in query_result.iter() {
-                    println!("Converting row {:?}", row);
                     match T::try_from_row(&row) {
                         Ok(obj) => result_objs.push(obj),
                         Err(_) => return Err(PostgresHelperError::new("Error serialialising row")),
                     }
                 }
-                println!("Done converting!");
                 Ok(result_objs)
             },
             Err(error) => {
-                println!("Error yo {:?}", error);
                 let msg = format!("Error while running query: {}", error.description());
                 return Err(PostgresHelperError::new(&msg));
             }

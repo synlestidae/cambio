@@ -8,15 +8,12 @@ use tests::test_utils::*;
 #[test]
 fn test_gets_main_wallet_account_for_registered_user() {
     run_test(|| {
-        println!("Running the dang test!");
         let mut account_repository = AccountRepository::new(get_db_helper());
         let mut user_repository = UserRepository::new(get_db_helper());
         let email_address = "mate@cambio.co.nz";
         let password = "$23@@super_secret_password";
 
-        println!("Registering the boi");
         let user = user_repository.register_user(email_address, password.to_owned()).unwrap().unwrap();
-        println!("Getting accounts for user");
         let accounts = account_repository.get_accounts_for_user(email_address).unwrap();
         let account = &accounts[0];
 

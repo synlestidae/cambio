@@ -1,4 +1,3 @@
-use serde_derive;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
@@ -25,7 +24,6 @@ impl ToString for Denom {
 impl TryFromRow for Denom {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let denom_str_match: Option<String> = row.get("denom");
-        println!("DEE NOM {:?}", denom_str_match);
         if denom_str_match.is_none() {
             return Err(TryFromRowError {});
         }

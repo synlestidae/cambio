@@ -23,8 +23,6 @@ impl TryFromRow for Account {
         let account_status_match:Option<AccountStatus> = row.get("account_status");
         let account_status = try!(account_status_match.ok_or(TryFromRowError{}));
 
-        println!("Statty {}", account_status);
-
         let account_role_match: Option<AccountRole> = row.get("account_role");
         let account_role = try!(account_role_match.ok_or(TryFromRowError{}));
 

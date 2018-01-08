@@ -14,10 +14,10 @@ impl fmt::Display for ApiError {
 }
 
 impl ApiError {
-    pub fn new(description: String, errType: ErrorType) -> Self {
+    pub fn new(description: String, err_type: ErrorType) -> Self {
         ApiError {
             desc: description,
-            error_type: errType,
+            error_type: err_type
         }
     }
 

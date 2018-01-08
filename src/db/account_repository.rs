@@ -14,13 +14,21 @@ const LATEST_STATEMENT_QUERY: &'static str = "
         accounting_period = (SELECT MAX(id) FROM accounting_period) 
 ";
 
-const ACCOUNT_QUERY: &'static str = "
+const ACCOUNT_QUERY_USER: &'static str = "
     SELECT *, account.id as account_id FROM account 
         JOIN account_owner ON account.owner_id = account_owner.id
         JOIN users ON account_owner.user_id = users.id
         JOIN asset_type ON account.asset_type = asset_type.id
     WHERE 
        users.email_address = $1";
+
+const ACCOUNT_QUERY_ID: &'static str = "
+    SELECT *, account.id as account_id FROM account 
+        JOIN account_owner ON account.owner_id = account_owner.id
+        JOIN users ON account_owner.user_id = users.id
+        JOIN asset_type ON account.asset_type = asset_type.id
+    WHERE 
+        account.id = $1";
 
 pub struct AccountRepository<T: PostgresHelper> {
     db_helper: T,
@@ -34,24 +42,28 @@ impl<T: PostgresHelper> AccountRepository<T> {
     }
 
     pub fn get_accounts_for_user(&mut self, email_address: &str) -> Result<Vec<Account>, PostgresHelperError> {
-        match self.db_helper.query(ACCOUNT_QUERY, &[&email_address]) {
+        match self.db_helper.query(ACCOUNT_QUERY_USER, &[&email_address]) {
             Ok(accounts) => Ok(accounts),
             Err(err) => {
-                println!("An error while getting {:?}", err);
                 Err(PostgresHelperError::new(err.description()))
             }
         }
     }
 
-    pub fn get_account(&mut self, account_id: Id) -> Result<Account, PostgresHelperError> {
-        unimplemented!()
+    pub fn get_account(&mut self, account_id: Id) -> Result<Option<Account>, PostgresHelperError> {
+        match self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id]) {
+            Ok(mut accounts) => Ok(accounts.pop()),
+            Err(err) => {
+                Err(PostgresHelperError::new(err.description()))
+            }
+        }
     }
 
     pub fn get_latest_statement(&mut self, account_id: Id) 
         -> Result<AccountStatement, PostgresHelperError> {
-        println!("Getting transactions");
         let mut transactions = try!(self.get_transactions_for_account(account_id));
-        let account = try!(self.get_account(account_id));
+        let account = try!(try!(self.get_account(account_id))
+            .ok_or(PostgresHelperError::new("Account does not exist")));
 
         transactions.sort_by_key(|t: &Transaction| t.id);
 
@@ -63,22 +75,18 @@ impl<T: PostgresHelper> AccountRepository<T> {
             closing_balance = (&transactions[transactions.len() - 1]).balance;
         }
 
-        let mut statement = AccountStatement {
+        Ok(AccountStatement {
             account: account,
             opening_balance: 0,
             closing_balance: 0,
             transactions: transactions
-        };
-
-
-        Ok(statement)
+        })
     }
 
     pub fn get_transactions_for_account(&mut self, account_id: Id) -> Result<Vec<Transaction>, PostgresHelperError> {
         match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
             Ok(transactions) => Ok(transactions),
             Err(err) => {
-                println!("Error {:?}", err);
                 Err(PostgresHelperError::new(err.description()))
             }
         }
