@@ -36,34 +36,36 @@ pub struct AccountRepository<T: PostgresHelper> {
 
 impl<T: PostgresHelper> AccountRepository<T> {
     pub fn new(db_helper: T) -> AccountRepository<T> {
-        AccountRepository {
-            db_helper: db_helper
-        }
+        AccountRepository { db_helper: db_helper }
     }
 
-    pub fn get_accounts_for_user(&mut self, email_address: &str) -> Result<Vec<Account>, PostgresHelperError> {
+    pub fn get_accounts_for_user(
+        &mut self,
+        email_address: &str,
+    ) -> Result<Vec<Account>, PostgresHelperError> {
         match self.db_helper.query(ACCOUNT_QUERY_USER, &[&email_address]) {
             Ok(accounts) => Ok(accounts),
-            Err(err) => {
-                Err(PostgresHelperError::new(err.description()))
-            }
+            Err(err) => Err(PostgresHelperError::new(err.description())),
         }
     }
 
     pub fn get_account(&mut self, account_id: &Id) -> Result<Option<Account>, PostgresHelperError> {
         match self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id]) {
             Ok(mut accounts) => Ok(accounts.pop()),
-            Err(err) => {
-                Err(PostgresHelperError::new(err.description()))
-            }
+            Err(err) => Err(PostgresHelperError::new(err.description())),
         }
     }
 
-    pub fn get_latest_statement(&mut self, account_id: &Id) 
-        -> Result<AccountStatement, PostgresHelperError> {
+    pub fn get_latest_statement(
+        &mut self,
+        account_id: &Id,
+    ) -> Result<AccountStatement, PostgresHelperError> {
         let mut transactions = try!(self.get_transactions_for_account(account_id));
-        let account = try!(try!(self.get_account(account_id))
-            .ok_or(PostgresHelperError::new("Account does not exist")));
+        let account = try!(try!(self.get_account(account_id)).ok_or(
+            PostgresHelperError::new(
+                "Account does not exist",
+            ),
+        ));
 
         transactions.sort_by_key(|t: &Transaction| t.id);
 
@@ -79,16 +81,17 @@ impl<T: PostgresHelper> AccountRepository<T> {
             account: account,
             opening_balance: opening_balance,
             closing_balance: closing_balance,
-            transactions: transactions
+            transactions: transactions,
         })
     }
 
-    pub fn get_transactions_for_account(&mut self, account_id: &Id) -> Result<Vec<Transaction>, PostgresHelperError> {
+    pub fn get_transactions_for_account(
+        &mut self,
+        account_id: &Id,
+    ) -> Result<Vec<Transaction>, PostgresHelperError> {
         match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
             Ok(transactions) => Ok(transactions),
-            Err(err) => {
-                Err(PostgresHelperError::new(err.description()))
-            }
+            Err(err) => Err(PostgresHelperError::new(err.description())),
         }
     }
 }

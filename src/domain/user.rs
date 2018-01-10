@@ -1,5 +1,5 @@
 use db::TryFromRow;
-use bcrypt::{verify};
+use bcrypt::verify;
 use db::TryFromRowError;
 use std;
 use domain::Id;
@@ -45,7 +45,7 @@ impl TryFromRow for User {
                     password_hash: Some(password_hash),
                     password: None,
                 });
-            },
+            }
             _ => Err(TryFromRowError {}),
         }
     }

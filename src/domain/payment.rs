@@ -9,5 +9,5 @@ pub struct Payment {
     pub payment_method: PaymentMethod,
     pub vendor: PaymentVendor,
     pub user_credit: i64,
-    pub message: Option<String>
+    pub message: Option<String>,
 }

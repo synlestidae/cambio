@@ -1,4 +1,4 @@
-use postgres::rows::{Rows};
+use postgres::rows::Rows;
 use postgres::Connection;
 use postgres::types::ToSql;
 use postgres;
@@ -73,7 +73,7 @@ impl PostgresHelper for PostgresHelperImpl {
                     }
                 }
                 Ok(result_objs)
-            },
+            }
             Err(error) => {
                 let msg = format!("Error while running query: {}", error.description());
                 return Err(PostgresHelperError::new(&msg));

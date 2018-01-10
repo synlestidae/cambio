@@ -35,7 +35,8 @@ impl TryFromRow for Session {
                 Ok(Session {
                     session_token: session_token,
                     email_address: email_address,
-                    expires_at: DateTime::from_utc(started_at, Utc) + Duration::milliseconds(ttl_milliseconds)
+                    expires_at: DateTime::from_utc(started_at, Utc) +
+                        Duration::milliseconds(ttl_milliseconds),
                 })
             }
             _ => Err(TryFromRowError {}),

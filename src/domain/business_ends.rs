@@ -6,7 +6,7 @@ pub enum BusinessEnds {
     WalletDeposit,
     WalletWithdrawal,
     SystemFeeCharge,
-    CryptocurrencyPurchase
+    CryptocurrencyPurchase,
 }
 
 impl BusinessEnds {
@@ -16,14 +16,14 @@ impl BusinessEnds {
             "wallet_withdrawal" => Some(BusinessEnds::WalletWithdrawal),
             "system_fee_charge" => Some(BusinessEnds::SystemFeeCharge),
             "cryptocurrency_purchase" => Some(BusinessEnds::CryptocurrencyPurchase),
-            _ => None
+            _ => None,
         }
     }
 }
 
 impl TryFromRow for BusinessEnds {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        let business_ends_string:Option<String> = row.get("business_ends");
+        let business_ends_string: Option<String> = row.get("business_ends");
         if business_ends_string.is_none() {
             return Err(TryFromRowError {});
         }
@@ -40,7 +40,7 @@ impl fmt::Display for BusinessEnds {
             &BusinessEnds::WalletDeposit => "wallet_deposit",
             &BusinessEnds::WalletWithdrawal => "wallet_withdrawal",
             &BusinessEnds::SystemFeeCharge => "system_fee_charge",
-            &BusinessEnds::CryptocurrencyPurchase => "cryptocurrency_purchase"
+            &BusinessEnds::CryptocurrencyPurchase => "cryptocurrency_purchase",
         };
         write!(f, "{}", as_string)
     }

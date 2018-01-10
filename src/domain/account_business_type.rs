@@ -10,7 +10,7 @@ pub enum AccountBusinessType {
     #[postgres(name = "system_fees_paid")]
     SystemFeesPaid,
     #[postgres(name = "accounting_concept")]
-    AccountingConcept
+    AccountingConcept,
 }
 
 impl AccountBusinessType {
@@ -19,7 +19,7 @@ impl AccountBusinessType {
             "user_cash_wallet" => Some(AccountBusinessType::UserCashWallet),
             "system_fees_paid" => Some(AccountBusinessType::SystemFeesPaid),
             "accounting_concept" => Some(AccountBusinessType::AccountingConcept),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -27,9 +27,9 @@ impl AccountBusinessType {
 impl fmt::Display for AccountBusinessType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let string = match self {
-             &AccountBusinessType::UserCashWallet => "user_cash_wallet",
-             &AccountBusinessType::SystemFeesPaid => "system_fees_paid",
-             &AccountBusinessType::AccountingConcept => "accounting_concept",
+            &AccountBusinessType::UserCashWallet => "user_cash_wallet",
+            &AccountBusinessType::SystemFeesPaid => "system_fees_paid",
+            &AccountBusinessType::AccountingConcept => "accounting_concept",
         };
         write!(f, "{}", string)
     }
@@ -38,11 +38,11 @@ impl fmt::Display for AccountBusinessType {
 impl TryFromRow for AccountBusinessType {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let account_business_type_match: Option<String> = row.get("account_business_type");
-        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError{}));
+        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError {}));
 
         match AccountBusinessType::parse(&account_business_type) {
             Some(b) => Ok(b),
-            _ => Err(TryFromRowError {})
+            _ => Err(TryFromRowError {}),
         }
     }
 }

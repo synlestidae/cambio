@@ -10,7 +10,7 @@ pub struct Account {
     pub asset_denom: Denom,
     pub account_status: AccountStatus,
     pub account_business_type: AccountBusinessType,
-    pub account_role: AccountRole
+    pub account_role: AccountRole,
 }
 
 impl TryFromRow for Account {
@@ -20,14 +20,15 @@ impl TryFromRow for Account {
         let asset_type = try!(AssetType::try_from_row(row));
         let denom = try!(Denom::try_from_row(row));
 
-        let account_status_match:Option<AccountStatus> = row.get("account_status");
-        let account_status = try!(account_status_match.ok_or(TryFromRowError{}));
+        let account_status_match: Option<AccountStatus> = row.get("account_status");
+        let account_status = try!(account_status_match.ok_or(TryFromRowError {}));
 
         let account_role_match: Option<AccountRole> = row.get("account_role");
-        let account_role = try!(account_role_match.ok_or(TryFromRowError{}));
+        let account_role = try!(account_role_match.ok_or(TryFromRowError {}));
 
-        let account_business_type_match: Option<AccountBusinessType> = row.get("account_business_type");
-        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError{}));
+        let account_business_type_match: Option<AccountBusinessType> =
+            row.get("account_business_type");
+        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError {}));
 
 
         Ok(Account {
@@ -37,7 +38,7 @@ impl TryFromRow for Account {
             asset_denom: denom,
             account_status: account_status,
             account_role: account_role,
-            account_business_type: account_business_type
+            account_business_type: account_business_type,
         })
     }
 }

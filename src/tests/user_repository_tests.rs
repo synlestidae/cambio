@@ -7,7 +7,10 @@ use tests::test_utils::*;
 fn test_get_user_returns_none_for_nonexistent_user() {
     run_test(|| {
         let mut user_repository = get_repository();
-        assert_eq!(Ok(None), user_repository.get_user_by_email("mate@cambio.co.nz"));
+        assert_eq!(
+            Ok(None),
+            user_repository.get_user_by_email("mate@cambio.co.nz")
+        );
     });
 }
 
@@ -23,7 +26,10 @@ fn test_get_user_returns_none_for_empty_string() {
 fn test_get_user_returns_none_for_malformed_email_address() {
     run_test(|| {
         let mut user_repository = get_repository();
-        assert_eq!(Ok(None), user_repository.get_user_by_email("mate@@cambio.co.nz"));
+        assert_eq!(
+            Ok(None),
+            user_repository.get_user_by_email("mate@@cambio.co.nz")
+        );
     });
 }
 
@@ -31,8 +37,17 @@ fn test_get_user_returns_none_for_malformed_email_address() {
 fn test_get_user_returns_user_after_register() {
     run_test(|| {
         let mut user_repository = get_repository();
-        user_repository.register_user("mate@cambio.co.nz", "$2youwillnevergUess".to_owned()).unwrap();
-        assert_eq!(user_repository.get_user_by_email("mate@cambio.co.nz").unwrap().unwrap().email_address, "mate@cambio.co.nz");
+        user_repository
+            .register_user("mate@cambio.co.nz", "$2youwillnevergUess".to_owned())
+            .unwrap();
+        assert_eq!(
+            user_repository
+                .get_user_by_email("mate@cambio.co.nz")
+                .unwrap()
+                .unwrap()
+                .email_address,
+            "mate@cambio.co.nz"
+        );
     });
 }
 
@@ -41,11 +56,31 @@ fn test_register_user_rejects_malformed_email_addresses() {
     run_test(|| {
         let mut user_repository = get_repository();
         let password = "8923qjtrfqr7q23r_luNch";
-        assert!(user_repository.register_user("mate@@cambio.co.nz", password.to_owned()).is_err());
-        assert!(user_repository.register_user("@cambio.co.nz", password.to_owned()).is_err());
-        assert!(user_repository.register_user("@", password.to_owned()).is_err());
-        assert!(user_repository.register_user("@@", password.to_owned()).is_err());
-        assert!(user_repository.register_user("mate@.cambio.co.nz", password.to_owned()).is_err());
+        assert!(
+            user_repository
+                .register_user("mate@@cambio.co.nz", password.to_owned())
+                .is_err()
+        );
+        assert!(
+            user_repository
+                .register_user("@cambio.co.nz", password.to_owned())
+                .is_err()
+        );
+        assert!(
+            user_repository
+                .register_user("@", password.to_owned())
+                .is_err()
+        );
+        assert!(
+            user_repository
+                .register_user("@@", password.to_owned())
+                .is_err()
+        );
+        assert!(
+            user_repository
+                .register_user("mate@.cambio.co.nz", password.to_owned())
+                .is_err()
+        );
     });
 }
 
@@ -56,8 +91,14 @@ fn test_register_user_allows_login_and_logout() {
         let password = "8923qjtrfqr7q23r_luNch";
         let email = "mate@cambio.co.nz";
         user_repository.register_user(email, password.to_owned());
-        let session = user_repository.log_user_in(email, password.to_owned()).unwrap().unwrap();
-        let other_session = user_repository.get_existing_session(email, &session.session_token).unwrap().unwrap();
+        let session = user_repository
+            .log_user_in(email, password.to_owned())
+            .unwrap()
+            .unwrap();
+        let other_session = user_repository
+            .get_existing_session(email, &session.session_token)
+            .unwrap()
+            .unwrap();
 
         assert!(session.session_token.len() > 32);
         assert_eq!(session.email_address, email);
@@ -65,7 +106,10 @@ fn test_register_user_allows_login_and_logout() {
         assert_eq!(session, other_session);
 
         user_repository.log_user_out(email).unwrap();
-        assert_eq!(Ok(None), user_repository.get_existing_session(email, &session.session_token));
+        assert_eq!(
+            Ok(None),
+            user_repository.get_existing_session(email, &session.session_token)
+        );
     });
 }
 

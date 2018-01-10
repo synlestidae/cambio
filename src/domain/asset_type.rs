@@ -5,7 +5,7 @@ use db::{TryFromRow, TryFromRowError};
 pub enum AssetType {
     NZD,
     BTC,
-    ETH
+    ETH,
 }
 
 impl ToString for AssetType {
@@ -13,7 +13,7 @@ impl ToString for AssetType {
         let asset_type_str = match self {
             &AssetType::NZD => "nzd",
             &AssetType::BTC => "btc",
-            &AssetType::ETH => "eth"
+            &AssetType::ETH => "eth",
         };
         asset_type_str.to_owned()
     }
@@ -29,7 +29,7 @@ impl TryFromRow for AssetType {
             "eth" => Ok(AssetType::ETH),
             "btc" => Ok(AssetType::BTC),
             "nzd" => Ok(AssetType::NZD),
-            _ => Err(TryFromRowError {})
+            _ => Err(TryFromRowError {}),
         }
     }
 }

@@ -17,7 +17,7 @@ impl ApiError {
     pub fn new(description: String, err_type: ErrorType) -> Self {
         ApiError {
             desc: description,
-            error_type: err_type
+            error_type: err_type,
         }
     }
 

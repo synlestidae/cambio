@@ -10,7 +10,7 @@ pub enum AccountStatus {
     #[postgres(name = "frozen")]
     Frozen,
     #[postgres(name = "closed")]
-    Closed
+    Closed,
 }
 
 impl AccountStatus {
@@ -19,7 +19,7 @@ impl AccountStatus {
             "active" => Some(AccountStatus::Active),
             "frozen" => Some(AccountStatus::Frozen),
             "closed" => Some(AccountStatus::Closed),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -27,13 +27,13 @@ impl AccountStatus {
 impl TryFromRow for AccountStatus {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let account_status_match: Option<String> = row.get("account_status");
-        let account_status = try!(account_status_match.ok_or(TryFromRowError{}));
+        let account_status = try!(account_status_match.ok_or(TryFromRowError {}));
 
         match account_status.as_ref() {
             "active" => Ok(AccountStatus::Active),
             "frozen" => Ok(AccountStatus::Frozen),
             "closed" => Ok(AccountStatus::Closed),
-            _ => Err(TryFromRowError{})
+            _ => Err(TryFromRowError {}),
         }
     }
 }
@@ -42,8 +42,8 @@ impl fmt::Display for AccountStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let string = match self {
             &AccountStatus::Active => "active",
-            &AccountStatus::Frozen=> "frozen",
-            &AccountStatus::Closed => "closed"
+            &AccountStatus::Frozen => "frozen",
+            &AccountStatus::Closed => "closed",
         };
         write!(f, "{}", string)
     }

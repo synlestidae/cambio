@@ -4,5 +4,5 @@ pub enum PaymentMethod {
     #[postgres(name = "nz_bank_deposit")]
     NZBankDeposit,
     #[postgres(name = "credit_card")]
-    CreditCard
+    CreditCard,
 }

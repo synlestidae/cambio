@@ -6,7 +6,7 @@ pub enum Denom {
     Dollar,
     Cent,
     Sat,
-    Wei 
+    Wei,
 }
 
 impl ToString for Denom {
@@ -15,7 +15,7 @@ impl ToString for Denom {
             &Denom::Dollar => "dollar",
             &Denom::Cent => "cent",
             &Denom::Sat => "satoshi",
-            &Denom::Wei=> "wei"
+            &Denom::Wei => "wei",
         };
         denom_str.to_owned()
     }
@@ -32,7 +32,7 @@ impl TryFromRow for Denom {
             "cent" => Ok(Denom::Cent),
             "sat" => Ok(Denom::Sat),
             "wei" => Ok(Denom::Wei),
-            _ => Err(TryFromRowError{})
+            _ => Err(TryFromRowError {}),
         }
     }
 }

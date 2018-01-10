@@ -10,8 +10,7 @@ pub struct UserRepository<T: PostgresHelper> {
 
 const GET_USER_QUERY: &'static str = "SELECT id, email_address, password_hash FROM users WHERE email_address = $1";
 const ACTIVATE_USER_SESSION_QUERY: &'static str = "SELECT * FROM activate_user_session($1)";
-const GET_SESSION_QUERY: &'static str = 
-    "SELECT users.email_address, session_info.session_token, session_info.started_at, session_info.ttl_milliseconds
+const GET_SESSION_QUERY: &'static str = "SELECT users.email_address, session_info.session_token, session_info.started_at, session_info.ttl_milliseconds
     FROM users, session_info
     WHERE users.email_address = $1 AND session_info.session_token = $2 AND session_info.session_state = 'valid' AND
         now() at time zone 'utc' < session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL))";
@@ -37,34 +36,51 @@ impl<T: PostgresHelper> UserRepository<T> {
     ) -> Result<Option<User>, PostgresHelperError> {
         match self.db_helper.query(GET_USER_QUERY, &[&email_address]) {
             Ok(mut users) => Ok(users.pop()),
-            Err(err) => {
-                Err(PostgresHelperError::new(err.description()))
-            },
+            Err(err) => Err(PostgresHelperError::new(err.description())),
         }
     }
 
-    pub fn register_user(&mut self, email_address: &str, password: String) -> Result<Option<User>, PostgresHelperError> {
+    pub fn register_user(
+        &mut self,
+        email_address: &str,
+        password: String,
+    ) -> Result<Option<User>, PostgresHelperError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(PostgresHelperError::new("Email address is invalid"));
         }
         match self.get_user_by_email(email_address) {
-            Ok(None) => {},
+            Ok(None) => {}
             Ok(Some(_)) => return Err(PostgresHelperError::new("User already exists")),
-            Err(err) => return Err(PostgresHelperError::new(&format!("Failed to check if user exists: {}", err.description()))),
+            Err(err) => {
+                return Err(PostgresHelperError::new(&format!(
+                    "Failed to check if user exists: {}",
+                    err.description()
+                )))
+            }
         }
 
         // user can be inserted now
         let password_hash = match hash(&password, BCRYPT_COST) {
             Ok(password_hash) => password_hash,
-            Err(_) => return Err(PostgresHelperError::new("Failed to hash the user's password"))
+            Err(_) => {
+                return Err(PostgresHelperError::new(
+                    "Failed to hash the user's password",
+                ))
+            }
         };
 
         drop(password);
 
-        if let Err(err) = self.db_helper.execute(REGISTER_USER, &[&email_address, &password_hash]) {
+        if let Err(err) = self.db_helper.execute(
+            REGISTER_USER,
+            &[&email_address, &password_hash],
+        )
+        {
             println!("Err omg {:?}", err);
-            return Err(PostgresHelperError::new(&format!("Failed to register user in databse: {}", 
-                err.description())));
+            return Err(PostgresHelperError::new(&format!(
+                "Failed to register user in databse: {}",
+                err.description()
+            )));
         }
 
 
@@ -118,7 +134,11 @@ impl<T: PostgresHelper> UserRepository<T> {
     }
 
     pub fn log_user_out(&mut self, email_address: &str) -> Result<(), PostgresHelperError> {
-        if let Err(error) = self.db_helper.execute(LOG_USER_OUT_QUERY, &[&email_address]) {
+        if let Err(error) = self.db_helper.execute(
+            LOG_USER_OUT_QUERY,
+            &[&email_address],
+        )
+        {
             println!("Done! {:?}", error);
             return Err(PostgresHelperError::new(
                 &format!("Error logging user out: {}", error.description()),
@@ -127,8 +147,11 @@ impl<T: PostgresHelper> UserRepository<T> {
         Ok(())
     }
 
-    fn log_system_user_in(&mut self, system_username: &str, system_password: &str) 
-        -> Result<Option<Session>, PostgresHelperError> {
-            unimplemented!("System account functionality not implemented!")
+    fn log_system_user_in(
+        &mut self,
+        system_username: &str,
+        system_password: &str,
+    ) -> Result<Option<Session>, PostgresHelperError> {
+        unimplemented!("System account functionality not implemented!")
     }
 }

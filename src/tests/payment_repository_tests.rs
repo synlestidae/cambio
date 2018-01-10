@@ -26,19 +26,26 @@ fn user_account_gets_credited() {
             payment_method: PaymentMethod::CreditCard,
             vendor: PaymentVendor::Poli,
             user_credit: credit, // $50.00,
-            message: Some("Test credit card payment into test account".to_owned())
+            message: Some("Test credit card payment into test account".to_owned()),
         };
 
         payment_repository.register_credit_payment("mate@cambio.co.nz", &payment);
 
-        let accounts = account_repository.get_accounts_for_user("mate@cambio.co.nz").unwrap();
-        let account = accounts.into_iter()
-            .filter(|a| a.asset_type == AssetType::NZD && a.asset_denom == Denom::Cent)
+        let accounts = account_repository
+            .get_accounts_for_user("mate@cambio.co.nz")
+            .unwrap();
+        let account = accounts
+            .into_iter()
+            .filter(|a| {
+                a.asset_type == AssetType::NZD && a.asset_denom == Denom::Cent
+            })
             .collect::<Vec<_>>()
             .pop()
             .unwrap();
 
-        let statement = account_repository.get_latest_statement(&account.id.unwrap()).unwrap();
+        let statement = account_repository
+            .get_latest_statement(&account.id.unwrap())
+            .unwrap();
 
         assert_eq!(credit, statement.closing_balance);
     });
@@ -48,8 +55,5 @@ fn user_account_gets_credited() {
 fn get_repository() -> PaymentRepository<PostgresHelperImpl> {
     let account_repository = AccountRepository::new(get_db_helper());
     let user_repository = UserRepository::new(get_db_helper());
-    PaymentRepository::new(get_db_helper(), 
-        account_repository,
-        user_repository)
+    PaymentRepository::new(get_db_helper(), account_repository, user_repository)
 }
-

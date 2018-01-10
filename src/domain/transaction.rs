@@ -15,7 +15,7 @@ pub struct Transaction {
     pub accounting_period_id: i32,
     pub balance: i64,
     pub message: String,
-    pub business_ends: BusinessEnds
+    pub business_ends: BusinessEnds,
 }
 
 impl TryFromRow for Transaction {
@@ -39,13 +39,13 @@ impl TryFromRow for Transaction {
         let message_match: Option<String> = row.get("message");
         let message: String = try!(message_match.ok_or(error));
 
-        let denom = try!(Denom::try_from_row(row));//row.get("denom");
+        let denom = try!(Denom::try_from_row(row)); //row.get("denom");
         let business_ends: BusinessEnds = try!(BusinessEnds::try_from_row(row));
 
         let value = match (credit_match, debit_match) {
             (Some(credit), None) => credit,
             (None, Some(debit)) => -debit,
-            _ => return Err(TryFromRowError {})
+            _ => return Err(TryFromRowError {}),
         };
 
         Ok(Transaction {
@@ -58,7 +58,7 @@ impl TryFromRow for Transaction {
             accounting_period_id: accounting_period,
             balance: balance,
             message: message,
-            business_ends: business_ends 
+            business_ends: business_ends,
         })
     }
 }
