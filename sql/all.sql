@@ -1,8 +1,9 @@
 \i utils.sql
 \i assets.sql
+\i users.sql
+\i ledger.sql
 \i payments.sql
 \i core.sql
-\i ledger.sql
 \i order.sql
 \i core_procedures.sql
 \i procedures.sql

@@ -62,6 +62,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         drop(password);
 
         if let Err(err) = self.db_helper.execute(REGISTER_USER, &[&email_address, &password_hash]) {
+            println!("Err omg {:?}", err);
             return Err(PostgresHelperError::new(&format!("Failed to register user in databse: {}", 
                 err.description())));
         }
@@ -124,5 +125,10 @@ impl<T: PostgresHelper> UserRepository<T> {
             ));
         }
         Ok(())
+    }
+
+    fn log_system_user_in(&mut self, system_username: &str, system_password: &str) 
+        -> Result<Option<Session>, PostgresHelperError> {
+            unimplemented!("System account functionality not implemented!")
     }
 }

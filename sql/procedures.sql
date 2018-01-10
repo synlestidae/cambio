@@ -73,10 +73,6 @@ CREATE OR REPLACE FUNCTION make_order(
     email_address_var VARCHAR(128),
     user_session_id VARCHAR(128),
 
-    -- identify the entity authorising the transaction
-    username_var VARCHAR(128),
-    internal_user_session_id_var VARCHAR(128),
-
     -- what the user wants to sell
     sell_asset_type VARCHAR(4),
     sell_asset_denom VARCHAR(6),
@@ -97,7 +93,6 @@ CREATE OR REPLACE FUNCTION make_order(
 RETURNS VOID AS $$
 DECLARE 
 user_id INTEGER;
-internal_user_id INTEGER;
 sell_asset_id INTEGER;
 buy_asset_id INTEGER;
 order_info_id INTEGER;
@@ -105,7 +100,6 @@ authorship_id INTEGER;
 desired_ttl_milliseconds UINT;
 BEGIN
     PERFORM check_user_session(email_address_var, user_session_id);
-    PERFORM check_internal_user_session(username_var, internal_user_session_id_var);
 
     -- get the asset ID - will check the asset types match up
 
@@ -119,15 +113,8 @@ BEGIN
         WHERE user_role.user_role_type = 'make_order' AND
               users.email_address = email_address_var;
 
-    SELECT internal_users.id INTO internal_user_id FROM internal_users 
-        JOIN internal_user_roles ON internal_users.id = internal_user_roles.internal_user_id
-        JOIN app_session ON internal_users.id = app_session.internal_user_id
-        JOIN session_info ON app_session.session_info_id = session_info.id
-        WHERE internal_user_roles.app_role_type = 'create_order' AND
-              internal_user.username = username_var;
-
-    IF (user_id IS NULL OR internal_user_id IS NULL) THEN
-        RAISE EXCEPTION 'Error UserAccountMatchError: Cannot find a match for both user and internal user';
+    IF (user_id IS NULL) THEN
+        RAISE EXCEPTION 'Error UserAccountMatchError: Cannot find a match for user';
     END IF;
 
     -- Check the debit account exists
@@ -150,7 +137,7 @@ BEGIN
 
     -- author the order
     INSERT INTO authorship(business_ends, authoring_user, authoring_user_session, approved_by, approving_session) 
-        VALUES('asset_transfer_user_to_user', user_id, user_session_id, internal_user_id, internal_user_session_id)
+        VALUES('asset_transfer_user_to_user', user_id, user_session_id)
         RETURNING id INTO authorship_id;
 
     INSERT INTO order_info(splittable) VALUES(FALSE) 

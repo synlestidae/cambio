@@ -50,7 +50,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
         }
     }
 
-    pub fn get_account(&mut self, account_id: Id) -> Result<Option<Account>, PostgresHelperError> {
+    pub fn get_account(&mut self, account_id: &Id) -> Result<Option<Account>, PostgresHelperError> {
         match self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id]) {
             Ok(mut accounts) => Ok(accounts.pop()),
             Err(err) => {
@@ -59,7 +59,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
         }
     }
 
-    pub fn get_latest_statement(&mut self, account_id: Id) 
+    pub fn get_latest_statement(&mut self, account_id: &Id) 
         -> Result<AccountStatement, PostgresHelperError> {
         let mut transactions = try!(self.get_transactions_for_account(account_id));
         let account = try!(try!(self.get_account(account_id))
@@ -77,13 +77,13 @@ impl<T: PostgresHelper> AccountRepository<T> {
 
         Ok(AccountStatement {
             account: account,
-            opening_balance: 0,
-            closing_balance: 0,
+            opening_balance: opening_balance,
+            closing_balance: closing_balance,
             transactions: transactions
         })
     }
 
-    pub fn get_transactions_for_account(&mut self, account_id: Id) -> Result<Vec<Transaction>, PostgresHelperError> {
+    pub fn get_transactions_for_account(&mut self, account_id: &Id) -> Result<Vec<Transaction>, PostgresHelperError> {
         match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
             Ok(transactions) => Ok(transactions),
             Err(err) => {

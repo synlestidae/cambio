@@ -36,7 +36,7 @@ pub fn run_test<T: std::panic::UnwindSafe>(test: T) -> ()
         test()
     });
 
-    teardown();
+    //teardown();
 
     result.unwrap();
 }

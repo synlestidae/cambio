@@ -1,46 +1,3 @@
-CREATE OR REPLACE FUNCTION internal_login(
-    username_var VARCHAR(64),
-    password_hash_var TEXT 
-)
-RETURNS VARCHAR(128) AS $$
-DECLARE 
-session_token VARCHAR(128);
-session_info_id INTEGER;
-user_id INTEGER;
-BEGIN
-    -- check that password matches bcrypt
-    -- insert new session into session table
-    -- return that session token
-    IF (EXISTS(SELECT * FROM internal_users WHERE internal_users.username = username_var AND internal_users.password_hash = password_hash_var)) THEN
-        session_token = random_string(128);
-
-        -- invalidate other sessions for this user
-        UPDATE session_info 
-            SET session_state = 'invalidated' 
-            FROM app_session,
-                 internal_users 
-            WHERE internal_users.username = username_var AND
-                  app_session.internal_user_id = internal_user.id AND
-                  app_session.session_info_id = session_info.id;
-
-        -- get the user's id
-        SELECT id INTO user_id FROM users WHERE username = username_var AND password_hash = password_hash_var;
-
-        -- create the new session
-        INSERT INTO session_info (session_token, started_at, session_state, ttl_milliseconds) 
-            VALUES (session_token, now() at time zone 'utc', 'valid', 1000 * 60 * 60 * 6)
-            RETURNING id INTO session_info_id;
-
-        -- get that id
-        INSERT INTO app_session(internal_user_id, session_info_id) 
-            VALUES (user_id, session_info_id);
-
-        RETURN session_token;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION activate_user_session (
     email_address_var VARCHAR(64)
 )
@@ -80,30 +37,6 @@ BEGIN
         RETURN session_token;
     END IF;
     RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
--- Check that there is a session active for the internal user
-
-CREATE OR REPLACE FUNCTION check_internal_user_session(
-    username_var VARCHAR(64),
-    session_token_var VARCHAR(128)
-)
-RETURNS VOID AS $$
-DECLARE 
-BEGIN
-    IF (EXISTS(SELECT * FROM session_info
-        JOIN app_session ON app_session.session_info_id = session_info.id 
-        JOIN internal_user ON app_session.internal_user_id = internal_user.id
-        WHERE 
-            session_info.session_token = session_token_var AND 
-            session_info.session_state = 'valid' AND 
-            session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)) < now() at time zone 'utc'
-
-    )) THEN
-        RETURN;
-    END IF; 
-    RAISE EXCEPTION 'Error NoActiveInternalSession: Could not find valid session for session token';
 END;
 $$ LANGUAGE plpgsql;
 
@@ -161,7 +94,7 @@ BEGIN
         (user_id, 'withdraw_bitcoin');
 
     -- give them a way to own accounts
-    INSERT INTO account_owner(user_id, internal_user_id) VALUES(user_id, NULL) RETURNING id into owner_id;
+    INSERT INTO account_owner(user_id) VALUES(user_id) RETURNING id into owner_id;
 
     SELECT * INTO nzd_asset_type_id FROM get_asset_id('nzd', 'cent');
     SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('btc', 'sat');

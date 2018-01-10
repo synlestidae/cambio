@@ -11,3 +11,4 @@ pub use self::try_from_row::TryFromRow;
 pub use self::try_from_row_error::TryFromRowError;
 pub use self::user_repository::UserRepository;
 pub use self::account_repository::AccountRepository;
+pub use self::payment_repository::PaymentRepository;
