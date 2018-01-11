@@ -31,9 +31,14 @@ fn user_account_gets_credited() {
 
         payment_repository.register_credit_payment("mate@cambio.co.nz", &payment);
 
+        println!("Getting accounts");
+
         let accounts = account_repository
             .get_accounts_for_user("mate@cambio.co.nz")
             .unwrap();
+
+        println!("Looking for the right one");
+
         let account = accounts
             .into_iter()
             .filter(|a| {
@@ -43,13 +48,14 @@ fn user_account_gets_credited() {
             .pop()
             .unwrap();
 
+        println!("Getting statement");
+
         let statement = account_repository
             .get_latest_statement(&account.id.unwrap())
             .unwrap();
 
         assert_eq!(credit, statement.closing_balance);
     });
-
 }
 
 fn get_repository() -> PaymentRepository<PostgresHelperImpl> {

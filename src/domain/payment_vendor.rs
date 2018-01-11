@@ -4,7 +4,7 @@ use std::fmt;
 #[postgres(name = "payment_vendor")]
 pub enum PaymentVendor {
     #[postgres(name = "Poli")]
-    Poli,
+    Poli
 }
 
 impl fmt::Display for PaymentVendor {

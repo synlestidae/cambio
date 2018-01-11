@@ -22,7 +22,7 @@ impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let error = TryFromRowError {};
 
-        let transaction_id_match: Option<i32> = row.get("journal.id");
+        let transaction_id_match: Option<i32> = row.get("journal_entry_id");
         let transaction_id: i32 = try!(transaction_id_match.ok_or(error));
 
         let other_party: Option<i32> = None;
@@ -40,7 +40,8 @@ impl TryFromRow for Transaction {
         let message: String = try!(message_match.ok_or(error));
 
         let denom = try!(Denom::try_from_row(row)); //row.get("denom");
-        let business_ends: BusinessEnds = try!(BusinessEnds::try_from_row(row));
+        let business_ends_match: Option<BusinessEnds> = row.get("business_ends");
+        let business_ends: BusinessEnds = try!(business_ends_match.ok_or(TryFromRowError{}));
 
         let value = match (credit_match, debit_match) {
             (Some(credit), None) => credit,

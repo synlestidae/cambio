@@ -76,6 +76,7 @@ impl PostgresHelper for PostgresHelperImpl {
             }
             Err(error) => {
                 let msg = format!("Error while running query: {}", error.description());
+                println!("ERROR {:?}", error);
                 return Err(PostgresHelperError::new(&msg));
             }
         }

@@ -3,7 +3,18 @@ use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id};
 use chrono::{DateTime, Utc};
 
-const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)";
+const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = 
+    "SELECT credit_account_from_payment(user_id_var := $1, 
+        email_address_var := $2, 
+        credited_account_id := $3, 
+        asset_type_var := $4, 
+        asset_denom_var := $5, 
+        vendor_name := $6, 
+        payment_method_var := $7, 
+        datetime_payment_made_var := $8, 
+        unique_id := $9, 
+        units := $10,
+        message_var := $11)";
 
 pub struct PaymentRepository<T: PostgresHelper> {
     db_helper: T,
@@ -40,6 +51,9 @@ impl<T: PostgresHelper> PaymentRepository<T> {
                 ))
             }
         };
+
+        let message = format!("Credit to wallet using {}", payment.vendor);
+
         // extract the PRIMARY account with matching asset and denom
         let mut creditable_accounts: Vec<Account> = account_list
             .into_iter()
@@ -73,11 +87,12 @@ impl<T: PostgresHelper> PaymentRepository<T> {
                 &account_id,
                 &account.asset_type.to_string(),
                 &account.asset_denom.to_string(),
-                &payment.vendor.to_string(),
+                &payment.vendor,
                 &payment.payment_method,
-                &payment.datetime_payment_made,
+                &payment.datetime_payment_made.naive_utc(),
                 &payment.unique_id,
                 &payment.user_credit,
+                &message
             ],
         );
 

@@ -2,10 +2,16 @@ use std::fmt;
 use postgres::rows::Row;
 use db::{TryFromRow, TryFromRowError};
 
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[postgres(name = "business_ends_type")]
 pub enum BusinessEnds {
+    #[postgres(name = "wallet_deposit")]
     WalletDeposit,
+    #[postgres(name = "wallet_withdrawal")]
     WalletWithdrawal,
+    #[postgres(name = "system_fee_charge")]
     SystemFeeCharge,
+    #[postgres(name = "cryptocurrency_purchase")]
     CryptocurrencyPurchase,
 }
 

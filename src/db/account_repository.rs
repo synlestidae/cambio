@@ -3,12 +3,13 @@ use std::error::Error;
 use domain::{Account, Id, AccountStatement, Transaction};
 
 const LATEST_STATEMENT_QUERY: &'static str = "
-    SELECT *, users.id as user_id FROM users
+    SELECT *, users.id as user_id, journal.id as journal_entry_id FROM users
         JOIN account_owner ON users.id = account_owner.user_id
         JOIN account ON account_owner.id = account.owner_id 
-        JOIN accounting_period ON account.accounting_period = accounting_period.id
         JOIN journal ON account.id = journal.account_id 
-        JOIN authorhip ON journal.authorship_id = authorship.id
+        JOIN accounting_period ON journal.accounting_period = accounting_period.id
+        JOIN authorship ON journal.authorship_id = authorship.id
+        JOIN asset_type ON account.asset_type = asset_type.id
     WHERE
         account.id = $1 AND
         accounting_period = (SELECT MAX(id) FROM accounting_period) 
@@ -60,7 +61,9 @@ impl<T: PostgresHelper> AccountRepository<T> {
         &mut self,
         account_id: &Id,
     ) -> Result<AccountStatement, PostgresHelperError> {
+        println!("Getting transactions");
         let mut transactions = try!(self.get_transactions_for_account(account_id));
+        println!("Getting account");
         let account = try!(try!(self.get_account(account_id)).ok_or(
             PostgresHelperError::new(
                 "Account does not exist",

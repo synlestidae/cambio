@@ -1,3 +1,5 @@
+CREATE SEQUENCE correspondence_id_seq;
+
 CREATE OR REPLACE FUNCTION transfer_asset(
     asset_code_var VARCHAR(4),
     asset_denom_var VARCHAR(6),
@@ -15,6 +17,7 @@ asset_type_id INTEGER;
 account_period_id INTEGER;
 last_debit_account_balance INT8;
 last_credit_account_balance INT8;
+last_transaction_id INTEGER;
 BEGIN
     SELECT asset_type.id INTO asset_type_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var LIMIT 1;
     IF asset_type_id IS NULL THEN
@@ -26,13 +29,19 @@ BEGIN
         RAISE EXCEPTION 'Not match for accounting period';
     END IF;
 
-    SELECT MAX(id), balance INTO last_debit_account_balance FROM journal 
+
+    SELECT MAX(journal.id) INTO last_transaction_id 
+        FROM JOURNAL 
         JOIN account ON journal.account_id = account.id 
         WHERE account.id = debit_account;
-      
-    SELECT MAX(id), balance INTO last_credit_account_balance FROM journal 
+
+    SELECT balance INTO last_debit_account_balance FROM journal 
         JOIN account ON journal.account_id = account.id 
-        WHERE account.id = credit_account;
+        WHERE account.id = debit_account AND journal.id = last_transaction_id;
+      
+    SELECT balance INTO last_credit_account_balance FROM journal 
+        JOIN account ON journal.account_id = account.id 
+        WHERE account.id = credit_account AND journal.id = last_transaction_id;
 
     IF last_debit_account_balance IS NULL THEN
        last_debit_account_balance = 0;
@@ -44,13 +53,12 @@ BEGIN
 
     -- Still need to do the whole authorship thing
     
-
-    -- Ready to get correspondence_id
-    correspondence_id := nextval(pg_get_serial_sequence('journal', 'correspondence_id'));
-
-    INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit, balance)
-    VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, last_credit_account_balance + units), 
-           (account_period_id, credit_account, asset_type_id, correspondence_id, null, units, last_debit_account_balance - units);
+    correspondence_id := nextval('correspondence_id_seq');
+    INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit, balance, authorship_id)
+    VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, 
+        last_credit_account_balance + units, authorship_id), 
+           (account_period_id, credit_account, asset_type_id, correspondence_id, null, units, 
+            last_debit_account_balance - units, authorship_id);
 
 END;
 $$ LANGUAGE plpgsql;

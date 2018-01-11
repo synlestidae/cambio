@@ -37,7 +37,7 @@ where
 
     let result = catch_unwind(|| test());
 
-    //teardown();
+    teardown();
 
     result.unwrap();
 }
