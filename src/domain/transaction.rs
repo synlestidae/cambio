@@ -5,6 +5,7 @@ use postgres::rows::Row;
 use db::TryFromRow;
 use db::TryFromRowError;
 
+#[derive(Debug, Clone)]
 pub struct Transaction {
     pub id: Id,
     pub other_party: Option<Id>,

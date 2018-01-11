@@ -13,6 +13,7 @@ const LATEST_STATEMENT_QUERY: &'static str = "
     WHERE
         account.id = $1 AND
         accounting_period = (SELECT MAX(id) FROM accounting_period) 
+    ORDER BY journal.id
 ";
 
 const ACCOUNT_QUERY_USER: &'static str = "

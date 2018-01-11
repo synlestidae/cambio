@@ -55,10 +55,9 @@ BEGIN
     
     correspondence_id := nextval('correspondence_id_seq');
     INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, credit, debit, balance, authorship_id)
-    VALUES (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, 
-        last_credit_account_balance + units, authorship_id), 
-           (account_period_id, credit_account, asset_type_id, correspondence_id, null, units, 
-            last_debit_account_balance - units, authorship_id);
+    VALUES 
+    (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, last_credit_account_balance + units, authorship_id), 
+    (account_period_id, credit_account, asset_type_id, correspondence_id, null, units, last_debit_account_balance - units, authorship_id);
 
 END;
 $$ LANGUAGE plpgsql;

@@ -29,32 +29,30 @@ fn user_account_gets_credited() {
             message: Some("Test credit card payment into test account".to_owned()),
         };
 
-        payment_repository.register_credit_payment("mate@cambio.co.nz", &payment);
-
-        println!("Getting accounts");
-
-        let accounts = account_repository
-            .get_accounts_for_user("mate@cambio.co.nz")
-            .unwrap();
-
-        println!("Looking for the right one");
-
-        let account = accounts
-            .into_iter()
-            .filter(|a| {
-                a.asset_type == AssetType::NZD && a.asset_denom == Denom::Cent
-            })
-            .collect::<Vec<_>>()
-            .pop()
-            .unwrap();
+        let statement = payment_repository.register_credit_payment("mate@cambio.co.nz",
+                                                                   &payment).unwrap();
 
         println!("Getting statement");
 
-        let statement = account_repository
-            .get_latest_statement(&account.id.unwrap())
+        assert_eq!(credit, statement.closing_balance);
+
+        let next_payment = Payment {
+            unique_id: "tx_00000000000002".to_owned(),
+            asset_type: AssetType::NZD,
+            asset_denom: Denom::Cent,
+            datetime_payment_made: Utc::now(),
+            payment_method: PaymentMethod::CreditCard,
+            vendor: PaymentVendor::Poli,
+            user_credit: 30 * 100,
+            message: Some("Test credit card payment into test account".to_owned()),
+        };
+
+        let next_statement = payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment)
             .unwrap();
 
-        assert_eq!(credit, statement.closing_balance);
+        println!("next one: {:?}", next_statement);
+
+        assert_eq!(3000 + (50 * 100) + 50, next_statement.closing_balance);
     });
 }
 

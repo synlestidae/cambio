@@ -1,5 +1,6 @@
 use domain::{Account, Transaction};
 
+#[derive(Debug, Clone)]
 pub struct AccountStatement {
     pub account: Account,
     pub opening_balance: i64,
