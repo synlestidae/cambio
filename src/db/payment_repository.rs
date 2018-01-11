@@ -103,7 +103,6 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         match procedure_result {
             Ok(_) => self.account_repository.get_latest_statement(&account_id),
             Err(err) => {
-                println!("Error crediting: {:?}", err);
                 Err(PostgresHelperError::new(
                     &format!("Failed to credit account: {}", err),
                 ))

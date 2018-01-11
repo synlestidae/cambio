@@ -28,6 +28,7 @@ use postgres::{Connection, TlsMode};
 use domain::{User, Order, ApiError, Session};
 use db::{PostgresHelperImpl, PostgresHelper, UserRepository};
 use std::error::Error;
+use time::PreciseTime;
 
 #[allow(dead_code)]
 fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Session, ApiError> {
@@ -75,6 +76,12 @@ fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {
 }
 
 fn main() {
-    let router = Router::new();
-    Iron::new(router).http("localhost:3000").unwrap();
+    let helper = tests::get_db_helper();
+    let mut user_repo = UserRepository::new(helper);
+    let start = PreciseTime::now();
+    user_repo.register_user("mate@cambio.co.nz", "password123".to_owned());
+    let end = PreciseTime::now();
+    println!("{} seconds for whatever you did.", start.to(end));
+    //let router = Router::new();
+    //Iron::new(router).http("localhost:3000").unwrap();
 }
