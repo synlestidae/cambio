@@ -1,5 +1,5 @@
 use db::{PostgresHelperImpl, UserRepository, AccountRepository, PaymentRepository};
-use domain::{Payment, AssetType, Denom, PaymentVendor, PaymentMethod};
+use domain::{Payment, AssetType, Denom, PaymentVendor, PaymentMethod, PaymentBuilder};
 use chrono::prelude::*;
 use std::process;
 use tests::test_utils::*;
@@ -13,46 +13,43 @@ fn user_account_gets_credited() {
 
         let username = "mate@cambio.co.nz";
         let password = "super_secRet_password_123";
-        let credit = (50 * 100) + 50;
-
         user_repository.register_user(username, password.to_owned());
 
-        //let payment = Payment
-        let payment = Payment {
-            unique_id: "tx_00000000000001".to_owned(),
-            asset_type: AssetType::NZD,
-            asset_denom: Denom::Cent,
-            datetime_payment_made: Utc::now(),
-            payment_method: PaymentMethod::CreditCard,
-            vendor: PaymentVendor::Poli,
-            user_credit: credit, // $50.00,
-            message: Some("Test credit card payment into test account".to_owned()),
-        };
+        let credit_1 = (50 * 100) + 50;
+        let credit_2 = (3000 * 100) + 0;
+
+        let mut payment = PaymentBuilder::new(AssetType::NZD, 
+            Denom::Cent, 
+            PaymentMethod::CreditCard,
+            PaymentVendor::Poli)
+            .transaction_details(
+                "14e3a50d-84e0-45d8-8981-6231cc8425bb",
+                Utc::now(),
+                credit_1).unwrap();
 
         let statement = payment_repository.register_credit_payment("mate@cambio.co.nz",
-                                                                   &payment).unwrap();
+            &payment).unwrap();
 
-        println!("Getting statement");
+        assert_eq!(credit_1, statement.closing_balance);
+        assert_eq!(1, statement.transactions.len());
 
-        assert_eq!(credit, statement.closing_balance);
 
-        let next_payment = Payment {
-            unique_id: "tx_00000000000002".to_owned(),
-            asset_type: AssetType::NZD,
-            asset_denom: Denom::Cent,
-            datetime_payment_made: Utc::now(),
-            payment_method: PaymentMethod::CreditCard,
-            vendor: PaymentVendor::Poli,
-            user_credit: 30 * 100,
-            message: Some("Test credit card payment into test account".to_owned()),
-        };
+        let mut next_payment = PaymentBuilder::new(AssetType::NZD, 
+            Denom::Cent, 
+            PaymentMethod::CreditCard,
+            PaymentVendor::Poli)
+            .transaction_details(
+                "2ab8a43f-eed7-4f66-bcf8-8d3aa3490f9b",
+                Utc::now(),
+                credit_2).unwrap();
 
         let next_statement = payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment)
             .unwrap();
+        let failed_payment = payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment);
 
-        println!("next one: {:?}", next_statement);
-
-        assert_eq!(3000 + (50 * 100) + 50, next_statement.closing_balance);
+        assert_eq!(credit_1 + credit_2, next_statement.closing_balance);
+        assert_eq!(2, next_statement.transactions.len());
+        assert!(failed_payment.is_err());
     });
 }
 

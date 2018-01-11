@@ -11,3 +11,4 @@ pub struct Payment {
     pub user_credit: i64,
     pub message: Option<String>,
 }
+

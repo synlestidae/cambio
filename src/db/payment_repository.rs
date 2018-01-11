@@ -1,6 +1,6 @@
 use db::{PostgresHelper, PostgresHelperError, AccountRepository, UserRepository};
 use std::error::Error;
-use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id};
+use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
 
 const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = 

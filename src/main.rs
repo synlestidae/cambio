@@ -9,6 +9,7 @@ extern crate router;
 extern crate chrono;
 extern crate time;
 extern crate checkmail;
+extern crate uuid;
 #[macro_use]
 extern crate postgres_derive;
 
