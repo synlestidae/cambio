@@ -5,6 +5,7 @@ mod log_in;
 mod profile;
 mod registration;
 mod user_api_trait;
+mod user_api_impl;
 
 pub use self::account_api_trait::*;
 pub use self::api_error::*;

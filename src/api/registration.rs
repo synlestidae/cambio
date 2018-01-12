@@ -1,4 +1,4 @@
 pub struct Registration {
-    email_address: String,
-    password: String,
+    pub email_address: String,
+    pub password: String,
 }
