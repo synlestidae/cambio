@@ -33,13 +33,14 @@ pub fn run_test<T: std::panic::UnwindSafe>(test: T) -> ()
 where
     T: FnOnce() -> (),
 {
-    setup();
+//    setup();
 
-    let result = catch_unwind(|| test());
+    test();
+    //let result = catch_unwind(|| test());
 
-    teardown();
+//    teardown();
 
-    result.unwrap();
+    //result.unwrap();
 }
 
 #[allow(dead_code)]

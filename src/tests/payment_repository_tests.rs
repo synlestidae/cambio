@@ -11,7 +11,7 @@ fn user_account_gets_credited() {
         let mut user_repository = UserRepository::new(get_db_helper());
         let mut payment_repository = get_repository();
 
-        let username = "mate@cambio.co.nz";
+        let username = "freddy@cambio.co.nz";
         let password = "super_secRet_password_123";
         user_repository.register_user(username, password.to_owned());
 
@@ -28,7 +28,7 @@ fn user_account_gets_credited() {
                 .unwrap();
 
         let statement = payment_repository
-            .register_credit_payment("mate@cambio.co.nz", &payment)
+            .register_credit_payment("freddy@cambio.co.nz", &payment)
             .unwrap();
 
         assert_eq!(credit_1, statement.closing_balance);
@@ -45,10 +45,10 @@ fn user_account_gets_credited() {
                 .unwrap();
 
         let next_statement = payment_repository
-            .register_credit_payment("mate@cambio.co.nz", &next_payment)
+            .register_credit_payment("freddy@cambio.co.nz", &next_payment)
             .unwrap();
         let failed_payment =
-            payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment);
+            payment_repository.register_credit_payment("freddy@cambio.co.nz", &next_payment);
 
         assert_eq!(credit_1 + credit_2, next_statement.closing_balance);
         assert_eq!(2, next_statement.transactions.len());

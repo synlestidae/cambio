@@ -10,7 +10,7 @@ fn test_gets_main_wallet_account_for_registered_user() {
     run_test(|| {
         let mut account_repository = AccountRepository::new(get_db_helper());
         let mut user_repository = UserRepository::new(get_db_helper());
-        let email_address = "mate@cambio.co.nz";
+        let email_address = "karen@cambio.co.nz";
         let password = "$23@@super_secret_password";
 
         let user = user_repository

@@ -9,7 +9,7 @@ fn test_get_user_returns_none_for_nonexistent_user() {
         let mut user_repository = get_repository();
         assert_eq!(
             Ok(None),
-            user_repository.get_user_by_email("mate@cambio.co.nz")
+            user_repository.get_user_by_email("nobody@cambio.co.nz")
         );
     });
 }
@@ -38,15 +38,15 @@ fn test_get_user_returns_user_after_register() {
     run_test(|| {
         let mut user_repository = get_repository();
         user_repository
-            .register_user("mate@cambio.co.nz", "$2youwillnevergUess".to_owned())
+            .register_user("marie@cambio.co.nz", "$2youwillnevergUess".to_owned())
             .unwrap();
         assert_eq!(
             user_repository
-                .get_user_by_email("mate@cambio.co.nz")
+                .get_user_by_email("marie@cambio.co.nz")
                 .unwrap()
                 .unwrap()
                 .email_address,
-            "mate@cambio.co.nz"
+            "marie@cambio.co.nz"
         );
     });
 }
@@ -89,7 +89,7 @@ fn test_register_user_allows_login_and_logout() {
     run_test(|| {
         let mut user_repository = get_repository();
         let password = "8923qjtrfqr7q23r_luNch";
-        let email = "mate@cambio.co.nz";
+        let email = "rick@cambio.co.nz";
         user_repository.register_user(email, password.to_owned());
         let session = user_repository
             .log_user_in(email, password.to_owned())
