@@ -4,25 +4,24 @@ use postgres::types::ToSql;
 use postgres;
 use db::try_from_row::TryFromRow;
 use db::user_repository::UserRepository;
+use db::{PostgresSource, ConnectionSource};
 use std::error;
 use std::error::Error;
 use std::fmt;
 
 pub trait PostgresHelper {
     fn query<T: TryFromRow>(
-        &self,
+        &mut self,
         query: &str,
         params: &[&ToSql],
     ) -> Result<Vec<T>, PostgresHelperError>;
-    fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64>;
-    fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows>;
+    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, PostgresHelperError>;
+    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, PostgresHelperError>;
 }
 
 pub struct PostgresHelperImpl {
-    connection: Connection,
+    conn_source: PostgresSource
 }
-
-
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct PostgresHelperError {
@@ -52,18 +51,19 @@ impl fmt::Display for PostgresHelperError {
 }
 
 impl PostgresHelperImpl {
-    pub fn new(conn: Connection) -> PostgresHelperImpl {
-        PostgresHelperImpl { connection: conn }
+    pub fn new(conn_source: PostgresSource) -> PostgresHelperImpl {
+        PostgresHelperImpl { conn_source: conn_source }
     }
 }
 
 impl PostgresHelper for PostgresHelperImpl {
     fn query<T: TryFromRow>(
-        &self,
+        &mut self,
         query: &str,
         params: &[&ToSql],
     ) -> Result<Vec<T>, PostgresHelperError> {
-        match self.connection.query(query, params) {
+        let mut connection = try!(self.conn_source.get());
+        match connection.query(query, params) {
             Ok(query_result) => {
                 let mut result_objs = Vec::new();
                 for row in query_result.iter() {
@@ -82,11 +82,15 @@ impl PostgresHelper for PostgresHelperImpl {
         }
     }
 
-    fn query_raw(&self, query: &str, params: &[&ToSql]) -> postgres::Result<Rows> {
-        self.connection.query(query, params)
+    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, PostgresHelperError> {
+        let conn = try!(self.conn_source.get());
+        let err_func = |err| PostgresHelperError::new(&format!("Error running query: {}", err));
+        conn.query(query, params).map_err(err_func)
     }
 
-    fn execute(&self, query: &str, params: &[&ToSql]) -> postgres::Result<u64> {
-        self.connection.execute(query, params)
+    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, PostgresHelperError> {
+        let conn = try!(self.conn_source.get());
+        let err_func = |err| PostgresHelperError::new(&format!("Error running query: {}", err));
+        conn.execute(query, params).map_err(err_func)
     }
 }

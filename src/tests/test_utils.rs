@@ -1,4 +1,4 @@
-use db::PostgresHelperImpl;
+use db::{PostgresHelperImpl, PostgresSource};
 use postgres::{Connection, TlsMode};
 use std::process::Command;
 use std::panic::catch_unwind;
@@ -44,9 +44,6 @@ where
 
 #[allow(dead_code)]
 pub fn get_db_helper() -> PostgresHelperImpl {
-    let conn = Connection::connect(
-        "postgres://mate@localhost:5432/test_database_only",
-        TlsMode::None,
-    ).unwrap();
-    PostgresHelperImpl::new(conn)
+    let source = PostgresSource::new("postgres://mate@localhost:5432/test_database_only").unwrap();
+    PostgresHelperImpl::new(source)
 }

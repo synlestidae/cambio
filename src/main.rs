@@ -16,6 +16,9 @@ extern crate postgres_derive;
 #[macro_use]
 extern crate serde_derive;
 
+extern crate r2d2;
+extern crate r2d2_postgres;
+
 mod db;
 mod domain;
 mod tests;
@@ -36,9 +39,9 @@ use time::PreciseTime;
 #[allow(dead_code)]
 fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Session, ApiError> {
     // stored procedure handles most of this
-    let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None)
+    let source = db::PostgresSource::new("postgres://mate@localhost:5432/coin_boi")
         .unwrap();
-    let db = PostgresHelperImpl::new(conn);
+    let db = PostgresHelperImpl::new(source);
 
     // this code is authorised
     unimplemented!()
@@ -47,10 +50,12 @@ fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Se
 
 #[allow(dead_code)]
 fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {
-    let conn = Connection::connect("postgres://mate@localhost:5432/coin_boi", TlsMode::None)
+    let source = db::PostgresSource::new("postgres://mate@localhost:5432/coin_boi")
         .unwrap();
-    let db = PostgresHelperImpl::new(conn);
+    let db = PostgresHelperImpl::new(source);
+
     let mut user_repository = UserRepository::new(db);
+    
     let password = match unauthed_user.password {
         None => {
             return Err(ApiError::missing_field_or_param(
