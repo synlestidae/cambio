@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize, Deserialize)]
 #[postgres(name = "photo_status_type")]
 pub enum PhotoStatus {
     #[postgres(name = "approved")]

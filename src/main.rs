@@ -19,6 +19,7 @@ extern crate serde_derive;
 mod db;
 mod domain;
 mod tests;
+mod api;
 
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult};
@@ -26,7 +27,8 @@ use iron::status;
 use router::Router;
 use bcrypt::{DEFAULT_COST, hash, verify};
 use postgres::{Connection, TlsMode};
-use domain::{User, Order, ApiError, Session};
+use domain::{User, Order, Session};
+use api::ApiError;
 use db::{PostgresHelperImpl, PostgresHelper, UserRepository};
 use std::error::Error;
 use time::PreciseTime;
