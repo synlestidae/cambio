@@ -1,18 +1,18 @@
-CREATE TABLE IF NOT EXISTS `country` (
-  `id` SERIAL NOT NULL PRIMARY_KEY,
-  `iso` char(2) NOT NULL,
-  `name` varchar(80) NOT NULL,
-  `nicename` varchar(80) NOT NULL,
-  `iso3` char(3) DEFAULT NULL,
-  `numcode` smallint(6) DEFAULT NULL,
-  `phonecode` int(5) NOT NULL
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+CREATE TABLE IF NOT EXISTS country (
+  id SERIAL NOT NULL PRIMARY KEY,
+  iso char(2) NOT NULL,
+  name varchar(80) NOT NULL,
+  nicename varchar(80) NOT NULL,
+  iso3 varchar(3) DEFAULT NULL,
+  numcode integer DEFAULT NULL,
+  phonecode integer NOT NULL
+);
 
 --
--- Dumping data for table `country`
+-- Dumping data for table country
 --
 
-INSERT INTO `country` (`id`, `iso`, `name`, `nicename`, `iso3`, `numcode`, `phonecode`) VALUES
+INSERT INTO country (id, iso, name, nicename, iso3, numcode, phonecode) VALUES
 (1, 'AF', 'AFGHANISTAN', 'Afghanistan', 'AFG', 4, 93),
 (2, 'AL', 'ALBANIA', 'Albania', 'ALB', 8, 355),
 (3, 'DZ', 'ALGERIA', 'Algeria', 'DZA', 12, 213),

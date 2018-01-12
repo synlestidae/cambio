@@ -4,6 +4,9 @@
 \i ledger.sql
 \i payments.sql
 \i core.sql
+\i media.sql
+\i country.sql
+\i profile.sql
 \i order.sql
 \i core_procedures.sql
 \i procedures.sql
