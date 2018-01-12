@@ -25,14 +25,14 @@ impl TryFromRow for Denom {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let denom_str_match: Option<String> = row.get("denom");
         if denom_str_match.is_none() {
-            return Err(TryFromRowError {});
+            return Err(TryFromRowError::missing_field("Denom", "denom"));
         }
         match denom_str_match.unwrap().as_ref() {
             "dollar" => Ok(Denom::Dollar),
             "cent" => Ok(Denom::Cent),
             "sat" => Ok(Denom::Sat),
             "wei" => Ok(Denom::Wei),
-            _ => Err(TryFromRowError {}),
+            unknown => Err(TryFromRowError::new(&format!("Unknown denom type: {}", unknown))),
         }
     }
 }

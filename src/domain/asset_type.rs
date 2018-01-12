@@ -23,13 +23,13 @@ impl TryFromRow for AssetType {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let asset_type_match: Option<String> = row.get("asset_code");
         if asset_type_match.is_none() {
-            return Err(TryFromRowError {});
+            return Err(TryFromRowError::missing_field("AssetType", "asset_code"));
         }
         match asset_type_match.unwrap().as_ref() {
             "eth" => Ok(AssetType::ETH),
             "btc" => Ok(AssetType::BTC),
             "nzd" => Ok(AssetType::NZD),
-            _ => Err(TryFromRowError {}),
+            unknown => Err(TryFromRowError::unknown_value("AssetType", unknown)),
         }
     }
 }

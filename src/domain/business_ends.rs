@@ -31,11 +31,12 @@ impl TryFromRow for BusinessEnds {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let business_ends_string: Option<String> = row.get("business_ends");
         if business_ends_string.is_none() {
-            return Err(TryFromRowError {});
+            return Err(TryFromRowError::missing_field("BusinessEnds", "business_ends"));
         }
-        match BusinessEnds::parse(&business_ends_string.unwrap()) {
+        let string_to_parse = business_ends_string.unwrap();
+        match BusinessEnds::parse(&string_to_parse) {
             Some(business_ends) => Ok(business_ends),
-            None => Err(TryFromRowError {}),
+            None => Err(TryFromRowError::new(&format!("Cannot convert to BusinessEnds type: {}", string_to_parse))),
         }
     }
 }

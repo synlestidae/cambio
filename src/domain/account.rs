@@ -21,14 +21,21 @@ impl TryFromRow for Account {
         let denom = try!(Denom::try_from_row(row));
 
         let account_status_match: Option<AccountStatus> = row.get("account_status");
-        let account_status = try!(account_status_match.ok_or(TryFromRowError {}));
+        let account_status = try!(
+            account_status_match.ok_or(TryFromRowError::missing_field("Account", "account_status"))
+        );
 
         let account_role_match: Option<AccountRole> = row.get("account_role");
-        let account_role = try!(account_role_match.ok_or(TryFromRowError {}));
+        let account_role = try!(
+            account_role_match.ok_or(TryFromRowError::missing_field("Account", "account_role"))
+        );
 
         let account_business_type_match: Option<AccountBusinessType> =
             row.get("account_business_type");
-        let account_business_type = try!(account_business_type_match.ok_or(TryFromRowError {}));
+        let account_business_type = try!(
+            account_business_type_match.ok_or(TryFromRowError::missing_field("Account",
+                "account_business_type"))
+        );
 
 
         Ok(Account {
