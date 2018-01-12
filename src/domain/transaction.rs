@@ -22,40 +22,56 @@ pub struct Transaction {
 impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let transaction_id_match: Option<i32> = row.get("journal_entry_id");
-        let transaction_id: i32 = 
-            try!(transaction_id_match.ok_or(TryFromRowError::missing_field("Transaction",
-               "journal_entry_id")));
+        let transaction_id: i32 = try!(transaction_id_match.ok_or(TryFromRowError::missing_field(
+            "Transaction",
+            "journal_entry_id",
+        )));
 
         let other_party: Option<i32> = None;
         let asset_type: AssetType = try!(AssetType::try_from_row(row));
         let credit_match: Option<i64> = row.get("credit");
         let debit_match: Option<i64> = row.get("debit");
         let transaction_time_match: Option<NaiveDateTime> = row.get("transaction_time");
-        let transaction_time: NaiveDateTime = try!(
-            transaction_time_match.ok_or(TryFromRowError::missing_field("Transaction", "transaction_time"))
-        );
+        let transaction_time: NaiveDateTime = try!(transaction_time_match.ok_or(
+            TryFromRowError::missing_field("Transaction", "transaction_time"),
+        ));
         let accounting_period_match: Option<i32> = row.get("accounting_period");
-        let accounting_period: i32 = try!(
-            accounting_period_match.ok_or(TryFromRowError::missing_field("Transaction", "accounting_period"))
-        );
+        let accounting_period: i32 = try!(accounting_period_match.ok_or(
+            TryFromRowError::missing_field(
+                "Transaction",
+                "accounting_period",
+            ),
+        ));
         let balance_match: Option<i64> = row.get("balance");
-        let balance: i64 = try!(balance_match.ok_or(TryFromRowError::missing_field("Transaction", "balance")));
+        let balance: i64 = try!(balance_match.ok_or(TryFromRowError::missing_field(
+            "Transaction",
+            "balance",
+        )));
 
         let message_match: Option<String> = row.get("message");
-        let message: String =
-            try!(message_match.ok_or(TryFromRowError::missing_field("Transaction", "message")));
+        let message: String = try!(message_match.ok_or(TryFromRowError::missing_field(
+            "Transaction",
+            "message",
+        )));
 
         let denom = try!(Denom::try_from_row(row)); //row.get("denom");
         let business_ends_match: Option<BusinessEnds> = row.get("business_ends");
         let business_ends: BusinessEnds =
-            try!(business_ends_match.ok_or(TryFromRowError::missing_field("Transaction", "business_ends")));
+            try!(business_ends_match.ok_or(TryFromRowError::missing_field(
+                "Transaction",
+                "business_ends",
+            )));
 
         let value = match (credit_match, debit_match) {
             (Some(credit), None) => credit,
             (None, Some(debit)) => -debit,
-            _ => return Err(TryFromRowError::new(
-                    &format!("Only one of Transaction 'credit' and 'debit' fields must non-null. Got credit={:?} and debit={:?}", 
-                 debit_match, credit_match))),
+            _ => {
+                return Err(TryFromRowError::new(&format!(
+                    "Only one of Transaction 'credit' and 'debit' fields must non-null. Got credit={:?} and debit={:?}",
+                    debit_match,
+                    credit_match
+                )))
+            }
         };
 
         Ok(Transaction {

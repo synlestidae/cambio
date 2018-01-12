@@ -32,7 +32,9 @@ impl TryFromRow for Denom {
             "cent" => Ok(Denom::Cent),
             "sat" => Ok(Denom::Sat),
             "wei" => Ok(Denom::Wei),
-            unknown => Err(TryFromRowError::new(&format!("Unknown denom type: {}", unknown))),
+            unknown => Err(TryFromRowError::new(
+                &format!("Unknown denom type: {}", unknown),
+            )),
         }
     }
 }

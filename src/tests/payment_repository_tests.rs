@@ -18,34 +18,37 @@ fn user_account_gets_credited() {
         let credit_1 = (50 * 100) + 50;
         let credit_2 = (3000 * 100) + 0;
 
-        let mut payment = PaymentBuilder::new(AssetType::NZD, 
-            Denom::Cent, 
-            PaymentMethod::CreditCard,
-            PaymentVendor::Poli)
-            .transaction_details(
-                "14e3a50d-84e0-45d8-8981-6231cc8425bb",
-                Utc::now(),
-                credit_1).unwrap();
+        let mut payment =
+            PaymentBuilder::new(
+                AssetType::NZD,
+                Denom::Cent,
+                PaymentMethod::CreditCard,
+                PaymentVendor::Poli,
+            ).transaction_details("14e3a50d-84e0-45d8-8981-6231cc8425bb", Utc::now(), credit_1)
+                .unwrap();
 
-        let statement = payment_repository.register_credit_payment("mate@cambio.co.nz",
-            &payment).unwrap();
+        let statement = payment_repository
+            .register_credit_payment("mate@cambio.co.nz", &payment)
+            .unwrap();
 
         assert_eq!(credit_1, statement.closing_balance);
         assert_eq!(1, statement.transactions.len());
 
 
-        let mut next_payment = PaymentBuilder::new(AssetType::NZD, 
-            Denom::Cent, 
-            PaymentMethod::CreditCard,
-            PaymentVendor::Poli)
-            .transaction_details(
-                "2ab8a43f-eed7-4f66-bcf8-8d3aa3490f9b",
-                Utc::now(),
-                credit_2).unwrap();
+        let mut next_payment =
+            PaymentBuilder::new(
+                AssetType::NZD,
+                Denom::Cent,
+                PaymentMethod::CreditCard,
+                PaymentVendor::Poli,
+            ).transaction_details("2ab8a43f-eed7-4f66-bcf8-8d3aa3490f9b", Utc::now(), credit_2)
+                .unwrap();
 
-        let next_statement = payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment)
+        let next_statement = payment_repository
+            .register_credit_payment("mate@cambio.co.nz", &next_payment)
             .unwrap();
-        let failed_payment = payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment);
+        let failed_payment =
+            payment_repository.register_credit_payment("mate@cambio.co.nz", &next_payment);
 
         assert_eq!(credit_1 + credit_2, next_statement.closing_balance);
         assert_eq!(2, next_statement.transactions.len());

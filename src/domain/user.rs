@@ -46,7 +46,9 @@ impl TryFromRow for User {
                     password: None,
                 });
             }
-            _ => Err(TryFromRowError::new("A required field for 'User' is missing")),
+            _ => Err(TryFromRowError::new(
+                "A required field for 'User' is missing",
+            )),
         }
     }
 }

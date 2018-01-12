@@ -3,8 +3,7 @@ use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
 
-const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = 
-    "SELECT credit_account_from_payment(user_id_var := $1, 
+const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_payment(user_id_var := $1, 
         email_address_var := $2, 
         credited_account_id := $3, 
         asset_type_var := $4, 
@@ -92,7 +91,7 @@ impl<T: PostgresHelper> PaymentRepository<T> {
                 &payment.datetime_payment_made.naive_utc(),
                 &payment.unique_id,
                 &payment.user_credit,
-                &message
+                &message,
             ],
         );
 

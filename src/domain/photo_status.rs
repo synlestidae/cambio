@@ -8,5 +8,5 @@ pub enum PhotoStatus {
     #[postgres(name = "unclear")]
     Unclear,
     #[postgres(name = "waiting_approval")]
-    WaitingApproval
+    WaitingApproval,
 }

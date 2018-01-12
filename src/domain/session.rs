@@ -39,7 +39,9 @@ impl TryFromRow for Session {
                         Duration::milliseconds(ttl_milliseconds),
                 })
             }
-            _ => Err(TryFromRowError::new("At least one required field for 'Session' is missing")),
+            _ => Err(TryFromRowError::new(
+                "At least one required field for 'Session' is missing",
+            )),
         }
     }
 }

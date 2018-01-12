@@ -11,6 +11,6 @@ pub struct PersonalIdentity {
 
     // status of each photo
     face_with_document_status: Option<PhotoStatus>,
-    face_status: Option<PhotoStatus>, 
-    document_scan_status: Option<PhotoStatus>
+    face_status: Option<PhotoStatus>,
+    document_scan_status: Option<PhotoStatus>,
 }

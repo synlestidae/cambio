@@ -3,24 +3,33 @@ use domain::{AssetType, Denom, PaymentMethod, PaymentVendor, Payment};
 use chrono::prelude::*;
 
 pub struct PaymentBuilder {
-    asset_type: AssetType, 
-    asset_denom: Denom, 
-    payment_method: PaymentMethod, 
-    vendor: PaymentVendor
+    asset_type: AssetType,
+    asset_denom: Denom,
+    payment_method: PaymentMethod,
+    vendor: PaymentVendor,
 }
 
 impl PaymentBuilder {
-    pub fn new(asset_type: AssetType, asset_denom: Denom, payment_method: PaymentMethod, 
-               vendor: PaymentVendor) -> PaymentBuilder {
+    pub fn new(
+        asset_type: AssetType,
+        asset_denom: Denom,
+        payment_method: PaymentMethod,
+        vendor: PaymentVendor,
+    ) -> PaymentBuilder {
         PaymentBuilder {
-            asset_type: asset_type, 
-            asset_denom: asset_denom, 
-            payment_method: payment_method, 
-            vendor: vendor 
+            asset_type: asset_type,
+            asset_denom: asset_denom,
+            payment_method: payment_method,
+            vendor: vendor,
         }
     }
 
-    pub fn transaction_details(self, unique_id: &str, datetime_payment_made: DateTime<Utc>, credit: i64) -> Result<Payment, PaymentBuilderError> {
+    pub fn transaction_details(
+        self,
+        unique_id: &str,
+        datetime_payment_made: DateTime<Utc>,
+        credit: i64,
+    ) -> Result<Payment, PaymentBuilderError> {
         if !check_unique_id(&unique_id, &self.vendor) {
             return Err(PaymentBuilderError::MalformedUniqueId);
         }
@@ -33,18 +42,18 @@ impl PaymentBuilder {
             unique_id: unique_id.to_owned(),
             datetime_payment_made: datetime_payment_made,
             user_credit: credit,
-            message: None
+            message: None,
         })
     }
 }
 
 pub struct PaymentBuilderGeneralInfo {
-    builder: PaymentBuilder
+    builder: PaymentBuilder,
 }
 
 #[derive(Debug)]
 pub enum PaymentBuilderError {
-    MalformedUniqueId
+    MalformedUniqueId,
 }
 
 fn check_unique_id(unique_id: &str, vendor: &PaymentVendor) -> bool {

@@ -27,9 +27,10 @@ impl AccountStatus {
 impl TryFromRow for AccountStatus {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let account_status_match: Option<String> = row.get("account_status");
-        let account_status =
-            try!(account_status_match.ok_or(TryFromRowError::missing_field("AccountStatus",
-                "account_status")));
+        let account_status = try!(account_status_match.ok_or(TryFromRowError::missing_field(
+            "AccountStatus",
+            "account_status",
+        )));
 
         match account_status.as_ref() {
             "active" => Ok(AccountStatus::Active),

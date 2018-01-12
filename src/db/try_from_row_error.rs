@@ -4,28 +4,23 @@ use std::error::Error;
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct TryFromRowError {
-    desc: String
+    desc: String,
 }
 
 impl TryFromRowError {
     pub fn new(desc: &str) -> Self {
-        TryFromRowError {
-            desc: desc.to_owned()
-        }
+        TryFromRowError { desc: desc.to_owned() }
     }
 
     pub fn missing_field(entity: &str, name: &str) -> Self {
         TryFromRowError {
-            desc: format!("Entity '{}' is missing required field : '{}'", entity, name)
+            desc: format!("Entity '{}' is missing required field : '{}'", entity, name),
         }
     }
 
     pub fn unknown_value(entity: &str, value: &str) -> Self {
-        TryFromRowError {
-            desc: format!("Unknown value for '{}': {}", entity, value)
-        }
+        TryFromRowError { desc: format!("Unknown value for '{}': {}", entity, value) }
     }
-
 }
 
 impl error::Error for TryFromRowError {
