@@ -1,0 +1,26 @@
+body {
+  font-family: helvetica;
+  background-color: #87d1ff;
+  color: white;
+  margin: 0;
+}
+
+#top-nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    margin: none;
+}
+
+.nav-element {
+    margin: 10px;
+    border-style: solid;
+    width: 120px;
+    padding: 5px;
+    border-width: 1px;
+}
+}
+
+.nav-logo {
+    margin-right: 20px;
+}

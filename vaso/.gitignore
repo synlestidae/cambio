@@ -96,5 +96,3 @@ typings/
 
 # End of https://www.gitignore.io/api/node
 
-vaso/dist/
-vaso/node_modules/
