@@ -1,6 +1,6 @@
 use api::{Registration, Profile, ApiResult, ApiError, LogIn, UserApiTrait};
 use db::{ConnectionSource, UserRepository, PostgresHelper};
-use domain::User;
+use domain::{User, Session};
 
 pub struct UserApi<C: PostgresHelper> {
     user_repository: UserRepository<C>
@@ -35,8 +35,13 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
         }
     }
 
-    fn post_log_in(&mut self, log_in: LogIn) -> ApiResult<LogIn> {
-        unimplemented!()
+    fn post_log_in(&mut self, log_in: LogIn) -> ApiResult<Session> {
+        let log_in_result = self.user_repository.log_user_in(&log_in.email_address, log_in.password);
+        match log_in_result {
+            Ok(Some(session)) => Ok(session),
+            Ok(None) => Err(ApiError::invalid_login("User account does not exist")),
+            Err(error) => Err(ApiError::unknown("Could not log you in"))
+        }
     }
 
     fn get_profile(&mut self, email_address: &str) -> ApiResult<Profile> {
