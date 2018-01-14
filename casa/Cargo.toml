@@ -5,6 +5,7 @@ authors = ["Mate Antunovic <just.mate.antunovic@gmail.com>"]
 
 [dependencies]
 iron = "0.6.0"
+hyper = "*"
 postgres = {version = "0.15.1", features = ["with-chrono"]}
 bcrypt = "0.1"
 router = "*"

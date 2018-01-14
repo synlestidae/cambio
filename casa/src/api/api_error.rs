@@ -52,6 +52,10 @@ impl ApiError {
     pub fn unknown(description: &str) -> Self {
         Self::new(description.to_owned(), ErrorType::Unknown)
     }
+
+    pub fn internal(description: &str) -> Self {
+        Self::new(description.to_owned(), ErrorType::InternalError)
+    }
 }
 
 impl Error for ApiError {
@@ -72,5 +76,6 @@ pub enum ErrorType {
     BadFormat,
     MissingFieldOrParam,
     QueryResultFormat,
+    InternalError,
     Unknown
 }

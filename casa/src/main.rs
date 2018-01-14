@@ -1,5 +1,6 @@
 extern crate bcrypt;
 extern crate iron;
+extern crate hyper;
 #[macro_use]
 extern crate postgres;
 extern crate bodyparser;
