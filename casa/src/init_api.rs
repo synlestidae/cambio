@@ -1,6 +1,7 @@
 use api::UserApi;
 use db::{PostgresSource, PostgresHelperImpl, ConnectionSource};
 use iron::request::Request;
+use std::clone::Clone;
 use serde::Deserialize;
 use router::Router;
 use bodyparser;
@@ -24,7 +25,13 @@ impl IronApi {
 }
 
 
-fn get_api_obj<'de, T: Deserialize<'de>>(request: &Request) -> Result<T, ()> 
-    where for<'a> T: Deserialize<'a> {
-    request.get::<bodyparser::Struct<T>>().map_err(|x| ())
+fn get_api_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, ()> 
+where for<'a> T: Deserialize<'a> {
+        
+    let result: Result<T, ()> = match request.get::<bodyparser::Struct<T>>() {
+        Ok(Some(body_obj)) => Ok(body_obj.clone()),
+        _ => Err(())
+    };
+
+    result
 }
