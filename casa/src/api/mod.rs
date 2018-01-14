@@ -14,3 +14,4 @@ pub use self::log_in::*;
 pub use self::profile::*;
 pub use self::registration::*;
 pub use self::user_api_trait::*;
+pub use self::user_api_impl::*;

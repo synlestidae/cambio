@@ -18,15 +18,18 @@ extern crate serde_derive;
 
 extern crate r2d2;
 extern crate r2d2_postgres;
+extern crate persistent;
 
 mod db;
 mod domain;
 mod tests;
 mod api;
+mod init_api;
 
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult};
 use iron::status;
+use persistent::Read;
 use router::Router;
 use bcrypt::{DEFAULT_COST, hash, verify};
 use postgres::{Connection, TlsMode};
@@ -36,60 +39,12 @@ use db::{PostgresHelperImpl, PostgresHelper, UserRepository};
 use std::error::Error;
 use time::PreciseTime;
 
-#[allow(dead_code)]
-fn make_order(order: &Order, session_id: &str, email_address: &str) -> Result<Session, ApiError> {
-    // stored procedure handles most of this
-    let source = db::PostgresSource::new("postgres://mate@localhost:5432/coin_boi")
-        .unwrap();
-    let db = PostgresHelperImpl::new(source);
-
-    // this code is authorised
-    unimplemented!()
-
-}
-
-#[allow(dead_code)]
-fn log_in_user(unauthed_user: &User) -> Result<Session, ApiError> {
-    let source = db::PostgresSource::new("postgres://mate@localhost:5432/coin_boi")
-        .unwrap();
-    let db = PostgresHelperImpl::new(source);
-
-    let mut user_repository = UserRepository::new(db);
-    
-    let password = match unauthed_user.password {
-        None => {
-            return Err(ApiError::missing_field_or_param(
-                "Password was not supplied",
-            ))
-        }
-        Some(ref password) => password.to_owned(),
-    };
-    let session_result = user_repository.log_user_in(&unauthed_user.email_address, password);
-
-    match session_result {
-        Ok(None) => Err(ApiError::invalid_login(
-            "Invalid username and password combination",
-        )),
-        Err(error) => {
-            let msg = format!("Error logging in: {}", error.description());
-            Err(ApiError::invalid_login(&msg))
-        }
-        Ok(None) => {
-            Err(ApiError::invalid_login(
-                "Error logging in: account does not exist",
-            ))
-        }
-        Ok(Some(session)) => Ok(session),
-    }
-}
-
 fn main() {
-    let helper = tests::get_db_helper();
-    let mut user_repo = UserRepository::new(helper);
-    let start = PreciseTime::now();
-    user_repo.register_user("mate@cambio.co.nz", "password123".to_owned());
-    let end = PreciseTime::now();
-    println!("{} seconds for whatever you did.", start.to(end));
-    //let router = Router::new();
-    //Iron::new(router).http("localhost:3000").unwrap();
+    const MAX_BODY_LENGTH: usize = 1024 * 512;
+    let router = Router::new();
+    Iron::new(router).http("localhost:3000").unwrap();
+    //let mut chain = Chain::new(log_body);
+    //chain.link_before(Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
+    //Iron::new(chain).http("localhost:3000").unwrap();
+    unimplemented!()
 }

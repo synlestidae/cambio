@@ -1,5 +1,5 @@
 use api::{Registration, Profile, ApiResult, ApiError, LogIn, UserApiTrait};
-use db::{ConnectionSource, UserRepository, PostgresHelper};
+use db::{ConnectionSource, UserRepository, PostgresHelper, PostgresHelperImpl};
 use domain::{User, Session};
 
 pub struct UserApi<C: PostgresHelper> {
