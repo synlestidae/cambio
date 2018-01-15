@@ -6,7 +6,7 @@ use checkmail;
 
 #[derive(Clone)]
 pub struct UserRepository<T: PostgresHelper> {
-    db_helper: T
+    db_helper: T,
 }
 
 const GET_USER_QUERY: &'static str = "SELECT id, email_address, password_hash FROM users WHERE email_address = $1";

@@ -8,7 +8,7 @@ use db::{ConnectionSource, PostgresHelperError, PostgresPooledConn};
 
 #[derive(Clone)]
 pub struct PostgresSource {
-    pool: Pool<PostgresConnectionManager>
+    pool: Pool<PostgresConnectionManager>,
 }
 
 impl ConnectionSource for PostgresSource {
@@ -17,11 +17,11 @@ impl ConnectionSource for PostgresSource {
             Ok(pooled_connection) => {
                 let connection: PooledConnection<PostgresConnectionManager> = pooled_connection;
                 Ok(connection)
-            },
+            }
             Err(error) => {
-                let helper_error = PostgresHelperError::new(&format!(
-                    "Failed to get database connection: {}", 
-                error));
+                let helper_error = PostgresHelperError::new(
+                    &format!("Failed to get database connection: {}", error),
+                );
                 Err(helper_error)
             }
         }
@@ -30,8 +30,7 @@ impl ConnectionSource for PostgresSource {
 
 impl PostgresSource {
     pub fn new(connection_str: &str) -> io::Result<Self> {
-        let manager_result = PostgresConnectionManager::new(
-            connection_str, TlsMode::None);
+        let manager_result = PostgresConnectionManager::new(connection_str, TlsMode::None);
 
         if let Err(error) = manager_result {
             return Err(io::Error::new(io::ErrorKind::Other, error));
@@ -39,7 +38,7 @@ impl PostgresSource {
 
         match r2d2::Pool::new(manager_result.unwrap()) {
             Ok(pool) => Ok(PostgresSource { pool: pool }),
-            Err(error) => Err(io::Error::new(io::ErrorKind::Other, error))
+            Err(error) => Err(io::Error::new(io::ErrorKind::Other, error)),
         }
     }
 }

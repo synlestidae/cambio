@@ -20,25 +20,29 @@ use std;
 
 #[derive(Clone)]
 pub struct UserApiInit<T: PostgresHelper> {
-    helper: T 
+    helper: T,
 }
 
 impl<T: PostgresHelper> UserApiInit<T> {
     pub fn new(helper: T) -> Self {
-        Self {
-            helper: helper 
-        }
+        Self { helper: helper }
     }
 }
 
-impl<T: PostgresHelper> ApiInit for UserApiInit<T> 
-    where T: 'static {
+impl<T: PostgresHelper> ApiInit for UserApiInit<T>
+where
+    T: 'static,
+{
     fn init_api(&mut self, router: &mut Router) {
         let helper = Box::new(Arc::new(self.helper.clone()));
 
-        router.put("/users/register/", move |r: &mut Request| {
-            let mut api = UserApi::new((*(*helper)).clone());
-            Ok(api.put_register(r))
-        }, "put_register");
+        router.put(
+            "/users/register/",
+            move |r: &mut Request| {
+                let mut api = UserApi::new((*(*helper)).clone());
+                Ok(api.put_register(r))
+            },
+            "put_register",
+        );
     }
 }

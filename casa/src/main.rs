@@ -42,7 +42,8 @@ use time::PreciseTime;
 
 fn main() {
     const MAX_BODY_LENGTH: usize = 1024 * 512;
-    let mut helper = PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
+    let mut helper =
+        PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let mut router = Router::new();
     let mut api_init = api::TotalApiInit::new(helper);
     api_init.init_api(&mut router);

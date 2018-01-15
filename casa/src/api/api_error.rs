@@ -1,6 +1,6 @@
 use iron::status::Status;
 use hyper::mime::Mime;
-use iron::{Response};
+use iron::Response;
 use iron;
 use serde_json;
 use std::convert::Into;
@@ -92,7 +92,7 @@ pub enum ErrorType {
     MissingFieldOrParam,
     QueryResultFormat,
     InternalError,
-    Unknown
+    Unknown,
 }
 
 impl Into<Status> for ErrorType {
@@ -105,7 +105,7 @@ impl Into<Status> for ErrorType {
             ErrorType::MissingFieldOrParam => Status::BadRequest,
             ErrorType::QueryResultFormat => Status::InternalServerError,
             ErrorType::InternalError => Status::InternalServerError,
-            ErrorType::Unknown => Status::InternalServerError
+            ErrorType::Unknown => Status::InternalServerError,
         }
     }
 }

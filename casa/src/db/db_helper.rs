@@ -22,7 +22,7 @@ pub trait PostgresHelper: Clone + Send + Sync {
 
 #[derive(Clone)]
 pub struct PostgresHelperImpl {
-    conn_source: PostgresSource
+    conn_source: PostgresSource,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
