@@ -9,7 +9,7 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 
-pub trait PostgresHelper {
+pub trait PostgresHelper: Clone {
     fn query<T: TryFromRow>(
         &mut self,
         query: &str,
@@ -19,6 +19,7 @@ pub trait PostgresHelper {
     fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, PostgresHelperError>;
 }
 
+#[derive(Clone)]
 pub struct PostgresHelperImpl {
     conn_source: PostgresSource
 }

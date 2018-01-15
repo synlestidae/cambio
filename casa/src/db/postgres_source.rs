@@ -6,6 +6,7 @@ use postgres::Connection;
 use std::ops::Deref;
 use db::{ConnectionSource, PostgresHelperError, PostgresPooledConn};
 
+#[derive(Clone)]
 pub struct PostgresSource {
     pool: Pool<PostgresConnectionManager>
 }

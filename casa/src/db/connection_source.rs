@@ -5,6 +5,6 @@ use db::{PostgresHelperError};
 
 pub type PostgresPooledConn = PooledConnection<PostgresConnectionManager>;
 
-pub trait ConnectionSource {
+pub trait ConnectionSource: Clone {
     fn get<'a>(&'a mut self) -> Result<PostgresPooledConn, PostgresHelperError>;
 }

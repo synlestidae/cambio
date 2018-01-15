@@ -25,7 +25,6 @@ mod db;
 mod domain;
 mod tests;
 mod api;
-mod init_api;
 
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult};
@@ -44,8 +43,5 @@ fn main() {
     const MAX_BODY_LENGTH: usize = 1024 * 512;
     let router = Router::new();
     Iron::new(router).http("localhost:3000").unwrap();
-    //let mut chain = Chain::new(log_body);
-    //chain.link_before(Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
-    //Iron::new(chain).http("localhost:3000").unwrap();
     unimplemented!()
 }

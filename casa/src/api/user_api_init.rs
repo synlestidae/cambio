@@ -1,5 +1,6 @@
 use api::{UserApi, UserApiTrait, ApiError};
-use db::{PostgresSource, PostgresHelperImpl, ConnectionSource};
+use api::api_init::ApiInit;
+use db::{PostgresSource, PostgresHelper, PostgresHelperImpl, ConnectionSource};
 use iron;
 use api::Registration;
 use hyper;
@@ -15,21 +16,16 @@ use iron::prelude::*;
 use hyper::header::{Headers, ContentType};
 use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 
-struct IronApi {
-    user_api: UserApi<PostgresHelperImpl>
+#[derive(Clone)]
+pub struct UserApiInit<T: PostgresHelper> {
+    user_api: UserApi<T>
 }
 
-impl IronApi {
-    pub fn new(conn_source: PostgresSource) -> Self {
-        let helper = PostgresHelperImpl::new(conn_source); 
-        IronApi {
+impl<T: PostgresHelper> UserApiInit<T> {
+    pub fn new(helper: T) -> Self {
+        Self {
             user_api: UserApi::new(helper)
         }
-    }
-
-    fn init_user_api(&mut self, router: &mut Router) {
-        // self.handle_put_register(request)
-        router.put("/users/register", |request: &mut Request| unimplemented!(), "put_register");
     }
 
     fn handle_put_register(&mut self, request: &mut Request) -> iron::IronResult<iron::Response> {
@@ -60,6 +56,13 @@ impl IronApi {
     }
 
     fn post_log_in() {
+    }
+}
+
+impl<T: PostgresHelper> ApiInit for UserApi<T> {
+    fn init_api(&mut self, router: &mut Router) {
+        // self.handle_put_register(request)
+        router.put("/users/register", |request: &mut Request| unimplemented!(), "put_register");
     }
 }
 

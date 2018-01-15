@@ -1,7 +1,8 @@
 use api::{Registration, Profile, ApiResult, ApiError, LogIn, UserApiTrait};
-use db::{ConnectionSource, UserRepository, PostgresHelper, PostgresHelperImpl};
+use db::{ConnectionSource, UserRepository, PostgresHelper};
 use domain::{User, Session};
 
+#[derive(Clone)]
 pub struct UserApi<C: PostgresHelper> {
     user_repository: UserRepository<C>
 }
