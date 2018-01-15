@@ -1,3 +1,9 @@
+use iron::status::Status;
+use hyper::mime::Mime;
+use iron::{Response};
+use iron;
+use serde_json;
+use std::convert::Into;
 use std::error::Error;
 use std::fmt;
 
@@ -68,6 +74,15 @@ impl Error for ApiError {
     }
 }
 
+impl Into<Response> for ApiError {
+    fn into(self) -> Response {
+        let status: Status = self.error_type.into();
+        let response_json = serde_json::to_string(&self).unwrap();
+        let content_type = "application/json".parse::<Mime>().unwrap();
+        iron::Response::with((iron::status::Ok, response_json, content_type))
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum ErrorType {
     DatabaseDriver,
@@ -78,4 +93,19 @@ pub enum ErrorType {
     QueryResultFormat,
     InternalError,
     Unknown
+}
+
+impl Into<Status> for ErrorType {
+    fn into(self) -> Status {
+        match self {
+            ErrorType::DatabaseDriver => Status::InternalServerError,
+            ErrorType::NotLoggedIn => Status::Unauthorized,
+            ErrorType::InvalidLogin => Status::Unauthorized,
+            ErrorType::BadFormat => Status::BadRequest,
+            ErrorType::MissingFieldOrParam => Status::BadRequest,
+            ErrorType::QueryResultFormat => Status::InternalServerError,
+            ErrorType::InternalError => Status::InternalServerError,
+            ErrorType::Unknown => Status::InternalServerError
+        }
+    }
 }

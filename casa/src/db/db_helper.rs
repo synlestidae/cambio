@@ -8,8 +8,9 @@ use db::{PostgresSource, ConnectionSource};
 use std::error;
 use std::error::Error;
 use std::fmt;
+use std::marker::{Send, Sync};
 
-pub trait PostgresHelper: Clone {
+pub trait PostgresHelper: Clone + Send + Sync {
     fn query<T: TryFromRow>(
         &mut self,
         query: &str,
@@ -52,8 +53,13 @@ impl fmt::Display for PostgresHelperError {
 }
 
 impl PostgresHelperImpl {
-    pub fn new(conn_source: PostgresSource) -> PostgresHelperImpl {
+    pub fn new(conn_source: PostgresSource) -> Self {
         PostgresHelperImpl { conn_source: conn_source }
+    }
+
+    pub fn new_from_conn_str(conn_str: &str) -> Self {
+        let source = PostgresSource::new(conn_str).unwrap();
+        PostgresHelperImpl::new(source)
     }
 }
 

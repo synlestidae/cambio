@@ -1,8 +1,9 @@
+use iron::{Request, Response};
 use api::{Registration, Profile, ApiResult, ApiError, LogIn};
 use domain::{User, Session};
 
 pub trait UserApiTrait: Clone {
-    fn put_register(&mut self, registration: Registration) -> ApiResult<User>;
-    fn post_log_in(&mut self, log_in: LogIn) -> ApiResult<Session>;
-    fn get_profile(&mut self, email_address: &str) -> ApiResult<Profile>;
+    fn put_register(&mut self, request: &mut Request) -> Response;
+    fn post_log_in(&mut self, request: &mut Request) -> Response;
+    fn get_profile(&mut self, request: &mut Request) -> Response;
 }
