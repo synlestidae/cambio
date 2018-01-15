@@ -24,7 +24,7 @@ const LOG_USER_OUT_QUERY: &'static str = "UPDATE session_info
 
 const REGISTER_USER: &'static str = "SELECT register_user($1, $2);";
 
-const BCRYPT_COST: u32 = 16;
+const BCRYPT_COST: u32 = 10;
 
 impl<T: PostgresHelper> UserRepository<T> {
     pub fn new(db_helper: T) -> Self {

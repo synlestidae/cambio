@@ -69,12 +69,9 @@ impl PostgresHelper for PostgresHelperImpl {
         query: &str,
         params: &[&ToSql],
     ) -> Result<Vec<T>, PostgresHelperError> {
-        debug!("Getting connection");
         let mut connection = try!(self.conn_source.get());
-        debug!("Running query {}", query);
         match connection.query(query, params) {
             Ok(query_result) => {
-                debug!("Converting results");
                 let mut result_objs = Vec::new();
                 for row in query_result.iter() {
                     match T::try_from_row(&row) {
@@ -86,7 +83,6 @@ impl PostgresHelper for PostgresHelperImpl {
             }
             Err(error) => {
                 let msg = format!("Error while running query: {}", error.description());
-                println!("ERROR {:?}", error);
                 return Err(PostgresHelperError::new(&msg));
             }
         }

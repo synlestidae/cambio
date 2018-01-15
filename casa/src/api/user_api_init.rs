@@ -1,5 +1,6 @@
 use api::Registration;
 use api::api_init::ApiInit;
+use std::borrow::Borrow;
 use std::sync::Arc;
 use api::{UserApi, UserApiTrait, ApiError};
 use bodyparser;
@@ -34,25 +35,38 @@ where
     T: 'static,
 {
     fn init_api(&mut self, router: &mut Router) {
-        let helper = Box::new(Arc::new(self.helper.clone()));
-        let helper2 = Box::new(Arc::new(self.helper.clone()));
+        let register_helper: Arc<T> = Arc::new(self.helper.clone());
+        let log_in_helper: Arc<T> = Arc::new(self.helper.clone());
+        let profile_helper: Arc<T> = Arc::new(self.helper.clone());
 
         router.put(
             "/users/register/",
             move |r: &mut Request| {
-                let mut api = UserApi::new((*(*helper)).clone());
+                let this_helper_ref: &T = register_helper.borrow();
+                let mut api = UserApi::new(this_helper_ref.clone());
                 Ok(api.put_register(r))
             },
-            "put_register",
+            "put_register"
         );
 
         router.post(
             "/users/log_in/",
             move |r: &mut Request| {
-                let mut api = UserApi::new((*(*helper2)).clone());
+                let this_helper_ref: &T = log_in_helper.borrow();
+                let mut api = UserApi::new(this_helper_ref.clone());
                 Ok(api.post_log_in(r))
             },
-            "post_log_in",
+            "post_log_in"
+        );
+
+        router.get(
+            "/users/profile/",
+            move |r: &mut Request| {
+                let profile_helper_ref: &T = profile_helper.borrow();
+                let mut api = UserApi::new(profile_helper_ref.clone());
+                Ok(api.get_profile(r))
+            },
+            "get_profile"
         );
     }
 }
