@@ -12,6 +12,9 @@ extern crate time;
 extern crate checkmail;
 extern crate uuid;
 #[macro_use]
+extern crate log;
+extern crate env_logger;
+#[macro_use]
 extern crate postgres_derive;
 
 #[macro_use]
@@ -41,11 +44,14 @@ use std::error::Error;
 use time::PreciseTime;
 
 fn main() {
+    env_logger::init();
+    debug!("Starting up");
     const MAX_BODY_LENGTH: usize = 1024 * 512;
     let mut helper =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let mut router = Router::new();
     let mut api_init = api::TotalApiInit::new(helper);
     api_init.init_api(&mut router);
+    debug!("Booting up HTTP server");
     Iron::new(router).http("localhost:3000").unwrap();
 }

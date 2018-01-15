@@ -19,6 +19,7 @@ impl<C: PostgresHelper> UserApi<C> {
 
 impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
     fn put_register(&mut self, request: &mut Request) -> Response {
+        debug!("Parsing request body");
         let registration: Registration = match get_api_obj(request) {
             Ok(obj) => obj,
             Err(response) => return response,
@@ -28,6 +29,8 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
         if registration.password.len() < 8 {
             return ApiError::bad_format("Password needs to be at least 8 characters").into();
         }
+
+        debug!("Calling register_user function");
 
         let register_result = self.user_repository.register_user(
             &registration.email_address,

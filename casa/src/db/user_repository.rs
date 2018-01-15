@@ -46,9 +46,13 @@ impl<T: PostgresHelper> UserRepository<T> {
         email_address: &str,
         password: String,
     ) -> Result<Option<User>, PostgresHelperError> {
+        debug!("Checking email address: {}", email_address);
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(PostgresHelperError::new("Email address is invalid"));
         }
+
+        debug!("Checking if user exists with email: {}", email_address);
+
         match self.get_user_by_email(email_address) {
             Ok(None) => {}
             Ok(Some(_)) => return Err(PostgresHelperError::new("User already exists")),
@@ -59,6 +63,8 @@ impl<T: PostgresHelper> UserRepository<T> {
                 )))
             }
         }
+
+        debug!("Hashing password");
 
         // user can be inserted now
         let password_hash = match hash(&password, BCRYPT_COST) {
@@ -72,6 +78,8 @@ impl<T: PostgresHelper> UserRepository<T> {
 
         drop(password);
 
+        debug!("Executing stored procedure register_user");
+
         if let Err(err) = self.db_helper.execute(
             REGISTER_USER,
             &[&email_address, &password_hash],
@@ -84,6 +92,7 @@ impl<T: PostgresHelper> UserRepository<T> {
             )));
         }
 
+        debug!("Retrieving the user that was just registered");
 
         self.get_user_by_email(email_address)
     }

@@ -35,6 +35,7 @@ where
 {
     fn init_api(&mut self, router: &mut Router) {
         let helper = Box::new(Arc::new(self.helper.clone()));
+        let helper2 = Box::new(Arc::new(self.helper.clone()));
 
         router.put(
             "/users/register/",
@@ -43,6 +44,15 @@ where
                 Ok(api.put_register(r))
             },
             "put_register",
+        );
+
+        router.post(
+            "/users/log_in/",
+            move |r: &mut Request| {
+                let mut api = UserApi::new((*(*helper2)).clone());
+                Ok(api.post_log_in(r))
+            },
+            "post_log_in",
         );
     }
 }
