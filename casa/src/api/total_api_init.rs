@@ -17,6 +17,6 @@ impl<T: PostgresHelper> TotalApiInit<T> {
 
 impl<T: PostgresHelper> ApiInit for TotalApiInit<T> {
     fn init_api(&mut self, router: &mut Router) {
-        self.user_api_init.init_api(router);
+        self.user_api_init.init_user_api(router);
     }
 }

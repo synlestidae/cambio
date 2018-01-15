@@ -61,8 +61,8 @@ impl<T: PostgresHelper> UserApiInit<T> {
 
 impl<T: PostgresHelper> ApiInit for UserApi<T> {
     fn init_api(&mut self, router: &mut Router) {
-        // self.handle_put_register(request)
         router.put("/users/register", |request: &mut Request| unimplemented!(), "put_register");
+        //self.init_user_api(router);
     }
 }
 
