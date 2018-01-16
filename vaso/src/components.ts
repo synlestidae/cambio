@@ -1,4 +1,4 @@
-import {signupComponent} from './signup_component';
+import {SignupComponent} from './signup_component';
 import {navbarComponent} from './navbar_component';
 import Vue from 'vue';
 
@@ -7,7 +7,7 @@ function buildApp() {
     return new Vue({
         el: '#app',
         components: {
-            'signup-component': signupComponent,
+            'signup-component': SignupComponent,
             'navbar-component': navbarComponent 
         }
     });
