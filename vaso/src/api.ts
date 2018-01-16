@@ -4,7 +4,7 @@ export class Api {
     session: Session|null = null;
 
     asyncLogInUser(email_address: string, password: string): Promise<Session> {
-        let login_promise = this.makeRequest('http://localhost:3000/users/log_in/', 'PUT', {
+        let login_promise = this.makeRequest('http://localhost:3000/users/log_in/', 'POST', {
             email_address: email_address,
             password: password
         });
