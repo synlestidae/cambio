@@ -1,6 +1,6 @@
-# vaso
+# {{ name }}
 
-> Front-end for Cambio
+> {{ description }}
 
 ## Build Setup
 

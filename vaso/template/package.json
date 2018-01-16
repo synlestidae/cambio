@@ -1,8 +1,8 @@
 {
-  "name": "vaso",
-  "description": "Front-end for Cambio",
+  "name": "{{ name }}",
+  "description": "{{ description }}",
   "version": "1.0.0",
-  "author": "Mate Antunovic <just.mate.antunovic@gmail.com>",
+  "author": "{{ author }}",
   "private": true,
   "engines": {
     "node": ">=6",
