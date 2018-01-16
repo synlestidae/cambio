@@ -2,6 +2,11 @@ import Vue from 'vue';
 import {VueConstructor} from 'vue';
 
 const signupComponent = Vue.extend({
+    methods: {
+        doLogIn: function(e: any) {
+            console.log('stuff', this, e);
+        }
+    },
     template: `<div class="signup-form">
               <form class="form-signin">
                 <div class="form-row">
@@ -16,7 +21,7 @@ const signupComponent = Vue.extend({
                   <input type="password" id="inputPassword" class="form-control" v-model="password" placeholder="Password" required="">
                 </div>
                 <div class="form-row">
-                  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+                  <button class="btn btn-lg btn-primary btn-block" type="submit" v-on:click="doLogIn()">Sign in</button>
                 </div>
                 <div class="form-row">
                   Don't have an account? <a href="javascript: void">Sign up</a> 
