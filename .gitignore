@@ -98,3 +98,5 @@ typings/
 
 vaso/dist/
 vaso/node_modules/
+
+vaso/.rpt2_cache/

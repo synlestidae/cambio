@@ -1,6 +1,5 @@
-// Import here Polyfills if needed. Recommended core-js (npm i -D core-js)
-  // import "core-js/fn/array.find"
-  // ...
-export default class DummyClass {
+import Vue from 'vue';
+import {AppState} from './app_state';
 
-}
+
+console.log('Hello :)', new AppState());
