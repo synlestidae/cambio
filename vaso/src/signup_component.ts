@@ -2,7 +2,6 @@ import Vue from 'vue';
 import {VueConstructor} from 'vue';
 
 const signupComponent = Vue.extend({
-    template: '<form>Hi mum!</form>'
     template: `<div class="signup-form">
               <form class="form-signin">
                 <div class="form-row">
@@ -10,11 +9,11 @@ const signupComponent = Vue.extend({
                 </div>
                 <div class="form-row">
                   <label for="inputEmail" class="sr-only">Email address</label>
-                  <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+                  <input type="email" id="inputEmail" class="form-control" v-model="emailAddress" placeholder="Email address" required="" autofocus="">
                 </div>
                 <div class="form-row">
                   <label for="inputPassword" class="sr-only">Password</label>
-                  <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+                  <input type="password" id="inputPassword" class="form-control" v-model="password" placeholder="Password" required="">
                 </div>
                 <div class="form-row">
                   <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
@@ -22,7 +21,8 @@ const signupComponent = Vue.extend({
                 <div class="form-row">
                   Don't have an account? <a href="javascript: void">Sign up</a> 
                 </div>
-              </form>`
+              </form>
+          </div>`
 });
 
 export {signupComponent};

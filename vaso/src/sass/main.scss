@@ -17,7 +17,7 @@ body {
     background-color: $sub-color;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     margin: none;
 }
 
@@ -76,4 +76,28 @@ a {
     color: white;
     background-color: initial;
     text-decoration: underline;
+}
+
+button.form-control {
+    border-radius: 0;
+}
+
+input[type=text].form-control {
+    border-radius: 0;
+}
+
+input[type=email].form-control {
+    border-radius: 0;
+}
+
+input[type=password].form-control {
+    border-radius: 0;
+}
+
+button.btn {
+    border-radius: 0;
+}
+
+.clickable:hover {
+    cursor: pointer;
 }
