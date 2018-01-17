@@ -31,7 +31,8 @@
     "vue": "~2.5.13",
     "vue-class-component": "^6.1.2",
     "vue-property-decorator": "~6.0.0",
-    "vue-router": "~3.0.1"
+    "vue-router": "~3.0.1",
+    "vue-typescript": "^0.7.0"
   },
   "devDependencies": {
     "@types/mocha": "~2.2.46",

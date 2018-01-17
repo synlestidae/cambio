@@ -30,16 +30,23 @@ const template: string =
     data: {
         emailAddress: String,
         password: String
-    }
+    },
+    name: 'signup-page'
 })
-export class SignupComponent extends Vue {
+export class SignupPage extends Vue {
     emailAddress: string;
     password: string;
 
     doLogIn(): void {
-        console.log('log em in boys!', this);
         let api = new Api();
         api.asyncLogInUser(this.emailAddress, this.password)
             .then((session) => console.log('session', session));
+    }
+
+    data() {
+        return {
+            emailAddress: this.emailAddress,
+            password: this.password
+        };
     }
 }
