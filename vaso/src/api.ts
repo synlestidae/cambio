@@ -17,24 +17,32 @@ export class Api {
                 return Promise.resolve(Session.parse(json));
             })
             .then((session: Session) => {
-                document.cookie = `session_token=${session.session_token}`;
+                parent.session = session;
                 return session;
             });
     }
 
     private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
+        let headers = {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json'
+        };
+        if (this.session) {
+            headers['Authorization'] = `Bearer ${this.session.session_token}`;
+        }
         let params = {
             method: method,
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json'
-            },
+            headers: headers,
             body: undefined
         };
 
-        if (jsonBody && typeof jsonBody !== 'string') {
+        if (jsonBody) {
             let bodyString: string;
-            bodyString = JSON.stringify(jsonBody);
+            if (typeof jsonBody !== 'string') {
+                bodyString = JSON.stringify(jsonBody);
+            } else {
+                bodyString = jsonBody;
+            }
             params.body = bodyString;
         }
 

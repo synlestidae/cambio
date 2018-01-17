@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {SignupPage} from './signup_page';
+import {AppState} from './app_state';
 import {Api} from './api';
 
 export type Page = 'LogIn' | 'MyAccount'
@@ -17,21 +18,24 @@ const template: string = `
 
 @Component({
     template: template,
-    data: {},
+    data: {
+        currentPage: String
+    },
     components: {
         'signup-page': SignupPage 
     },
-    props: ['currentPage']
+    props: ['appState']
 })
 export class ContentComponent extends Vue {
-    currentPage: Page = 'LogIn';
-
     constructor() {
         super();
-        console.log('content boi', this);
+        appState: AppState = AppState.getGlobalState(); 
     }
 
     data() {
-        return {};
+        var state = this.appState;
+        return {
+            currentPage: state && state.currentPage
+        };
     }
 }

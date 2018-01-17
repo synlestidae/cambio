@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {Api} from './api';
+import {AppState} from './app_state';
 
 const template: string = 
     `<div class="signup-form">
@@ -31,16 +32,17 @@ const template: string =
         emailAddress: String,
         password: String
     },
-    name: 'signup-page'
+    name: 'signup-page',
+    props: ['appState']
 })
 export class SignupPage extends Vue {
     emailAddress: string;
     password: string;
+    appState: AppState;
 
     doLogIn(): void {
-        let api = new Api();
-        api.asyncLogInUser(this.emailAddress, this.password)
-            .then((session) => console.log('session', session));
+        this.appState = AppState.getGlobalState();
+        this.appState.log_in(this.emailAddress, this.password);
     }
 
     data() {
