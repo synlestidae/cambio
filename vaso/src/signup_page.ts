@@ -20,35 +20,48 @@ const template: string =
             <div class="form-row">
               <button class="btn btn-lg btn-primary btn-block" type="submit" v-on:click.prevent="doLogIn()">Sign in</button>
             </div>
+            <div class="form-row error-text" v-if="appState.loginPage.loginState === 'LogInFailed'">
+                <em>Logging in failed. Check your email address and password and try again.</em>
+            </div>
             <div class="form-row">
               Don't have an account? <a href="javascript: void">Sign up</a> 
             </div>
           </form>
       </div>`;
 
+Component.registerHooks(['created']);
+
 @Component({
     template: template,
     data: {
         emailAddress: String,
-        password: String
+        password: String,
+        appState: AppState
     },
     name: 'signup-page',
-    props: ['appState']
+    props: []
 })
 export class SignupPage extends Vue {
     emailAddress: string;
     password: string;
     appState: AppState;
 
-    doLogIn(): void {
+    public created(thing: any):void {
         this.appState = AppState.getGlobalState();
+        this.emailAddress = '';
+        this.password = '';
+    }
+
+    doLogIn(): void {
         this.appState.log_in(this.emailAddress, this.password);
     }
 
     data() {
+        this.appState = AppState.getGlobalState();
         return {
             emailAddress: this.emailAddress,
-            password: this.password
+            password: this.password,
+            appState: this.appState
         };
     }
 }

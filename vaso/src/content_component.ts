@@ -8,13 +8,15 @@ export type Page = 'LogIn' | 'MyAccount'
 
 const template: string = `
     <div id="main-content">
-      <div class="signup-container" v-if="currentPage === 'LogIn'">
+      <div class="signup-container" v-if="appState.currentPage === 'LogIn'">
         <signup-page></signup-page>
       </div>
-      <div class="account-page-container" v-if="currentPage === 'MyAccount'">
+      <div class="account-page-container" v-if="appState.currentPage === 'MyAccount'">
         <account-page></account-page>
       </div>
     </div>`;
+
+Component.registerHooks(['created']);
 
 @Component({
     template: template,
@@ -24,18 +26,26 @@ const template: string = `
     components: {
         'signup-page': SignupPage 
     },
-    props: ['appState']
+    props: []
 })
 export class ContentComponent extends Vue {
+    public appState: AppState;
+
     constructor() {
         super();
-        appState: AppState = AppState.getGlobalState(); 
+        console.log('content', this);
+    }
+
+    public beforeCreate(): void {
+        this.appState = AppState.getGlobalState();
+        console.log('the stae!', this.appState);
     }
 
     data() {
-        var state = this.appState;
+        let state = this.appState;
+        console.log('l\'état!', state);
         return {
-            currentPage: state && state.currentPage
+            appState: state
         };
     }
 }

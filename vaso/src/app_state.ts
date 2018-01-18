@@ -3,12 +3,15 @@ import {Api} from './api';
 
 export type CurrentPage = 'LogIn' | 'Home' | 'MyAccount';
 
+export type LoginState = 'NotLoggedIn' | 'LoggingIn' | 'LogInFailed';
+
 export abstract class Page {
 }
 
 export class LogInPage extends Page {
     username: string;
     password: string;
+    loginState: LoginState = 'NotLoggedIn';
 }
 
 export class MyAccountPage extends Page {
@@ -16,17 +19,18 @@ export class MyAccountPage extends Page {
 }
 
 export class AppState {
-    currentPage: CurrentPage = 'LogIn';
-    api: Api;
-    loginPage: Page;
+    public currentPage: CurrentPage;
+    public loginPage: LogInPage;
+
+    private api: Api;
     private static globalState: AppState = new AppState();
 
     constructor() {
-        console.log('loggy boy', LogInPage, MyAccountPage);
         this.currentPage = 'LogIn';
         this.loginPage = new LogInPage();
         this.api = new Api();
     }
+   
 
     public static getGlobalState(): AppState {
         return AppState.globalState;
@@ -35,7 +39,12 @@ export class AppState {
     public log_in(username: string, password: string) {
         let that = this;
         this.api.asyncLogInUser(username, password)
-            .then(() => that.changePage('MyAccount'))
+            .then((e: any) => {
+                that.changePage('MyAccount')
+            })
+            .catch((e: any) => {
+                that.loginPage.loginState = 'LogInFailed'
+            })
     }
 
     changePage(page: CurrentPage) {

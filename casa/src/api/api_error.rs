@@ -79,7 +79,7 @@ impl Into<Response> for ApiError {
         let status: Status = self.error_type.into();
         let response_json = serde_json::to_string(&self).unwrap();
         let content_type = "application/json".parse::<Mime>().unwrap();
-        iron::Response::with((iron::status::Ok, response_json, content_type))
+        iron::Response::with((iron::status::BadRequest, response_json, content_type))
     }
 }
 

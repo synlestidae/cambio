@@ -4,6 +4,7 @@ $icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
 
 $main-color: #294595;
 $sub-color: #17284F;
+$error-color: #CA1823;
 
 body {
   font-family: helvetica;
@@ -100,4 +101,8 @@ button.btn {
 
 .clickable:hover {
     cursor: pointer;
+}
+
+.error-text {
+    color: $error-color;
 }

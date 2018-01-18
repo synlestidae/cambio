@@ -14,7 +14,7 @@ export class Api {
         return login_promise
             .then((response: Response) => response.json())
             .then((json: any) => {
-                return Promise.resolve(Session.parse(json));
+                return Session.parse(json);
             })
             .then((session: Session) => {
                 parent.session = session;
@@ -46,6 +46,14 @@ export class Api {
             params.body = bodyString;
         }
 
-        return fetch(url, params);
+        return new Promise(function(res: any, rej: any) {
+            fetch(url, params).then(function(response: Response) {
+                if (response.status >= 400) {
+                    rej(response);
+                } else {
+                    res(response);
+                }
+            });
+        });
     }
 }
