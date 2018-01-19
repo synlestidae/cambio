@@ -9,6 +9,18 @@ pub enum Denom {
     Wei,
 }
 
+impl Denom {
+    pub fn parse(denom_str: &str) -> Option<Denom> {
+        match denom_str {
+            "dollar" => Some(Denom::Dollar),
+            "cent" => Some(Denom::Cent),
+            "sat" => Some(Denom::Sat),
+            "wei" => Some(Denom::Wei),
+            unknown => None,
+        }
+    }
+}
+
 impl ToString for Denom {
     fn to_string(&self) -> String {
         let denom_str = match self {

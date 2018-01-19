@@ -18,6 +18,12 @@ impl TryFromRowError {
         }
     }
 
+    pub fn bad_value<T: fmt::Display>(entity: &str, name: &str, val: T) -> Self {
+        TryFromRowError {
+            desc: format!("Field '{}' on entity '{}' has invalid value: {}", name, entity, val),
+        }
+    }
+
     pub fn unknown_value(entity: &str, value: &str) -> Self {
         TryFromRowError { desc: format!("Unknown value for '{}': {}", entity, value) }
     }

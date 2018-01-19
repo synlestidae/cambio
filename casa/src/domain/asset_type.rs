@@ -8,6 +8,17 @@ pub enum AssetType {
     ETH,
 }
 
+impl AssetType {
+    pub fn parse(asset_type_str: &str) -> Option<AssetType> {
+        match asset_type_str {
+            "eth" => Some(AssetType::ETH),
+            "btc" => Some(AssetType::BTC),
+            "nzd" => Some(AssetType::NZD),
+            unknown => None
+        }
+    }
+}
+
 impl ToString for AssetType {
     fn to_string(&self) -> String {
         let asset_type_str = match self {

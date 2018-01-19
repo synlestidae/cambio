@@ -1,5 +1,5 @@
 use db::{PostgresHelper, PostgresHelperError};
-use domain::Order;
+use domain::{Order, OrderSettlement, Id};
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
@@ -29,7 +29,7 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn get_order_settlement_status(order_id: Id) 
-        unimplemented!();
         -> Result<Option<OrderSettlement>, PostgresHelperError> {
+        unimplemented!();
     }
 }

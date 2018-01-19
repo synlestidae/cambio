@@ -47,3 +47,4 @@ pub use self::settlement_status::*;
 pub use self::transaction::Transaction;
 pub use self::unique_id::UniqueId;
 pub use self::user::User;
+pub use self::order_settlement::OrderSettlement;

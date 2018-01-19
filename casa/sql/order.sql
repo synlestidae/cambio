@@ -9,7 +9,7 @@ CREATE TYPE order_status AS ENUM (
 );
 
 CREATE TYPE settlement_status AS ENUM (
-Order    'settling',
+    'settling',
     'settled',
     'cancelled',
     'invalid'
@@ -17,15 +17,12 @@ Order    'settling',
 
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
-    account_owner_id account_owner(id),
+    owner_id account_owner(id),
 
-    sell_asset_units UINT,
-    buy_asset_units UINT,
-    sell_asset_type SERIAL REFERENCES asset_type(id),
-    buy_asset_type SERIAL REFERENCES asset_type(id),
-
-    debit_account SERIAL REFERENCES account(id),
-    crebit_account SERIAL REFERENCES account(id),
+    sell_asset_units BIGUINT,
+    buy_asset_units BIGUINT,
+    sell_asset_type_id SERIAL REFERENCES asset_type(id),
+    buy_asset_type_id SERIAL REFERENCES asset_type(id),
 
     author_info SERIAL REFERENCES authorship(id),
 
