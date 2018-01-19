@@ -1,8 +1,9 @@
 mod account_repository;
-mod postgres_source;
 mod connection_source;
 mod db_helper;
+mod order_service;
 mod payment_repository;
+mod postgres_source;
 mod profile_service;
 mod row_convert_err;
 mod try_from_row;
@@ -20,3 +21,4 @@ pub use self::try_from_row::TryFromRow;
 pub use self::try_from_row_error::TryFromRowError;
 pub use self::try_from_row_utils::{get_value, get_value_option};
 pub use self::user_repository::UserRepository;
+pub use self::order_service::OrderService;

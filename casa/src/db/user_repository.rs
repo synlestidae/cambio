@@ -28,7 +28,7 @@ const BCRYPT_COST: u32 = 10;
 
 impl<T: PostgresHelper> UserRepository<T> {
     pub fn new(db_helper: T) -> Self {
-        UserRepository { db_helper: db_helper }
+        Self { db_helper: db_helper }
     }
 
     pub fn get_user_by_email(
