@@ -12,7 +12,6 @@ impl<T: PostgresHelper> OrderService<T> {
         Self { db_helper: db_helper }
     }
 
-    // wow this is a wee bit complicated eh
     pub fn place_order(&mut self, order: &Order) -> Result<Order, PostgresHelperError> {
         let ttl_milliseconds = 
             (order.expires_at.timestamp() - Utc::now().timestamp()) * 1000;
@@ -58,6 +57,13 @@ impl<T: PostgresHelper> OrderService<T> {
         -> Result<Option<OrderSettlement>, PostgresHelperError> {
         unimplemented!();
     }
+
+    pub fn get_order_by_unique_id(&mut self, owner_id: Id, unique_id: &str) -> Result<Option<Order>, PostgresHelperError> {
+        match self.db_helper.query(SELECT_ORDER_UNIQUE_ID_SQL, &[&owner_id, &unique_id]) {
+            Ok(mut orders) => Ok(orders.pop()),
+            Err(error) => Err(PostgresHelperError::new(&format!("Failed to get order: {}", error)))
+        }
+    }
 }
 
 const INSERT_NEW_ORDER_SQL: &'static str = "
@@ -74,3 +80,20 @@ const INSERT_NEW_ORDER_SQL: &'static str = "
      VALUES($5, $6, $7, $8, sell_asset_type_id_var, buy_asset_type_id_var, $9);
 
     END $$;";
+
+const SELECT_ORDER_UNIQUE_ID_SQL: &'static str =  
+    "SELECT 
+        *, 
+        asset_order.id AS order_id, 
+        sell_asset_type.asset_code AS sell_asset_code,  
+        sell_asset_type.denom AS sell_asset_denom,  
+        buy_asset_type.asset_code AS buy_asset_code,  
+        buy_asset_type.asset_denom AS buy_asset_denom,  
+    FROM asset_order,
+         account_owner, 
+         asset_type buy_asset_type, 
+         asset_type sell_asset_type
+    WHERE asset_order.owner_id = owner.id AND
+          buy_asset_type.id = asset_order.buy_asset_type_id AND
+          sell_asset_type.id = asset_order.sell_asset_type_id
+";

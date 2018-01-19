@@ -25,8 +25,8 @@ CREATE TABLE asset_order (
     sell_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
     buy_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
 
-    ttl_milliseconds UINT NOT NULL, 
     status order_status NOT NULL DEFAULT 'active',
+    ttl_milliseconds UINT NOT NULL, 
     registered_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     settlement_id SERIAL NOT NULL order_settlement(id),
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
