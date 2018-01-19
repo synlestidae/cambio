@@ -10,6 +10,7 @@ use postgres::rows::Row;
 pub struct Order {
     pub id: Option<Id>,
     pub owner_id: Id,
+    pub unique_id: String,
     pub sell_asset_units: u64,
     pub buy_asset_units: u64,
     pub sell_asset_type: AssetType,
@@ -29,6 +30,9 @@ impl TryFromRow for Order {
 
         let buy_asset_units_match: Option<i64> =row.get("buy_asset_units");
         let buy_asset_units_i64 = try!(buy_asset_units_match.ok_or(TryFromRowError::missing_field("Order", "buy_asset_units")));
+
+        let unique_id_match: Option<String> = row.get("unique_id");
+        let unique_id: String = try!(unique_id_match.ok_or(TryFromRowError::missing_field("Order", "unique_id")));
 
         let sell_asset_units_match: Option<i64> = row.get("sell_asset_units");
         let sell_asset_units_i64: i64 = try!(sell_asset_units_match.ok_or(TryFromRowError::missing_field("Order", "sell_asset_units")));
@@ -84,14 +88,6 @@ impl TryFromRow for Order {
             _ => return Err(TryFromRowError::new("Could not parse the buy_asset_units or sell_asset_units field"))
         }
 
-        /*match (AssetType::parse(&sell_asset_type_string), AssetType::parse(&buy_asset_type_string)) {
-            (Some(sat), Some(bat)) => {
-                sell_asset_type = sat;
-                buy_asset_type = bat;
-            },
-            _ => return Err(TryFromRowError::new("Could not parse the buy_asset_units or sell_asset_units field"))
-        }*/
-
         match (Denom::parse(&sell_asset_denom_string), Denom::parse(&buy_asset_denom_string)) {
             (Some(sad), Some(bad)) => {
                 sell_asset_denom = sad;
@@ -102,6 +98,7 @@ impl TryFromRow for Order {
 
         Ok(Order {
             id: id_match,
+            unique_id: unique_id,
             owner_id: owner_id,
             sell_asset_units: sell_asset_units,
             buy_asset_units: buy_asset_units,

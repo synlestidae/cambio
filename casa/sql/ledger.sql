@@ -162,6 +162,7 @@ CREATE TABLE user_payment (
 CREATE TYPE business_ends_type AS ENUM (
     'wallet_deposit',
     'wallet_withdrawal',
+    'order_placement',
     'system_fee_charge',
     'cryptocurrency_purchase'
 );

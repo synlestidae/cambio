@@ -17,19 +17,19 @@ CREATE TYPE settlement_status AS ENUM (
 
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
-    owner_id account_owner(id),
+    owner_id account_owner(id) NOT NULL,
+    unique_id VARCHAR(32) NOT NULL,
 
-    sell_asset_units BIGUINT,
-    buy_asset_units BIGUINT,
-    sell_asset_type_id SERIAL REFERENCES asset_type(id),
-    buy_asset_type_id SERIAL REFERENCES asset_type(id),
-
-    author_info SERIAL REFERENCES authorship(id),
+    sell_asset_units BIGUINT NOT NULL,
+    buy_asset_units BIGUINT NOT NULL,
+    sell_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
+    buy_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
 
     ttl_milliseconds UINT NOT NULL, 
-    status order_status,
-    registered_at TIMESTAMP NOT NULL,
-    settlement_id SERIAL order_settlement(id)
+    status order_status NOT NULL DEFAULT 'active',
+    registered_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
+    settlement_id SERIAL NOT NULL order_settlement(id),
+    CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
 );
 
 CREATE TABLE order_settlement (
