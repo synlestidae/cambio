@@ -1,5 +1,5 @@
 use db::{PostgresHelper, PostgresHelperError};
-use domain::{User, Session};
+use domain::{User, Session, Id};
 use std::error::Error;
 use bcrypt::hash;
 use checkmail;
@@ -24,7 +24,7 @@ const LOG_USER_OUT_QUERY: &'static str = "UPDATE session_info
 
 const REGISTER_USER: &'static str = "SELECT register_user($1, $2);";
 
-const BCRYPT_COST: u32 = 10;
+const BCRYPT_COST: u32 = 8;
 
 impl<T: PostgresHelper> UserRepository<T> {
     pub fn new(db_helper: T) -> Self {
@@ -157,11 +157,23 @@ impl<T: PostgresHelper> UserRepository<T> {
         Ok(())
     }
 
-    fn log_system_user_in(
-        &mut self,
-        system_username: &str,
-        system_password: &str,
-    ) -> Result<Option<Session>, PostgresHelperError> {
-        unimplemented!("System account functionality not implemented!")
+    pub fn get_owner_id_by_email_address(&mut self, email_address: &str) 
+        -> Result<Id, PostgresHelperError> {
+        const GET_OWNER_QUERY: &'static str = "
+            SELECT account_owner.id AS owner_id FROM account_owner, users 
+            WHERE account_owner.user_id = users.id AND users.email_address = $1";
+
+        match self.db_helper.query_raw(GET_OWNER_QUERY, &[&email_address]) {
+            Ok(rows) => {
+                if rows.len() >= 1 {
+                    let row = rows.get(0);
+                    Ok(row.get("owner_id"))
+                } else {
+                    return Err(PostgresHelperError::new(&format!("Owner ID for {} does not exist", 
+                        email_address)))
+                }
+            },
+            Err(error) => Err(PostgresHelperError::new(&format!("Error fetching owner_id: {}", error)))
+        }
     }
 }

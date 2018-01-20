@@ -12,12 +12,13 @@ impl<T: PostgresHelper> OrderService<T> {
         Self { db_helper: db_helper }
     }
 
-    pub fn place_order(&mut self, order: &Order) -> Result<Order, PostgresHelperError> {
-        let ttl_milliseconds = 
-            (order.expires_at.timestamp() - Utc::now().timestamp()) * 1000;
+    pub fn place_order(&mut self, owner_id: Id, order: &Order) -> Result<Order, PostgresHelperError> {
+        let ttl_milliseconds = ((order.expires_at.timestamp() - Utc::now().timestamp()) * 1000) as u32;
 
         let sell_asset_units = order.sell_asset_units as i64;
         let buy_asset_units = order.buy_asset_units as i64;
+
+        println!("Running stored procedure for new order");
 
         let execute_result = self.db_helper.execute(INSERT_NEW_ORDER_SQL, &[
             &order.buy_asset_type.to_string(),
@@ -25,18 +26,23 @@ impl<T: PostgresHelper> OrderService<T> {
             &order.sell_asset_type.to_string(),
             &order.sell_asset_denom.to_string(),
             &order.unique_id,
-            &order.owner_id,
+            &owner_id,
             &sell_asset_units,
             &buy_asset_units,
             &ttl_milliseconds,
         ]);
 
+        println!("Ran the stored procedure!");
+
         match execute_result {
             Ok(_) =>  {
-               unimplemented!() 
+                println!("Got some rows");
+                let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
+                println!("Got the order!");
+                new_order.ok_or(PostgresHelperError::new("Failed to retrieve order after placing it."))
             },
             Err(err) => {
-                Err(PostgresHelperError::new(&format!("Failed to execute order placement function: {}", err)))
+                Err(PostgresHelperError::new(&format!("Failed to execute order placement function: {:?}", err)))
             }
         }
     }
@@ -66,20 +72,7 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 }
 
-const INSERT_NEW_ORDER_SQL: &'static str = "
-    DO $$
-        DECLARE sell_asset_type_id_var INTEGER;
-        DECLARE buy_asset_type_id_var INTEGER;
-    BEGIN
-
-    SELECT id INTO buy_asset_type_id FROM get_asset_id($1, $2);
-    SELECT id INTO sell_asset_type_id FROM get_asset_id($3, $4);
-
-    INSERT INTO asset_order(owner_id, sell_asset_units, buy_asset_units, sell_asset_type_id,
-        buy_asset_type_id, ttl_milliseconds) 
-     VALUES($5, $6, $7, $8, sell_asset_type_id_var, buy_asset_type_id_var, $9);
-
-    END $$;";
+const INSERT_NEW_ORDER_SQL: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";
 
 const SELECT_ORDER_UNIQUE_ID_SQL: &'static str =  
     "SELECT 

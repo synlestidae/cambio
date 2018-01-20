@@ -9,7 +9,6 @@ use postgres::rows::Row;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Order {
     pub id: Option<Id>,
-    pub owner_id: Id,
     pub unique_id: String,
     pub sell_asset_units: u64,
     pub buy_asset_units: u64,
@@ -99,7 +98,6 @@ impl TryFromRow for Order {
         Ok(Order {
             id: id_match,
             unique_id: unique_id,
-            owner_id: owner_id,
             sell_asset_units: sell_asset_units,
             buy_asset_units: buy_asset_units,
             sell_asset_type: sell_asset_type,

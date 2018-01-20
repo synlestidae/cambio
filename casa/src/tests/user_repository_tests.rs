@@ -113,6 +113,6 @@ fn test_register_user_allows_login_and_logout() {
     });
 }
 
-fn get_repository() -> UserRepository<PostgresHelperImpl> {
+pub fn get_repository() -> UserRepository<PostgresHelperImpl> {
     UserRepository::new(get_db_helper())
 }
