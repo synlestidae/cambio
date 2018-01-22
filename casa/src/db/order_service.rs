@@ -25,7 +25,7 @@ impl<T: PostgresHelper> OrderService<T> {
             &owner_id,
             &sell_asset_units,
             &buy_asset_units,
-            &order.expires_at
+            &order.expires_at.naive_utc()
         ]);
 
         match execute_result {
