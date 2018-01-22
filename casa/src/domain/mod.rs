@@ -22,6 +22,7 @@ mod settlement_status;
 mod transaction;
 mod unique_id;
 mod user;
+mod order_settlement_builder;
 
 pub use self::account::Account;
 pub use self::account_business_type::AccountBusinessType;
