@@ -16,8 +16,6 @@ impl<T: PostgresHelper> OrderService<T> {
         let sell_asset_units = order.sell_asset_units as i64;
         let buy_asset_units = order.buy_asset_units as i64;
 
-        println!("Running stored procedure for new order");
-
         let execute_result = self.db_helper.execute(INSERT_NEW_ORDER_SQL, &[
             &order.buy_asset_type.to_string(),
             &order.buy_asset_denom.to_string(),
@@ -27,16 +25,12 @@ impl<T: PostgresHelper> OrderService<T> {
             &owner_id,
             &sell_asset_units,
             &buy_asset_units,
-            &order.expires_at.naive_utc()
+            &order.expires_at
         ]);
-
-        println!("Ran the stored procedure!");
 
         match execute_result {
             Ok(rows) =>  {
-                println!("Got some rows: {}", rows);
                 let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
-                println!("Got the order!");
                 new_order.ok_or(PostgresHelperError::new("Failed to retrieve order after placing it."))
             },
             Err(err) => {
@@ -66,7 +60,6 @@ impl<T: PostgresHelper> OrderService<T> {
         match self.db_helper.query(SELECT_ORDER_UNIQUE_ID_SQL, &[&owner_id, &unique_id]) {
             Ok(mut orders) => Ok(orders.pop()),
             Err(error) => {
-                println!("Naughty error: {:?}", error);
                 Err(PostgresHelperError::new(&format!("Failed to get order: {:?}", error)))
             }
         }

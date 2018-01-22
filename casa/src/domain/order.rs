@@ -22,7 +22,6 @@ pub struct Order {
 impl TryFromRow for Order {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError>
         where Self: std::marker::Sized {
-        println!("Getting this row, yo {:?}", row);
         let id_match: Option<Id> = row.get("order_id");
 
         let owner_id_match: Option<Id> = row.get("owner_id");
@@ -41,7 +40,6 @@ impl TryFromRow for Order {
         let sell_asset_type_string: String = try!(sell_asset_type_match.ok_or(TryFromRowError::missing_field("Order", "sell_asset_code")));
 
         let sell_asset_denom_match: Option<String> = row.get("sell_asset_denom");
-        println!("Sell this asset {:?}", sell_asset_denom_match);
         let sell_asset_denom_string: String =
             try!(sell_asset_denom_match.ok_or(TryFromRowError::missing_field("Order", "sell_asset_denom")));
 
@@ -49,7 +47,6 @@ impl TryFromRow for Order {
         let buy_asset_type_string: String = try!(buy_asset_type_match.ok_or(TryFromRowError::missing_field("Order", "buy_asset_code")));
 
         let buy_asset_denom_match: Option<String> = row.get("buy_asset_denom");
-        println!("Buy this asset {:?}", buy_asset_denom_match);
         let buy_asset_denom_string: String =
             try!(buy_asset_denom_match.ok_or(TryFromRowError::missing_field("Order", "buy_asset_denom")));
 

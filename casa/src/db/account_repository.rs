@@ -62,9 +62,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
         &mut self,
         account_id: &Id,
     ) -> Result<AccountStatement, PostgresHelperError> {
-        println!("Getting transactions");
         let mut transactions = try!(self.get_transactions_for_account(account_id));
-        println!("Getting account");
         let account = try!(try!(self.get_account(account_id)).ok_or(
             PostgresHelperError::new(
                 "Account does not exist",

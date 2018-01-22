@@ -85,7 +85,6 @@ impl<T: PostgresHelper> UserRepository<T> {
             &[&email_address, &password_hash],
         )
         {
-            println!("Err omg {:?}", err);
             return Err(PostgresHelperError::new(&format!(
                 "Failed to register user in databse: {}",
                 err.description()
@@ -149,7 +148,6 @@ impl<T: PostgresHelper> UserRepository<T> {
             &[&email_address],
         )
         {
-            println!("Done! {:?}", error);
             return Err(PostgresHelperError::new(
                 &format!("Error logging user out: {}", error.description()),
             ));
