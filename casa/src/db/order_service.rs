@@ -13,9 +13,6 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn place_order(&mut self, owner_id: Id, order: &Order) -> Result<Order, PostgresHelperError> {
-        let ttl_milliseconds = ((order.expires_at.timestamp() - Utc::now().timestamp()) * 1000) as
-            i32;
-
         let sell_asset_units = order.sell_asset_units as i64;
         let buy_asset_units = order.buy_asset_units as i64;
 
@@ -30,7 +27,7 @@ impl<T: PostgresHelper> OrderService<T> {
             &owner_id,
             &sell_asset_units,
             &buy_asset_units,
-            &ttl_milliseconds
+            &order.expires_at.naive_utc()
         ]);
 
         println!("Ran the stored procedure!");
