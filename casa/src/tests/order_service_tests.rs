@@ -26,9 +26,9 @@ fn test_places_one_order() {
             buy_asset_denom: Denom::Cent,
             expires_at: Utc::now() + Duration::minutes(10)
         };
-        order_service.place_order(owner_id, &order).unwrap();
+        let placed_order = order_service.place_order(owner_id, &order).unwrap();
         let mut placed_order_1 = order_service.get_order_by_unique_id(owner_id, &order.unique_id).unwrap().unwrap();
-        let mut placed_order_2 = order_service.get_order_by_id(order.id.unwrap()).unwrap().unwrap();
+        let mut placed_order_2 = order_service.get_order_by_id(placed_order.id.unwrap()).unwrap().unwrap();
         assert_eq!(placed_order_1, placed_order_2);
         placed_order_1.id = None;
         placed_order_2.id = None;
