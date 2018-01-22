@@ -39,10 +39,8 @@ impl<T: PostgresHelper> OrderService<T> {
         }
     }
 
-    pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
-        self.db_helper.execute(UPDATE_ORDERS_EXPIRED_SQL, &[]);
-        self.db_helper.execute(CANCEL_ORDER_SQL, &[]);
-        self.get_order_by_id(order_id)
+    pub fn cancel_order(order_id: Id) -> Result<Order, PostgresHelperError> {
+        unimplemented!();
     }
 
     pub fn get_all_active_orders() -> Result<Vec<Order>, PostgresHelperError> {
@@ -56,15 +54,6 @@ impl<T: PostgresHelper> OrderService<T> {
     pub fn get_order_settlement_status(order_id: Id) 
         -> Result<Option<OrderSettlement>, PostgresHelperError> {
         unimplemented!();
-    }
-
-    pub fn get_order_by_id(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
-        match self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]) {
-            Ok(mut orders) => Ok(orders.pop()),
-            Err(error) => {
-                Err(PostgresHelperError::new(&format!("Failed to get order: {:?}", error)))
-            }
-        }
     }
 
     pub fn get_order_by_unique_id(&mut self, owner_id: Id, unique_id: &str) -> Result<Option<Order>, PostgresHelperError> {
@@ -96,28 +85,3 @@ const SELECT_ORDER_UNIQUE_ID_SQL: &'static str =
           sell_asset_type.id = orders.sell_asset_type_id AND
           owners.id = $1 AND
           orders.unique_id = $2";
-
-const SELECT_ORDER_BY_ID_SQL: &'static str = "
-    SELECT 
-        *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
-    FROM asset_order orders,
-         account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
-    WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND
-          orders.id = $1";
-
-const CANCEL_ORDER_SQL: &'static str = "
-    UPDATE asset_orders SET status = 'user_cancelled' 
-    WHERE status = 'active' AND expires_at < (now() at time zone 'utc') AND id = $1";
-
-const UPDATE_ORDERS_EXPIRED_SQL: &'static str = "
-    UPDATE asset_orders SET status = 'expires' 
-    WHERE status = 'active' AND expires_at >= (now() at time zone 'utc');";
