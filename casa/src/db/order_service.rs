@@ -45,12 +45,22 @@ impl<T: PostgresHelper> OrderService<T> {
         self.get_order_by_id(order_id)
     }
 
-    pub fn get_all_active_orders() -> Result<Vec<Order>, PostgresHelperError> {
-        unimplemented!();
+    pub fn get_all_active_orders(&mut self) -> Result<Vec<Order>, PostgresHelperError> {
+        match self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_SQL, &[]) {
+            Ok(orders) => Ok(orders),
+            Err(error) => {
+                Err(PostgresHelperError::new(&format!("Failed to get orders: {:?}", error)))
+            }
+        }
     }
 
-    pub fn get_user_active_orders(email_address: &str) -> Result<Vec<Order>, PostgresHelperError> {
-        unimplemented!();
+    pub fn get_all_active_orders_by_user(&mut self, email_address: &str) -> Result<Vec<Order>, PostgresHelperError> {
+        match self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL, &[&email_address]) {
+            Ok(orders) => Ok(orders),
+            Err(error) => {
+                Err(PostgresHelperError::new(&format!("Failed to get orders for user: {:?}", error)))
+            }
+        }
     }
 
     pub fn get_order_settlement_status(order_id: Id) 
@@ -121,3 +131,34 @@ const CANCEL_ORDER_SQL: &'static str = "
 const UPDATE_ORDERS_EXPIRED_SQL: &'static str = "
     UPDATE asset_orders SET status = 'expires' 
     WHERE status = 'active' AND expires_at >= (now() at time zone 'utc');";
+
+const SELECT_ALL_ACTIVE_ORDERS_SQL: &'static str = "SELECT 
+        *, 
+        orders.id AS order_id, 
+        sell_asset_type.asset_code AS sell_asset_code,  
+        sell_asset_type.denom AS sell_asset_denom,  
+        buy_asset_type.asset_code AS buy_asset_code,  
+        buy_asset_type.denom AS buy_asset_denom
+    FROM asset_order orders,
+         account_owner owners, 
+         asset_type buy_asset_type, 
+         asset_type sell_asset_type
+    WHERE orders.status = 'active' AND orders.expires_at >= (now() at time zone 'utc');";
+
+const SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL: &'static str = "SELECT 
+        *, 
+        orders.id AS order_id, 
+        sell_asset_type.asset_code AS sell_asset_code,  
+        sell_asset_type.denom AS sell_asset_denom,  
+        buy_asset_type.asset_code AS buy_asset_code,  
+        buy_asset_type.denom AS buy_asset_denom
+    FROM asset_order orders,
+         account_owner owners, 
+         users users, 
+         asset_type buy_asset_type, 
+         asset_type sell_asset_type
+    WHERE orders.owner_id = owners.id AND
+          buy_asset_type.id = orders.buy_asset_type_id AND
+          sell_asset_type.id = orders.sell_asset_type_id AND 
+          users.id = owners.user_id AND
+          users.email_address = $1";

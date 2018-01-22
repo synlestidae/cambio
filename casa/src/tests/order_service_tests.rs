@@ -29,6 +29,9 @@ fn test_places_one_order() {
         let placed_order = order_service.place_order(owner_id, &order).unwrap();
         let mut placed_order_1 = order_service.get_order_by_unique_id(owner_id, &order.unique_id).unwrap().unwrap();
         let mut placed_order_2 = order_service.get_order_by_id(placed_order.id.unwrap()).unwrap().unwrap();
+        let all_orders =
+            order_service.get_all_active_orders_by_user("jacinda@newzealand.co.nz").unwrap();
+        assert_eq!(placed_order, all_orders[0]);
         assert_eq!(placed_order_1, placed_order_2);
         placed_order_1.id = None;
         placed_order_2.id = None;
