@@ -8,7 +8,6 @@ use db::{PostgresSource, PostgresHelper, PostgresHelperImpl, ConnectionSource};
 use hyper::header::{Headers, ContentType};
 use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
 use hyper;
-use iron::prelude::*;
 use iron::request::Request;
 use iron::Handler;
 use iron;
@@ -16,7 +15,6 @@ use router::Router;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json;
-use std::clone::Clone;
 use std;
 
 #[derive(Clone)]

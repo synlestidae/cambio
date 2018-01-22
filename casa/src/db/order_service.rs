@@ -40,8 +40,7 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
-        self.db_helper.execute(UPDATE_ORDERS_EXPIRED_SQL, &[]);
-        self.db_helper.execute(CANCEL_ORDER_SQL, &[]);
+        try!(self.db_helper.execute(CANCEL_ORDER_SQL, &[]));
         self.get_order_by_id(order_id)
     }
 

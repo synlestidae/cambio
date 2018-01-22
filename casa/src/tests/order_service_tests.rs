@@ -6,6 +6,11 @@ use chrono::prelude::*;
 use std::process;
 use tests::test_utils::*;
 
+#[allow(dead_code)]
+fn get_service() -> OrderService<PostgresHelperImpl> {
+    OrderService::new(get_db_helper())
+}
+
 #[test]
 fn test_places_one_order() {
     run_test(|| {
@@ -40,6 +45,3 @@ fn test_places_one_order() {
     });
 }
 
-fn get_service() -> OrderService<PostgresHelperImpl> {
-    OrderService::new(get_db_helper())
-}

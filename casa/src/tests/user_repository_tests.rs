@@ -113,6 +113,7 @@ fn test_register_user_allows_login_and_logout() {
     });
 }
 
+#[allow(dead_code)]
 pub fn get_repository() -> UserRepository<PostgresHelperImpl> {
     UserRepository::new(get_db_helper())
 }

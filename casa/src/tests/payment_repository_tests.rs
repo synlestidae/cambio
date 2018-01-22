@@ -56,6 +56,7 @@ fn user_account_gets_credited() {
     });
 }
 
+#[allow(dead_code)]
 fn get_repository() -> PaymentRepository<PostgresHelperImpl> {
     let account_repository = AccountRepository::new(get_db_helper());
     let user_repository = UserRepository::new(get_db_helper());

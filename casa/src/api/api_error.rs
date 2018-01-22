@@ -19,6 +19,7 @@ impl fmt::Display for ApiError {
     }
 }
 
+#[allow(dead_code)]
 impl ApiError {
     pub fn new(description: String, err_type: ErrorType) -> Self {
         ApiError {

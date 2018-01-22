@@ -69,7 +69,7 @@ impl PostgresHelper for PostgresHelperImpl {
         query: &str,
         params: &[&ToSql],
     ) -> Result<Vec<T>, PostgresHelperError> {
-        let mut connection = try!(self.conn_source.get());
+        let connection = try!(self.conn_source.get());
         match connection.query(query, params) {
             Ok(query_result) => {
                 let mut result_objs = Vec::new();

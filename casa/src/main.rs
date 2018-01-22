@@ -48,11 +48,9 @@ use time::PreciseTime;
 use iron_cors::CorsMiddleware;
 
 fn main() {
-    env_logger::init();
-    debug!("Starting up");
-    const MAX_BODY_LENGTH: usize = 1024 * 512;
+    env_logger::init().expect("Could not start logger");
     let middleware = CorsMiddleware::with_allow_any();
-    let mut helper =
+    let helper =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let mut router = Router::new();
     let mut api_init = api::TotalApiInit::new(helper);
