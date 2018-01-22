@@ -4,7 +4,7 @@ DECLARE
   poli_account INTEGER;
 BEGIN
     INSERT INTO asset_type(asset_code, denom) VALUES ('nzd', 'cent');
-    INSERT INTO asset_type(asset_code, denom) VALUES ('btc', 'sat');
+    INSERT INTO asset_type(asset_code, denom) VALUES ('btc', 'satoshi');
     INSERT INTO accounting_period(from_date, to_date) VALUES('2018-01-01', '2018-03-30');
 
     PERFORM register_user('admin@cambio.co.nz', '$2a$04$tGJRoFRrsvRQYir0MWLbjefwa.otStWb/rR4VyGP8gcBsvmwLitay'); -- password1235

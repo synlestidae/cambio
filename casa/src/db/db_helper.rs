@@ -76,7 +76,10 @@ impl PostgresHelper for PostgresHelperImpl {
                 for row in query_result.iter() {
                     match T::try_from_row(&row) {
                         Ok(obj) => result_objs.push(obj),
-                        Err(_) => return Err(PostgresHelperError::new("Error serialialising row")),
+                        Err(error) => { 
+                            let error_message = format!("Error serialialising row. {}", error);
+                            return Err(PostgresHelperError::new(&error_message))
+                        }
                     }
                 }
                 Ok(result_objs)

@@ -14,7 +14,7 @@ impl Denom {
         match denom_str {
             "dollar" => Some(Denom::Dollar),
             "cent" => Some(Denom::Cent),
-            "sat" => Some(Denom::Sat),
+            "satoshi" => Some(Denom::Sat),
             "wei" => Some(Denom::Wei),
             unknown => None,
         }

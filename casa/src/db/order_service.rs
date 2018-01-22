@@ -13,7 +13,8 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn place_order(&mut self, owner_id: Id, order: &Order) -> Result<Order, PostgresHelperError> {
-        let ttl_milliseconds = ((order.expires_at.timestamp() - Utc::now().timestamp()) * 1000) as u32;
+        let ttl_milliseconds = ((order.expires_at.timestamp() - Utc::now().timestamp()) * 1000) as
+            i32;
 
         let sell_asset_units = order.sell_asset_units as i64;
         let buy_asset_units = order.buy_asset_units as i64;
@@ -29,14 +30,14 @@ impl<T: PostgresHelper> OrderService<T> {
             &owner_id,
             &sell_asset_units,
             &buy_asset_units,
-            &ttl_milliseconds,
+            &ttl_milliseconds
         ]);
 
         println!("Ran the stored procedure!");
 
         match execute_result {
-            Ok(_) =>  {
-                println!("Got some rows");
+            Ok(rows) =>  {
+                println!("Got some rows: {}", rows);
                 let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
                 println!("Got the order!");
                 new_order.ok_or(PostgresHelperError::new("Failed to retrieve order after placing it."))
@@ -67,7 +68,10 @@ impl<T: PostgresHelper> OrderService<T> {
     pub fn get_order_by_unique_id(&mut self, owner_id: Id, unique_id: &str) -> Result<Option<Order>, PostgresHelperError> {
         match self.db_helper.query(SELECT_ORDER_UNIQUE_ID_SQL, &[&owner_id, &unique_id]) {
             Ok(mut orders) => Ok(orders.pop()),
-            Err(error) => Err(PostgresHelperError::new(&format!("Failed to get order: {}", error)))
+            Err(error) => {
+                println!("Naughty error: {:?}", error);
+                Err(PostgresHelperError::new(&format!("Failed to get order: {:?}", error)))
+            }
         }
     }
 }
@@ -77,16 +81,17 @@ const INSERT_NEW_ORDER_SQL: &'static str = "SELECT place_order($1, $2, $3, $4, $
 const SELECT_ORDER_UNIQUE_ID_SQL: &'static str =  
     "SELECT 
         *, 
-        asset_order.id AS order_id, 
+        orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
         sell_asset_type.denom AS sell_asset_denom,  
         buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.asset_denom AS buy_asset_denom,  
-    FROM asset_order,
-         account_owner, 
+        buy_asset_type.denom AS buy_asset_denom
+    FROM asset_order orders,
+         account_owner owners, 
          asset_type buy_asset_type, 
          asset_type sell_asset_type
-    WHERE asset_order.owner_id = owner.id AND
-          buy_asset_type.id = asset_order.buy_asset_type_id AND
-          sell_asset_type.id = asset_order.sell_asset_type_id
-";
+    WHERE orders.owner_id = owners.id AND
+          buy_asset_type.id = orders.buy_asset_type_id AND
+          sell_asset_type.id = orders.sell_asset_type_id AND
+          owners.id = $1 AND
+          orders.unique_id = $2";

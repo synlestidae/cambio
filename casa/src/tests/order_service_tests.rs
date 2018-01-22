@@ -15,7 +15,7 @@ fn test_places_one_order() {
         user_repository.register_user("jacinda@newzealand.co.nz", "secret123".to_owned());
         let owner_id = 
             user_repository.get_owner_id_by_email_address("jacinda@newzealand.co.nz").unwrap();
-        let order = Order {
+        let mut order = Order {
             id: None,
             unique_id: "bE9WO$h&Q#YQ%s@7mF2Zq9ecgB6XO)dC".to_owned(),
             sell_asset_units: 30000,
@@ -27,6 +27,9 @@ fn test_places_one_order() {
             expires_at: Utc::now() + Duration::minutes(10)
         };
         order_service.place_order(owner_id, &order).unwrap();
+        let mut placed_order = order_service.get_order_by_unique_id(owner_id, &order.unique_id).unwrap().unwrap();
+        placed_order.id = None;
+        assert_eq!(order, placed_order);
     });
 }
 

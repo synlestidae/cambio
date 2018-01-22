@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use std;
 use postgres::rows::Row;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Order {
     pub id: Option<Id>,
     pub unique_id: String,
@@ -22,6 +22,7 @@ pub struct Order {
 impl TryFromRow for Order {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError>
         where Self: std::marker::Sized {
+        println!("Getting this row, yo {:?}", row);
         let id_match: Option<Id> = row.get("order_id");
 
         let owner_id_match: Option<Id> = row.get("owner_id");
@@ -40,6 +41,7 @@ impl TryFromRow for Order {
         let sell_asset_type_string: String = try!(sell_asset_type_match.ok_or(TryFromRowError::missing_field("Order", "sell_asset_code")));
 
         let sell_asset_denom_match: Option<String> = row.get("sell_asset_denom");
+        println!("Sell this asset {:?}", sell_asset_denom_match);
         let sell_asset_denom_string: String =
             try!(sell_asset_denom_match.ok_or(TryFromRowError::missing_field("Order", "sell_asset_denom")));
 
@@ -47,15 +49,12 @@ impl TryFromRow for Order {
         let buy_asset_type_string: String = try!(buy_asset_type_match.ok_or(TryFromRowError::missing_field("Order", "buy_asset_code")));
 
         let buy_asset_denom_match: Option<String> = row.get("buy_asset_denom");
+        println!("Buy this asset {:?}", buy_asset_denom_match);
         let buy_asset_denom_string: String =
             try!(buy_asset_denom_match.ok_or(TryFromRowError::missing_field("Order", "buy_asset_denom")));
 
-
-        let expires_at_match: Option<NaiveDateTime> = row.get("registered_at");
+        let expires_at_match: Option<NaiveDateTime> = row.get("expires_at");
         let expires_at: NaiveDateTime = try!(expires_at_match.ok_or(TryFromRowError::missing_field("Order", "registered_at")));
-
-        let ttl_milliseconds_match: Option<i32> = row.get("ttl_milliseconds"); 
-        let ttl_milliseconds: i32 = try!(ttl_milliseconds_match.ok_or(TryFromRowError::missing_field("Order", "ttl_milliseconds")));
 
         let buy_asset_units: u64;
         let sell_asset_units: u64;
@@ -104,7 +103,7 @@ impl TryFromRow for Order {
             buy_asset_type: buy_asset_type,
             sell_asset_denom: sell_asset_denom,
             buy_asset_denom: buy_asset_denom,
-            expires_at: DateTime::from_utc(expires_at, Utc) + Duration::milliseconds(ttl_milliseconds as i64)
+            expires_at: DateTime::from_utc(expires_at, Utc)
         })
     }
 }
