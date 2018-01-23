@@ -4,7 +4,7 @@ use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id};
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
-    db_helper: T
+    db_helper: T,
 }
 
 impl<T: PostgresHelper> OrderService<T> {
@@ -12,29 +12,41 @@ impl<T: PostgresHelper> OrderService<T> {
         Self { db_helper: db_helper }
     }
 
-    pub fn place_order(&mut self, owner_id: Id, order: &Order) -> Result<Order, PostgresHelperError> {
+    pub fn place_order(
+        &mut self,
+        owner_id: Id,
+        order: &Order,
+    ) -> Result<Order, PostgresHelperError> {
         let sell_asset_units = order.sell_asset_units as i64;
         let buy_asset_units = order.buy_asset_units as i64;
 
-        let execute_result = self.db_helper.execute(INSERT_NEW_ORDER_SQL, &[
-            &order.buy_asset_type.to_string(),
-            &order.buy_asset_denom.to_string(),
-            &order.sell_asset_type.to_string(),
-            &order.sell_asset_denom.to_string(),
-            &order.unique_id,
-            &owner_id,
-            &sell_asset_units,
-            &buy_asset_units,
-            &order.expires_at.naive_utc()
-        ]);
+        let execute_result = self.db_helper.execute(
+            INSERT_NEW_ORDER_SQL,
+            &[
+                &order.buy_asset_type.to_string(),
+                &order.buy_asset_denom.to_string(),
+                &order.sell_asset_type.to_string(),
+                &order.sell_asset_denom.to_string(),
+                &order.unique_id,
+                &owner_id,
+                &sell_asset_units,
+                &buy_asset_units,
+                &order.expires_at.naive_utc(),
+            ],
+        );
 
         match execute_result {
-            Ok(rows) =>  {
+            Ok(rows) => {
                 let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
-                new_order.ok_or(PostgresHelperError::new("Failed to retrieve order after placing it."))
-            },
+                new_order.ok_or(PostgresHelperError::new(
+                    "Failed to retrieve order after placing it.",
+                ))
+            }
             Err(err) => {
-                Err(PostgresHelperError::new(&format!("Failed to execute order placement function: {:?}", err)))
+                Err(PostgresHelperError::new(&format!(
+                    "Failed to execute order placement function: {:?}",
+                    err
+                )))
             }
         }
     }
@@ -48,22 +60,34 @@ impl<T: PostgresHelper> OrderService<T> {
         match self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_SQL, &[]) {
             Ok(orders) => Ok(orders),
             Err(error) => {
-                Err(PostgresHelperError::new(&format!("Failed to get orders: {:?}", error)))
+                Err(PostgresHelperError::new(
+                    &format!("Failed to get orders: {:?}", error),
+                ))
             }
         }
     }
 
-    pub fn get_all_active_orders_by_user(&mut self, email_address: &str) -> Result<Vec<Order>, PostgresHelperError> {
-        match self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL, &[&email_address]) {
+    pub fn get_all_active_orders_by_user(
+        &mut self,
+        email_address: &str,
+    ) -> Result<Vec<Order>, PostgresHelperError> {
+        match self.db_helper.query(
+            SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL,
+            &[&email_address],
+        ) {
             Ok(orders) => Ok(orders),
             Err(error) => {
-                Err(PostgresHelperError::new(&format!("Failed to get orders for user: {:?}", error)))
+                Err(PostgresHelperError::new(
+                    &format!("Failed to get orders for user: {:?}", error),
+                ))
             }
         }
     }
 
-    pub fn get_order_settlement_status(&mut self, order_id: Id) 
-        -> Result<Option<OrderSettlement>, PostgresHelperError> {
+    pub fn get_order_settlement_status(
+        &mut self,
+        order_id: Id,
+    ) -> Result<Option<OrderSettlement>, PostgresHelperError> {
         let settlement_result = self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]);
         let settlement: OrderSettlementBuilder;
 
@@ -75,9 +99,11 @@ impl<T: PostgresHelper> OrderService<T> {
 
         let settlement_id = settlement.id.unwrap();
 
-        let mut orders_in_settlement_result: Vec<OrderSettlementBuilder> = 
-            try!(self.db_helper.query(SELECT_ORDERS_IN_SETTLEMENT_SQL,
-            &[&settlement_id]));
+        let mut orders_in_settlement_result: Vec<OrderSettlementBuilder> =
+            try!(self.db_helper.query(
+                SELECT_ORDERS_IN_SETTLEMENT_SQL,
+                &[&settlement_id],
+            ));
 
         let order_settlement_builder: OrderSettlementBuilder;
 
@@ -87,14 +113,18 @@ impl<T: PostgresHelper> OrderService<T> {
             return Ok(None);
         }
 
-        let mut order_result: Vec<Order> = try!(self.db_helper.query(SELECT_ORDERS_IN_SETTLEMENT_SQL,
-            &[&settlement_id]));
+        let mut order_result: Vec<Order> = try!(self.db_helper.query(
+            SELECT_ORDERS_IN_SETTLEMENT_SQL,
+            &[&settlement_id],
+        ));
 
         let buying_order: Order;
         let selling_order: Order;
         if order_result.len() != 2 {
-            let error_message = format!("Settlement should have two orders, but got {}",
-                order_result.len());
+            let error_message = format!(
+                "Settlement should have two orders, but got {}",
+                order_result.len()
+            );
             return Err(PostgresHelperError::new(&error_message));
         }
         buying_order = order_result.pop().unwrap();
@@ -109,16 +139,27 @@ impl<T: PostgresHelper> OrderService<T> {
         match self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]) {
             Ok(mut orders) => Ok(orders.pop()),
             Err(error) => {
-                Err(PostgresHelperError::new(&format!("Failed to get order: {:?}", error)))
+                Err(PostgresHelperError::new(
+                    &format!("Failed to get order: {:?}", error),
+                ))
             }
         }
     }
 
-    pub fn get_order_by_unique_id(&mut self, owner_id: Id, unique_id: &str) -> Result<Option<Order>, PostgresHelperError> {
-        match self.db_helper.query(SELECT_ORDER_UNIQUE_ID_SQL, &[&owner_id, &unique_id]) {
+    pub fn get_order_by_unique_id(
+        &mut self,
+        owner_id: Id,
+        unique_id: &str,
+    ) -> Result<Option<Order>, PostgresHelperError> {
+        match self.db_helper.query(
+            SELECT_ORDER_UNIQUE_ID_SQL,
+            &[&owner_id, &unique_id],
+        ) {
             Ok(mut orders) => Ok(orders.pop()),
             Err(error) => {
-                Err(PostgresHelperError::new(&format!("Failed to get order: {:?}", error)))
+                Err(PostgresHelperError::new(
+                    &format!("Failed to get order: {:?}", error),
+                ))
             }
         }
     }
@@ -126,8 +167,7 @@ impl<T: PostgresHelper> OrderService<T> {
 
 const INSERT_NEW_ORDER_SQL: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";
 
-const SELECT_ORDER_UNIQUE_ID_SQL: &'static str =  
-    "SELECT 
+const SELECT_ORDER_UNIQUE_ID_SQL: &'static str = "SELECT 
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  

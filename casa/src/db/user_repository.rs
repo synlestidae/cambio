@@ -155,8 +155,10 @@ impl<T: PostgresHelper> UserRepository<T> {
         Ok(())
     }
 
-    pub fn get_owner_id_by_email_address(&mut self, email_address: &str) 
-        -> Result<Id, PostgresHelperError> {
+    pub fn get_owner_id_by_email_address(
+        &mut self,
+        email_address: &str,
+    ) -> Result<Id, PostgresHelperError> {
         const GET_OWNER_QUERY: &'static str = "
             SELECT account_owner.id AS owner_id FROM account_owner, users 
             WHERE account_owner.user_id = users.id AND users.email_address = $1";
@@ -167,11 +169,14 @@ impl<T: PostgresHelper> UserRepository<T> {
                     let row = rows.get(0);
                     Ok(row.get("owner_id"))
                 } else {
-                    return Err(PostgresHelperError::new(&format!("Owner ID for {} does not exist", 
-                        email_address)))
+                    return Err(PostgresHelperError::new(
+                        &format!("Owner ID for {} does not exist", email_address),
+                    ));
                 }
-            },
-            Err(error) => Err(PostgresHelperError::new(&format!("Error fetching owner_id: {}", error)))
+            }
+            Err(error) => Err(PostgresHelperError::new(
+                &format!("Error fetching owner_id: {}", error),
+            )),
         }
     }
 }

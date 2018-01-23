@@ -8,5 +8,5 @@ pub enum SettlementStatus {
     #[postgres(name = "cancelled")]
     Cancelled,
     #[postgres(name = "invalid")]
-    Invalid
+    Invalid,
 }

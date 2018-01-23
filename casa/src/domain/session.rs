@@ -16,7 +16,7 @@ pub struct Session {
 impl TryFromRow for Session {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError>
     where
-        Self: std::marker::Sized
+        Self: std::marker::Sized,
     {
         let email_address_match: Option<String> = row.get("email_address");
         let session_token_match: Option<String> = row.get("session_token");

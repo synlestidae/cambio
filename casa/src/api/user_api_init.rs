@@ -44,7 +44,7 @@ where
                 let mut api = UserApi::new(this_helper_ref.clone());
                 Ok(api.put_register(r))
             },
-            "put_register"
+            "put_register",
         );
 
         router.post(
@@ -54,7 +54,7 @@ where
                 let mut api = UserApi::new(this_helper_ref.clone());
                 Ok(api.post_log_in(r))
             },
-            "post_log_in"
+            "post_log_in",
         );
 
         router.get(
@@ -64,7 +64,7 @@ where
                 let mut api = UserApi::new(profile_helper_ref.clone());
                 Ok(api.get_profile(r))
             },
-            "get_profile"
+            "get_profile",
         );
     }
 }

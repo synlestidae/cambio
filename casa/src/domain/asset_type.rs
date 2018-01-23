@@ -14,7 +14,7 @@ impl AssetType {
             "eth" => Some(AssetType::ETH),
             "btc" => Some(AssetType::BTC),
             "nzd" => Some(AssetType::NZD),
-            unknown => None
+            unknown => None,
         }
     }
 }

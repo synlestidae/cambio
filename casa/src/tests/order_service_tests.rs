@@ -18,8 +18,9 @@ fn test_places_one_order() {
         let mut order_service = get_service();
 
         user_repository.register_user("jacinda@newzealand.co.nz", "secret123".to_owned());
-        let owner_id = 
-            user_repository.get_owner_id_by_email_address("jacinda@newzealand.co.nz").unwrap();
+        let owner_id = user_repository
+            .get_owner_id_by_email_address("jacinda@newzealand.co.nz")
+            .unwrap();
         let mut order = Order {
             id: None,
             unique_id: "bE9WO$h&Q#YQ%s@7mF2Zq9ecgB6XO)dC".to_owned(),
@@ -29,13 +30,20 @@ fn test_places_one_order() {
             sell_asset_denom: Denom::Sat,
             buy_asset_type: AssetType::NZD,
             buy_asset_denom: Denom::Cent,
-            expires_at: Utc::now() + Duration::minutes(10)
+            expires_at: Utc::now() + Duration::minutes(10),
         };
         let placed_order = order_service.place_order(owner_id, &order).unwrap();
-        let mut placed_order_1 = order_service.get_order_by_unique_id(owner_id, &order.unique_id).unwrap().unwrap();
-        let mut placed_order_2 = order_service.get_order_by_id(placed_order.id.unwrap()).unwrap().unwrap();
-        let all_orders =
-            order_service.get_all_active_orders_by_user("jacinda@newzealand.co.nz").unwrap();
+        let mut placed_order_1 = order_service
+            .get_order_by_unique_id(owner_id, &order.unique_id)
+            .unwrap()
+            .unwrap();
+        let mut placed_order_2 = order_service
+            .get_order_by_id(placed_order.id.unwrap())
+            .unwrap()
+            .unwrap();
+        let all_orders = order_service
+            .get_all_active_orders_by_user("jacinda@newzealand.co.nz")
+            .unwrap();
         assert_eq!(placed_order, all_orders[0]);
         assert_eq!(placed_order_1, placed_order_2);
         placed_order_1.id = None;
@@ -44,4 +52,3 @@ fn test_places_one_order() {
         assert_eq!(order, placed_order_2);
     });
 }
-

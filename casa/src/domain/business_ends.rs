@@ -14,7 +14,7 @@ pub enum BusinessEnds {
     #[postgres(name = "cryptocurrency_purchase")]
     CryptocurrencyPurchase,
     #[postgres(name = "order_placement")]
-    OrderPlacement
+    OrderPlacement,
 }
 
 impl BusinessEnds {
@@ -57,7 +57,7 @@ impl fmt::Display for BusinessEnds {
             &BusinessEnds::WalletWithdrawal => "wallet_withdrawal",
             &BusinessEnds::SystemFeeCharge => "system_fee_charge",
             &BusinessEnds::CryptocurrencyPurchase => "cryptocurrency_purchase",
-            &BusinessEnds::OrderPlacement=> "order_placement"
+            &BusinessEnds::OrderPlacement => "order_placement",
         };
         write!(f, "{}", as_string)
     }

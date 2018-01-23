@@ -9,5 +9,5 @@ pub struct OrderSettlement {
     pub settled_at: Option<DateTime<Utc>>,
     pub settlement_status: SettlementStatus,
     pub buying_order: Order,
-    pub selling_order: Order
+    pub selling_order: Order,
 }
