@@ -1,6 +1,6 @@
 use db::{PostgresHelper, PostgresHelperError};
 use chrono::prelude::*;
-use domain::{Order, OrderSettlement, Id};
+use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id};
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
@@ -62,9 +62,47 @@ impl<T: PostgresHelper> OrderService<T> {
         }
     }
 
-    pub fn get_order_settlement_status(order_id: Id) 
+    pub fn get_order_settlement_status(&mut self, order_id: Id) 
         -> Result<Option<OrderSettlement>, PostgresHelperError> {
-        unimplemented!();
+        let settlement_result = self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]);
+        let settlement: OrderSettlementBuilder;
+
+        if let Some(s) = try!(settlement_result).pop() {
+            settlement = s;
+        } else {
+            return Ok(None);
+        }
+
+        let settlement_id = settlement.id.unwrap();
+
+        let mut orders_in_settlement_result: Vec<OrderSettlementBuilder> = 
+            try!(self.db_helper.query(SELECT_ORDERS_IN_SETTLEMENT_SQL,
+            &[&settlement_id]));
+
+        let order_settlement_builder: OrderSettlementBuilder;
+
+        if let Some(s) = orders_in_settlement_result.pop() {
+            order_settlement_builder = s;
+        } else {
+            return Ok(None);
+        }
+
+        let mut order_result: Vec<Order> = try!(self.db_helper.query(SELECT_ORDERS_IN_SETTLEMENT_SQL,
+            &[&settlement_id]));
+
+        let buying_order: Order;
+        let selling_order: Order;
+        if order_result.len() != 2 {
+            let error_message = format!("Settlement should have two orders, but got {}",
+                order_result.len());
+            return Err(PostgresHelperError::new(&error_message));
+        }
+        buying_order = order_result.pop().unwrap();
+        selling_order = order_result.pop().unwrap();
+
+        let settlement = order_settlement_builder.build(buying_order, selling_order);
+
+        Ok(Some(settlement))
     }
 
     pub fn get_order_by_id(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
@@ -161,3 +199,27 @@ const SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL: &'static str = "SELECT
           sell_asset_type.id = orders.sell_asset_type_id AND 
           users.id = owners.user_id AND
           users.email_address = $1";
+
+const SELECT_ORDER_SETTLEMENT_SQL: &'static str = "
+    SELECT settlements.*, settlements.id as order_settlement_id FROM 
+        asset_order orders,
+        order_settlement settlements
+    WHERE 
+        orders.id = $1";
+
+const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT 
+        *, 
+        orders.id AS order_id, 
+        sell_asset_type.asset_code AS sell_asset_code,  
+        sell_asset_type.denom AS sell_asset_denom,  
+        buy_asset_type.asset_code AS buy_asset_code,  
+        buy_asset_type.denom AS buy_asset_denom
+    FROM asset_order orders,
+         asset_order cp_order,
+         account_owner owners, 
+         asset_type buy_asset_type, 
+         asset_type sell_asset_type,
+         order_settlement settlements
+    WHERE 
+        orders.settlement_id = $1
+";

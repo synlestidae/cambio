@@ -37,7 +37,7 @@ impl OrderSettlementBuilder {
 
 impl TryFromRow for OrderSettlementBuilder {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        let id_match: Option<i32> = row.get("id");
+        let id_match: Option<i32> = row.get("order_settlement_id");
         let id = try!(id_match.ok_or(TryFromRowError::missing_field("OrderSettlementBuilder", "id")));
         let started_at_match: Option<NaiveDateTime> = row.get("started_at");
         let started_at =
