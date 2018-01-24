@@ -7,8 +7,11 @@ use postgres;
 pub struct Account {
     #[column_id(account_id)]
     pub id: Option<Id>,
+    #[column_id(user_id)]
     pub owner_user_id: Option<Id>,
+    #[column_id(asset_code)]
     pub asset_type: AssetType,
+    #[column_id(denom)]
     pub asset_denom: Denom,
     pub account_status: AccountStatus,
     pub account_business_type: AccountBusinessType,

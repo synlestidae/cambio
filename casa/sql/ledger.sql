@@ -40,8 +40,8 @@ CREATE OR REPLACE FUNCTION credit_account_from_payment(
     email_address_var VARCHAR,
     credited_account_id INTEGER,
 
-    asset_type_var VARCHAR,
-    asset_denom_var VARCHAR,
+    asset_type_var ASSET_CODE_TYPE,
+    asset_denom_var DENOM_TYPE,
 
     -- stuff that comes 'over the wire' from the broker
     vendor_name payment_vendor,

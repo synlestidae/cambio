@@ -1,12 +1,13 @@
+#![feature(proc_macro)]
 extern crate proc_macro;
 extern crate syn;
 
 #[macro_use]
 extern crate quote;
 
-use proc_macro::TokenStream;
+use proc_macro::{TokenStream, Term, TokenNode};
 use syn::DeriveInput;
-use quote::ToTokens;
+use quote::{ToTokens};
 use std::str::FromStr;
 
 use syn::punctuated::Iter;
@@ -64,10 +65,16 @@ const TRY_FROM_PATH: &'static str = "try_from_column";
 fn get_column_name(field: &syn::Field) -> String {
     for attr in field.attrs.iter() {
         let key = attr.path.clone().into_tokens().to_string();
-        let value = attr.tts.to_string();
-        //panic!("Professor frink professor frink: {} {}", key, value);
         if key == "column_id" {
-            return value;
+            let value_tokens: Vec<_> = attr.tts.clone().into_iter().collect();
+            if value_tokens.len() == 1 {
+                match &value_tokens[0].kind {
+                    &quote::__rt::TokenNode::Group(_, ref name_stream) => {
+                        return name_stream.clone().into_tokens().to_string()
+                    },
+                    _ => panic!("Bad column format")
+                }
+            }
         }
         //println!("ATTO {:?}", attr);
         /*match attr.path.segments.first() {

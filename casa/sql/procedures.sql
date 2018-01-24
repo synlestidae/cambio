@@ -1,8 +1,8 @@
 CREATE SEQUENCE correspondence_id_seq;
 
 CREATE OR REPLACE FUNCTION transfer_asset(
-    asset_code_var VARCHAR(4),
-    asset_denom_var VARCHAR(6),
+    asset_code_var ASSET_CODE_TYPE,
+    asset_denom_var DENOM_TYPE,
     account_period_start DATE,
     account_period_end DATE,
     debit_account INTEGER,
@@ -69,8 +69,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION get_asset_id(
-    asset_code_var VARCHAR(4),
-    asset_denom_var VARCHAR(6)
+    asset_code_var ASSET_CODE_TYPE,
+    asset_denom_var DENOM_TYPE
 )
 RETURNS INTEGER AS $$
 DECLARE 

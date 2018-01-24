@@ -28,7 +28,8 @@ impl TryFromRow for Transaction {
         )));
 
         let other_party: Option<i32> = None;
-        let asset_type: AssetType = try!(AssetType::try_from_row(row));
+        let asset_type_match: Option<AssetType> = row.get("asset_code");
+        let asset_type: AssetType = try!(asset_type_match.ok_or(TryFromRowError::missing_field("Transaction", "asset_code")));
         let credit_match: Option<i64> = row.get("credit");
         let debit_match: Option<i64> = row.get("debit");
         let transaction_time_match: Option<NaiveDateTime> = row.get("transaction_time");
@@ -54,7 +55,8 @@ impl TryFromRow for Transaction {
             "message",
         )));
 
-        let denom = try!(Denom::try_from_row(row)); //row.get("denom");
+        let denom_match: Option<Denom> = row.get("denom");//try!(Denom::try_from_row(row)); //row.get("denom");
+        let denom = try!(denom_match.ok_or(TryFromRowError::missing_field("Denom", "denom")));
         let business_ends_match: Option<BusinessEnds> = row.get("business_ends");
         let business_ends: BusinessEnds =
             try!(business_ends_match.ok_or(TryFromRowError::missing_field(

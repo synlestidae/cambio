@@ -97,7 +97,7 @@ BEGIN
     INSERT INTO account_owner(user_id) VALUES(user_id) RETURNING id into owner_id;
 
     SELECT * INTO nzd_asset_type_id FROM get_asset_id('nzd', 'cent');
-    SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('btc', 'sat');
+    SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('btc', 'satoshi');
 
     -- create an account for nzd 
     INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)

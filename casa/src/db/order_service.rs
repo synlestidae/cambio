@@ -23,10 +23,10 @@ impl<T: PostgresHelper> OrderService<T> {
         let execute_result = self.db_helper.execute(
             INSERT_NEW_ORDER_SQL,
             &[
-                &order.buy_asset_type.to_string(),
-                &order.buy_asset_denom.to_string(),
-                &order.sell_asset_type.to_string(),
-                &order.sell_asset_denom.to_string(),
+                &order.buy_asset_type,
+                &order.buy_asset_denom,
+                &order.sell_asset_type,
+                &order.sell_asset_denom,
                 &order.unique_id,
                 &owner_id,
                 &sell_asset_units,

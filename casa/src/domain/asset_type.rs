@@ -1,11 +1,15 @@
 use postgres::rows::Row;
 use db::{TryFromRow, TryFromRowError};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, FromSql, ToSql)]
+#[postgres(name = "asset_code_type")]
 pub enum AssetType {
+    #[postgres(name = "nzd")]
     NZD,
+    #[postgres(name = "btc")]
     BTC,
-    ETH,
+    #[postgres(name = "eth")]
+    ETH
 }
 
 impl AssetType {

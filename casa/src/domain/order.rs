@@ -52,27 +52,27 @@ impl TryFromRow for Order {
             ),
         ));
 
-        let sell_asset_type_match: Option<String> = row.get("sell_asset_code");
-        let sell_asset_type_string: String =
+        let sell_asset_type_match: Option<AssetType> = row.get("sell_asset_code");
+        let sell_asset_type: AssetType =
             try!(sell_asset_type_match.ok_or(TryFromRowError::missing_field(
                 "Order",
                 "sell_asset_code",
             )));
 
-        let sell_asset_denom_match: Option<String> = row.get("sell_asset_denom");
-        let sell_asset_denom_string: String = try!(sell_asset_denom_match.ok_or(
+        let sell_asset_denom_match: Option<Denom> = row.get("sell_asset_denom");
+        let sell_asset_denom: Denom = try!(sell_asset_denom_match.ok_or(
             TryFromRowError::missing_field("Order", "sell_asset_denom"),
         ));
 
-        let buy_asset_type_match: Option<String> = row.get("buy_asset_code");
-        let buy_asset_type_string: String =
+        let buy_asset_type_match: Option<AssetType> = row.get("buy_asset_code");
+        let buy_asset_type: AssetType =
             try!(buy_asset_type_match.ok_or(TryFromRowError::missing_field(
                 "Order",
                 "buy_asset_code",
             )));
 
-        let buy_asset_denom_match: Option<String> = row.get("buy_asset_denom");
-        let buy_asset_denom_string: String =
+        let buy_asset_denom_match: Option<Denom> = row.get("buy_asset_denom");
+        let buy_asset_denom: Denom =
             try!(buy_asset_denom_match.ok_or(TryFromRowError::missing_field(
                 "Order",
                 "buy_asset_denom",
@@ -87,12 +87,6 @@ impl TryFromRow for Order {
 
         let buy_asset_units: u64;
         let sell_asset_units: u64;
-
-        let sell_asset_type: AssetType;
-        let sell_asset_denom: Denom;
-
-        let buy_asset_type: AssetType;
-        let buy_asset_denom: Denom;
 
         // God damn it this is boring - why haven't I learnt to macro yet?!
 
@@ -114,36 +108,6 @@ impl TryFromRow for Order {
 
         buy_asset_units = buy_asset_units_i64 as u64;
         sell_asset_units = sell_asset_units_i64 as u64;
-
-        match (
-            AssetType::parse(&sell_asset_type_string),
-            AssetType::parse(&buy_asset_type_string),
-        ) {
-            (Some(sat), Some(bat)) => {
-                sell_asset_type = sat;
-                buy_asset_type = bat;
-            }
-            _ => {
-                return Err(TryFromRowError::new(
-                    "Could not parse the buy_asset_units or sell_asset_units field",
-                ))
-            }
-        }
-
-        match (
-            Denom::parse(&sell_asset_denom_string),
-            Denom::parse(&buy_asset_denom_string),
-        ) {
-            (Some(sad), Some(bad)) => {
-                sell_asset_denom = sad;
-                buy_asset_denom = bad;
-            }
-            _ => {
-                return Err(TryFromRowError::new(
-                    "Could not parse the buy_asset_denom or sell_asset_denom field",
-                ))
-            }
-        }
 
         Ok(Order {
             id: id_match,

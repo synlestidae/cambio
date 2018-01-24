@@ -46,10 +46,10 @@ CREATE TABLE asset_order (
 
 
 CREATE OR REPLACE FUNCTION place_order(
-    buy_asset_type_var VARCHAR,
-    buy_asset_denom_var VARCHAR, 
-    sell_asset_type_var VARCHAR,
-    sell_asset_denom_var VARCHAR,
+    buy_asset_type_var ASSET_CODE_TYPE,
+    buy_asset_denom_var DENOM_TYPE, 
+    sell_asset_type_var ASSET_CODE_TYPE,
+    sell_asset_denom_var DENOM_TYPE,
     unique_id_var VARCHAR,
     owner_id_var INTEGER,
     sell_asset_units_var BIGINT,
