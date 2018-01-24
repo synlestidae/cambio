@@ -62,6 +62,29 @@ fn from_row_string(source: String) -> TokenStream {
 const TRY_FROM_PATH: &'static str = "try_from_column";
 
 fn get_column_name(field: &syn::Field) -> String {
+    for attr in field.attrs.iter() {
+        let key = attr.path.clone().into_tokens().to_string();
+        let value = attr.tts.to_string();
+        //panic!("Professor frink professor frink: {} {}", key, value);
+        if key == "column_id" {
+            return value;
+        }
+        //println!("ATTO {:?}", attr);
+        /*match attr.path.segments.first() {
+            Some(ref path_segment) => {
+                match path_segment.first() {
+                    Some(ref segment) => {
+                        let path_string = path_segment.ident.clone().to_string();
+                        if path_string == "column_id" {
+                            return path_segment.tts.clone().to_string();
+                        }
+                    },
+                    None = {}
+                }
+            },
+            None => {}
+        }*/
+    }
     for attribute in field.attrs.iter() {
         let path_string = attribute.path.clone().into_tokens().to_string();
         if path_string == TRY_FROM_PATH {
