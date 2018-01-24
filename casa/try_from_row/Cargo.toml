@@ -7,8 +7,8 @@ authors = ["Mate Antunovic <just.mate.antunovic@gmail.com>"]
 postgres = {version = "0.15.1", features = ["with-chrono"]}
 chrono =  { version = "0.4", features = ["serde"] }
 time = "*"
-syn = "0.12"
-quote = "0.4"
+syn = "0.12.10"
+quote = "*"
 
 [lib]
 proc-macro = true

@@ -18,6 +18,9 @@ extern crate env_logger;
 extern crate postgres_derive;
 
 #[macro_use]
+extern crate try_from_row; 
+
+#[macro_use]
 extern crate serde_derive;
 
 extern crate r2d2;
