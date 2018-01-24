@@ -1,9 +1,11 @@
 use domain::{AssetType, Denom, Id, AccountStatus, AccountBusinessType, AccountRole};
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
+use postgres;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Account {
+    #[column_id(account_id)]
     pub id: Option<Id>,
     pub owner_user_id: Option<Id>,
     pub asset_type: AssetType,
@@ -13,7 +15,7 @@ pub struct Account {
     pub account_role: AccountRole,
 }
 
-impl TryFromRow for Account {
+/*impl TryFromRow for Account {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let account_id: Option<Id> = row.get("account_id");
         let account_user_id_match: Option<Id> = row.get("user_id");
@@ -52,4 +54,4 @@ impl TryFromRow for Account {
             account_business_type: account_business_type,
         })
     }
-}
+}*/

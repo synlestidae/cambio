@@ -1,3 +1,5 @@
+#![feature(custom_attribute)]
+
 extern crate bcrypt;
 extern crate iron;
 extern crate hyper;
