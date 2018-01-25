@@ -20,19 +20,3 @@ impl fmt::Display for AccountRole {
         write!(f, "{}", string)
     }
 }
-
-impl TryFromRow for AccountRole {
-    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        let account_role_match: Option<String> = row.get("account_role");
-        let account_role = try!(account_role_match.ok_or(TryFromRowError::missing_field(
-            "AccountRole",
-            "account_role",
-        )));
-
-        match account_role.as_ref() {
-            "primary" => Ok(AccountRole::Primary),
-            "system" => Ok(AccountRole::System),
-            unknown => Err(TryFromRowError::unknown_value("AccountRole", unknown)),
-        }
-    }
-}

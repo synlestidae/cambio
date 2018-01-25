@@ -2,9 +2,11 @@ use domain::{Id, PhotoStatus};
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 use db::{get_value, get_value_option};
+use postgres;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TryFromRow)]
 pub struct PersonalIdentity {
+    #[column_id(personal_identity_id)]
     id: Option<Id>,
     nz_passport_number: Option<String>,
     nz_drivers_licence_number: Option<String>,
@@ -19,7 +21,7 @@ pub struct PersonalIdentity {
     document_scan_status: Option<PhotoStatus>,
 }
 
-impl TryFromRow for PersonalIdentity {
+/*impl TryFromRow for PersonalIdentity {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let id: Option<Id> = try!(get_value_option(
             "PersonalIdentity",
@@ -77,4 +79,4 @@ impl TryFromRow for PersonalIdentity {
             document_scan_status: document_scan_status,
         })
     }
-}
+}*/

@@ -52,7 +52,7 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
-        try!(self.db_helper.execute(CANCEL_ORDER_SQL, &[]));
+        try!(self.db_helper.execute(CANCEL_ORDER_SQL, &[&order_id]));
         self.get_order_by_id(order_id)
     }
 
@@ -202,8 +202,8 @@ const SELECT_ORDER_BY_ID_SQL: &'static str = "
           orders.id = $1";
 
 const CANCEL_ORDER_SQL: &'static str = "
-    UPDATE asset_orders SET status = 'user_cancelled' 
-    WHERE status = 'active' AND expires_at < (now() at time zone 'utc') AND id = $1";
+    UPDATE asset_order SET status = 'user_cancelled' 
+    WHERE status = 'active' AND expires_at > (now() at time zone 'utc') AND id = $1";
 
 const UPDATE_ORDERS_EXPIRED_SQL: &'static str = "
     UPDATE asset_orders SET status = 'expires' 

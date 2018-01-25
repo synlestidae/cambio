@@ -137,6 +137,15 @@ fn get_var_declaration(field_name: &str, column_name: &str, type_name: &str, is_
     if is_option {
         return format!("let {0}: {2} = row.get(\"{1}\");", field_name, column_name, type_name);
     }
+    if type_name == "DateTime < Utc >" {
+        return format!("
+            let {0}_match: Option<NaiveDateTime> = row.get(\"{1}\");
+            let {0}: DateTime<Utc>;
+            if {0}_match.is_none() {{
+                return Err(TryFromRowError::new(\"Could not get field '{0}' from column '{1}'\"));
+            }}
+            {0} = DateTime::from_utc({0}_match.unwrap(), Utc);", field_name, column_name);
+    }
     format!("
         let {0}_match: Option<{2}> = row.get(\"{1}\");
         let {0}: {2};

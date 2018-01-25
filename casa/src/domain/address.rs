@@ -1,6 +1,8 @@
 use domain::Id;
 
+#[Derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Address {
+    #[column_id(address_id)]
     id: Option<Id>,
     address_line_1: Option<String>,
     address_line_2: Option<String>,

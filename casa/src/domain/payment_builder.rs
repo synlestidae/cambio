@@ -35,6 +35,7 @@ impl PaymentBuilder {
         }
 
         Ok(Payment {
+            id: None,
             asset_type: self.asset_type,
             asset_denom: self.asset_denom,
             payment_method: self.payment_method,

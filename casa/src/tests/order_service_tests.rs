@@ -1,7 +1,7 @@
 use db::{PostgresHelperImpl, UserRepository, OrderService};
 use time::Duration;
 use tests::user_repository_tests::get_repository;
-use domain::{Order, AssetType, Denom};
+use domain::{Order, AssetType, Denom, OrderStatus};
 use chrono::prelude::*;
 use std::process;
 use tests::test_utils::*;
@@ -31,6 +31,7 @@ fn test_places_one_order() {
             buy_asset_type: AssetType::NZD,
             buy_asset_denom: Denom::Cent,
             expires_at: Utc::now() + Duration::minutes(10),
+            status: OrderStatus::Active
         };
         let placed_order = order_service.place_order(owner_id, &order).unwrap();
         let mut placed_order_1 = order_service
@@ -50,5 +51,10 @@ fn test_places_one_order() {
         placed_order_2.id = None;
         assert_eq!(order, placed_order_1);
         assert_eq!(order, placed_order_2);
+
+        order_service.cancel_order(placed_order.id.unwrap()).unwrap();
+        let cancelled_order = order_service.get_order_by_id(placed_order.id.unwrap()).unwrap().unwrap();
+        assert_eq!(OrderStatus::UserCancelled, cancelled_order.status);
+        //cancelled_order
     });
 }
