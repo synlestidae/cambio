@@ -32,6 +32,7 @@ const ACCOUNT_QUERY_ID: &'static str = "
     WHERE 
         account.id = $1";
 
+#[derive(Clone)]
 pub struct AccountRepository<T: PostgresHelper> {
     db_helper: T,
 }

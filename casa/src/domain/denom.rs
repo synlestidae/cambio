@@ -11,7 +11,9 @@ pub enum Denom {
     #[postgres(name = "satoshi")]
     Sat,
     #[postgres(name = "wei")]
-    Wei
+    Wei,
+    #[postgres(name = "szabo")]
+    Szabo
 }
 
 impl ToString for Denom {
@@ -21,6 +23,7 @@ impl ToString for Denom {
             &Denom::Cent => "cent",
             &Denom::Sat => "satoshi",
             &Denom::Wei => "wei",
+            &Denom::Szabo => "szabo"
         };
         denom_str.to_owned()
     }

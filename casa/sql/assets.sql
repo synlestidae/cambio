@@ -2,7 +2,8 @@ CREATE TYPE denom_type AS ENUM (
     'dollar',
     'cent',
     'satoshi',
-    'wei'
+    'wei',
+    'szabo'
 );
 
 CREATE TYPE asset_code_type AS ENUM (
