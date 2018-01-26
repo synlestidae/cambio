@@ -2,6 +2,7 @@
 \i assets.sql
 \i users.sql
 \i ledger.sql
+\i ethereum.sql
 \i payments.sql
 \i core.sql
 \i media.sql

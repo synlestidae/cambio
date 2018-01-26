@@ -31,6 +31,10 @@ extern crate persistent;
 
 extern crate iron_cors;
 
+extern crate crypto;
+extern crate rand;
+extern crate base64;
+
 mod db;
 mod domain;
 mod tests;

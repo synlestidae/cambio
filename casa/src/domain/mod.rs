@@ -1,5 +1,6 @@
 mod account;
 mod account_business_type;
+mod decrypt_error;
 mod account_role;
 mod account_statement;
 mod account_status;
@@ -8,6 +9,9 @@ mod asset_type;
 mod business_ends;
 mod contact_info;
 mod denom;
+mod ethereum_block;
+mod ethereum_outbound_transaction;
+mod ethereum_account_details;
 mod id;
 mod order;
 mod order_settlement;
@@ -52,3 +56,8 @@ pub use self::user::User;
 pub use self::order_settlement::OrderSettlement;
 pub use self::order_settlement_builder::OrderSettlementBuilder;
 pub use self::order_status::OrderStatus;
+
+pub use self::ethereum_block::*;
+pub use self::ethereum_outbound_transaction::*;
+pub use self::ethereum_account_details::*;
+pub use self::decrypt_error::*;
