@@ -1,125 +1,104 @@
-use domain::{Id, DecryptError};
-use db::{TryFromRow, TryFromRowError};
-use postgres;
-use crypto::sha2::Sha256;
+use base64::{encode, decode};
 use crypto::digest::Digest;
-use crypto::aes::{self, KeySize};
-use crypto::buffer::RefReadBuffer;
-use crypto::symmetriccipher::SynchronousStreamCipher;
-use crypto::{ symmetriccipher, buffer, blockmodes };
-use crypto::symmetriccipher::Decryptor;
-use crypto::buffer::{ ReadBuffer, WriteBuffer };
-use crypto::blockmodes::PaddingProcessor;
-use crypto::symmetriccipher::BlockDecryptor;
-use crypto::blockmodes::EcbDecryptor;
+use crypto;
+use db::{TryFromRow, TryFromRowError};
+use domain::{Id, DecryptError};
+use openssl::aes;
+use openssl::symm;
+use postgres;
 use rand::{OsRng, Rng};
+use rand;
 use std::iter;
 use std;
-use base64::{encode, decode};
 
 #[Derive(Debug, Clone, TryFromRow)]
 pub struct EthereumAccountDetails {
     address: String,
     encrypted_private_key_base64: String,
-    private_key_sha256_hash: String
+    private_key_sha256_hash: String,
+    iv_base64: String
 }
 
 impl EthereumAccountDetails {
     pub fn new(address: &str, private_key: String, password: String) -> Self {
-        let mut sha = Sha256::new();
-        let mut gen = OsRng::new().expect("Failed to get OS random generator");
-        sha.input_str(&private_key);
-        let hash = sha.result_str();
-
-        let encrypted_private_key = encrypt_string(&password, &private_key);
-        println!("Encoding {:?}", encrypted_private_key);
-        let encrypted_password_base64 = (&encrypted_private_key);
-
+        let mut hasher = crypto::sha2::Sha256::new();
+        hasher.input(&private_key.as_bytes());
+        let mut iv: Vec<u8> = random_vec(256);
+        let encrypted_private_key = encrypt_string(&password, &private_key, &mut iv);
+        let encrypted_private_key_base64 = encode(&encrypted_private_key);
 
         drop(password);
         drop(private_key);
 
         Self {
             address: address.to_owned(),
-            encrypted_private_key_base64: encode(encrypted_password_base64),
-            private_key_sha256_hash: hash
+            encrypted_private_key_base64: encrypted_private_key_base64,
+            private_key_sha256_hash: hasher.result_str(),
+            iv_base64: encode(&iv)
         }
     }
 
     pub fn decrypt_private_key(&self, password: String) -> Result<String, DecryptError> {
-        let mut sha = Sha256::new();
-        let data = decode(&self.encrypted_private_key_base64).unwrap();
-        println!("Decoding {:?}", data);
-        let private_key_string: String = try!(decrypt_string(&password, data));
-        sha.input_str(&private_key_string);
-        let hash = sha.result_str();
-        if self.private_key_sha256_hash != hash {
+        let private_key_bytes = decode(&self.encrypted_private_key_base64).unwrap();
+        let mut iv = decode(&self.iv_base64).unwrap();
+        let output = decrypt_string(&password, &private_key_bytes, &mut iv).unwrap(); 
+        let mut hasher = crypto::sha2::Sha256::new();
+        hasher.input(&output);
+        if self.private_key_sha256_hash != hasher.result_str() {
             return Err(DecryptError::DecryptedDataHashError);
         }
-        Ok(private_key_string.to_string())
+        String::from_utf8(output).map_err(|e| DecryptError::FromUtf8Error(e))
     }
 }
 
-fn encrypt_string(password: &str, string: &str) -> Vec<u8> {
-        let mut cipher = aes::ecb_encryptor(KeySize::KeySize128, 
-            password.as_bytes(), 
-            blockmodes::PkcsPadding);
-        let mut buffer_vec = Vec::new();
-        buffer_vec.resize(512, 0);
-        println!("Plain! {:?}", string.as_bytes());
-        let mut read_buffer = buffer::RefReadBuffer::new(&string.as_bytes());
-        let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer_vec);
-        let mut final_result = Vec::new();
+const SALT_STR: &'static str = "FADC36BDDC51696E57FC1FE94A115";
+const GEN_KEY_ITER_COUNT: u32 = 8;
 
-        loop {
-            let result = cipher.encrypt(&mut read_buffer, 
-                &mut write_buffer, false).expect("Bad read read");
-            let mut result_reader = write_buffer.take_read_buffer();
-            let result_bytes = result_reader.take_remaining();
-            for &b in result_bytes.iter() {
-                final_result.push(b);
-            }
-            match result {
-                buffer::BufferResult::BufferUnderflow => {
-                    break;
-                },
-                buffer::BufferResult::BufferOverflow => { 
-                }
-            }
-        }
-
-        final_result
+fn get_key(password: &str) -> Vec<u8> {
+    let mut hasher = crypto::sha2::Sha256::new();
+    let mut crypto_key_bytes = vec![0; 32];
+    hasher.input_str(password);
+    hasher.result(&mut crypto_key_bytes);
+    let mut crypto_key = crypto::poly1305::Poly1305::new(&crypto_key_bytes);
+    let salt_vec = SALT_STR.as_bytes(); 
+    let mut output = vec![0; 32];
+    crypto::pbkdf2::pbkdf2(&mut crypto_key, &salt_vec, GEN_KEY_ITER_COUNT, &mut output);
+    output
 }
 
-fn decrypt_string(password: &str, mut data: Vec<u8>) -> Result<String, DecryptError> {
-    let mut decryptor = aes::ecb_decryptor(
-            aes::KeySize::KeySize256,
-            password.as_bytes(),
-            blockmodes::PkcsPadding);
-    let mut buffer_vec = Vec::new();
-    buffer_vec.resize(512, 0);
-    let mut read_buffer = buffer::RefReadBuffer::new(&mut data);
-    let mut write_buffer = buffer::RefWriteBuffer::new(&mut buffer_vec);
-    let mut final_result = Vec::<u8>::new();
+fn encrypt_string(password: &str, string: &str, iv: &[u8]) -> Vec<u8> {
+    let mut random_vec: Vec<u8> = iv.iter().map(|&x| x).collect();
+    let password_key = get_key(password);
+    let key = aes::AesKey::new_encrypt(&password_key).unwrap();
+    let string_bytes = string.as_bytes();
+    let mut output = vec![0u8; string_bytes.len()];
+    aes::aes_ige(&string_bytes, &mut output, &key, &mut random_vec, symm::Mode::Encrypt);
+    output
+}
 
-    loop {
-        let result = decryptor.decrypt(&mut read_buffer, 
-            &mut write_buffer, false).expect("Bad read read");
-        let mut result_reader = write_buffer.take_read_buffer();
-        let result_bytes = result_reader.take_remaining();
-        for &b in result_bytes.iter() {
-            final_result.push(b);
-        }
-        match result {
-            buffer::BufferResult::BufferUnderflow => {
-                break;
-            },
-            buffer::BufferResult::BufferOverflow => { 
-            }
-        }
+fn decrypt_string(password: &str, string_bytes: &[u8], iv: &[u8]) -> Result<Vec<u8>, DecryptError> {
+    let mut random_vec: Vec<u8> = iv.iter().map(|&x| x).collect();
+    let password_key = get_key(password);
+    let key = aes::AesKey::new_decrypt(&password_key).unwrap();
+    let mut output = vec![0u8; string_bytes.len()];
+    aes::aes_ige(&string_bytes, &mut output, &key, &mut random_vec, symm::Mode::Decrypt);
+    Ok(output)
+}
+
+fn random_vec(length: usize) -> Vec<u8> {
+    let mut rng = rand::thread_rng();
+    let mut vec: Vec<u8> = Vec::new();
+    for i in 0..length {
+        vec.push(rng.gen());
     }
+    vec
+}
 
-    println!("Plain! {:?}", final_result);
-
-    String::from_utf8(final_result).map_err(|error| DecryptError::FromUtf8Error(error))
+fn random_string(length: usize) -> String {
+    let mut rng = rand::thread_rng();
+    let mut char_vec: Vec<char> = Vec::new();
+    for i in 0..length {
+        char_vec.push(rng.gen());
+    }
+    char_vec.iter().collect::<String>()
 }

@@ -31,6 +31,7 @@ extern crate persistent;
 
 extern crate iron_cors;
 
+extern crate openssl;
 extern crate crypto;
 extern crate rand;
 extern crate base64;
