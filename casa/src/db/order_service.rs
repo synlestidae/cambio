@@ -163,6 +163,11 @@ impl<T: PostgresHelper> OrderService<T> {
             }
         }
     }
+
+    pub fn settle_two_orders(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
+        -> Result<OrderSettlement, PostgresHelperError> {
+        unimplemented!()
+    }
 }
 
 const INSERT_NEW_ORDER_SQL: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";

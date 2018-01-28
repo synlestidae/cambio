@@ -91,6 +91,13 @@ fn test_two_orders_settled() {
         user_repository.clone());
 
     payment_repo.register_credit_payment("contras@nicaragua.com", &payment).unwrap();
+    let contras_owner_id = user_repository
+        .get_owner_id_by_email_address("contras@nicaragua.com")
+        .unwrap();
+
+    let president_owner_id = user_repository
+        .get_owner_id_by_email_address("president@usa.gov")
+        .unwrap();
 
     // pretend price of 1 ETH = 900 NZD
     let sell_crypto_order = Order {
@@ -106,7 +113,21 @@ fn test_two_orders_settled() {
         status: OrderStatus::Active
     };
 
-    unimplemented!()
+    // pretend price of 1 ETH = 900 NZD
+    let buy_crypto_order = Order {
+        id: None,
+        unique_id: "Tq2b40*(2n(2n89p214n(Yhn32rf89hv".to_owned(),
+        sell_asset_units: 900 * 1000, // 1 eth in Szabo
+        buy_asset_units: 1000000, // 900 dollars in cents
+        sell_asset_type: AssetType::NZD,
+        sell_asset_denom: Denom::Cent,
+        buy_asset_type: AssetType::ETH,
+        buy_asset_denom: Denom::Szabo,
+        expires_at: Utc::now() + Duration::minutes(10),
+        status: OrderStatus::Active
+    };
 
-    //payment_repo.settle_
+    let contra_order = order_service.place_order(contras_owner_id, &sell_crypto_order).unwrap();
+    let president_order = order_service.place_order(president_owner_id, &buy_crypto_order).unwrap();
+    order_service.settle_two_orders(&contra_order, &president_order).unwrap();
 }

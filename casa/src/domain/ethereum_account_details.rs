@@ -63,6 +63,7 @@ fn get_key(password: &str) -> Vec<u8> {
     let salt_vec = SALT_STR.as_bytes(); 
     let mut output = vec![0; 32];
     crypto::pbkdf2::pbkdf2(&mut crypto_key, &salt_vec, GEN_KEY_ITER_COUNT, &mut output);
+    println!("Key lad {:?}", output);
     output
 }
 
