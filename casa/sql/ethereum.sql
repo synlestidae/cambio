@@ -23,7 +23,7 @@ CREATE TABLE ethereum_outbound_transaction (
 
 CREATE TABLE ethereum_account_details (
     address TX_ADDRESS PRIMARY KEY,
-    aes_nonce VARCHAR NOT NULL,
-    encrypted_private_key VARCHAR NOT NULL,
-    private_key_sha256_hash VARCHAR NOT NULL
+    encrypted_private_key_base64 VARCHAR NOT NULL,
+    private_key_sha256_hash: VARCHAR NOT NULL,
+    iv_base64: VARCHAR NOT NULL
 );

@@ -1,6 +1,7 @@
 mod account_repository;
 mod connection_source;
 mod db_helper;
+mod ethereum_service;
 mod order_service;
 mod payment_repository;
 mod postgres_source;
@@ -14,6 +15,7 @@ mod user_repository;
 pub use self::account_repository::AccountRepository;
 pub use self::connection_source::*;
 pub use self::postgres_source::*;
+pub use self::ethereum_service::*;
 pub use self::db_helper::{PostgresHelper, PostgresHelperImpl, PostgresHelperError};
 pub use self::payment_repository::PaymentRepository;
 pub use self::profile_service::ProfileService;
