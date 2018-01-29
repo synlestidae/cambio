@@ -8,7 +8,7 @@ pub struct EthereumService<T: PostgresHelper> {
 }
 impl<T: PostgresHelper> EthereumService<T> {
     pub fn register_transaction(&mut self, 
-        account: EthereumAccountDetails, 
+        account: &EthereumAccountDetails, 
         password: String) {
         let private_key = account.decrypt_private_key(password).unwrap();
         unimplemented!()
