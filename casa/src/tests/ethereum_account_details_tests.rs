@@ -37,12 +37,11 @@ fn test_encrypts_with_small_password() {
         password.to_owned());
 
     let decrypted_private_key = d.decrypt_private_key("0".to_owned());
-    println!("LOOK AT THIS {:?}", decrypted_private_key);
-    assert!(decrypted_private_key.is_err());
+    assert_eq!(decrypted_private_key.unwrap(), private_key);
 }
 
 #[test]
-fn test_fails_encrypts_with_small_password() {
+fn test_fails_decrypt_with_small_password() {
     let private_key = "0000000000000000000000000000000000000000000000000000000000000000";
     let address = "4d3ab46248812802cabec071417cce67ce4593807f12b8afe40c90aa22150e01";
     let password = "0";
@@ -50,6 +49,6 @@ fn test_fails_encrypts_with_small_password() {
         private_key.to_owned(),
         password.to_owned());
 
-    let decrypted_private_key = d.decrypt_private_key("0".to_owned());
+    let decrypted_private_key = d.decrypt_private_key("00".to_owned());
     assert!(decrypted_private_key.is_err());
 }
