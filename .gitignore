@@ -102,3 +102,6 @@ vaso/node_modules/
 vaso/.rpt2_cache/
 target/
 casa/try_from_row/target/
+
+moneda/node_modules/
+moneda/dist/

@@ -1,19 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 //const http = require('http');
-//const Transaction = require('ethereumjs-tx');
+const { Transaction: any } = require('ethereumjs-tx');
 const express = require("express");
 const bodyParser = require("body-parser");
+const casa_transaction_1 = require("./casa_transaction");
 //const { CasaTransaction } = require('./transaction');
 //const db = require('./db');
 const app = express();
 app.use(bodyParser.json());
-/*
-
-app.post('/transaction', function(request, response){
-    let transaction = CasaTransaction.parseTransaction(request.body);
+app.post('/transaction', function (request, response) {
+    let transaction = casa_transaction_1.CasaTransaction.parseTransaction(request.body);
     let privateKey = request.body.private_key;
-    let ethService = new EthereumService(getWeb3());
+    //let ethService = new EthereumService(getWeb3());
+});
+/*
 
     // user only needs to provide these, and private key
     let ethTransaction = new Transaction(null, 1);
