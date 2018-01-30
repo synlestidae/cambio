@@ -1,10 +1,10 @@
-const http = require('http');
-const Transaction = require('ethereumjs-tx');
+//const http = require('http');
+//const Transaction = require('ethereumjs-tx');
 const express = require('express');
-const { CasaTransaction } = require('./transaction');
-const db = require('./db');
+//const { CasaTransaction } = require('./transaction');
+//const db = require('./db');
 
-const app = express();
+/*const app = express();
 
 app.use(require('body-parser').json());
 
@@ -51,4 +51,4 @@ function getWeb3() {
 }
 
 
-app.listen(3000);
+app.listen(3000);*/
