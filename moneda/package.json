@@ -6,12 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Mate Antunovic",
-  "license": "ISC",
   "dependencies": {
     "ethereumjs-tx": "^1.3.3",
     "ethereumjs-util": "^5.1.3",
     "web3": "^1.0.0-beta.29",
     "web3-eth": "^1.0.0-beta.29"
-  }
+  },
+  "author": "Mate Antunovic",
+  "license": "ISC"
 }

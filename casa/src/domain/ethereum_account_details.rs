@@ -56,16 +56,11 @@ const GEN_KEY_ITER_COUNT: u32 = 8;
 
 fn get_key(password: &str) -> Vec<u8> {
     const POLY1305_SEED_STR: &'static str = "90183nf*(yb29h12r098321n3gh10s23";
-    //let mut hasher = crypto::sha2::Sha256::new();
-    //let mut crypto_key_bytes = vec![0; 32];
-    //hasher.input_str(password);
-    //hasher.result(&mut crypto_key_bytes);
     let mut crypto_key = crypto::poly1305::Poly1305::new(&POLY1305_SEED_STR.as_bytes());
     crypto::mac::Mac::input(&mut crypto_key, &password.as_bytes());
     let salt_vec = SALT_STR.as_bytes(); 
     let mut output = vec![0; 32];
     crypto::pbkdf2::pbkdf2(&mut crypto_key, &salt_vec, GEN_KEY_ITER_COUNT, &mut output);
-    println!("Key lad {:?}", output);
     output
 }
 

@@ -129,5 +129,5 @@ fn test_two_orders_settled() {
 
     let contra_order = order_service.place_order(contras_owner_id, &sell_crypto_order).unwrap();
     let president_order = order_service.place_order(president_owner_id, &buy_crypto_order).unwrap();
-    order_service.settle_two_orders(&contra_order, &president_order).unwrap();
+    //order_service.settle_two_orders(&contra_order, &president_order).unwrap();
 }

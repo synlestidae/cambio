@@ -135,6 +135,7 @@ BEGIN
       JOIN account_owner ON account.owner_id = account_owner.id
       JOIN account_owner ON account_owner.user_id = user_id 
     WHERE account.id = debit_account AND 
+          (account.account.business_type !== 'user_cash_wallet' OR account.balance - units > 0) AND
           account.asset_type = sell_asset_id)) THEN
         RAISE EXCEPTION 'Error DebitAccountMatchError: Cannot find an account matching the owning user and/or with the specified asset type';
     END IF;

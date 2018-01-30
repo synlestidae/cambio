@@ -13,5 +13,6 @@ pub struct EthereumOutboundTransaction {
     hash: String,
     value: u64,
     signature: String,
-    transaction_block_id: Option<Id>
+    transaction_block_id: Option<Id>,
+    unique_id: String
 }
