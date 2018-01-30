@@ -1,15 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 //const http = require('http');
 //const Transaction = require('ethereumjs-tx');
-import * as express from 'express';
-import * as bodyParser from "body-parser";
-import { NextFunction, Request, Response } from "express";
+const express = require("express");
+const bodyParser = require("body-parser");
 //const { CasaTransaction } = require('./transaction');
 //const db = require('./db');
-
 const app = express();
-
 app.use(bodyParser.json());
-
 /*
 
 app.post('/transaction', function(request, response){
@@ -56,3 +54,4 @@ function getWeb3() {
 
 
 app.listen(3000);*/
+//# sourceMappingURL=index.js.map

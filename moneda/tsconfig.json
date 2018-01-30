@@ -7,8 +7,11 @@
     "strictNullChecks": true
   },
   "files": [
+    "index.ts"
   ],
+  "outDir": "dist/",
   "include": [
+    "./node_modules/types-ethereumjs-util/index.d.ts",
     "src/**/*.ts"
   ],
   "exclude": [
