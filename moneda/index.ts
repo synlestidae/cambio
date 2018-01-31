@@ -1,5 +1,6 @@
 //const http = require('http');
-const Transaction: any = require('ethereumjs-tx').Transaction;
+const Transaction: any = require('ethereumjs-tx');
+const Web3 = require('web3');
 import * as express from 'express';
 import * as bodyParser from "body-parser";
 import { NextFunction, Request, Response } from "express";
@@ -11,10 +12,11 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.post('/transaction', function(request: Request, response: Response) {
+app.post('/transaction', async function(request: Request, response: Response) {
+    response.setHeader('Content-Type', 'application/json');
     let transaction = CasaTransaction.parseTransaction(request.body);
     let privateKey: string = request.body.private_key;
-    //let ethService = new EthereumService(getWeb3());
+    let ethService = new EthereumService(getWeb3());
     let ethTransaction = new Transaction(null, 1);
     ethTransaction.toAddress = transaction.toAddress;
     ethTransaction.fromAddress = transaction.fromAddress;
@@ -32,23 +34,14 @@ app.post('/transaction', function(request: Request, response: Response) {
     if (!(ethTransaction.verifySignature() && ethTransaction.validate())) {
         throw new Error('Transaction has invalid signature!');
     }
-        /*db.saveTx(ethTransaction, transaction.uniqueId).then(() => {
-        return ethService.asyncSendTransaction(ethTransaction);
-    }).then((hash) => {
-        return db.updateTxHash(transaction, hash);
-    }).then(() => {
-        throw new Error('Not implemented!');
-    });*/
+    try {
+        let result = await ethService.sendTransaction(ethTransaction);
+        response.send(JSON.stringify({ transaction_result : result }));
+    } catch (e) {
+        response.send(JSON.stringify({ error_message : e.message }));
+    }
 });
 
-/*
-
-    // user only needs to provide these, and private key
-});
-
-app.get('/info', function(request, response) {
-    throw new Error('Not implemented!');
-});
 
 const PROVIDER_ADDRESS = 'http://localhost:8545';
 
@@ -56,5 +49,8 @@ function getWeb3() {
     return new Web3(new Web3.providers.HttpProvider(PROVIDER_ADDRESS));
 }
 
+console.log('Starting up...');
 
-app.listen(3000);*/
+app.listen(3000);
+
+console.log('Ready!');

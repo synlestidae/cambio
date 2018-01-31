@@ -15,7 +15,9 @@ export class EthereumService {
         return new Promise(async function (res: (r: string) => void, rej: (r: any) => void) {
             let rawTx: string = ethTransaction.serialize().toString('hex');
             try {
-                web3.eth.sendRawTransaction('0x' + rawTx, function(err: any, hash: string) {
+                console.log('webbo', web3);
+                console.log('etho', web3.eth);
+                web3.eth.sendSignedTransaction(ethTransaction, function(err: any, hash: string) {
                     if (err) {
                         rej(err);
                     }
