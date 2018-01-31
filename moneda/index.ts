@@ -1,11 +1,11 @@
 //const http = require('http');
-const { Transaction: any } = require('ethereumjs-tx');
+const Transaction: any = require('ethereumjs-tx').Transaction;
 import * as express from 'express';
 import * as bodyParser from "body-parser";
 import { NextFunction, Request, Response } from "express";
 import { CasaTransaction } from './casa_transaction';
-//const { CasaTransaction } = require('./transaction');
-//const db = require('./db');
+import { DBService } from './db';
+import { EthereumService } from './ethereum';
 
 const app = express();
 
@@ -15,11 +15,6 @@ app.post('/transaction', function(request: Request, response: Response) {
     let transaction = CasaTransaction.parseTransaction(request.body);
     let privateKey: string = request.body.private_key;
     //let ethService = new EthereumService(getWeb3());
-});
-
-/*
-
-    // user only needs to provide these, and private key
     let ethTransaction = new Transaction(null, 1);
     ethTransaction.toAddress = transaction.toAddress;
     ethTransaction.fromAddress = transaction.fromAddress;
@@ -37,13 +32,18 @@ app.post('/transaction', function(request: Request, response: Response) {
     if (!(ethTransaction.verifySignature() && ethTransaction.validate())) {
         throw new Error('Transaction has invalid signature!');
     }
-    db.saveTx(ethTransaction, transaction.uniqueId).then(() => {
+        /*db.saveTx(ethTransaction, transaction.uniqueId).then(() => {
         return ethService.asyncSendTransaction(ethTransaction);
     }).then((hash) => {
         return db.updateTxHash(transaction, hash);
     }).then(() => {
         throw new Error('Not implemented!');
-    });
+    });*/
+});
+
+/*
+
+    // user only needs to provide these, and private key
 });
 
 app.get('/info', function(request, response) {
