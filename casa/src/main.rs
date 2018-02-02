@@ -28,7 +28,6 @@ extern crate serde_derive;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate persistent;
-
 extern crate iron_cors;
 
 extern crate openssl;
@@ -36,8 +35,8 @@ extern crate crypto;
 extern crate rand;
 extern crate base64;
 extern crate hex;
-
 extern crate web3;
+extern crate rlp;
 
 mod db;
 mod domain;
