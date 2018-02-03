@@ -37,6 +37,7 @@ extern crate base64;
 extern crate hex;
 extern crate web3;
 extern crate rlp;
+extern crate secp256k1;
 
 mod db;
 mod domain;
