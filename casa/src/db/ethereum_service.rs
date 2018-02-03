@@ -1,61 +1,51 @@
 use db::{PostgresHelper, PostgresHelperError};
 use chrono::prelude::*;
-use domain::{Order, OrderSettlement, Id, EthereumAccountDetails, EthereumOutboundTransaction};
+use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
 use web3;
 use web3::futures::Future;
 use hex;
 use web3::types::{H160, H512, Bytes, H256};
 use std::str::FromStr;
+use db::UserRepository;
 
 #[derive(Clone)]
 pub struct EthereumService<T: PostgresHelper> {
-    db_helper: T
+    db_helper: T,
+    user_repo: UserRepository<T>,
+    web3_address: String
 }
 impl<T: PostgresHelper> EthereumService<T> {
-    pub fn new(db_helper: T) -> Self {
+    pub fn new(db_helper: T, web3_address: &str) -> Self {
+        let user_repo = UserRepository::new(db_helper.clone());
         Self {
-            db_helper: db_helper
+            db_helper: db_helper,
+            user_repo: user_repo,
+            web3_address: web3_address.to_owned()
         }
     }
+
+    pub fn new_account(&mut self, user_email: &str, account_password: String) -> Result<EthAccount, PostgresHelperError> {
+        let web3 = try!(self.get_eth_inst());
+        let owner_id = try!(self.user_repo.get_owner_id_by_email_address(user_email));
+        match web3.personal().new_account(&account_password).wait() {
+            Ok(address) => Ok(EthAccount::new(&address, account_password, owner_id)),
+            Err(error) => Err(PostgresHelperError::new(&format!("Failed to create account: {:?}", error)))
+        }
+    }
+
     pub fn register_transaction(&mut self, 
-        account: &EthereumAccountDetails, 
+        account: &EthAccount, 
         password: String,
         amount_wei: u64,
         destination_address: H256) -> Result<EthereumOutboundTransaction, PostgresHelperError> {
-        
-
-        let private_key = account.decrypt_private_key(password).unwrap();
-        let (_eloop, http) = web3::transports::Http::new("http://localhost:8080").unwrap();
-        let web3 = web3::Web3::new(http);
-        /*let mut private_key_bytes: [u8; 32] = [0; 32];
-        for (i, b) in hex::decode(private_key).unwrap().into_iter().enumerate() {
-            private_key_bytes[i] = b;
-        }*/
-        let transaction = EthereumOutboundTransaction {
-            id: None,
-            nonce: 0,
-            gas_price: 18000000000,
-            gas_limit: 18000000000,
-            to_address: "0x9f23fedfa2ce3a321f20f6a95d0c2cbabb5876dd".to_owned(),
-            from_address: "0x927B18DD62B0500Cfed48815D1a613e2f1167903".to_owned(),
-            hash: String::new(),
-            value: 1000000000,
-            signature: None,
-            transaction_block_id: None,
-            unique_id: "test_boi".to_owned()
-        };
-
-        let private_key_string = format!("0x{}", private_key);
-        let raw_transaction = transaction.get_web3_transaction(&H256::from_str(&private_key_string).unwrap(), &mut web3.eth()).unwrap();
-        let raw_bytes = Bytes::from(raw_transaction);
-        web3.eth().send_raw_transaction(raw_bytes).wait().unwrap();
-        unimplemented!();
+        unimplemented!()
     }
 
-    pub fn get_gas_price_szabo(&mut self) -> Result<u64, PostgresHelperError> {
-        let (_eloop, http) = web3::transports::Http::new("http://localhost:8545").unwrap();
-        let web3 = web3::Web3::new(http);
-        web3.eth().gas_price().wait().unwrap();
-        unimplemented!()
+    fn get_eth_inst(&self) -> Result<web3::Web3<web3::transports::http::Http>, PostgresHelperError> {
+        // TODO make this use some kind of connection pool if need be
+        match web3::transports::Http::new(&self.web3_address) {
+            Ok((_eloop, transport)) => Ok(web3::Web3::new(transport)),
+            Err(err) => Err(PostgresHelperError::new(&format!("Failed to connect to geth: {:?}", err)))
+        }
     }
 }

@@ -1,4 +1,4 @@
-use domain::{EthereumAccountDetails, EthereumOutboundTransaction};
+use domain::{EthAccount, EthereumOutboundTransaction};
 use db::{PostgresHelperImpl, EthereumService};
 use tests::test_utils;
 use web3::types::{H160, H256};
@@ -8,7 +8,7 @@ use std::str::FromStr;
 pub fn test_transaction() {
     let mut eth_service = get_service();
     println!("Do account");
-    let account = EthereumAccountDetails::new("9f23fedfa2ce3a321f20f6a95d0c2cbabb5876dd",
+    let account = EthAccount::new("9f23fedfa2ce3a321f20f6a95d0c2cbabb5876dd",
         "77173c4b349c6342ae695f86c5610688606de77361769bd8919301fc55823f1b".to_owned(),
         "iliketurtles".to_owned());
     println!("Register boi");
@@ -22,5 +22,5 @@ pub fn test_transaction() {
 
 #[allow(dead_code)]
 pub fn get_service() -> EthereumService<PostgresHelperImpl> {
-    EthereumService::new(test_utils::get_db_helper())
+    EthereumService::new(test_utils::get_db_helper(), "http://localhost:8080")
 }
