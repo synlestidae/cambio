@@ -8,7 +8,7 @@ use rlp;
 use std::str::FromStr;
 use web3::futures::Future;
 use web3::api::Eth;
-use web3::types::{Transaction, U256, H160, H256, H520, H512, Bytes};
+use web3::types::{Transaction, U256, H160, H256, H520, H512, Bytes, H64};
 use web3;
 use secp256k1;
 
@@ -28,33 +28,20 @@ pub struct EthereumOutboundTransaction {
 }
 
 impl EthereumOutboundTransaction {
-    pub fn get_web3_transaction<T: web3::Transport>(&self, private_key: &H512, eth: &mut Eth<T>) 
+    pub fn get_web3_transaction<T: web3::Transport>(&self, private_key: &H256, eth: &mut Eth<T>) 
         -> Result<Vec<u8>, ()> {
         println!("Gett transactin");
         let from = H160::from_str(&self.from_address).unwrap();
         println!("2");
         let to = Some(H160::from_str(&self.to_address).unwrap());
         println!("Really doing it");
-        let mut transaction = Transaction {
-            nonce: U256::from(self.nonce),
-            block_hash: None,
-            block_number: None,
-            transaction_index: None,
-            from: from,
-            to: to,
-            value: U256::from(self.value),
-            gas_price: U256::from(self.gas_price),
-            gas: U256::from(self.gas_limit),
-            input: Bytes::from(vec![]),
-            hash: H256::default()
-        };
-        println!("make vecs");
-        let nonce = transaction.nonce.to_vec(); 
-        let gas_price = transaction.gas_price.to_vec();
-        let gas = transaction.gas.to_vec();
-        let to = transaction.to.unwrap().to_vec();
-        let value = transaction.value.to_vec();
+        let nonce = H256::from(self.nonce).to_vec();//transaction.nonce.to_vec(); 
+        let gas_price = U256::from(self.gas_price).to_vec();
+        let gas = U256::from(self.gas_limit).to_vec();
+        let to = H160::from_str(&self.to_address).unwrap().to_vec();
+        let value = U256::from(self.value).to_vec();
         let data: Vec<u8> = Vec::new();
+        println!("Nonce {}", nonce.len());
         let rlp_transaction = rlp::encode_list::<Vec<u8>, Vec<u8>>(&[
             nonce.clone(),
             gas_price.clone(),
@@ -66,20 +53,19 @@ impl EthereumOutboundTransaction {
         let transaction_bytes = rlp_transaction.into_vec();
         let mut sha3 = Sha3::new(Sha3Mode::Keccak256);
         let mut output = Vec::new();
+        output.resize(32, 0);
         sha3.input(&transaction_bytes);
         sha3.result(&mut output);
-        transaction.hash = H256::from(&output as &[u8]);
+        println!("output yo {}", output.len());
+        let transaction_hash = H256::from(&output as &[u8]);
         let mut sig_struct = secp256k1::Secp256k1::new();
-        let message = secp256k1::Message::from_slice(&transaction_bytes).unwrap();
+        println!("transacco {}", transaction_hash.len());
+        let message = secp256k1::Message::from_slice(&transaction_hash).unwrap();
         let key = secp256k1::key::SecretKey::from_slice(&sig_struct,
                                                         &private_key.to_vec()).unwrap();
         let signature = sig_struct.sign_schnorr(&message, &key).unwrap().serialize();
-        /*let signature = 
-            eth.sign(private_key.clone(), Bytes::from(output))
-            .wait()
-            .unwrap()
-            .to_vec();*/
         
+        println!("NONCE {:?}", nonce);
 
         let signed_transaction = rlp::encode_list::<Vec<u8>, Vec<u8>>(&[
             nonce,
@@ -90,6 +76,9 @@ impl EthereumOutboundTransaction {
             to,
             signature
         ]);
+
+        println!("POP {:?}", signed_transaction);
+
         // now pop the signature onto the vec and send her out!
         Ok(signed_transaction.into_vec())
     }

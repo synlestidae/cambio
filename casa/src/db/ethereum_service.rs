@@ -4,7 +4,7 @@ use domain::{Order, OrderSettlement, Id, EthereumAccountDetails, EthereumOutboun
 use web3;
 use web3::futures::Future;
 use hex;
-use web3::types::{H160, H512, Bytes};
+use web3::types::{H160, H512, Bytes, H256};
 use std::str::FromStr;
 
 #[derive(Clone)]
@@ -21,11 +21,11 @@ impl<T: PostgresHelper> EthereumService<T> {
         account: &EthereumAccountDetails, 
         password: String,
         amount_wei: u64,
-        destination_address: H512) -> Result<EthereumOutboundTransaction, PostgresHelperError> {
+        destination_address: H256) -> Result<EthereumOutboundTransaction, PostgresHelperError> {
         
 
         let private_key = account.decrypt_private_key(password).unwrap();
-        let (_eloop, http) = web3::transports::Http::new("http://localhost:8545").unwrap();
+        let (_eloop, http) = web3::transports::Http::new("http://localhost:8080").unwrap();
         let web3 = web3::Web3::new(http);
         /*let mut private_key_bytes: [u8; 32] = [0; 32];
         for (i, b) in hex::decode(private_key).unwrap().into_iter().enumerate() {
@@ -45,7 +45,8 @@ impl<T: PostgresHelper> EthereumService<T> {
             unique_id: "test_boi".to_owned()
         };
 
-        let raw_transaction = transaction.get_web3_transaction(&H512::from_str(&private_key).unwrap(), &mut web3.eth()).unwrap();
+        let private_key_string = format!("0x{}", private_key);
+        let raw_transaction = transaction.get_web3_transaction(&H256::from_str(&private_key_string).unwrap(), &mut web3.eth()).unwrap();
         let raw_bytes = Bytes::from(raw_transaction);
         web3.eth().send_raw_transaction(raw_bytes).wait().unwrap();
         unimplemented!();

@@ -1,7 +1,7 @@
 use domain::{EthereumAccountDetails, EthereumOutboundTransaction};
 use db::{PostgresHelperImpl, EthereumService};
 use tests::test_utils;
-use web3::types::{H160, H512};
+use web3::types::{H160, H256};
 use std::str::FromStr;
 
 #[test]
@@ -12,7 +12,8 @@ pub fn test_transaction() {
         "77173c4b349c6342ae695f86c5610688606de77361769bd8919301fc55823f1b".to_owned(),
         "iliketurtles".to_owned());
     println!("Register boi");
-    let private_key = H512::from_str("77173c4b349c6342ae695f86c5610688606de77361769bd8919301fc55823f1b").unwrap();
+    let private_key = H256::from_str("0x77173c4b349c6342ae695f86c5610688606de77361769bd8919301fc55823f1b").unwrap();
+    println!("Done private");
     eth_service.register_transaction(&account, 
         "iliketurtles".to_owned(), 
         100000, 
