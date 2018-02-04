@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperError, AccountRepository, UserRepository};
+use db::{PostgresHelper, CambioError, AccountRepository, UserRepository};
 use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
@@ -38,14 +38,14 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         &mut self,
         email_address: &str,
         payment: &Payment,
-    ) -> Result<AccountStatement, PostgresHelperError> {
+    ) -> Result<AccountStatement, CambioError> {
 
         // get the accounts for the user
         let account_list = try!(self.account_repository.get_accounts_for_user(email_address));
         let user = match try!(self.user_repository.get_user_by_email(email_address)) {
             Some(user) => user,
             None => {
-                return Err(PostgresHelperError::new(
+                return Err(CambioError::new(
                     "Could not find user with that email address",
                 ))
             }
@@ -63,17 +63,17 @@ impl<T: PostgresHelper> PaymentRepository<T> {
             })
             .collect();
         let account_not_found_error =
-            PostgresHelperError::new("Not matching account for credit found");
+            CambioError::new("Not matching account for credit found");
         let account = try!(creditable_accounts.pop().ok_or(account_not_found_error));
 
         // TODO check any limits and flag them
         // e.g. a credit of $1,000,000 is certainly wrong and needs to be checked
         // or just cancelled
 
-        let user_id = try!(user.id.ok_or(PostgresHelperError::new(
+        let user_id = try!(user.id.ok_or(CambioError::new(
             "User object doesn't have ID",
         )));
-        let account_id = try!(account.id.ok_or(PostgresHelperError::new(
+        let account_id = try!(account.id.ok_or(CambioError::new(
             "Account object doesn't have ID",
         )));
 
@@ -95,14 +95,14 @@ impl<T: PostgresHelper> PaymentRepository<T> {
             ],
         );
 
-        let account_id = try!(account.id.ok_or(PostgresHelperError::new(
+        let account_id = try!(account.id.ok_or(CambioError::new(
             "Account instance has no ID",
         )));
 
         match procedure_result {
             Ok(_) => self.account_repository.get_latest_statement(&account_id),
             Err(err) => {
-                Err(PostgresHelperError::new(
+                Err(CambioError::new(
                     &format!("Failed to credit account: {}", err),
                 ))
             }

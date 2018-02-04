@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperError};
+use db::{PostgresHelper, CambioError};
 use std::error::Error;
 use domain::{Account, Id, AccountStatement, Transaction};
 
@@ -45,27 +45,27 @@ impl<T: PostgresHelper> AccountRepository<T> {
     pub fn get_accounts_for_user(
         &mut self,
         email_address: &str,
-    ) -> Result<Vec<Account>, PostgresHelperError> {
+    ) -> Result<Vec<Account>, CambioError> {
         match self.db_helper.query(ACCOUNT_QUERY_USER, &[&email_address]) {
             Ok(accounts) => Ok(accounts),
-            Err(err) => Err(PostgresHelperError::new(err.description())),
+            Err(err) => Err(CambioError::new(err.description())),
         }
     }
 
-    pub fn get_account(&mut self, account_id: &Id) -> Result<Option<Account>, PostgresHelperError> {
+    pub fn get_account(&mut self, account_id: &Id) -> Result<Option<Account>, CambioError> {
         match self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id]) {
             Ok(mut accounts) => Ok(accounts.pop()),
-            Err(err) => Err(PostgresHelperError::new(err.description())),
+            Err(err) => Err(CambioError::new(err.description())),
         }
     }
 
     pub fn get_latest_statement(
         &mut self,
         account_id: &Id,
-    ) -> Result<AccountStatement, PostgresHelperError> {
+    ) -> Result<AccountStatement, CambioError> {
         let mut transactions = try!(self.get_transactions_for_account(account_id));
         let account = try!(try!(self.get_account(account_id)).ok_or(
-            PostgresHelperError::new(
+            CambioError::new(
                 "Account does not exist",
             ),
         ));
@@ -91,10 +91,10 @@ impl<T: PostgresHelper> AccountRepository<T> {
     pub fn get_transactions_for_account(
         &mut self,
         account_id: &Id,
-    ) -> Result<Vec<Transaction>, PostgresHelperError> {
+    ) -> Result<Vec<Transaction>, CambioError> {
         match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
             Ok(transactions) => Ok(transactions),
-            Err(err) => Err(PostgresHelperError::new(err.description())),
+            Err(err) => Err(CambioError::new(err.description())),
         }
     }
 }

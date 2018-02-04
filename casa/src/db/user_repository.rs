@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperError};
+use db::{PostgresHelper, CambioError};
 use domain::{User, Session, Id};
 use std::error::Error;
 use bcrypt::hash;
@@ -34,10 +34,10 @@ impl<T: PostgresHelper> UserRepository<T> {
     pub fn get_user_by_email(
         &mut self,
         email_address: &str,
-    ) -> Result<Option<User>, PostgresHelperError> {
+    ) -> Result<Option<User>, CambioError> {
         match self.db_helper.query(GET_USER_QUERY, &[&email_address]) {
             Ok(mut users) => Ok(users.pop()),
-            Err(err) => Err(PostgresHelperError::new(err.description())),
+            Err(err) => Err(CambioError::new(err.description())),
         }
     }
 
@@ -45,19 +45,19 @@ impl<T: PostgresHelper> UserRepository<T> {
         &mut self,
         email_address: &str,
         password: String,
-    ) -> Result<Option<User>, PostgresHelperError> {
+    ) -> Result<Option<User>, CambioError> {
         debug!("Checking email address: {}", email_address);
         if !checkmail::validate_email(&email_address.to_owned()) {
-            return Err(PostgresHelperError::new("Email address is invalid"));
+            return Err(CambioError::new("Email address is invalid"));
         }
 
         debug!("Checking if user exists with email: {}", email_address);
 
         match self.get_user_by_email(email_address) {
             Ok(None) => {}
-            Ok(Some(_)) => return Err(PostgresHelperError::new("User already exists")),
+            Ok(Some(_)) => return Err(CambioError::new("User already exists")),
             Err(err) => {
-                return Err(PostgresHelperError::new(&format!(
+                return Err(CambioError::new(&format!(
                     "Failed to check if user exists: {}",
                     err.description()
                 )))
@@ -70,7 +70,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         let password_hash = match hash(&password, BCRYPT_COST) {
             Ok(password_hash) => password_hash,
             Err(_) => {
-                return Err(PostgresHelperError::new(
+                return Err(CambioError::new(
                     "Failed to hash the user's password",
                 ))
             }
@@ -85,7 +85,7 @@ impl<T: PostgresHelper> UserRepository<T> {
             &[&email_address, &password_hash],
         )
         {
-            return Err(PostgresHelperError::new(&format!(
+            return Err(CambioError::new(&format!(
                 "Failed to register user in databse: {}",
                 err.description()
             )));
@@ -100,14 +100,14 @@ impl<T: PostgresHelper> UserRepository<T> {
         &mut self,
         email_address: &str,
         password: String,
-    ) -> Result<Option<Session>, PostgresHelperError> {
+    ) -> Result<Option<Session>, CambioError> {
         let user_option = try!(self.get_user_by_email(email_address));
         if user_option.is_none() {
             return Ok(None);
         }
         let user = user_option.unwrap();
         if !user.hash_matches_password(&password) {
-            return Err(PostgresHelperError::new("Password does not match hash"));
+            return Err(CambioError::new("Password does not match hash"));
         }
         drop(password);
 
@@ -119,7 +119,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         );
 
         if let Err(query_err) = query_result {
-            return Err(PostgresHelperError::new(query_err.description()));
+            return Err(CambioError::new(query_err.description()));
         }
         let rows = query_result.unwrap();
         let row = rows.get(0);
@@ -134,7 +134,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         &mut self,
         email_address: &str,
         session_token: &str,
-    ) -> Result<Option<Session>, PostgresHelperError> {
+    ) -> Result<Option<Session>, CambioError> {
         let mut sessions: Vec<Session> = try!(self.db_helper.query(
             GET_SESSION_QUERY,
             &[&email_address, &session_token],
@@ -142,13 +142,13 @@ impl<T: PostgresHelper> UserRepository<T> {
         Ok(sessions.pop())
     }
 
-    pub fn log_user_out(&mut self, email_address: &str) -> Result<(), PostgresHelperError> {
+    pub fn log_user_out(&mut self, email_address: &str) -> Result<(), CambioError> {
         if let Err(error) = self.db_helper.execute(
             LOG_USER_OUT_QUERY,
             &[&email_address],
         )
         {
-            return Err(PostgresHelperError::new(
+            return Err(CambioError::new(
                 &format!("Error logging user out: {}", error.description()),
             ));
         }
@@ -158,7 +158,7 @@ impl<T: PostgresHelper> UserRepository<T> {
     pub fn get_owner_id_by_email_address(
         &mut self,
         email_address: &str,
-    ) -> Result<Id, PostgresHelperError> {
+    ) -> Result<Id, CambioError> {
         const GET_OWNER_QUERY: &'static str = "
             SELECT account_owner.id AS owner_id FROM account_owner, users 
             WHERE account_owner.user_id = users.id AND users.email_address = $1";
@@ -169,12 +169,12 @@ impl<T: PostgresHelper> UserRepository<T> {
                     let row = rows.get(0);
                     Ok(row.get("owner_id"))
                 } else {
-                    return Err(PostgresHelperError::new(
+                    return Err(CambioError::new(
                         &format!("Owner ID for {} does not exist", email_address),
                     ));
                 }
             }
-            Err(error) => Err(PostgresHelperError::new(
+            Err(error) => Err(CambioError::new(
                 &format!("Error fetching owner_id: {}", error),
             )),
         }

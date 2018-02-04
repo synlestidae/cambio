@@ -17,9 +17,9 @@ pub trait PostgresHelper: Clone + Send + Sync {
         &mut self,
         query: &str,
         params: &[&ToSql],
-    ) -> Result<Vec<T>, PostgresHelperError>;
-    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, PostgresHelperError>;
-    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, PostgresHelperError>;
+    ) -> Result<Vec<T>, CambioError>;
+    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, CambioError>;
+    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, CambioError>;
 }
 
 #[derive(Clone)]
@@ -28,17 +28,17 @@ pub struct PostgresHelperImpl {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct PostgresHelperError {
+pub struct CambioError {
     desc: String,
 }
 
-impl PostgresHelperError {
+impl CambioError {
     pub fn new(desc: &str) -> Self {
         Self { desc: desc.to_owned() }
     }
 }
 
-impl error::Error for PostgresHelperError {
+impl error::Error for CambioError {
     fn description(&self) -> &str {
         &self.desc
     }
@@ -48,15 +48,15 @@ impl error::Error for PostgresHelperError {
     }
 }
 
-impl fmt::Display for PostgresHelperError {
+impl fmt::Display for CambioError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "DBHelperError: {}", self.description())
     }
 }
 
-impl From<web3::Error> for PostgresHelperError {
-    fn from(err: web3::Error) -> PostgresHelperError {
-        PostgresHelperError::new(&format!("Error completing web3 operation: {:?}", err))
+impl From<web3::Error> for CambioError {
+    fn from(err: web3::Error) -> CambioError {
+        CambioError::new(&format!("Error completing web3 operation: {:?}", err))
     }
 }
 
@@ -76,7 +76,7 @@ impl PostgresHelper for PostgresHelperImpl {
         &mut self,
         query: &str,
         params: &[&ToSql],
-    ) -> Result<Vec<T>, PostgresHelperError> {
+    ) -> Result<Vec<T>, CambioError> {
         let connection = try!(self.conn_source.get());
         match connection.query(query, params) {
             Ok(query_result) => {
@@ -86,7 +86,7 @@ impl PostgresHelper for PostgresHelperImpl {
                         Ok(obj) => result_objs.push(obj),
                         Err(error) => {
                             let error_message = format!("Error serialialising row. {}", error);
-                            return Err(PostgresHelperError::new(&error_message));
+                            return Err(CambioError::new(&error_message));
                         }
                     }
                 }
@@ -94,20 +94,20 @@ impl PostgresHelper for PostgresHelperImpl {
             }
             Err(error) => {
                 let msg = format!("Error while running query: {}", error.description());
-                return Err(PostgresHelperError::new(&msg));
+                return Err(CambioError::new(&msg));
             }
         }
     }
 
-    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, PostgresHelperError> {
+    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, CambioError> {
         let conn = try!(self.conn_source.get());
-        let err_func = |err| PostgresHelperError::new(&format!("Error running query: {}", err));
+        let err_func = |err| CambioError::new(&format!("Error running query: {}", err));
         conn.query(query, params).map_err(err_func)
     }
 
-    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, PostgresHelperError> {
+    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, CambioError> {
         let conn = try!(self.conn_source.get());
-        let err_func = |err| PostgresHelperError::new(&format!("Error running query: {}", err));
+        let err_func = |err| CambioError::new(&format!("Error running query: {}", err));
         conn.execute(query, params).map_err(err_func)
     }
 }

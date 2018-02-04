@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperError};
+use db::{PostgresHelper, CambioError};
 use domain::{Address, PersonalIdentity, ContactInfo, Id};
 
 pub struct ProfileService<T: PostgresHelper> {
@@ -13,7 +13,7 @@ impl<T: PostgresHelper> ProfileService<T> {
     pub fn get_user_address(
         &mut self,
         email_address: &str,
-    ) -> Result<Option<Address>, PostgresHelperError> {
+    ) -> Result<Option<Address>, CambioError> {
         unimplemented!()
     }
 
@@ -21,14 +21,14 @@ impl<T: PostgresHelper> ProfileService<T> {
         &mut self,
         email_address: &str,
         address: &Address,
-    ) -> Result<Address, PostgresHelperError> {
+    ) -> Result<Address, CambioError> {
         unimplemented!()
     }
 
     pub fn get_contact_info(
         &mut self,
         email_address: &str,
-    ) -> Result<Option<ContactInfo>, PostgresHelperError> {
+    ) -> Result<Option<ContactInfo>, CambioError> {
         unimplemented!();
     }
 
@@ -36,14 +36,14 @@ impl<T: PostgresHelper> ProfileService<T> {
         &mut self,
         email_address: &str,
         info: &ContactInfo,
-    ) -> Result<ContactInfo, PostgresHelperError> {
+    ) -> Result<ContactInfo, CambioError> {
         unimplemented!();
     }
 
     pub fn get_personal_info(
         &mut self,
         email_address: &str,
-    ) -> Result<Option<PersonalIdentity>, PostgresHelperError> {
+    ) -> Result<Option<PersonalIdentity>, CambioError> {
         unimplemented!();
     }
 
@@ -51,7 +51,7 @@ impl<T: PostgresHelper> ProfileService<T> {
         &mut self,
         email_address: &str,
         info: &PersonalIdentity,
-    ) -> Result<Option<PersonalIdentity>, PostgresHelperError> {
+    ) -> Result<Option<PersonalIdentity>, CambioError> {
         unimplemented!();
     }
 }

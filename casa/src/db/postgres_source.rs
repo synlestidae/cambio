@@ -4,7 +4,7 @@ use r2d2::{Pool, PooledConnection, ManageConnection};
 use std::io;
 use postgres::Connection;
 use std::ops::Deref;
-use db::{ConnectionSource, PostgresHelperError, PostgresPooledConn};
+use db::{ConnectionSource, CambioError, PostgresPooledConn};
 
 #[derive(Clone)]
 pub struct PostgresSource {
@@ -12,14 +12,14 @@ pub struct PostgresSource {
 }
 
 impl ConnectionSource for PostgresSource {
-    fn get<'a>(&'a mut self) -> Result<PostgresPooledConn, PostgresHelperError> {
+    fn get<'a>(&'a mut self) -> Result<PostgresPooledConn, CambioError> {
         match self.pool.get() {
             Ok(pooled_connection) => {
                 let connection: PooledConnection<PostgresConnectionManager> = pooled_connection;
                 Ok(connection)
             }
             Err(error) => {
-                let helper_error = PostgresHelperError::new(
+                let helper_error = CambioError::new(
                     &format!("Failed to get database connection: {}", error),
                 );
                 Err(helper_error)

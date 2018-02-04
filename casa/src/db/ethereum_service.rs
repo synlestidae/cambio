@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperError};
+use db::{PostgresHelper, CambioError};
 use chrono::prelude::*;
 use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
 use web3;
@@ -24,16 +24,16 @@ impl<T: PostgresHelper> EthereumService<T> {
         }
     }
 
-    pub fn new_account(&mut self, user_email: &str, account_password: String) -> Result<EthAccount, PostgresHelperError> {
+    pub fn new_account(&mut self, user_email: &str, account_password: String) -> Result<EthAccount, CambioError> {
         let (_eloop, web3) = try!(self.get_web3_inst());
         let owner_id = try!(self.user_repo.get_owner_id_by_email_address(user_email));
         match web3.personal().new_account(&account_password).wait() {
             Ok(address) => Ok(EthAccount::new(&address, account_password, owner_id)),
             Err(web3::Error::Transport(error_msg)) => {
-                Err(PostgresHelperError::new(&format!("Failed to communicate with geth: {}", error_msg)))
+                Err(CambioError::new(&format!("Failed to communicate with geth: {}", error_msg)))
             },
             Err(error) => {
-                Err(PostgresHelperError::new(&format!("Failed to create account: {:?}", error)))
+                Err(CambioError::new(&format!("Failed to create account: {:?}", error)))
             }
         }
     }
@@ -44,7 +44,7 @@ impl<T: PostgresHelper> EthereumService<T> {
         amount_wei: u64,
         max_cost_wei: u64,
         destination_address: H160,
-        unique_id: &str) -> Result<EthereumOutboundTransaction, PostgresHelperError> {
+        unique_id: &str) -> Result<EthereumOutboundTransaction, CambioError> {
         const BLOCK_CONFIRMATIONS: u64 = 4;
         let (_eloop, web3) = try!(self.get_web3_inst());
         let personal = web3.personal();
@@ -65,7 +65,7 @@ impl<T: PostgresHelper> EthereumService<T> {
         };
         let account_unlocked = try!(personal.unlock_account(account.address, &password, None).wait());
         if !account_unlocked {
-            return Err(PostgresHelperError::new("Failed to open account"));
+            return Err(CambioError::new("Failed to open account"));
         }
         let hash = try!(eth.send_transaction(transaction_req).wait());
         let transaction = try!(eth.transaction(web3::types::TransactionId::Hash(hash)).wait());
@@ -76,15 +76,15 @@ impl<T: PostgresHelper> EthereumService<T> {
                 unique_id: unique_id.to_string()
             })    
         } else {
-            Err(PostgresHelperError::new("Could not find transaction on the block"))
+            Err(CambioError::new("Could not find transaction on the block"))
         }
     }
 
-    fn get_web3_inst(&self) -> Result<Web3Pair, PostgresHelperError> {
+    fn get_web3_inst(&self) -> Result<Web3Pair, CambioError> {
         // TODO make this use some kind of connection pool if need be
         match web3::transports::ipc::Ipc::new(&self.web3_address) {
             Ok((_eloop, transport)) => Ok((_eloop, web3::Web3::new(transport))),
-            Err(err) => Err(PostgresHelperError::new(&format!("Failed to connect to geth: {:?}", err)))
+            Err(err) => Err(CambioError::new(&format!("Failed to connect to geth: {:?}", err)))
         }
     }
 }

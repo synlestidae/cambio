@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperError};
+use db::{PostgresHelper, CambioError};
 use chrono::prelude::*;
 use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id};
 
@@ -16,7 +16,7 @@ impl<T: PostgresHelper> OrderService<T> {
         &mut self,
         owner_id: Id,
         order: &Order,
-    ) -> Result<Order, PostgresHelperError> {
+    ) -> Result<Order, CambioError> {
         let sell_asset_units = order.sell_asset_units as i64;
         let buy_asset_units = order.buy_asset_units as i64;
 
@@ -38,12 +38,12 @@ impl<T: PostgresHelper> OrderService<T> {
         match execute_result {
             Ok(rows) => {
                 let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
-                new_order.ok_or(PostgresHelperError::new(
+                new_order.ok_or(CambioError::new(
                     "Failed to retrieve order after placing it.",
                 ))
             }
             Err(err) => {
-                Err(PostgresHelperError::new(&format!(
+                Err(CambioError::new(&format!(
                     "Failed to execute order placement function: {:?}",
                     err
                 )))
@@ -51,16 +51,16 @@ impl<T: PostgresHelper> OrderService<T> {
         }
     }
 
-    pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
+    pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, CambioError> {
         try!(self.db_helper.execute(CANCEL_ORDER_SQL, &[&order_id]));
         self.get_order_by_id(order_id)
     }
 
-    pub fn get_all_active_orders(&mut self) -> Result<Vec<Order>, PostgresHelperError> {
+    pub fn get_all_active_orders(&mut self) -> Result<Vec<Order>, CambioError> {
         match self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_SQL, &[]) {
             Ok(orders) => Ok(orders),
             Err(error) => {
-                Err(PostgresHelperError::new(
+                Err(CambioError::new(
                     &format!("Failed to get orders: {:?}", error),
                 ))
             }
@@ -70,14 +70,14 @@ impl<T: PostgresHelper> OrderService<T> {
     pub fn get_all_active_orders_by_user(
         &mut self,
         email_address: &str,
-    ) -> Result<Vec<Order>, PostgresHelperError> {
+    ) -> Result<Vec<Order>, CambioError> {
         match self.db_helper.query(
             SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL,
             &[&email_address],
         ) {
             Ok(orders) => Ok(orders),
             Err(error) => {
-                Err(PostgresHelperError::new(
+                Err(CambioError::new(
                     &format!("Failed to get orders for user: {:?}", error),
                 ))
             }
@@ -87,7 +87,7 @@ impl<T: PostgresHelper> OrderService<T> {
     pub fn get_order_settlement_status(
         &mut self,
         order_id: Id,
-    ) -> Result<Option<OrderSettlement>, PostgresHelperError> {
+    ) -> Result<Option<OrderSettlement>, CambioError> {
         let settlement_result = self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]);
         let settlement: OrderSettlementBuilder;
 
@@ -125,7 +125,7 @@ impl<T: PostgresHelper> OrderService<T> {
                 "Settlement should have two orders, but got {}",
                 order_result.len()
             );
-            return Err(PostgresHelperError::new(&error_message));
+            return Err(CambioError::new(&error_message));
         }
         buying_order = order_result.pop().unwrap();
         selling_order = order_result.pop().unwrap();
@@ -135,11 +135,11 @@ impl<T: PostgresHelper> OrderService<T> {
         Ok(Some(settlement))
     }
 
-    pub fn get_order_by_id(&mut self, order_id: Id) -> Result<Option<Order>, PostgresHelperError> {
+    pub fn get_order_by_id(&mut self, order_id: Id) -> Result<Option<Order>, CambioError> {
         match self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]) {
             Ok(mut orders) => Ok(orders.pop()),
             Err(error) => {
-                Err(PostgresHelperError::new(
+                Err(CambioError::new(
                     &format!("Failed to get order: {:?}", error),
                 ))
             }
@@ -150,14 +150,14 @@ impl<T: PostgresHelper> OrderService<T> {
         &mut self,
         owner_id: Id,
         unique_id: &str,
-    ) -> Result<Option<Order>, PostgresHelperError> {
+    ) -> Result<Option<Order>, CambioError> {
         match self.db_helper.query(
             SELECT_ORDER_UNIQUE_ID_SQL,
             &[&owner_id, &unique_id],
         ) {
             Ok(mut orders) => Ok(orders.pop()),
             Err(error) => {
-                Err(PostgresHelperError::new(
+                Err(CambioError::new(
                     &format!("Failed to get order: {:?}", error),
                 ))
             }
@@ -165,7 +165,7 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn settle_two_orders(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
-        -> Result<OrderSettlement, PostgresHelperError> {
+        -> Result<OrderSettlement, CambioError> {
         unimplemented!()
     }
 }
