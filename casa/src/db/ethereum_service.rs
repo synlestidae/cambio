@@ -25,13 +25,12 @@ impl<T: PostgresHelper> EthereumService<T> {
     }
 
     pub fn new_account(&mut self, user_email: &str, account_password: String) -> Result<EthAccount, PostgresHelperError> {
-        let web3 = try!(self.get_eth_inst());
+        let (_eloop, web3) = try!(self.get_web3_inst());
         let owner_id = try!(self.user_repo.get_owner_id_by_email_address(user_email));
-        //println!("Gas price: {}", web3.eth().gas_price().wait().unwrap());
         match web3.personal().new_account(&account_password).wait() {
             Ok(address) => Ok(EthAccount::new(&address, account_password, owner_id)),
             Err(web3::Error::Transport(error_msg)) => {
-                Err(PostgresHelperError::new(&format!("Failed to communicate with geth: {:?}", error_msg)))
+                Err(PostgresHelperError::new(&format!("Failed to communicate with geth: {}", error_msg)))
             },
             Err(error) => {
                 Err(PostgresHelperError::new(&format!("Failed to create account: {:?}", error)))
@@ -47,17 +46,17 @@ impl<T: PostgresHelper> EthereumService<T> {
         destination_address: H160,
         unique_id: &str) -> Result<EthereumOutboundTransaction, PostgresHelperError> {
         const BLOCK_CONFIRMATIONS: u64 = 4;
-
-        let web3 = try!(self.get_eth_inst());
+        let (_eloop, web3) = try!(self.get_web3_inst());
         let personal = web3.personal();
         let eth = web3.eth();
         let gas_price_wei = try!(eth.gas_price().wait());
         let block = try!(eth.block_number().wait());
         let confirmations = block.low_u64() + BLOCK_CONFIRMATIONS;
+        let gas = U256::from(21000);
         let transaction_req = TransactionRequest {
            from: account.address,
            to: Some(destination_address),
-           gas: Some(gas_price_wei),
+           gas: Some(gas),
            gas_price: Some(gas_price_wei),
            value: Some(U256::from(amount_wei)),
            data: None, 
@@ -81,11 +80,13 @@ impl<T: PostgresHelper> EthereumService<T> {
         }
     }
 
-    fn get_eth_inst(&self) -> Result<web3::Web3<web3::transports::ipc::Ipc>, PostgresHelperError> {
+    fn get_web3_inst(&self) -> Result<Web3Pair, PostgresHelperError> {
         // TODO make this use some kind of connection pool if need be
         match web3::transports::ipc::Ipc::new(&self.web3_address) {
-            Ok((_eloop, transport)) => Ok(web3::Web3::new(transport)),
+            Ok((_eloop, transport)) => Ok((_eloop, web3::Web3::new(transport))),
             Err(err) => Err(PostgresHelperError::new(&format!("Failed to connect to geth: {:?}", err)))
         }
     }
 }
+
+pub type Web3Pair = (web3::transports::EventLoopHandle, web3::Web3<web3::transports::ipc::Ipc>);

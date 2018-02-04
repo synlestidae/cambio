@@ -12,7 +12,7 @@ pub fn test_transaction() {
     let mut service = get_service();
     let mut repo = get_repo();
     println!("Registering user");
-    //repo.register_user("jerry@springer.com", "iloveturtles".to_owned()).unwrap();
+    repo.register_user("jerry@springer.com", "iloveturtles".to_owned()).unwrap();
     println!("Getting a new account");
     let account = service.new_account("jerry@springer.com", "iliketurtles".to_owned()).unwrap();
     println!("Making the transaction");
@@ -21,7 +21,7 @@ pub fn test_transaction() {
         10000000, 
         1000000, 
         H160::from_str("0x927B18DD62B0500Cfed48815D1a613e2f1167903").unwrap(),
-        "transaction123");
+        "transaction123").unwrap();
 }
 
 #[allow(dead_code)]
