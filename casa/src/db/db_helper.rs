@@ -9,6 +9,8 @@ use std::error;
 use std::error::Error;
 use std::fmt;
 use std::marker::{Send, Sync};
+use std::convert::From;
+use web3;
 
 pub trait PostgresHelper: Clone + Send + Sync {
     fn query<T: TryFromRow>(
@@ -49,6 +51,12 @@ impl error::Error for PostgresHelperError {
 impl fmt::Display for PostgresHelperError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "DBHelperError: {}", self.description())
+    }
+}
+
+impl From<web3::Error> for PostgresHelperError {
+    fn from(err: web3::Error) -> PostgresHelperError {
+        PostgresHelperError::new(&format!("Error completing web3 operation: {:?}", err))
     }
 }
 

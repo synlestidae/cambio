@@ -11,15 +11,15 @@ use rand;
 use std::iter;
 use std;
 use bcrypt::hash;
-use web3::types::H160;
+use web3::types::{H160, U256, Transaction};
 
 const BCRYPT_COST: u32 = 8;
 
 #[Derive(Debug, Clone, TryFromRow)]
 pub struct EthAccount {
-    address: H160,
-    password_hash_bcrypt: String,
-    owner_id: i32
+    pub address: H160,
+    pub password_hash_bcrypt: String,
+    pub owner_id: i32
 }
 
 impl EthAccount {
