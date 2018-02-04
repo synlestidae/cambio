@@ -10,7 +10,6 @@ mod api_init;
 mod user_api_init;
 mod total_api_init;
 mod api_utils;
-mod error_reccomendation;
 
 pub use self::account_api_trait::*;
 pub use self::api_error::*;
@@ -24,4 +23,3 @@ pub use self::api_init::*;
 pub use self::user_api_init::*;
 pub use self::total_api_init::*;
 pub use self::api_utils::*;
-pub use self::error_reccomendation::*;

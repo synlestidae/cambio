@@ -12,6 +12,8 @@ mod try_from_row;
 mod try_from_row_error;
 mod try_from_row_utils;
 mod user_repository;
+mod error_kind;
+mod error_reccomendation;
 
 pub use self::account_repository::AccountRepository;
 pub use self::connection_source::*;
@@ -26,3 +28,5 @@ pub use self::try_from_row_utils::{get_value, get_value_option};
 pub use self::user_repository::UserRepository;
 pub use self::order_service::OrderService;
 pub use self::cambio_error::CambioError;
+pub use self::error_kind::ErrorKind;
+pub use self::error_reccomendation::*;
