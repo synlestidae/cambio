@@ -4,9 +4,9 @@ set -e
 set -o pipefail
 
 clean_up () {
-    echo "DROP DATABASE test_database_only" | psql
     echo "Killing geth"
     pkill geth
+    echo "DROP DATABASE test_database_only" | psql
 }
 
 

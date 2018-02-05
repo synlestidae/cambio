@@ -90,30 +90,55 @@ impl fmt::Display for CambioError {
 
 impl From<web3::Error> for CambioError {
     fn from(err: web3::Error) -> CambioError {
-        unimplemented!()
+        CambioError {
+            user_message: "Failed to communicate with Ethereum".to_owned(),
+            system_message: format!("Web3 failed: {:?}", err),
+            kind: ErrorKind::Web3,
+            reccomendation: ErrorReccomendation::ContactProgrammer
+        }
     }
 }
 
 impl From<db::TryFromRowError> for CambioError {
     fn from(err: db::TryFromRowError) -> CambioError {
-        unimplemented!()
+        CambioError {
+            user_message: "Something went wrong while converting internal data".to_owned(),
+            system_message: format!("TryFromRowError: {}", err),
+            kind: ErrorKind::ConvertingObjInternal,
+            reccomendation: ErrorReccomendation::ContactProgrammer
+        }
     }
 }
 
 impl From<postgres::Error> for CambioError {
     fn from(err: postgres::Error) -> CambioError {
-        unimplemented!()
+        CambioError {
+            user_message: "Failed to connect to the database".to_owned(),
+            system_message: format!("Postgres error: {:?}", err),
+            kind: ErrorKind::DBConnection,
+            reccomendation: ErrorReccomendation::TryAgainNow
+        }
     }
 }
 
 impl From<bcrypt::BcryptError> for CambioError {
     fn from(err: bcrypt::BcryptError) -> CambioError {
-        unimplemented!()
+        CambioError {
+            user_message: "Failed to create your account".to_owned(),
+            system_message: format!("Bcrypt error {:?}", err),
+            kind: ErrorKind::UnexpectedState,
+            reccomendation: ErrorReccomendation::ContactProgrammer
+        }
     }
 }
 
 impl From<r2d2::Error> for CambioError {
     fn from(err: r2d2::Error) -> CambioError {
-        unimplemented!()
+        CambioError {
+            user_message: "Failed to connect to the database".to_owned(),
+            system_message: format!("r2d2 error: {:?}", err),
+            kind: ErrorKind::DBConnection,
+            reccomendation: ErrorReccomendation::TryAgainNow
+        }
     }
 }

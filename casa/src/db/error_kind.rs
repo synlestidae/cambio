@@ -2,6 +2,7 @@
 pub enum ErrorKind {
     DBConnection,
     GethConnection,
+    Web3,
     Query,
     Unauthorised,
     ConvertingObjInternal,
@@ -10,5 +11,4 @@ pub enum ErrorKind {
     InsufficientFunds,
     NotFound,
     UnexpectedState
-
 }
