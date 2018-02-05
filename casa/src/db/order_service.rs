@@ -131,8 +131,27 @@ impl<T: PostgresHelper> OrderService<T> {
         Ok(order_list.pop())
     }
 
+
+    // ALL METHODS MUST BE IMMUNE TO REPLAY ATTACKS
+
     pub fn settle_two_orders(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
         -> Result<OrderSettlement, CambioError> {
+            // steps to settle 
+            // -1 check that orders aren't settled already
+            // 0 check that past transactions haven't already been made
+            // 1 retrieve two orders from DB 
+            // 2 check orders both match - they must be what user is looking for
+            // 3 retrieve the monetary account for the fiat-currency receiver
+            // 4 retrieve the ethereum account for the crypto-currency receiver 
+            // 5 check that both accounts have sufficient funds
+            // 6 insert settlement into DB
+            // 7 transfer fiat funds from crypto-currency receiver to holding account
+            // 8 mark settlement as pending ethereum transaction
+            // 9 perform ethereum transaction
+            // 10 check ethereum transaction has been confirmed, and do one API lookup
+            // 11 mark settlement as ethereum confirmed, pending fiat fund transfer
+            // 12 transfer fiat funds from holding account to fiat currency receiver
+            // 13 mark settlement as finished
         unimplemented!()
     }
 }

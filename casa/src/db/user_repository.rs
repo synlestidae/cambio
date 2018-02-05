@@ -34,7 +34,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         }
 
         // check user exists
-        if let None = try!(self.get_user_by_email(email_address)) {
+        if let Some(_) = try!(self.get_user_by_email(email_address)) {
             return Err(CambioError::user_exists());
         }
 

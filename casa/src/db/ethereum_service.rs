@@ -39,7 +39,9 @@ impl<T: PostgresHelper> EthereumService<T> {
         max_cost_wei: u64,
         destination_address: H160,
         unique_id: &str) -> Result<EthereumOutboundTransaction, CambioError> {
+
         const BLOCK_CONFIRMATIONS: u64 = 4;
+
         let (_eloop, web3) = try!(self.get_web3_inst());
         let personal = web3.personal();
         let eth = web3.eth();
