@@ -1,4 +1,4 @@
-use db::{PostgresHelper, CambioError};
+use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
 use std::error::Error;
 use domain::{Account, Id, AccountStatement, Transaction};
 
@@ -46,29 +46,28 @@ impl<T: PostgresHelper> AccountRepository<T> {
         &mut self,
         email_address: &str,
     ) -> Result<Vec<Account>, CambioError> {
-        match self.db_helper.query(ACCOUNT_QUERY_USER, &[&email_address]) {
-            Ok(accounts) => Ok(accounts),
-            Err(err) => Err(CambioError::new(err.description())),
-        }
+        let accounts = try!(self.db_helper.query(ACCOUNT_QUERY_USER, &[&email_address]));
+        Ok(accounts)
     }
 
     pub fn get_account(&mut self, account_id: &Id) -> Result<Option<Account>, CambioError> {
-        match self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id]) {
-            Ok(mut accounts) => Ok(accounts.pop()),
-            Err(err) => Err(CambioError::new(err.description())),
-        }
+        let mut accounts = try!(self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id])); 
+        Ok(accounts.pop())
     }
 
     pub fn get_latest_statement(
         &mut self,
         account_id: &Id,
     ) -> Result<AccountStatement, CambioError> {
+        let account_match = try!(self.get_account(account_id));
+        let error = CambioError::not_found_search("Your account could not be found.", 
+            &format!("Account with ID {} not found", account_id));
+        let account = match account_match {
+            Some(acc) => acc,
+            None => return Err(error)
+        };
+
         let mut transactions = try!(self.get_transactions_for_account(account_id));
-        let account = try!(try!(self.get_account(account_id)).ok_or(
-            CambioError::new(
-                "Account does not exist",
-            ),
-        ));
 
         transactions.sort_by_key(|t: &Transaction| t.id);
 
@@ -92,9 +91,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
         &mut self,
         account_id: &Id,
     ) -> Result<Vec<Transaction>, CambioError> {
-        match self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]) {
-            Ok(transactions) => Ok(transactions),
-            Err(err) => Err(CambioError::new(err.description())),
-        }
+        let transactions = try!(self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]));
+        Ok(transactions)
     }
 }

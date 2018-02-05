@@ -1,4 +1,4 @@
-use db::{PostgresHelper, CambioError, AccountRepository, UserRepository};
+use db::{PostgresHelper, CambioError, AccountRepository, UserRepository, ErrorReccomendation, ErrorKind};
 use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
@@ -42,15 +42,9 @@ impl<T: PostgresHelper> PaymentRepository<T> {
 
         // get the accounts for the user
         let account_list = try!(self.account_repository.get_accounts_for_user(email_address));
-        let user = match try!(self.user_repository.get_user_by_email(email_address)) {
-            Some(user) => user,
-            None => {
-                return Err(CambioError::new(
-                    "Could not find user with that email address",
-                ))
-            }
-        };
-
+        let user_match = try!(self.user_repository.get_user_by_email(email_address));
+        let user_not_found = CambioError::not_found_search("No user found with that email address", "get_user_by_email returned None");
+        let user = try!(user_match.ok_or(user_not_found));
         let message = format!("Credit to wallet using {}", payment.vendor);
 
         // extract the PRIMARY account with matching asset and denom
@@ -62,20 +56,18 @@ impl<T: PostgresHelper> PaymentRepository<T> {
                     account.account_role == AccountRole::Primary
             })
             .collect();
-        let account_not_found_error =
-            CambioError::new("Not matching account for credit found");
+        let mut account_not_found_error = CambioError::not_found_search(
+            "An account to credit was not found", 
+            "Failed to found account with matching asset type for payment");
+        account_not_found_error.reccomendation = ErrorReccomendation::ContactSupport;
         let account = try!(creditable_accounts.pop().ok_or(account_not_found_error));
 
         // TODO check any limits and flag them
         // e.g. a credit of $1,000,000 is certainly wrong and needs to be checked
         // or just cancelled
 
-        let user_id = try!(user.id.ok_or(CambioError::new(
-            "User object doesn't have ID",
-        )));
-        let account_id = try!(account.id.ok_or(CambioError::new(
-            "Account object doesn't have ID",
-        )));
+        let user_id = try!(user.id.ok_or(CambioError::shouldnt_happen("Failed to match email with user.", "User id field was None.")));
+        let account_id = try!(account.id.ok_or(CambioError::shouldnt_happen("Failed to find your account. ", "User id field was None.")));
 
         // call the payment stored procedure
         let procedure_result = self.db_helper.execute(
@@ -95,17 +87,15 @@ impl<T: PostgresHelper> PaymentRepository<T> {
             ],
         );
 
-        let account_id = try!(account.id.ok_or(CambioError::new(
-            "Account instance has no ID",
-        )));
+        try!(procedure_result);
 
-        match procedure_result {
-            Ok(_) => self.account_repository.get_latest_statement(&account_id),
-            Err(err) => {
-                Err(CambioError::new(
-                    &format!("Failed to credit account: {}", err),
-                ))
-            }
-        }
+        // if getting account ID failed, user can work around it
+        let mut account_error = CambioError::shouldnt_happen("Could not find your account while loading transactions.", 
+            "Account id field was None");
+        account_error.reccomendation = ErrorReccomendation::Continue;
+
+        // load the statement
+        let account_id = try!(account.id.ok_or(account_error));
+        self.account_repository.get_latest_statement(&account_id)
     }
 }

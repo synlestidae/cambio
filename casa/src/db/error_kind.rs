@@ -8,5 +8,7 @@ pub enum ErrorKind {
     UserInputFormat,
     UserExists,
     InsufficientFunds,
-    NotFound
+    NotFound,
+    UnexpectedState
+
 }

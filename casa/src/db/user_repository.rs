@@ -1,4 +1,4 @@
-use db::{PostgresHelper, CambioError};
+use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
 use domain::{User, Session, Id};
 use std::error::Error;
 use bcrypt::hash;
@@ -20,7 +20,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         &mut self,
         email_address: &str,
     ) -> Result<Option<User>, CambioError> {
-        let matches = try!(self.db_helper.query(GET_USER_QUERY, &[&email_address]));
+        let mut matches = try!(self.db_helper.query(GET_USER_QUERY, &[&email_address]));
         Ok(matches.pop())
     }
 
@@ -30,7 +30,7 @@ impl<T: PostgresHelper> UserRepository<T> {
         password: String,
     ) -> Result<Option<User>, CambioError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
-            return Err(CambioError::new("Email address is invalid"));
+            return Err(CambioError::bad_input("Please check that the email entered is valid", "Email address is invalid"));
         }
 
         // check user exists

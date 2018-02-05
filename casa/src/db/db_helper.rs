@@ -45,36 +45,25 @@ impl PostgresHelper for PostgresHelperImpl {
         params: &[&ToSql],
     ) -> Result<Vec<T>, CambioError> {
         let connection = try!(self.conn_source.get());
-        match connection.query(query, params) {
-            Ok(query_result) => {
-                let mut result_objs = Vec::new();
-                for row in query_result.iter() {
-                    match T::try_from_row(&row) {
-                        Ok(obj) => result_objs.push(obj),
-                        Err(error) => {
-                            let error_message = format!("Error serialialising row. {}", error);
-                            return Err(CambioError::new(&error_message));
-                        }
-                    }
-                }
-                Ok(result_objs)
-            }
-            Err(error) => {
-                let msg = format!("Error while running query: {}", error.description());
-                return Err(CambioError::new(&msg));
-            }
+        let rows = try!(connection.query(query, params)); 
+
+        let mut result_objs = Vec::new();
+        for row in rows.iter() {
+            let obj = try!(T::try_from_row(&row));
+            result_objs.push(obj);
         }
+        Ok(result_objs)
     }
 
     fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, CambioError> {
         let conn = try!(self.conn_source.get());
-        let err_func = |err| CambioError::new(&format!("Error running query: {}", err));
-        conn.query(query, params).map_err(err_func)
+        let result = try!(conn.query(query, params));
+        Ok(result)
     }
 
     fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, CambioError> {
         let conn = try!(self.conn_source.get());
-        let err_func = |err| CambioError::new(&format!("Error running query: {}", err));
-        conn.execute(query, params).map_err(err_func)
+        let result = try!(conn.execute(query, params));
+        Ok(result)
     }
 }

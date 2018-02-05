@@ -5,13 +5,15 @@ use std::error::Error;
 use std::fmt;
 use web3;
 use postgres;
+use bcrypt;
+use r2d2;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct CambioError {
-    user_message: String,
-    system_message: String,
-    kind: ErrorKind,
-    reccomendation: ErrorReccomendation,
+    pub user_message: String,
+    pub system_message: String,
+    pub kind: ErrorKind,
+    pub reccomendation: ErrorReccomendation,
 }
 
 impl CambioError {
@@ -41,6 +43,33 @@ impl CambioError {
             reccomendation: ErrorReccomendation::CheckInput
         }
     }
+
+    pub fn bad_input(user_msg: &str, system_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: system_msg.to_owned(),
+            kind: ErrorKind::UserInputFormat,
+            reccomendation: ErrorReccomendation::CheckInput
+        }
+    }
+
+    pub fn shouldnt_happen(user_msg: &str, system_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: system_msg.to_owned(),
+            kind: ErrorKind::UnexpectedState,
+            reccomendation: ErrorReccomendation::ContactProgrammer
+        }
+    }
+
+    pub fn not_found_search(user_msg: &str, system_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: system_msg.to_owned(),
+            kind: ErrorKind::NotFound,
+            reccomendation: ErrorReccomendation::CheckInput
+        }
+    }
 }
 
 impl error::Error for CambioError {
@@ -61,8 +90,7 @@ impl fmt::Display for CambioError {
 
 impl From<web3::Error> for CambioError {
     fn from(err: web3::Error) -> CambioError {
-        match err {
-        }
+        unimplemented!()
     }
 }
 
@@ -80,6 +108,12 @@ impl From<postgres::Error> for CambioError {
 
 impl From<bcrypt::BcryptError> for CambioError {
     fn from(err: bcrypt::BcryptError) -> CambioError {
+        unimplemented!()
+    }
+}
+
+impl From<r2d2::Error> for CambioError {
+    fn from(err: r2d2::Error) -> CambioError {
         unimplemented!()
     }
 }

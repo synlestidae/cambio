@@ -35,20 +35,12 @@ impl<T: PostgresHelper> OrderService<T> {
             ],
         );
 
-        match execute_result {
-            Ok(rows) => {
-                let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
-                new_order.ok_or(CambioError::new(
-                    "Failed to retrieve order after placing it.",
-                ))
-            }
-            Err(err) => {
-                Err(CambioError::new(&format!(
-                    "Failed to execute order placement function: {:?}",
-                    err
-                )))
-            }
-        }
+        let rows = try!(execute_result);
+        let new_order = try!(self.get_order_by_unique_id(owner_id, &order.unique_id));
+        let mut retrieve_error = CambioError::shouldnt_happen(
+            "Your order could not be retrieved. Check the Orders page and try again", 
+            "get_order_by_unique_id returned None");
+        new_order.ok_or(retrieve_error)
     }
 
     pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, CambioError> {
@@ -57,31 +49,19 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn get_all_active_orders(&mut self) -> Result<Vec<Order>, CambioError> {
-        match self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_SQL, &[]) {
-            Ok(orders) => Ok(orders),
-            Err(error) => {
-                Err(CambioError::new(
-                    &format!("Failed to get orders: {:?}", error),
-                ))
-            }
-        }
+        let active_orders = try!(self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_SQL, &[]));
+        Ok(active_orders)
     }
 
     pub fn get_all_active_orders_by_user(
         &mut self,
         email_address: &str,
     ) -> Result<Vec<Order>, CambioError> {
-        match self.db_helper.query(
+        let orders = try!(self.db_helper.query(
             SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL,
             &[&email_address],
-        ) {
-            Ok(orders) => Ok(orders),
-            Err(error) => {
-                Err(CambioError::new(
-                    &format!("Failed to get orders for user: {:?}", error),
-                ))
-            }
-        }
+        ));
+        Ok(orders)
     }
 
     pub fn get_order_settlement_status(
@@ -121,11 +101,8 @@ impl<T: PostgresHelper> OrderService<T> {
         let buying_order: Order;
         let selling_order: Order;
         if order_result.len() != 2 {
-            let error_message = format!(
-                "Settlement should have two orders, but got {}",
-                order_result.len()
-            );
-            return Err(CambioError::new(&error_message));
+            let sys_message = format!("Expected 2 orders, got {}", order_result.len());
+            return Err(CambioError::shouldnt_happen("Failed to match the orders in settlement. ", &sys_message));
         }
         buying_order = order_result.pop().unwrap();
         selling_order = order_result.pop().unwrap();
@@ -136,14 +113,8 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     pub fn get_order_by_id(&mut self, order_id: Id) -> Result<Option<Order>, CambioError> {
-        match self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]) {
-            Ok(mut orders) => Ok(orders.pop()),
-            Err(error) => {
-                Err(CambioError::new(
-                    &format!("Failed to get order: {:?}", error),
-                ))
-            }
-        }
+        let mut orders = try!(self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id])); 
+        Ok(orders.pop())
     }
 
     pub fn get_order_by_unique_id(
@@ -151,17 +122,13 @@ impl<T: PostgresHelper> OrderService<T> {
         owner_id: Id,
         unique_id: &str,
     ) -> Result<Option<Order>, CambioError> {
-        match self.db_helper.query(
+        let order_result = self.db_helper.query(
             SELECT_ORDER_UNIQUE_ID_SQL,
             &[&owner_id, &unique_id],
-        ) {
-            Ok(mut orders) => Ok(orders.pop()),
-            Err(error) => {
-                Err(CambioError::new(
-                    &format!("Failed to get order: {:?}", error),
-                ))
-            }
-        }
+        );
+
+        let mut order_list = try!(order_result);
+        Ok(order_list.pop())
     }
 
     pub fn settle_two_orders(&mut self, buying_crypto_order: &Order, selling_order: &Order) 

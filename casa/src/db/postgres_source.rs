@@ -13,18 +13,7 @@ pub struct PostgresSource {
 
 impl ConnectionSource for PostgresSource {
     fn get<'a>(&'a mut self) -> Result<PostgresPooledConn, CambioError> {
-        match self.pool.get() {
-            Ok(pooled_connection) => {
-                let connection: PooledConnection<PostgresConnectionManager> = pooled_connection;
-                Ok(connection)
-            }
-            Err(error) => {
-                let helper_error = CambioError::new(
-                    &format!("Failed to get database connection: {}", error),
-                );
-                Err(helper_error)
-            }
-        }
+        Ok(try!(self.pool.get()))
     }
 }
 

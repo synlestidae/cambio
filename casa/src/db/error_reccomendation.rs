@@ -6,5 +6,6 @@ pub enum ErrorReccomendation {
     ContactSupport,
     CheckInput,
     CheckState,
-    Nothing
+    Nothing,
+    Continue
 }
