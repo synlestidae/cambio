@@ -39,12 +39,11 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         email_address: &str,
         payment: &Payment,
     ) -> Result<AccountStatement, CambioError> {
-
-        // get the accounts for the user
-        let account_list = try!(self.account_repository.get_accounts_for_user(email_address));
         let user_match = try!(self.user_repository.get_user_by_email(email_address));
         let user_not_found = CambioError::not_found_search("No user found with that email address", "get_user_by_email returned None");
         let user = try!(user_match.ok_or(user_not_found));
+        let account_list =
+            try!(self.account_repository.get_accounts_for_user(user.id.unwrap()));
         let message = format!("Credit to wallet using {}", payment.vendor);
 
         // extract the PRIMARY account with matching asset and denom

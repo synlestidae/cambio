@@ -22,7 +22,7 @@ const ACCOUNT_QUERY_USER: &'static str = "
         JOIN users ON account_owner.user_id = users.id
         JOIN asset_type ON account.asset_type = asset_type.id
     WHERE 
-       users.email_address = $1";
+       users.id = $1";
 
 const ACCOUNT_QUERY_ID: &'static str = "
     SELECT *, account.id as account_id FROM account 
@@ -44,9 +44,10 @@ impl<T: PostgresHelper> AccountRepository<T> {
 
     pub fn get_accounts_for_user(
         &mut self,
-        email_address: &str,
+        //email_address: &str,
+        user_id: Id
     ) -> Result<Vec<Account>, CambioError> {
-        let accounts = try!(self.db_helper.query(ACCOUNT_QUERY_USER, &[&email_address]));
+        let accounts = try!(self.db_helper.query(ACCOUNT_QUERY_USER, &[&user_id]));
         Ok(accounts)
     }
 

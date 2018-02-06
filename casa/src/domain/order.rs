@@ -29,4 +29,8 @@ impl Order {
         return self.buy_asset_type == other_order.sell_asset_type &&
             self.buy_asset_denom == other_order.sell_asset_denom;
     }
+
+    pub fn is_fair(&self, other_order: &Order) -> bool {
+        unimplemented!()
+    }
 }

@@ -24,6 +24,14 @@ impl<T: PostgresHelper> UserRepository<T> {
         Ok(matches.pop())
     }
 
+    pub fn get_user(
+        &mut self,
+        user_id: Id,
+    ) -> Result<Option<User>, CambioError> {
+        let mut matches = try!(self.db_helper.query(GET_USER_QUERY_ID, &[&user_id]));
+        Ok(matches.pop())
+    }
+
     pub fn register_user(
         &mut self,
         email_address: &str,
@@ -112,6 +120,7 @@ impl<T: PostgresHelper> UserRepository<T> {
 }
 
 const GET_USER_QUERY: &'static str = "SELECT id, email_address, password_hash FROM users WHERE email_address = $1";
+const GET_USER_QUERY_ID: &'static str = "SELECT id, email_address, password_hash FROM users WHERE id = $1";
 const ACTIVATE_USER_SESSION_QUERY: &'static str = "SELECT * FROM activate_user_session($1)";
 const GET_SESSION_QUERY: &'static str = "SELECT users.email_address, session_info.session_token, session_info.started_at, session_info.ttl_milliseconds
     FROM users, session_info

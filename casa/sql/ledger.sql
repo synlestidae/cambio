@@ -11,6 +11,7 @@ CREATE TABLE accounting_period (
 
 CREATE TYPE account_business_type AS ENUM (
     'user_cash_wallet',
+    'order_payment_hold',
     'system_fees_paid',
     'accounting_concept'
 );
@@ -163,6 +164,7 @@ CREATE TYPE business_ends_type AS ENUM (
     'wallet_deposit',
     'wallet_withdrawal',
     'order_placement',
+    'order_settlement',
     'system_fee_charge',
     'cryptocurrency_purchase'
 );
@@ -177,7 +179,7 @@ CREATE TABLE authorship (
     business_ends business_ends_type NOT NULL,
     authoring_user SERIAL REFERENCES users(id) NOT NULL, 
     message TEXT,
-    entry SERIAL UNIQUE REFERENCES entry NOT NULL
+    entry SERIAL UNIQUE REFERENCES entry
 );
 
 CREATE TABLE journal (

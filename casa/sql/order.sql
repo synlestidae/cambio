@@ -25,7 +25,10 @@ CREATE TABLE order_settlement (
     settled_at TIMESTAMP,
     authorship_id SERIAL REFERENCES authorship(id) UNIQUE NOT NULL,
     status settlement_status NOT NULL,
-    transaction_id SERIAL NOT NULL REFERENCES eth_transactions(id)
+    transaction_id SERIAL REFERENCES eth_transactions(id),
+    buying_crypto_id SERIAL NOT NULL REFERENCES orders(id),
+    buying_fiat_id SERIAL NOT NULL REFERENCES orders(id),
+    CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
 
 CREATE TABLE asset_order (
@@ -67,6 +70,36 @@ BEGIN
     INSERT INTO asset_order(owner_id, unique_id, sell_asset_units, buy_asset_units, sell_asset_type_id,
         buy_asset_type_id, expires_at, settlement_id) 
      VALUES(owner_id_var, unique_id_var, sell_asset_units_var, buy_asset_units_var, sell_asset_type_id_var, buy_asset_type_id_var, expires_at_var, NULL);
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION begin_settlement(
+   buying_crypto_order_id INTEGER,
+   buying_currency_order_id INTEGER,
+   starting_user INTEGER
+)
+RETURNS VOID AS $$
+  account_id_var INTEGER;
+  asset_type_id INTEGER;
+DECLARE 
+BEGIN
+    -- Create an authorship
+    INSERT INTO authorship(business_ends, authoring_user, message) VALUES ('order_settlement', starting_user, 'Settling two orders');
+
+    -- Transfer fiat currency from buying_crypto guy
+    SELECT account.id INTO account_id_var FROM
+        account
+    JOIN account_owner ON account.owner_id = account_owner.id
+    JOIN orders ON orders.owner_id = account_owner.id
+    JOIN account.owner_id = account_owner.id
+    WHERE orders.id = buying_crypto_id AND
+          account.account_business_type = 'order_payment_hold';
+
+
+    -- literally cant be fucked
+
+
 
 END;
 $$ LANGUAGE plpgsql;

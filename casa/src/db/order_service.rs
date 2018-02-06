@@ -1,15 +1,21 @@
-use db::{PostgresHelper, CambioError};
+use db::{PostgresHelper, AccountRepository, CambioError, UserRepository};
 use chrono::prelude::*;
-use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id};
+use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id, User, AccountBusinessType, Account};
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
-    db_helper: T,
+    account_repository: AccountRepository<T>,
+    user_repository: UserRepository<T>,
+    db_helper: T
 }
 
 impl<T: PostgresHelper> OrderService<T> {
     pub fn new(db_helper: T) -> Self {
-        Self { db_helper: db_helper }
+        Self { 
+            account_repository: AccountRepository::new(db_helper.clone()),
+            user_repository: UserRepository::new(db_helper.clone()),
+            db_helper: db_helper 
+        }
     }
 
     pub fn place_order(
@@ -131,30 +137,90 @@ impl<T: PostgresHelper> OrderService<T> {
         Ok(order_list.pop())
     }
 
-
     // ALL METHODS MUST BE IMMUNE TO REPLAY ATTACKS
-
-    pub fn settle_two_orders(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
+    pub fn begin_order_settlement(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
         -> Result<OrderSettlement, CambioError> {
+            let buy_id = buying_crypto_order.id.unwrap();
+            let sell_id = selling_order.id.unwrap();
             // steps to settle 
             // -1 check that orders aren't settled already
-            // 0 check that past transactions haven't already been made
-            // 1 retrieve two orders from DB 
-            // 2 check orders both match - they must be what user is looking for
-            // 3 retrieve the monetary account for the fiat-currency receiver
-            // 4 retrieve the ethereum account for the crypto-currency receiver 
-            // 5 check that both accounts have sufficient funds
-            // 6 insert settlement into DB
-            // 7 transfer fiat funds from crypto-currency receiver to holding account
-            // 8 mark settlement as pending ethereum transaction
-            // 9 perform ethereum transaction
+            let buying_settlement = try!(self.get_order_settlement_status(buy_id));
+            let selling_settlement = try!(self.get_order_settlement_status(sell_id));
+            if buying_settlement.is_none() || selling_settlement.is_none() {
+                    return Err(CambioError::unfair_operation("At least one order is already in settlement.",
+                        "At least one order has an existing settlement status."));
+            }
+            // 0 check that past transactions haven't already been made for this order
+            // TODO! 
+            // retrieve two orders from DB 
+
+            // check orders both match - they must be what user is looking for
+            if !selling_order.is_fair(&buying_crypto_order) {
+                return Err(CambioError::unfair_operation("Cannot settle two orders who aren't mutual.",
+                    "Order is_fair returned false"));
+                unimplemented!() // TODO return an error 
+            }
+
+            // retrieve the monetary account for the fiat-currency receiver
+            let buying_user = self.get_order_owner(buy_id).unwrap();
+            let selling_user = self.get_order_owner(sell_id).unwrap();
+
+            // retrieve the ethereum account for the crypto-currency seller 
+            let account = self._get_order_account(sell_id, selling_order);
+
+            // check that both accounts have sufficient funds
+            let account_id = account.id.unwrap();
+            let statement = try!(self.account_repository.get_latest_statement(account_id));
+            if statement.closing_balance < buying_crypto_order.sell_assets_units {
+                let mut error = CambioError::unfair_operation("Insufficient funds to buy crypto",
+                    "User closing balance is less than order value");
+                return Err(error);
+            }
+
+            // insert settlement into DB
+            // transfer fiat funds from crypto-currency receiver to holding account
+            // mark settlement as pending ethereum transaction
+            // perform ethereum transaction
             // 10 check ethereum transaction has been confirmed, and do one API lookup
             // 11 mark settlement as ethereum confirmed, pending fiat fund transfer
             // 12 transfer fiat funds from holding account to fiat currency receiver
             // 13 mark settlement as finished
         unimplemented!()
     }
+
+    fn _get_order_account(&mut self, user_id: Id, order: &Order) -> Result<Account, CambioError> {
+        let user_match = try!(self.user_repository.get_user(user_id));
+        if let None = user_match  {
+            return Err(CambioError::not_found_search("Cannot find the user who made part of this order", 
+                "User id was None"));
+        }
+        let user = user_match.unwrap();
+        let accounts = try!(self.account_repository.get_accounts_for_user(user.id.unwrap()));
+        for account in accounts.into_iter() {
+            if order.buy_asset_type == account.asset_type && 
+            order.buy_asset_denom == account.asset_denom && 
+            account.account_business_type == AccountBusinessType::UserCashWallet {
+                    return Ok(account)
+            }
+        }
+        Err(CambioError::not_found_search("Could not found an account to credit for this order", 
+            "No account matches order asset type and wallet business type"))
+    }
+
+    pub fn get_order_owner(&mut self, order_id: Id) -> Result<Option<User>, CambioError> {
+        let user_result = self.db_helper.query(
+            USER_FROM_ORDER,
+            &[&order_id],
+        );
+        let mut users = try!(user_result);
+        Ok(users.pop())
+    }
 }
+
+const USER_FROM_ORDER: &'static str = "SELECT *, users.id as user_id from users 
+    JOIN account_owner ON account_owner.user_id = users.id 
+    JOIN orders ON orders.owner_id = account_owner.id
+    WHERE orders.id = $1";
 
 const INSERT_NEW_ORDER_SQL: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";
 

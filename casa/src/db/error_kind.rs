@@ -10,5 +10,6 @@ pub enum ErrorKind {
     UserExists,
     InsufficientFunds,
     NotFound,
-    UnexpectedState
+    UnexpectedState,
+    UnfairOperation
 }

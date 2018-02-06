@@ -70,6 +70,15 @@ impl CambioError {
             reccomendation: ErrorReccomendation::CheckInput
         }
     }
+
+    pub fn unfair_operation(user_msg: &str, system_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: system_msg.to_owned(),
+            kind: ErrorKind::UnfairOperation,
+            reccomendation: ErrorReccomendation::Nothing
+        }
+    }
 }
 
 impl error::Error for CambioError {
