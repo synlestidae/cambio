@@ -166,12 +166,12 @@ impl<T: PostgresHelper> OrderService<T> {
             let selling_user = self.get_order_owner(sell_id).unwrap();
 
             // retrieve the ethereum account for the crypto-currency seller 
-            let account = self._get_order_account(sell_id, selling_order);
+            let account = try!(self._get_order_account(sell_id, selling_order));
 
             // check that both accounts have sufficient funds
             let account_id = account.id.unwrap();
             let statement = try!(self.account_repository.get_latest_statement(account_id));
-            if statement.closing_balance < buying_crypto_order.sell_assets_units {
+            if statement.closing_balance < buying_crypto_order.sell_asset_units {
                 let mut error = CambioError::unfair_operation("Insufficient funds to buy crypto",
                     "User closing balance is less than order value");
                 return Err(error);

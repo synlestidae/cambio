@@ -95,6 +95,6 @@ impl<T: PostgresHelper> PaymentRepository<T> {
 
         // load the statement
         let account_id = try!(account.id.ok_or(account_error));
-        self.account_repository.get_latest_statement(&account_id)
+        self.account_repository.get_latest_statement(account_id)
     }
 }

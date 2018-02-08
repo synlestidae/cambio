@@ -38,11 +38,13 @@ extern crate hex;
 extern crate web3;
 extern crate rlp;
 extern crate secp256k1;
+extern crate byteorder;
 
 mod db;
 mod domain;
 mod tests;
 mod api;
+mod repository;
 
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult, AfterMiddleware};

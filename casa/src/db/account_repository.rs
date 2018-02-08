@@ -51,14 +51,14 @@ impl<T: PostgresHelper> AccountRepository<T> {
         Ok(accounts)
     }
 
-    pub fn get_account(&mut self, account_id: &Id) -> Result<Option<Account>, CambioError> {
+    pub fn get_account(&mut self, account_id: Id) -> Result<Option<Account>, CambioError> {
         let mut accounts = try!(self.db_helper.query(ACCOUNT_QUERY_ID, &[&account_id])); 
         Ok(accounts.pop())
     }
 
     pub fn get_latest_statement(
         &mut self,
-        account_id: &Id,
+        account_id: Id,
     ) -> Result<AccountStatement, CambioError> {
         let account_match = try!(self.get_account(account_id));
         let error = CambioError::not_found_search("Your account could not be found.", 
@@ -90,7 +90,7 @@ impl<T: PostgresHelper> AccountRepository<T> {
 
     pub fn get_transactions_for_account(
         &mut self,
-        account_id: &Id,
+        account_id: Id,
     ) -> Result<Vec<Transaction>, CambioError> {
         let transactions = try!(self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]));
         Ok(transactions)
