@@ -297,16 +297,10 @@ const SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL: &'static str = "SELECT
           users.id = owners.user_id AND
           users.email_address = $1";
 
-const SELECT_ORDER_SETTLEMENT_SQL: &'static str = "
-    SELECT settlements.*, settlements.id as order_settlement_id FROM 
-        asset_order orders,
-        order_settlement settlements
-    WHERE 
-        orders.id = $1";
-
 const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT 
         *, 
         orders.id AS order_id, 
+        settlements.id as order_settlement_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
         sell_asset_type.denom AS sell_asset_denom,  
         buy_asset_type.asset_code AS buy_asset_code,  
@@ -318,5 +312,7 @@ const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT
          asset_type sell_asset_type,
          order_settlement settlements
     WHERE 
-        orders.settlement_id = $1
+        order_settlement.buying_crypto_id = orders.id OR 
+        order_settlement.buying_fiat_id = orders.id
 ";
+

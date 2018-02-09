@@ -163,10 +163,10 @@ CREATE TABLE user_payment (
 CREATE TYPE business_ends_type AS ENUM (
     'wallet_deposit',
     'wallet_withdrawal',
-    'order_placement',
-    'order_settlement',
     'system_fee_charge',
     'cryptocurrency_purchase'
+    'order_placement',
+    'order_settlement'
 );
 
 CREATE TABLE entry (

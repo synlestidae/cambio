@@ -20,4 +20,4 @@ psql test_database_only < all.sql
 cd ..
 
 echo "Running tests"
-cargo test user_account_gets_credited -- --nocapture
+cargo test -- --nocapture
