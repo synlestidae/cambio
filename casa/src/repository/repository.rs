@@ -8,8 +8,8 @@ pub trait Repository {
     type Item;
     type Clause: Clause;
 
-    fn create(item: &Self::Item) -> ItemResult<Self::Item>;
     fn read(clause: &Self::Clause) -> VecResult<Self::Item>;
+    fn create(item: &Self::Item) -> ItemResult<Self::Item>;
     fn update(item: &Self::Item) -> ItemResult<Self::Item>;
     fn delete(item: &Self::Item) -> ItemResult<Self::Item>;
 }

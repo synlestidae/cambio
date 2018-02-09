@@ -6,14 +6,10 @@ use std::str::FromStr;
 
 #[test]
 pub fn test_transaction() {
-    println!("Starting test");
     let mut service = get_service();
     let mut repo = get_repo();
-    println!("Registering user");
     repo.register_user("jerry@thesmithfamily.com", "iloveturtles".to_owned()).unwrap();
-    println!("Getting a new account");
     let account = service.new_account("jerry@thesmithfamily.com", "iliketurtles".to_owned()).unwrap();
-    println!("Making the transaction");
     service.register_transaction(&account, 
         "iliketurtles".to_owned(), 
         10000000, 

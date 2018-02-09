@@ -18,7 +18,7 @@ fn test_gets_main_wallet_account_for_registered_user() {
             .unwrap()
             .unwrap();
         let accounts = account_repository
-            .get_accounts_for_user(email_address)
+            .get_accounts_for_user(user.id.unwrap())
             .unwrap();
         let account = &accounts[0];
 

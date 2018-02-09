@@ -19,18 +19,6 @@ CREATE TABLE eth_transactions (
     id SERIAL PRIMARY KEY
 );
 
-CREATE TABLE order_settlement (
-    id SERIAL PRIMARY KEY,
-    started_at TIMESTAMP NOT NULL,
-    settled_at TIMESTAMP,
-    authorship_id SERIAL REFERENCES authorship(id) UNIQUE NOT NULL,
-    status settlement_status NOT NULL,
-    transaction_id SERIAL REFERENCES eth_transactions(id),
-    buying_crypto_id SERIAL NOT NULL REFERENCES orders(id),
-    buying_fiat_id SERIAL NOT NULL REFERENCES orders(id),
-    CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
-);
-
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
@@ -43,8 +31,19 @@ CREATE TABLE asset_order (
 
     status order_status NOT NULL DEFAULT 'active',
     expires_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
-    settlement_id INTEGER REFERENCES order_settlement(id),
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
+);
+
+CREATE TABLE order_settlement (
+    id SERIAL PRIMARY KEY,
+    started_at TIMESTAMP NOT NULL,
+    settled_at TIMESTAMP,
+    authorship_id SERIAL REFERENCES authorship(id) UNIQUE NOT NULL,
+    status settlement_status NOT NULL,
+    transaction_id SERIAL REFERENCES eth_transactions(id),
+    buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
+    buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
+    CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
 
 
@@ -80,9 +79,9 @@ CREATE OR REPLACE FUNCTION begin_settlement(
    starting_user INTEGER
 )
 RETURNS VOID AS $$
+DECLARE 
   account_id_var INTEGER;
   asset_type_id INTEGER;
-DECLARE 
 BEGIN
     -- Create an authorship
     INSERT INTO authorship(business_ends, authoring_user, message) VALUES ('order_settlement', starting_user, 'Settling two orders');
@@ -92,7 +91,7 @@ BEGIN
         account
     JOIN account_owner ON account.owner_id = account_owner.id
     JOIN orders ON orders.owner_id = account_owner.id
-    JOIN account.owner_id = account_owner.id
+    JOIN account ON account_owner.id = account.owner_id
     WHERE orders.id = buying_crypto_id AND
           account.account_business_type = 'order_payment_hold';
 
