@@ -300,7 +300,7 @@ const SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL: &'static str = "SELECT
 const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT 
         *, 
         orders.id AS order_id, 
-        settlements.id as order_settlement_id, 
+        settlements.id as settlement_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
         sell_asset_type.denom AS sell_asset_denom,  
         buy_asset_type.asset_code AS buy_asset_code,  

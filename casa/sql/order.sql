@@ -67,8 +67,8 @@ BEGIN
     SELECT * INTO sell_asset_type_id_var FROM get_asset_id(sell_asset_type_var, sell_asset_denom_var);
 
     INSERT INTO asset_order(owner_id, unique_id, sell_asset_units, buy_asset_units, sell_asset_type_id,
-        buy_asset_type_id, expires_at, settlement_id) 
-     VALUES(owner_id_var, unique_id_var, sell_asset_units_var, buy_asset_units_var, sell_asset_type_id_var, buy_asset_type_id_var, expires_at_var, NULL);
+        buy_asset_type_id, expires_at) 
+     VALUES(owner_id_var, unique_id_var, sell_asset_units_var, buy_asset_units_var, sell_asset_type_id_var, buy_asset_type_id_var, expires_at_var);
 
 END;
 $$ LANGUAGE plpgsql;
