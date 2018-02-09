@@ -45,6 +45,7 @@ mod domain;
 mod tests;
 mod api;
 mod repository;
+mod repositories;
 
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult, AfterMiddleware};
