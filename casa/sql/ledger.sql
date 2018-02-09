@@ -164,7 +164,6 @@ CREATE TYPE business_ends_type AS ENUM (
     'wallet_deposit',
     'wallet_withdrawal',
     'system_fee_charge',
-    'cryptocurrency_purchase'
     'order_placement',
     'order_settlement'
 );

@@ -11,8 +11,8 @@ pub enum BusinessEnds {
     WalletWithdrawal,
     #[postgres(name = "system_fee_charge")]
     SystemFeeCharge,
-    #[postgres(name = "cryptocurrency_purchase")]
-    CryptocurrencyPurchase,
+    //#[postgres(name = "cryptocurrency_purchase")]
+    //CryptocurrencyPurchase,
     #[postgres(name = "order_placement")]
     OrderPlacement,
     #[postgres(name = "order_settlement")]
@@ -25,7 +25,7 @@ impl fmt::Display for BusinessEnds {
             &BusinessEnds::WalletDeposit => "wallet_deposit",
             &BusinessEnds::WalletWithdrawal => "wallet_withdrawal",
             &BusinessEnds::SystemFeeCharge => "system_fee_charge",
-            &BusinessEnds::CryptocurrencyPurchase => "cryptocurrency_purchase",
+            //&BusinessEnds::CryptocurrencyPurchase => "cryptocurrency_purchase",
             &BusinessEnds::OrderPlacement => "order_placement",
             &BusinessEnds::OrderSettlement => "order_settlement"
         };
