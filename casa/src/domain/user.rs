@@ -36,7 +36,7 @@ impl TryFromRow for User {
     {
         let email_address_match: Option<String> = row.get("email_address");
         let password_hash_match: Option<String> = row.get("password_hash");
-        let id: Option<i32> = row.get("id");
+        let id: Option<Id> = row.get("id");
         match (email_address_match, password_hash_match, id) {
             (Some(email_address), Some(password_hash), Some(id)) => {
                 return Ok(User {

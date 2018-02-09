@@ -19,11 +19,11 @@ const BCRYPT_COST: u32 = 8;
 pub struct EthAccount {
     pub address: H160,
     pub password_hash_bcrypt: String,
-    pub owner_id: i32
+    pub owner_id: Id, 
 }
 
 impl EthAccount {
-    pub fn new(address: &H160, password: String, owner_id: i32) -> Self {
+    pub fn new(address: &H160, password: String, owner_id: Id) -> Self {
         let bcrypted_password = hash(&password, BCRYPT_COST).unwrap();
         drop(password);
         Self {

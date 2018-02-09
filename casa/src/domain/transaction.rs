@@ -21,8 +21,8 @@ pub struct Transaction {
 
 impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        let transaction_id_match: Option<i32> = row.get("journal_entry_id");
-        let transaction_id: i32 = try!(transaction_id_match.ok_or(TryFromRowError::missing_field(
+        let transaction_id_match: Option<Id> = row.get("journal_entry_id");
+        let transaction_id: Id = try!(transaction_id_match.ok_or(TryFromRowError::missing_field(
             "Transaction",
             "journal_entry_id",
         )));
