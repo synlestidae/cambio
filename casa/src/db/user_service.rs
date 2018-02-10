@@ -1,5 +1,8 @@
 use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
 use domain::{User, Session, Id};
+use repository::Repository;
+use repositories::UserRepository;
+use repository;
 use std::error::Error;
 use bcrypt::hash;
 use checkmail;
@@ -7,28 +10,36 @@ use checkmail;
 #[derive(Clone)]
 pub struct UserService<T: PostgresHelper> {
     db_helper: T,
+    user_repository: UserRepository<T>
 }
 
 const BCRYPT_COST: u32 = 8;
 
 impl<T: PostgresHelper> UserService<T> {
     pub fn new(db_helper: T) -> Self {
-        Self { db_helper: db_helper }
+        Self { 
+            db_helper: db_helper.clone(),
+            user_repository: UserRepository::new(db_helper.clone())
+        }
     }
 
     pub fn get_user_by_email(
         &mut self,
         email_address: &str,
     ) -> Result<Option<User>, CambioError> {
-        let mut matches = try!(self.db_helper.query(GET_USER_QUERY, &[&email_address]));
-        Ok(matches.pop())
+        let e = email_address.to_owned();
+        self.get(&repository::UserClause::EmailAddress(e))
     }
 
     pub fn get_user(
         &mut self,
         user_id: Id,
     ) -> Result<Option<User>, CambioError> {
-        let mut matches = try!(self.db_helper.query(GET_USER_QUERY_ID, &[&user_id]));
+        self.get(&repository::UserClause::Id(user_id))
+    }
+
+    fn get(&mut self, c: &repository::UserClause) -> Result<Option<User>, CambioError> {
+        let mut matches = try!(self.user_repository.read(c));
         Ok(matches.pop())
     }
 

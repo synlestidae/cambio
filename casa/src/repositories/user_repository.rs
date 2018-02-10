@@ -7,6 +7,14 @@ pub struct UserRepository<T: db::PostgresHelper> {
     db_helper: T
 }
 
+impl<T: db::PostgresHelper> UserRepository<T> {
+    pub fn new(db: T) -> Self {
+        UserRepository {
+            db_helper: db
+        }
+    }
+}
+
 impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
     type Item = domain::User;
     type Clause = repository::UserClause;
