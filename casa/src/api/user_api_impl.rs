@@ -59,12 +59,11 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
             log_in.password,
         );
         match log_in_result {
-            Ok(Some(session)) => {
+            Ok(session) => {
                 let response_json = serde_json::to_string(&session).unwrap();
                 let content_type = "application/json".parse::<Mime>().unwrap();
                 iron::Response::with((iron::status::Ok, response_json, content_type))
-            }
-            Ok(None) => ApiError::invalid_login("User account does not exist").into(),
+            },
             Err(error) => ApiError::unknown("Could not log you in").into(),
         }
     }

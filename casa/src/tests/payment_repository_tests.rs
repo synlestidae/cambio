@@ -56,5 +56,5 @@ fn user_account_gets_credited() {
 fn get_repository() -> PaymentRepository<PostgresHelperImpl> {
     let account_repository = AccountRepository::new(get_db_helper());
     let user_service = UserService::new(get_db_helper());
-    PaymentRepository::new(get_db_helper(), account_repository, user_service)
+    PaymentRepository::new(get_db_helper())
 }

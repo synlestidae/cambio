@@ -1,4 +1,4 @@
-use db::{PostgresHelper, CambioError, AccountRepository, UserService, ErrorReccomendation, ErrorKind};
+use db::{PostgresHelper, CambioError, AccountRepository, UserRepository, ErrorReccomendation, ErrorKind};
 use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
@@ -16,21 +16,17 @@ const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_
         message_var := $11)";
 
 pub struct PaymentRepository<T: PostgresHelper> {
-    db_helper: T,
     account_repository: AccountRepository<T>,
-    user_service: UserService<T>,
+    user_repository: UserRepository<T>,
+    db_helper: T
 }
 
 impl<T: PostgresHelper> PaymentRepository<T> {
-    pub fn new(
-        db_helper: T,
-        account_repository: AccountRepository<T>,
-        user_service: UserService<T>,
-    ) -> PaymentRepository<T> {
+    pub fn new(db_helper: T) -> PaymentRepository<T> {
         PaymentRepository {
-            db_helper: db_helper,
-            account_repository: account_repository,
-            user_service: user_service,
+            account_repository: AccountRepository::new(db_helper.clone()),
+            user_repository: UserRepository::new(db_helper.clone()),
+            db_helper: db_helper
         }
     }
 
@@ -39,9 +35,14 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         email_address: &str,
         payment: &Payment,
     ) -> Result<AccountStatement, CambioError> {
-        let user_match = try!(self.user_service.get_user_by_email(email_address));
-        let user_not_found = CambioError::not_found_search("No user found with that email address", "get_user_by_email returned None");
-        let user = try!(user_match.ok_or(user_not_found));
+        let q = repository::UserClause::EmailAddress(email_address.to_owned());
+        let user_not_found = CambioError::not_found_search(
+            "No user found with that email address", 
+            "get_user_by_email returned None"
+        );
+        let user = try!(try!(self.user_repository.read(&q)).ok_or(user_not_found));
+        let user_id: Id = user.id.unwrap();
+
         let account_list =
             try!(self.account_repository.get_accounts_for_user(user.id.unwrap()));
         let message = format!("Credit to wallet using {}", payment.vendor);
@@ -65,8 +66,7 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         // e.g. a credit of $1,000,000 is certainly wrong and needs to be checked
         // or just cancelled
 
-        let user_id = try!(user.id.ok_or(CambioError::shouldnt_happen("Failed to match email with user.", "User id field was None.")));
-        let account_id = try!(account.id.ok_or(CambioError::shouldnt_happen("Failed to find your account. ", "User id field was None.")));
+        let account_id = account.id.unwrap();
 
         // call the payment stored procedure
         let procedure_result = self.db_helper.execute(

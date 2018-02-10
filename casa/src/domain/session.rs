@@ -7,6 +7,7 @@ use std;
 use postgres::rows::Row;
 use postgres;
 use domain::{Id, SessionState};
+use rand;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Session {
@@ -18,11 +19,30 @@ pub struct Session {
     pub session_state: SessionState
 }
 
+
 impl Session {
+    pub fn new(email_address: &str, ttl_milliseconds: i32) -> Self {
+        Self {
+            id: None,
+            session_token: random_token_string(),
+            started_at: Utc::now(),
+            ttl_milliseconds: SESSION_TIME_MILLISECONDS,
+            email_address: Some(email_address.to_owned()),
+            session_state: SessionState::Valid
+        }
+    }
     pub fn is_valid(&self) -> bool {
         let duration = Duration::milliseconds(self.ttl_milliseconds as i64);
         Utc::now() < self.started_at + duration
     }
+}
+
+fn random_token_string() -> String {
+    let mut token = String::new();
+    for _ in (0..10) {
+            token.push(rand::random::<u8>() as char);
+    }
+    token
 }
 
 /*impl TryFromRow for Session {
