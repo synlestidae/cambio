@@ -41,12 +41,11 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
 
         match register_result {
             Err(error) => ApiError::unknown(GENERIC_FAIL_MSG).into(),
-            Ok(Some(user)) => {
+            Ok(user) => {
                 let response_json = serde_json::to_string(&user).unwrap();
                 let content_type = "application/json".parse::<Mime>().unwrap();
                 iron::Response::with((iron::status::Ok, response_json, content_type))
             }
-            Ok(None) => ApiError::unknown(GENERIC_FAIL_MSG).into(),
         }
     }
 

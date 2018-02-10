@@ -47,7 +47,7 @@ impl<T: PostgresHelper> UserService<T> {
         &mut self,
         email_address: &str,
         password: String,
-    ) -> Result<Option<User>, CambioError> {
+    ) -> Result<User, CambioError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input("Please check that the email entered is valid", "Email address is invalid"));
         }
@@ -67,7 +67,12 @@ impl<T: PostgresHelper> UserService<T> {
             &[&email_address, &password_hash],
         ));
 
-        self.get_user_by_email(email_address)
+        match try!(self.get_user_by_email(email_address)) {
+            Some(user) => Ok(user),
+            None => Err(CambioError::shouldnt_happen(
+                "Couldn't find your account after registering",
+                "Failed to find account by email after registration"))
+        }
     }
 
     pub fn log_user_in(&mut self, email_address: &str, password: String) 
