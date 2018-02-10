@@ -79,6 +79,15 @@ impl CambioError {
             reccomendation: ErrorReccomendation::Nothing
         }
     }
+
+    pub fn format_obj(user_msg: &str, system_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: system_msg.to_owned(),
+            kind: ErrorKind::FormatObjInternal,
+            reccomendation: ErrorReccomendation::CheckState
+        }
+    }
 }
 
 impl error::Error for CambioError {

@@ -6,6 +6,7 @@ pub enum ErrorKind {
     Query,
     Unauthorised,
     ConvertingObjInternal,
+    FormatObjInternal,
     UserInputFormat,
     UserExists,
     InsufficientFunds,
