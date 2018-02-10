@@ -45,8 +45,8 @@ CREATE TYPE session_state_type AS ENUM(
 CREATE TABLE session_info (
     id SERIAL NOT NULL PRIMARY KEY,
     session_token VARCHAR(128) NOT NULL UNIQUE,
-    started_at TIMESTAMP NOT NULL,
-    session_state session_state_type NOT NULL,
+    started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
+    session_state session_state_type NOT NULL DEFAULT 'valid',
     ttl_milliseconds UINT NOT NULL, -- session_state can be changed to expired if started_at + ttl_milliseconds < current_time
     CHECK (ttl_milliseconds < 86400000) -- right now, no sessions longer than a day
 );

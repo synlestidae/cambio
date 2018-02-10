@@ -5,15 +5,27 @@ use db::TryFromRowError;
 use chrono::NaiveDateTime;
 use std;
 use postgres::rows::Row;
+use postgres;
+use domain::{Id, SessionState};
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Session {
+    pub id: Option<Id>,
     pub session_token: String,
-    pub email_address: String,
-    pub expires_at: DateTime<Utc>,
+    pub started_at: DateTime<Utc>,
+    pub ttl_milliseconds: i32,
+    pub email_address: Option<String>,
+    pub session_state: SessionState
 }
 
-impl TryFromRow for Session {
+impl Session {
+    pub fn is_valid(&self) -> bool {
+        let duration = Duration::milliseconds(self.ttl_milliseconds as i64);
+        Utc::now() < self.started_at + duration
+    }
+}
+
+/*impl TryFromRow for Session {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError>
     where
         Self: std::marker::Sized,
@@ -44,4 +56,4 @@ impl TryFromRow for Session {
             )),
         }
     }
-}
+}*/

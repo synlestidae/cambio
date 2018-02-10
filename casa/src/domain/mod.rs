@@ -1,4 +1,5 @@
 mod account;
+mod session_state;
 mod account_business_type;
 mod decrypt_error;
 mod account_role;
@@ -61,3 +62,4 @@ pub use self::ethereum_block::*;
 pub use self::ethereum_outbound_transaction::*;
 pub use self::ethereum_account_details::*;
 pub use self::decrypt_error::*;
+pub use self::session_state::*;

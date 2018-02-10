@@ -15,7 +15,6 @@ fn test_gets_main_wallet_account_for_registered_user() {
 
         let user = user_service
             .register_user(email_address, password.to_owned())
-            .unwrap()
             .unwrap();
         let accounts = account_repository
             .get_accounts_for_user(user.id.unwrap())

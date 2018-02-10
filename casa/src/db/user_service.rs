@@ -88,7 +88,6 @@ impl<T: PostgresHelper> UserService<T> {
         drop(password);
 
         // code from here is AUTHORISED
-
         let query_result = self.db_helper.query_raw(
             ACTIVATE_USER_SESSION_QUERY,
             &[&email_address],

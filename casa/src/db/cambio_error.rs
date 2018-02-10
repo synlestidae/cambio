@@ -88,6 +88,15 @@ impl CambioError {
             reccomendation: ErrorReccomendation::CheckState
         }
     }
+
+    pub fn db_update_failed(entity: &str) -> Self {
+        Self {
+            user_message: format!("Tried to update {} but nothing happened", entity),
+            system_message: format!("Zero rows affected during update of {}", entity),
+            kind: ErrorKind::Query,
+            reccomendation: ErrorReccomendation::ContactProgrammer
+        }
+    }
 }
 
 impl error::Error for CambioError {
