@@ -1,4 +1,4 @@
-use db::{PostgresHelper, CambioError, AccountRepository, UserRepository, ErrorReccomendation, ErrorKind};
+use db::{PostgresHelper, CambioError, AccountRepository, UserService, ErrorReccomendation, ErrorKind};
 use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
@@ -18,19 +18,19 @@ const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_
 pub struct PaymentRepository<T: PostgresHelper> {
     db_helper: T,
     account_repository: AccountRepository<T>,
-    user_repository: UserRepository<T>,
+    user_service: UserService<T>,
 }
 
 impl<T: PostgresHelper> PaymentRepository<T> {
     pub fn new(
         db_helper: T,
         account_repository: AccountRepository<T>,
-        user_repository: UserRepository<T>,
+        user_service: UserService<T>,
     ) -> PaymentRepository<T> {
         PaymentRepository {
             db_helper: db_helper,
             account_repository: account_repository,
-            user_repository: user_repository,
+            user_service: user_service,
         }
     }
 
@@ -39,7 +39,7 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         email_address: &str,
         payment: &Payment,
     ) -> Result<AccountStatement, CambioError> {
-        let user_match = try!(self.user_repository.get_user_by_email(email_address));
+        let user_match = try!(self.user_service.get_user_by_email(email_address));
         let user_not_found = CambioError::not_found_search("No user found with that email address", "get_user_by_email returned None");
         let user = try!(user_match.ok_or(user_not_found));
         let account_list =

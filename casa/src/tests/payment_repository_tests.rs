@@ -1,4 +1,4 @@
-use db::{PostgresHelperImpl, UserRepository, AccountRepository, PaymentRepository};
+use db::{PostgresHelperImpl, UserService, AccountRepository, PaymentRepository};
 use domain::{Payment, AssetType, Denom, PaymentVendor, PaymentMethod, PaymentBuilder};
 use chrono::prelude::*;
 use std::process;
@@ -7,12 +7,12 @@ use tests::test_utils::*;
 #[test]
 fn user_account_gets_credited() {
     let mut account_repository = AccountRepository::new(get_db_helper());
-    let mut user_repository = UserRepository::new(get_db_helper());
+    let mut user_service = UserService::new(get_db_helper());
     let mut payment_repository = get_repository();
 
     let username = "freddy@cambio.co.nz";
     let password = "super_secRet_password_123";
-    user_repository.register_user(username, password.to_owned());
+    user_service.register_user(username, password.to_owned());
 
     let credit_1 = (50 * 100) + 50;
     let credit_2 = (3000 * 100) + 0;
@@ -55,6 +55,6 @@ fn user_account_gets_credited() {
 #[allow(dead_code)]
 fn get_repository() -> PaymentRepository<PostgresHelperImpl> {
     let account_repository = AccountRepository::new(get_db_helper());
-    let user_repository = UserRepository::new(get_db_helper());
-    PaymentRepository::new(get_db_helper(), account_repository, user_repository)
+    let user_service = UserService::new(get_db_helper());
+    PaymentRepository::new(get_db_helper(), account_repository, user_service)
 }

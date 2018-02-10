@@ -6,17 +6,17 @@ use web3::futures::Future;
 use hex;
 use web3::types::{H160, H512, Bytes, H256, U256, TransactionRequest};
 use std::str::FromStr;
-use db::UserRepository;
+use db::UserService;
 
 #[derive(Clone)]
 pub struct EthereumService<T: PostgresHelper> {
     db_helper: T,
-    user_repo: UserRepository<T>,
+    user_repo: UserService<T>,
     web3_address: String
 }
 impl<T: PostgresHelper> EthereumService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
-        let user_repo = UserRepository::new(db_helper.clone());
+        let user_repo = UserService::new(db_helper.clone());
         Self {
             db_helper: db_helper,
             user_repo: user_repo,

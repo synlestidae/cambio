@@ -1,11 +1,11 @@
-use db::{PostgresHelper, AccountRepository, CambioError, UserRepository};
+use db::{PostgresHelper, AccountRepository, CambioError, UserService};
 use chrono::prelude::*;
 use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id, User, AccountBusinessType, Account};
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
     account_repository: AccountRepository<T>,
-    user_repository: UserRepository<T>,
+    user_service: UserService<T>,
     db_helper: T
 }
 
@@ -13,7 +13,7 @@ impl<T: PostgresHelper> OrderService<T> {
     pub fn new(db_helper: T) -> Self {
         Self { 
             account_repository: AccountRepository::new(db_helper.clone()),
-            user_repository: UserRepository::new(db_helper.clone()),
+            user_service: UserService::new(db_helper.clone()),
             db_helper: db_helper 
         }
     }
@@ -189,7 +189,7 @@ impl<T: PostgresHelper> OrderService<T> {
     }
 
     fn _get_order_account(&mut self, user_id: Id, order: &Order) -> Result<Account, CambioError> {
-        let user_match = try!(self.user_repository.get_user(user_id));
+        let user_match = try!(self.user_service.get_user(user_id));
         if let None = user_match  {
             return Err(CambioError::not_found_search("Cannot find the user who made part of this order", 
                 "User id was None"));

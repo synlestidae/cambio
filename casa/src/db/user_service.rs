@@ -5,13 +5,13 @@ use bcrypt::hash;
 use checkmail;
 
 #[derive(Clone)]
-pub struct UserRepository<T: PostgresHelper> {
+pub struct UserService<T: PostgresHelper> {
     db_helper: T,
 }
 
 const BCRYPT_COST: u32 = 8;
 
-impl<T: PostgresHelper> UserRepository<T> {
+impl<T: PostgresHelper> UserService<T> {
     pub fn new(db_helper: T) -> Self {
         Self { db_helper: db_helper }
     }

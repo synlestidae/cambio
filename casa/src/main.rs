@@ -58,7 +58,7 @@ use bcrypt::{DEFAULT_COST, hash, verify};
 use postgres::{Connection, TlsMode};
 use domain::{User, Order, Session};
 use api::ApiError;
-use db::{PostgresHelperImpl, PostgresHelper, UserRepository};
+use db::{PostgresHelperImpl, PostgresHelper};
 use std::error::Error;
 use time::PreciseTime;
 use iron_cors::CorsMiddleware;

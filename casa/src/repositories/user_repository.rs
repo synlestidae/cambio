@@ -31,17 +31,20 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
     }
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        if item.id.is_none() {
-            return Err(db::CambioError::format_obj("Cannot update a user without an ID", "Update obj ID is None"));
-        }
-        let id = item.id.unwrap();
-        //try!(self.db_helper.execute());
-        self.read(&repository::UserClause::Id(id));
-        unimplemented!()
+        let result = if let Some(ref id) = item.id {
+            self.db_helper.execute(UPDATE_BY_ID, &[id,  &item.email_address, &item.password_hash])
+        } else {
+            self.db_helper.execute(UPDATE_BY_EMAIL, &[&item.email_address, &item.password_hash])
+        };
+        try!(result);
+        Ok(item.clone())
     }
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        unimplemented!()
+        Err(db::CambioError::shouldnt_happen(
+            "Cannot remove user from database", 
+            "DELETE for users table not supported"
+        ))
     }
 }
 
@@ -50,5 +53,5 @@ const SELECT_BY_EMAIL: &'static str = "SELECT *, id as user_id FROM users WHERE 
 
 const INSERT: &'static str = "INSERT INTO users(email_address, password_hash) VALUES($1, $2)";
 
-const UPDATE_BY_ID: &'static str = "SELECT *, id as user_id FROM users WHERE id = $1";
-const UPDATE_BY_EMAIL: &'static str = "SELECT *, id as user_id FROM users WHERE email_address = $1";
+const UPDATE_BY_ID: &'static str = "UPDATE users SET email_address = $2, password_hash = $3 WHERE id = $1 LIMIT 1";
+const UPDATE_BY_EMAIL: &'static str = "UPDATE users password_hash = $3 WHERE email_address = $1 LIMIT 1";

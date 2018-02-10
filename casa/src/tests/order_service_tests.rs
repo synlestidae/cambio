@@ -1,4 +1,4 @@
-use db::{PostgresHelperImpl, UserRepository, OrderService};
+use db::{PostgresHelperImpl, UserService, OrderService};
 use time::Duration;
 use tests::user_repository_tests::get_repository;
 use domain::{Order, AssetType, Denom, OrderStatus};
@@ -17,11 +17,11 @@ fn get_service() -> OrderService<PostgresHelperImpl> {
 #[test]
 fn test_operations_one_order() {
     run_test(|| {
-        let mut user_repository = get_repository();
+        let mut user_service = get_repository();
         let mut order_service = get_service();
 
-        user_repository.register_user("jacinda@newzealand.co.nz", "secret123".to_owned());
-        let owner_id = user_repository
+        user_service.register_user("jacinda@newzealand.co.nz", "secret123".to_owned());
+        let owner_id = user_service
             .get_owner_id_by_email_address("jacinda@newzealand.co.nz")
             .unwrap();
 
@@ -66,15 +66,15 @@ fn test_operations_one_order() {
 
 #[test]
 fn test_two_orders_settled() {
-    let mut user_repository = get_repository();
+    let mut user_service = get_repository();
     let mut order_service = get_service();
     let mut account_repository = db::AccountRepository::new(get_db_helper());
 
     // contras want to buy ethereum from US gov
     // first credit the contras account with NZD
     
-    user_repository.register_user("president@usa.gov", "secret123".to_owned()).unwrap();
-    user_repository.register_user("contras@nicaragua.com", "odiamoselcomunismo".to_owned()).unwrap();
+    user_service.register_user("president@usa.gov", "secret123".to_owned()).unwrap();
+    user_service.register_user("contras@nicaragua.com", "odiamoselcomunismo".to_owned()).unwrap();
 
     let mut payment_builder = domain::PaymentBuilder::new(AssetType::NZD, 
         domain::Denom::Cent,
@@ -88,14 +88,14 @@ fn test_two_orders_settled() {
 
     let mut payment_repo = db::PaymentRepository::new(get_db_helper(), 
         account_repository.clone(), 
-        user_repository.clone());
+        user_service.clone());
 
     payment_repo.register_credit_payment("contras@nicaragua.com", &payment).unwrap();
-    let contras_owner_id = user_repository
+    let contras_owner_id = user_service
         .get_owner_id_by_email_address("contras@nicaragua.com")
         .unwrap();
 
-    let president_owner_id = user_repository
+    let president_owner_id = user_service
         .get_owner_id_by_email_address("president@usa.gov")
         .unwrap();
 

@@ -1,5 +1,5 @@
 use domain::{EthAccount, EthereumOutboundTransaction};
-use db::{PostgresHelperImpl, EthereumService, UserRepository};
+use db::{PostgresHelperImpl, EthereumService, UserService};
 use tests::test_utils;
 use web3::types::{H160, H256};
 use std::str::FromStr;
@@ -7,8 +7,8 @@ use std::str::FromStr;
 #[test]
 pub fn test_transaction() {
     let mut service = get_service();
-    let mut repo = get_repo();
-    repo.register_user("jerry@thesmithfamily.com", "iloveturtles".to_owned()).unwrap();
+    let mut user_service = get_user_service();
+    user_service.register_user("jerry@thesmithfamily.com", "iloveturtles".to_owned()).unwrap();
     let account = service.new_account("jerry@thesmithfamily.com", "iliketurtles".to_owned()).unwrap();
     service.register_transaction(&account, 
         "iliketurtles".to_owned(), 
@@ -24,6 +24,6 @@ pub fn get_service() -> EthereumService<PostgresHelperImpl> {
 }
 
 #[allow(dead_code)]
-pub fn get_repo() -> UserRepository<PostgresHelperImpl> {
-    UserRepository::new(test_utils::get_db_helper())
+pub fn get_user_service() -> UserService<PostgresHelperImpl> {
+    UserService::new(test_utils::get_db_helper())
 }

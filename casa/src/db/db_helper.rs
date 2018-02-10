@@ -3,7 +3,6 @@ use postgres::Connection;
 use postgres::types::ToSql;
 use postgres;
 use db::try_from_row::TryFromRow;
-use db::user_repository::UserRepository;
 use db::{PostgresSource, ConnectionSource, CambioError};
 use std::error;
 use std::error::Error;

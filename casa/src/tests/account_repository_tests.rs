@@ -1,4 +1,4 @@
-use db::{PostgresHelper, PostgresHelperImpl, UserRepository, AccountRepository};
+use db::{PostgresHelper, PostgresHelperImpl, UserService, AccountRepository};
 use domain::{AssetType, Denom, AccountStatus, AccountBusinessType, AccountRole};
 use chrono::prelude::*;
 use std::process;
@@ -9,11 +9,11 @@ use tests::test_utils::*;
 fn test_gets_main_wallet_account_for_registered_user() {
     run_test(|| {
         let mut account_repository = AccountRepository::new(get_db_helper());
-        let mut user_repository = UserRepository::new(get_db_helper());
+        let mut user_service = UserService::new(get_db_helper());
         let email_address = "karen@cambio.co.nz";
         let password = "$23@@super_secret_password";
 
-        let user = user_repository
+        let user = user_service
             .register_user(email_address, password.to_owned())
             .unwrap()
             .unwrap();

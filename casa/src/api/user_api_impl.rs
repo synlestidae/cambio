@@ -1,6 +1,6 @@
 use api::{Registration, Profile, ApiResult, ApiError, LogIn, UserApiTrait, get_api_obj};
 use iron::{Request, Response};
-use db::{ConnectionSource, UserRepository, PostgresHelper};
+use db::{ConnectionSource, UserService, PostgresHelper};
 use domain::{User, Session};
 use hyper::mime::Mime;
 use serde_json;
@@ -8,12 +8,12 @@ use iron;
 
 #[derive(Clone)]
 pub struct UserApi<C: PostgresHelper> {
-    user_repository: UserRepository<C>,
+    user_service: UserService<C>,
 }
 
 impl<C: PostgresHelper> UserApi<C> {
     pub fn new(helper: C) -> Self {
-        Self { user_repository: UserRepository::new(helper) }
+        Self { user_service: UserService::new(helper) }
     }
 }
 
@@ -32,7 +32,7 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
 
         debug!("Calling register_user function");
 
-        let register_result = self.user_repository.register_user(
+        let register_result = self.user_service.register_user(
             &registration.email_address,
             registration.password,
         );
@@ -55,7 +55,7 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
             Ok(obj) => obj,
             Err(response) => return response,
         };
-        let log_in_result = self.user_repository.log_user_in(
+        let log_in_result = self.user_service.log_user_in(
             &log_in.email_address,
             log_in.password,
         );
