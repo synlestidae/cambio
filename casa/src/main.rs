@@ -85,5 +85,4 @@ fn main() {
         address_bytes[i] = b;
     }
     let balance = web3.eth().balance(web3::types::H160(address_bytes), None).wait().unwrap();
-    println!("We got: {}", balance);
 }

@@ -30,9 +30,7 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let err = db::CambioError::shouldnt_happen("Failed to locate account after creating it", 
             "Error during user creation");
-        println!("EMAIL {:?}", item);
         let rows_affected = try!(self.db_helper.execute(INSERT, &[&item.email_address, &item.password_hash]));
-        println!("Rows yo {}", rows_affected);
         let mut users = try!(self.read(&repository::UserClause::EmailAddress(item.email_address.clone())));
         match users.pop() {
             Some(user) => Ok(user),
