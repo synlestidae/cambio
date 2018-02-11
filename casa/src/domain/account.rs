@@ -1,4 +1,4 @@
-use domain::{AssetType, Denom, Id, AccountStatus, AccountBusinessType, AccountRole};
+use domain::{AssetType, Denom, Id, AccountStatus, AccountBusinessType, AccountRole, AccountType};
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 use postgres;
@@ -14,6 +14,7 @@ pub struct Account {
     #[column_id(denom)]
     pub asset_denom: Denom,
     pub account_status: AccountStatus,
+    pub account_type: AccountType,
     pub account_business_type: AccountBusinessType,
     pub account_role: AccountRole,
 }

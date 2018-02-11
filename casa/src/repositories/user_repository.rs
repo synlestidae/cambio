@@ -30,7 +30,9 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let err = db::CambioError::shouldnt_happen("Failed to locate account after creating it", 
             "Error during user creation");
-        self.db_helper.execute(INSERT, &[&item.email_address, &item.password_hash]);
+        println!("EMAIL {:?}", item);
+        let rows_affected = try!(self.db_helper.execute(INSERT, &[&item.email_address, &item.password_hash]));
+        println!("Rows yo {}", rows_affected);
         let mut users = try!(self.read(&repository::UserClause::EmailAddress(item.email_address.clone())));
         match users.pop() {
             Some(user) => Ok(user),
@@ -68,6 +70,6 @@ const SELECT_BY_EMAIL: &'static str = "
     JOIN account_owner ON account_owner.user_id = users.id 
     WHERE users.email_address = $1";
 
-const INSERT: &'static str = "INSERT INTO users(email_address, password_hash) VALUES($1, $2)";
+const INSERT: &'static str = "SELECT register_user($1, $2)";
 const UPDATE_BY_ID: &'static str = "UPDATE users SET email_address = $2, password_hash = $3 WHERE id = $1 LIMIT 1";
 const UPDATE_BY_EMAIL: &'static str = "UPDATE users password_hash = $3 WHERE email_address = $1 LIMIT 1";

@@ -139,6 +139,7 @@ impl From<db::TryFromRowError> for CambioError {
 
 impl From<postgres::Error> for CambioError {
     fn from(err: postgres::Error) -> CambioError {
+        println!("Here be postgres error {:?}", err);
         CambioError {
             user_message: "Failed to connect to the database".to_owned(),
             system_message: format!("Postgres error: {:?}", err),
