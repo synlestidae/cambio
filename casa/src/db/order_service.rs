@@ -10,6 +10,7 @@ use repository;
 pub struct OrderService<T: PostgresHelper> {
     account_service: AccountService<T>,
     user_repo: repositories::UserRepository<T>,
+    account_repo: repositories::AccountRepository<T>,
     db_helper: T
 }
 
@@ -18,6 +19,7 @@ impl<T: PostgresHelper> OrderService<T> {
         Self { 
             account_service: AccountService::new(db_helper.clone()),
             user_repo: UserRepository::new(db_helper.clone()),
+            account_repo: repositories::AccountRepository::new(db_helper.clone()),
             db_helper: db_helper 
         }
     }
@@ -200,7 +202,8 @@ impl<T: PostgresHelper> OrderService<T> {
                 "User id was None"));
         }
         let user = user_match.unwrap();
-        let accounts = try!(self.account_service.get_accounts_for_user(user.id.unwrap()));
+        let q = repository::AccountClause::EmailAddress(user.email_address.clone());
+        let accounts = try!(self.account_repo.read(&q));
         for account in accounts.into_iter() {
             if order.buy_asset_type == account.asset_type && 
             order.buy_asset_denom == account.asset_denom && 

@@ -2,7 +2,7 @@ use db::{PostgresHelper, CambioError, AccountService, ErrorReccomendation, Error
 use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
-use repositories::UserRepository;
+use repositories::{UserRepository, AccountRepository};
 use repository::Repository;
 use repository;
 
@@ -19,6 +19,7 @@ const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_
         message_var := $11)";
 
 pub struct PaymentRepository<T: PostgresHelper> {
+    account_repo: AccountRepository<T>,
     account_service: AccountService<T>,
     user_repository: UserRepository<T>,
     db_helper: T
@@ -27,6 +28,7 @@ pub struct PaymentRepository<T: PostgresHelper> {
 impl<T: PostgresHelper> PaymentRepository<T> {
     pub fn new(db_helper: T) -> PaymentRepository<T> {
         PaymentRepository {
+            account_repo: AccountRepository::new(db_helper.clone()),
             account_service: AccountService::new(db_helper.clone()),
             user_repository: UserRepository::new(db_helper.clone()),
             db_helper: db_helper
@@ -46,9 +48,9 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         let user_match = try!(self.user_repository.read(&q)).pop();
         let user = try!(user_match.ok_or(user_not_found));
         let user_id: Id = user.id.unwrap();
-
+        let q = repository::AccountClause::EmailAddress(user.email_address.clone());
         let account_list =
-            try!(self.account_service.get_accounts_for_user(user.id.unwrap()));
+            try!(self.account_repo.read(&q));
         let message = format!("Credit to wallet using {}", payment.vendor);
 
         // extract the PRIMARY account with matching asset and denom

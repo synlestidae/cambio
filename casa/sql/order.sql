@@ -5,7 +5,8 @@ CREATE TYPE order_status AS ENUM (
     'settlement_failed',
     'user_cancelled',
     'admin_cancelled',
-    'expired'
+    'expired',
+    'deleted'
 );
 
 CREATE TYPE settlement_status AS ENUM (

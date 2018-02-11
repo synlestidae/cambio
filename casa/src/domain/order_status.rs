@@ -14,5 +14,7 @@ pub enum OrderStatus {
     #[postgres(name = "admin_cancelled")]
     AdminCancelled,
     #[postgres(name = "expired")]
-    Expired
+    Expired,
+    #[postgres(name = "deleted")]
+    Deleted
 }
