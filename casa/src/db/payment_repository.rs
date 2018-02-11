@@ -1,7 +1,10 @@
-use db::{PostgresHelper, CambioError, AccountRepository, UserRepository, ErrorReccomendation, ErrorKind};
+use db::{PostgresHelper, CambioError, AccountService, ErrorReccomendation, ErrorKind};
 use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
+use repositories::UserRepository;
+use repository::Repository;
+use repository;
 
 const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_payment(user_id_var := $1, 
         email_address_var := $2, 
@@ -16,7 +19,7 @@ const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_
         message_var := $11)";
 
 pub struct PaymentRepository<T: PostgresHelper> {
-    account_repository: AccountRepository<T>,
+    account_service: AccountService<T>,
     user_repository: UserRepository<T>,
     db_helper: T
 }
@@ -24,7 +27,7 @@ pub struct PaymentRepository<T: PostgresHelper> {
 impl<T: PostgresHelper> PaymentRepository<T> {
     pub fn new(db_helper: T) -> PaymentRepository<T> {
         PaymentRepository {
-            account_repository: AccountRepository::new(db_helper.clone()),
+            account_service: AccountService::new(db_helper.clone()),
             user_repository: UserRepository::new(db_helper.clone()),
             db_helper: db_helper
         }
@@ -40,11 +43,12 @@ impl<T: PostgresHelper> PaymentRepository<T> {
             "No user found with that email address", 
             "get_user_by_email returned None"
         );
-        let user = try!(try!(self.user_repository.read(&q)).ok_or(user_not_found));
+        let user_match = try!(self.user_repository.read(&q)).pop();
+        let user = try!(user_match.ok_or(user_not_found));
         let user_id: Id = user.id.unwrap();
 
         let account_list =
-            try!(self.account_repository.get_accounts_for_user(user.id.unwrap()));
+            try!(self.account_service.get_accounts_for_user(user.id.unwrap()));
         let message = format!("Credit to wallet using {}", payment.vendor);
 
         // extract the PRIMARY account with matching asset and denom
@@ -95,7 +99,7 @@ impl<T: PostgresHelper> PaymentRepository<T> {
 
         // load the statement
         let account_id = try!(account.id.ok_or(account_error));
-        let statement = self.account_repository.get_latest_statement(account_id);
+        let statement = self.account_service.get_latest_statement(account_id);
         statement
     }
 }

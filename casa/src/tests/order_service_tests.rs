@@ -6,6 +6,9 @@ use chrono::prelude::*;
 use std::process;
 use tests::test_utils::*;
 use std::clone::Clone;
+use repositories::UserRepository;
+use repository::Repository;
+use repository;
 use domain;
 use db;
 
@@ -19,10 +22,15 @@ fn test_operations_one_order() {
     run_test(|| {
         let mut user_service = get_repository();
         let mut order_service = get_service();
+        let mut user_repo = UserRepository::new(get_db_helper());
 
         user_service.register_user("jacinda@newzealand.co.nz", "secret123".to_owned());
-        let owner_id = user_service
-            .get_owner_id_by_email_address("jacinda@newzealand.co.nz")
+        let j_clause = repository::UserClause::EmailAddress("jacinda@newzealand.co.nz".to_owned());
+        let owner_id = user_repo.read(&j_clause)
+            .unwrap()
+            .pop()
+            .unwrap()
+            .owner_id
             .unwrap();
 
         let mut order = Order {
@@ -68,13 +76,18 @@ fn test_operations_one_order() {
 fn test_two_orders_settled() {
     let mut user_service = get_repository();
     let mut order_service = get_service();
-    let mut account_repository = db::AccountRepository::new(get_db_helper());
+    let mut account_service = db::AccountService::new(get_db_helper());
 
     // contras want to buy ethereum from US gov
     // first credit the contras account with NZD
     
-    user_service.register_user("president@usa.gov", "secret123".to_owned()).unwrap();
-    user_service.register_user("contras@nicaragua.com", "odiamoselcomunismo".to_owned()).unwrap();
+    let president = 
+        user_service.register_user("president@usa.gov", 
+           "secret123".to_owned()).unwrap();
+
+    let contras = 
+        user_service.register_user("contras@nicaragua.com", 
+            "odiamoselcomunismo".to_owned()).unwrap();
 
     let mut payment_builder = domain::PaymentBuilder::new(AssetType::NZD, 
         domain::Denom::Cent,
@@ -86,18 +99,12 @@ fn test_two_orders_settled() {
         1000 * 100).unwrap(); // 1000 bucks
 
 
-    let mut payment_repo = db::PaymentRepository::new(get_db_helper(), 
-        account_repository.clone(), 
-        user_service.clone());
+    let mut payment_repo = db::PaymentRepository::new(get_db_helper());
 
     payment_repo.register_credit_payment("contras@nicaragua.com", &payment).unwrap();
-    let contras_owner_id = user_service
-        .get_owner_id_by_email_address("contras@nicaragua.com")
-        .unwrap();
+    let contras_owner_id = contras.owner_id.unwrap();
 
-    let president_owner_id = user_service
-        .get_owner_id_by_email_address("president@usa.gov")
-        .unwrap();
+    let president_owner_id = president.owner_id.unwrap();
 
     // pretend price of 1 ETH = 900 NZD
     let sell_crypto_order = Order {

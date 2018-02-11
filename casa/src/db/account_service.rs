@@ -33,13 +33,13 @@ const ACCOUNT_QUERY_ID: &'static str = "
         account.id = $1";
 
 #[derive(Clone)]
-pub struct AccountRepository<T: PostgresHelper> {
+pub struct AccountService<T: PostgresHelper> {
     db_helper: T,
 }
 
-impl<T: PostgresHelper> AccountRepository<T> {
-    pub fn new(db_helper: T) -> AccountRepository<T> {
-        AccountRepository { db_helper: db_helper }
+impl<T: PostgresHelper> AccountService<T> {
+    pub fn new(db_helper: T) -> AccountService<T> {
+        AccountService { db_helper: db_helper }
     }
 
     pub fn get_accounts_for_user(

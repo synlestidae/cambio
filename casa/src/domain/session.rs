@@ -45,6 +45,8 @@ fn random_token_string() -> String {
     token
 }
 
+const SESSION_TIME_MILLISECONDS: i32 = 1000 * 60 * 15;
+
 /*impl TryFromRow for Session {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError>
     where

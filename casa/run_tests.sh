@@ -6,7 +6,7 @@ set -o pipefail
 clean_up () {
     echo "Killing geth"
     pkill geth
-    echo "DROP DATABASE test_database_only" | psql
+    #echo "DROP DATABASE test_database_only" | psql
 }
 
 
@@ -20,4 +20,4 @@ psql test_database_only < all.sql
 cd ..
 
 echo "Running tests"
-cargo test -- --nocapture
+cargo test test_gets_main_wallet_account_for_registered_user -- --nocapture

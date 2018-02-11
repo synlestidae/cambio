@@ -1,4 +1,4 @@
-mod account_repository;
+mod account_service;
 mod connection_source;
 mod db_helper;
 mod ethereum_service;
@@ -15,7 +15,7 @@ mod user_service;
 mod error_kind;
 mod error_reccomendation;
 
-pub use self::account_repository::AccountRepository;
+pub use self::account_service::AccountService;
 pub use self::connection_source::*;
 pub use self::postgres_source::*;
 pub use self::ethereum_service::*;

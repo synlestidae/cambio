@@ -11,6 +11,7 @@ pub struct User {
     pub email_address: String,
     pub password: Option<String>,
     pub password_hash: Option<String>,
+    pub owner_id: Option<Id>
 }
 
 impl User {
@@ -37,13 +38,15 @@ impl TryFromRow for User {
         let email_address_match: Option<String> = row.get("email_address");
         let password_hash_match: Option<String> = row.get("password_hash");
         let id: Option<Id> = row.get("id");
-        match (email_address_match, password_hash_match, id) {
-            (Some(email_address), Some(password_hash), Some(id)) => {
+        let owner_id: Option<Id> = row.get("owner_id");
+        match (email_address_match, password_hash_match, id, owner_id) {
+            (Some(email_address), Some(password_hash), Some(id), Some(oi)) => {
                 return Ok(User {
                     id: Some(id),
                     email_address: email_address,
                     password_hash: Some(password_hash),
                     password: None,
+                    owner_id: Some(oi)
                 });
             }
             _ => Err(TryFromRowError::new(

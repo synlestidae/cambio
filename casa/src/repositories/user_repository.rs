@@ -56,10 +56,18 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
     }
 }
 
-const SELECT_BY_ID: &'static str = "SELECT *, id as user_id FROM users WHERE id = $1";
-const SELECT_BY_EMAIL: &'static str = "SELECT *, id as user_id FROM users WHERE email_address = $1";
+const SELECT_BY_ID: &'static str = "
+    SELECT *, users.id as user_id, account_owner.id as owner_id
+    FROM users 
+    JOIN account_owner ON account_owner.user_id = users.id 
+    WHERE id = $1";
+
+const SELECT_BY_EMAIL: &'static str = "
+    SELECT *, users.id as user_id, account_owner.id as owner_id
+    FROM users 
+    JOIN account_owner ON account_owner.user_id = users.id 
+    WHERE users.email_address = $1";
 
 const INSERT: &'static str = "INSERT INTO users(email_address, password_hash) VALUES($1, $2)";
-
 const UPDATE_BY_ID: &'static str = "UPDATE users SET email_address = $2, password_hash = $3 WHERE id = $1 LIMIT 1";
 const UPDATE_BY_EMAIL: &'static str = "UPDATE users password_hash = $3 WHERE email_address = $1 LIMIT 1";

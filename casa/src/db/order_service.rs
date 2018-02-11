@@ -1,12 +1,14 @@
 use chrono::prelude::*;
-use db::{PostgresHelper, AccountRepository, CambioError, UserService};
-use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id, User, AccountBusinessType, Account};
+use db::{PostgresHelper, AccountService, CambioError, UserService};
+use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id, User, AccountBusinessType, Account, SessionState};
+use repositories::UserRepository;
 use repositories;
 use repository::Repository;
+use repository;
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
-    account_repository: AccountRepository<T>,
+    account_service: AccountService<T>,
     user_repo: repositories::UserRepository<T>,
     db_helper: T
 }
@@ -14,7 +16,7 @@ pub struct OrderService<T: PostgresHelper> {
 impl<T: PostgresHelper> OrderService<T> {
     pub fn new(db_helper: T) -> Self {
         Self { 
-            account_repository: AccountRepository::new(db_helper.clone()),
+            account_service: AccountService::new(db_helper.clone()),
             user_repo: UserRepository::new(db_helper.clone()),
             db_helper: db_helper 
         }
@@ -172,7 +174,7 @@ impl<T: PostgresHelper> OrderService<T> {
 
             // check that both accounts have sufficient funds
             let account_id = account.id.unwrap();
-            let statement = try!(self.account_repository.get_latest_statement(account_id));
+            let statement = try!(self.account_service.get_latest_statement(account_id));
             if statement.closing_balance < buying_crypto_order.sell_asset_units {
                 let mut error = CambioError::unfair_operation("Insufficient funds to buy crypto",
                     "User closing balance is less than order value");
@@ -198,7 +200,7 @@ impl<T: PostgresHelper> OrderService<T> {
                 "User id was None"));
         }
         let user = user_match.unwrap();
-        let accounts = try!(self.account_repository.get_accounts_for_user(user.id.unwrap()));
+        let accounts = try!(self.account_service.get_accounts_for_user(user.id.unwrap()));
         for account in accounts.into_iter() {
             if order.buy_asset_type == account.asset_type && 
             order.buy_asset_denom == account.asset_denom && 

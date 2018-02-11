@@ -1,13 +1,15 @@
-use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
 use chrono::prelude::*;
-use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
-use web3;
-use web3::futures::Future;
-use hex;
-use web3::types::{H160, H512, Bytes, H256, U256, TransactionRequest};
-use std::str::FromStr;
 use db::UserService;
+use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
+use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
+use hex;
 use repositories;
+use repository::Repository;
+use repository;
+use std::str::FromStr;
+use web3::futures::Future;
+use web3::types::{H160, H512, Bytes, H256, U256, TransactionRequest};
+use web3;
 
 #[derive(Clone)]
 pub struct EthereumService<T: PostgresHelper> {
@@ -17,7 +19,7 @@ pub struct EthereumService<T: PostgresHelper> {
 }
 impl<T: PostgresHelper> EthereumService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
-        let user_repo = repositories::Repositories::new(db_helper.clone());
+        let user_repo = repositories::UserRepository::new(db_helper.clone());
         Self {
             db_helper: db_helper,
             user_repo: user_repo,
@@ -27,7 +29,14 @@ impl<T: PostgresHelper> EthereumService<T> {
 
     pub fn new_account(&mut self, user_email: &str, account_password: String) -> Result<EthAccount, CambioError> {
         let (_eloop, web3) = try!(self.get_web3_inst());
-        let owner_id = try!(self.user_repo.get_owner_id_by_email_address(user_email));
+        let query = repository::UserClause::EmailAddress(user_email.to_owned());
+        let err = CambioError::not_found_search(
+            "Cannot create account for unknown user",
+            "Failed to find user or owner_id"
+        );
+        let user_match = try!(self.user_repo.read(&query)).pop();
+        let user = try!(user_match.ok_or(err));
+        let owner_id = user.owner_id.unwrap();
         let account_result = web3.personal().new_account(&account_password).wait();
         let address = try!(account_result);
         Ok(EthAccount::new(&address, account_password, owner_id))

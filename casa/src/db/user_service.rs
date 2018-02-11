@@ -1,5 +1,5 @@
 use db::{PostgresHelper, CambioError};
-use domain::{User, Session, Id};
+use domain::{User, Session, Id, SessionState};
 use repository::Repository;
 use repositories;
 use repository;
@@ -50,7 +50,8 @@ impl<T: PostgresHelper> UserService<T> {
             id: None,
             email_address: email_address.to_owned(),
             password: None,
-            password_hash: Some(password_hash)
+            password_hash: Some(password_hash),
+            owner_id: None
         };
 
         user = try!(self.user_repository.create(&user));
@@ -80,7 +81,7 @@ impl<T: PostgresHelper> UserService<T> {
     pub fn log_user_out(&mut self, email_address: &str) -> Result<(), CambioError> {
         let query = repository::SessionClause::EmailAddress(email_address.to_owned());
         let sessions = try!(self.session_repository.read(&query));
-        for session in sessions.into_iter() {
+        for mut session in sessions.into_iter() {
             session.session_state = SessionState::Invalidated;
             try!(self.session_repository.update(&session));
         }
