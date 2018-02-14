@@ -97,6 +97,15 @@ impl CambioError {
             reccomendation: ErrorReccomendation::ContactProgrammer
         }
     }
+
+    pub fn not_permitted(user_msg: &str, sys_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: sys_msg.to_owned(),
+            kind: ErrorKind::StateChangeNotPermitted,
+            reccomendation: ErrorReccomendation::Nothing
+        }
+    }
 }
 
 impl error::Error for CambioError {

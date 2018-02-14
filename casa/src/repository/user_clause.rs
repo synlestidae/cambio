@@ -3,6 +3,7 @@ use repository;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum UserClause {
+    All(bool),
     Id(domain::Id),
     EmailAddress(String),
     SessionToken(String),

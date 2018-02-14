@@ -12,5 +12,6 @@ pub enum ErrorKind {
     InsufficientFunds,
     NotFound,
     UnexpectedState,
-    UnfairOperation
+    UnfairOperation,
+    StateChangeNotPermitted
 }

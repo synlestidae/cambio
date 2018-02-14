@@ -22,6 +22,11 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         match clause {
+            &repository::UserClause::All(include_all) => if include_all { 
+                self.db_helper.query(SELECT_ALL, &[]) 
+            } else { 
+                self.db_helper.query(SELECT_ALL_ACTIVE, &[]) 
+            },
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
             &repository::UserClause::EmailAddress(ref email_address) => 
                 self.db_helper.query(SELECT_BY_ID, &[email_address]),
@@ -58,7 +63,29 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
     }
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        unimplemented!()
+        let id = match item.id {
+            Some(id) => id,
+            _ => {
+                return Err(db::CambioError::format_obj(
+                    "Cannot find Order without ID", "Order was
+                    None"));
+            }
+        };
+        let result = self.db_helper.execute(UPDATE_BY_ID, 
+            &[&id, 
+            &item.status,
+            &item.expires_at.naive_utc()]);
+        let rows = try!(result);
+        if rows == 0 {
+            Err(db::CambioError::shouldnt_happen("Cannot load orders with query", 
+                "Unsupported query"))
+        } else {
+            let clause = repository::UserClause::UniqueId(item.unique_id.to_owned());
+            match try!(self.read(&clause)).pop() {
+                Some(order) => Ok(order),
+                _ => Err(db::CambioError::db_update_failed("Order"))
+            }
+        }
     }
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
@@ -67,29 +94,54 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
         } else {
             return Err(db::CambioError::format_obj(
                 "Cannot cancel order with no ID", 
-                "delete(): item.id was None")
-            );
+                "delete(): item.id was None"));
         };
         match order_match {
             Some(mut order) => {
                 if order.status == domain::OrderStatus::Active {
                     order.status = domain::OrderStatus::Deleted;
-                    return self.update(&order);
+                    self.update(&order)
                 } else {
-                    return Err(db::CambioError::format_obj(
+                    Err(db::CambioError::format_obj(
                         "Can only mark an active order as deleted", 
-                        "delete(): item.id was None"));
+                        "delete(): item.id was None"))
                 }
             },
             None => {
-                return Err(db::CambioError::not_found_search(
+                Err(db::CambioError::not_found_search(
                     "Order with that ID not found", 
-                    "Order with ID does not exist")
-                );
+                    "Order with ID does not exist"))
             }
         }
     }
 }
+
+const SELECT_ALL: &'static str = "
+    SELECT 
+        *, 
+        orders.id AS order_id, 
+        sell_asset_type.asset_code AS sell_asset_code,  
+        sell_asset_type.denom AS sell_asset_denom,  
+        buy_asset_type.asset_code AS buy_asset_code,  
+        buy_asset_type.denom AS buy_asset_denom
+    FROM asset_order orders,
+         account_owner owners, 
+         asset_type buy_asset_type, 
+         asset_type sell_asset_type";
+
+const SELECT_ALL_ACTIVE: &'static str = "
+    SELECT 
+        *, 
+        orders.id AS order_id, 
+        sell_asset_type.asset_code AS sell_asset_code,  
+        sell_asset_type.denom AS sell_asset_denom,  
+        buy_asset_type.asset_code AS buy_asset_code,  
+        buy_asset_type.denom AS buy_asset_denom
+    FROM asset_order orders,
+         account_owner owners, 
+         asset_type buy_asset_type, 
+         asset_type sell_asset_type
+    WHERE orders.status = 'active'";
 
 const SELECT_BY_ID: &'static str = "
     SELECT 
@@ -108,6 +160,17 @@ const SELECT_BY_ID: &'static str = "
           sell_asset_type.id = orders.sell_asset_type_id AND
           orders.id = $1";
 
+const UPDATE_BY_ID: &'static str = "
+    UPDATE asset_order
+    SET order_status = $2, expires_at = $3
+    WHERE id = $1
+";
+
+const UPDATE_BY_UID: &'static str = "
+    UPDATE asset_order
+    SET order_status = $2, expires_at = $3
+    WHERE unique_id = $1
+";
 
 const SELECT_BY_UID: &'static str = "SELECT 
         *, 
