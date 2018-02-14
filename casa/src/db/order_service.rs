@@ -202,7 +202,7 @@ impl<T: PostgresHelper> OrderService<T> {
                 "User id was None"));
         }
         let user = user_match.unwrap();
-        let q = repository::AccountClause::EmailAddress(user.email_address.clone());
+        let q = repository::UserClause::EmailAddress(user.email_address.clone());
         let accounts = try!(self.account_repo.read(&q));
         for account in accounts.into_iter() {
             if order.buy_asset_type == account.asset_type && 

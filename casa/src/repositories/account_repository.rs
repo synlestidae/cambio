@@ -34,13 +34,15 @@ impl<T: db::PostgresHelper> AccountRepository<T> {
 
 impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
     type Item = domain::Account;
-    type Clause = repository::AccountClause;
+    type Clause = repository::UserClause;
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         match clause {
-            &repository::AccountClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
-            &repository::AccountClause::EmailAddress(ref email_address) => self.db_helper.query(SELECT_BY_EMAIL,
-                &[email_address])
+            &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
+            &repository::UserClause::EmailAddress(ref email_address) => self.db_helper.query(SELECT_BY_EMAIL,
+                &[email_address]),
+            _ => Err(db::CambioError::shouldnt_happen("Invalid query to get account", 
+                    &format!("Clause {:?} not supported by AccountRepository", clause)))
         }
     }
 
@@ -72,7 +74,7 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
                 );
             }
             let id = id_match.unwrap();
-            let mut accounts = try!(self.read(&repository::AccountClause::Id(id)));
+            let mut accounts = try!(self.read(&repository::UserClause::Id(id)));
             match accounts.pop() {
                 Some(account) => Ok(account),
                 None => Err(db::CambioError::shouldnt_happen(
@@ -97,7 +99,7 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
             &item.account_role,
             &item.account_status
         ]));
-        let mut accounts = try!(self.read(&repository::AccountClause::Id(asset_id)));
+        let mut accounts = try!(self.read(&repository::UserClause::Id(asset_id)));
         match accounts.pop() {
             Some(account) => Ok(account),
             None => {

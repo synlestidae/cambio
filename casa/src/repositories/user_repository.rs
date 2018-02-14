@@ -23,7 +23,9 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
         match clause {
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
             &repository::UserClause::EmailAddress(ref email_address) => self.db_helper.query(SELECT_BY_EMAIL,
-                &[email_address])
+                &[email_address]),
+            _ => Err(db::CambioError::shouldnt_happen("Invalid query to get account", 
+                    &format!("Clause {:?} not supported by AccountRepository", clause)))
         }
     }
 

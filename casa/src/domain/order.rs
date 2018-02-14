@@ -11,6 +11,7 @@ use postgres;
 pub struct Order {
     #[column_id(order_id)]
     pub id: Option<Id>,
+    pub owner_id: Id,
     pub unique_id: String,
     pub sell_asset_units: i64,
     pub buy_asset_units: i64,

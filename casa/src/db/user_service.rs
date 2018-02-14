@@ -79,7 +79,7 @@ impl<T: PostgresHelper> UserService<T> {
     }
 
     pub fn log_user_out(&mut self, email_address: &str) -> Result<(), CambioError> {
-        let query = repository::SessionClause::EmailAddress(email_address.to_owned());
+        let query = repository::UserClause::EmailAddress(email_address.to_owned());
         let sessions = try!(self.session_repository.read(&query));
         for mut session in sessions.into_iter() {
             session.session_state = SessionState::Invalidated;

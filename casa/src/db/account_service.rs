@@ -23,7 +23,7 @@ impl<T: PostgresHelper> AccountService<T> {
         &mut self,
         account_id: Id,
     ) -> Result<AccountStatement, CambioError> {
-        let account_match = try!(self.account_repo.read(&repository::AccountClause::Id(account_id))).pop();
+        let account_match = try!(self.account_repo.read(&repository::UserClause::Id(account_id))).pop();
         let error = CambioError::not_found_search("Your account could not be found.", 
             &format!("Account with ID {} not found", account_id));
         let account = match account_match {

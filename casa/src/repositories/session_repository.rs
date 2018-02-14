@@ -18,17 +18,19 @@ impl<T: db::PostgresHelper> SessionRepository<T> {
 
 impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
     type Item = domain::Session;
-    type Clause = repository::SessionClause;
+    type Clause = repository::UserClause;
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         match clause {
-            &repository::SessionClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
-            &repository::SessionClause::EmailAddress(ref email) => { 
+            &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
+            &repository::UserClause::EmailAddress(ref email) => { 
                 self.db_helper.query(SELECT_BY_EMAIL, &[email])
             },
-            &repository::SessionClause::SessionToken(ref token) => { 
+            &repository::UserClause::SessionToken(ref token) => { 
                 self.db_helper.query(SELECT_BY_TOKEN, &[token]) 
-            }
+            },
+            _ => Err(db::CambioError::shouldnt_happen("Invalid query to get user", 
+                    &format!("Clause {:?} not supported by SessionRepository", clause)))
         }
     }
 
@@ -36,7 +38,7 @@ impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
         if let Some(ref email) = item.email_address {
             let email_address = email.to_owned();
             try!(self.db_helper.execute(ACTIVATE, &[&email_address]));
-            let c = repository::SessionClause::EmailAddress(email_address);
+            let c = repository::UserClause::EmailAddress(email_address);
             match try!(self.read(&c)).pop() {
                 Some(session) => Ok(session),
                 None => Err(db::CambioError::shouldnt_happen(
@@ -70,7 +72,7 @@ impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
         if rows < 1 {
             return Err(update_error);
         }
-        let session_result = try!(self.read(&repository::SessionClause::Id(id))).pop();
+        let session_result = try!(self.read(&repository::UserClause::Id(id))).pop();
         session_result.ok_or(update_error)
     }
 

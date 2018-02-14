@@ -48,7 +48,7 @@ impl<T: PostgresHelper> PaymentRepository<T> {
         let user_match = try!(self.user_repository.read(&q)).pop();
         let user = try!(user_match.ok_or(user_not_found));
         let user_id: Id = user.id.unwrap();
-        let q = repository::AccountClause::EmailAddress(user.email_address.clone());
+        let q = repository::UserClause::EmailAddress(user.email_address.clone());
         let account_list =
             try!(self.account_repo.read(&q));
         let message = format!("Credit to wallet using {}", payment.vendor);
