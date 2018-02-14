@@ -110,3 +110,21 @@
         Err(CambioError::not_found_search("Could not found an account to credit for this order", 
             "No account matches order asset type and wallet business type"))
     }*/
+/*
+ *
+
+
+    pub fn get_order_settlement_status(
+        &mut self,
+        order_id: Id,
+    ) -> Result<Option<OrderSettlement>, CambioError> {
+        unimplemented!();
+    }
+
+    // ALL METHODS MUST BE IMMUNE TO REPLAY ATTACKS
+    pub fn begin_order_settlement(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
+        -> Result<OrderSettlement, CambioError> {
+            unimplemented!()
+    }
+
+*/

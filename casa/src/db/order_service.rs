@@ -1,37 +1,63 @@
 use chrono::prelude::*;
-use db::{PostgresHelper, AccountService, CambioError, UserService};
-use domain::{Order, OrderSettlement, OrderSettlementBuilder, Id, User, AccountBusinessType, Account, SessionState};
-use repositories::UserRepository;
+use db::{CambioError, PostgresHelper};
+use domain::{Order, Id, Currency, OrderStatus};
+use domain;
 use repositories;
 use repository::Repository;
 use repository;
-use domain;
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
-    account_service: AccountService<T>,
     user_repo: repositories::UserRepository<T>,
     order_repo: repositories::OrderRepository<T>,
     account_repo: repositories::AccountRepository<T>
 }
 
+const ORDER_TIME_MINUTES: i64 = 10;
+
 impl<T: PostgresHelper> OrderService<T> {
     pub fn new(db_helper: T) -> Self {
         Self { 
-            account_service: AccountService::new(db_helper.clone()),
-            user_repo: UserRepository::new(db_helper.clone()),
+            user_repo: repositories::UserRepository::new(db_helper.clone()),
             order_repo: repositories::OrderRepository::new(db_helper.clone()),
             account_repo: repositories::AccountRepository::new(db_helper.clone())
         }
     }
 
-    pub fn place_order(
-        &mut self,
-        owner_id: Id,
-        order: &Order,
-    ) -> Result<Order, CambioError> {
-        //order.owner_id = owner_id;
-        self.order_repo.create(&order)
+    pub fn place_order(&mut self, 
+        email: &str, 
+        unique_id: &str,
+        sell_units: u64, 
+        sell_currency: Currency,
+        buy_units: u64, 
+        buy_currency: Currency) -> Result<Order, CambioError> {
+        let user_clause = repository::UserClause::EmailAddress(email.to_owned());
+        let user = try!(self.user_repo.read(&user_clause)).pop();
+        let user_owner_id = match user {
+            None => return Err(CambioError::not_found_search("Cannot find user for order", 
+                "UserRepository.read() returned None")),
+            Some(user) => user.owner_id.unwrap()
+        };
+        let order = Order {
+            id: None,
+            owner_id: user_owner_id,
+            unique_id: unique_id.to_owned(),
+            sell_asset_units: sell_units as i64,
+            buy_asset_units: buy_units as i64,
+            sell_asset_type: sell_currency.asset_type,
+            sell_asset_denom: sell_currency.denom,
+            buy_asset_type: buy_currency.asset_type,
+            buy_asset_denom: buy_currency.denom,
+            expires_at: self.get_order_expiry(),
+            status: OrderStatus::Active
+        };
+        unimplemented!()
+    }
+
+    fn get_order_expiry(&self) -> DateTime<Utc> {
+        use time::Duration;
+        let now = Utc::now();
+        now + Duration::minutes(ORDER_TIME_MINUTES)
     }
 
     pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, CambioError> {
@@ -52,30 +78,8 @@ impl<T: PostgresHelper> OrderService<T> {
         }
     }
 
-    pub fn get_all_active_orders(&mut self) -> Result<Vec<Order>, CambioError> {
+    pub fn get_orders(&mut self, user: Option<String>, only_active: bool) {
         unimplemented!()
-       // let active_orders = try!(self.db_helper.query(SELECT_ALL_ACTIVE_ORDERS_SQL, &[]));
-       // Ok(active_orders)
-    }
-
-    pub fn get_all_active_orders_by_user(
-        &mut self,
-        email_address: &str,
-    ) -> Result<Vec<Order>, CambioError> {
-        self.order_repo.read(&repository::UserClause::EmailAddress(email_address.to_owned()))
-    }
-
-    pub fn get_order_settlement_status(
-        &mut self,
-        order_id: Id,
-    ) -> Result<Option<OrderSettlement>, CambioError> {
-        unimplemented!();
-    }
-
-    // ALL METHODS MUST BE IMMUNE TO REPLAY ATTACKS
-    pub fn begin_order_settlement(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
-        -> Result<OrderSettlement, CambioError> {
-            unimplemented!()
     }
 }
 
