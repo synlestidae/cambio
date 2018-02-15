@@ -1,4 +1,56 @@
-        /*let settlement_result = self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]);
+ use repository;
+use db;
+use domain;
+use postgres::types::ToSql;
+
+#[derive(Clone)]
+pub struct SettlementRepository<T: db::PostgresHelper> {
+    db_helper: T
+}
+
+impl<T: db::PostgresHelper> SettlementRepository<T> {
+    pub fn new(db: T) -> Self {
+        Self {
+            db_helper: db
+        }
+    }
+}
+
+impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
+    type Item = domain::OrderSettlement;
+    type Clause = repository::UserClause;
+
+    fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
+        unimplemented!()
+    }
+
+    fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
+        try!(self.db_helper.execute(BEGIN_SETTLEMENT, &[
+            &item.buying_order.id, 
+            &item.selling_order.id, 
+            &item.starting_user]));
+
+        let settlement_array: Vec<domain::OrderSettlementBuilder> = try!(self.db_helper.execute(SELECT_SETTLEMENT, &[
+            &item.buying_order.id, 
+            &item.selling_order.id, 
+        ]));
+    }
+
+    fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
+        unimplemented!()
+    }
+
+    fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
+        unimplemented!()
+    }
+}
+
+const BEGIN_SETTLEMENT: &'static str = "
+    SELECT begin_settlement($1, $2, $3);
+";
+       
+
+/*let settlement_result = self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]);
         let settlement: OrderSettlementBuilder;
 
         if let Some(s) = try!(settlement_result).pop() {

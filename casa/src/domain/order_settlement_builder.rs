@@ -1,10 +1,10 @@
-use domain::{Order, OrderSettlement, SettlementStatus};
+use domain::{Order, OrderSettlement, SettlementStatus, Id};
 use chrono::prelude::*;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
 pub struct OrderSettlementBuilder {
-    pub id: Option<i32>,
+    pub id: Option<Id>,
     pub started_at: DateTime<Utc>,
     pub settled_at: Option<DateTime<Utc>>,
     pub settlement_status: SettlementStatus,
@@ -12,7 +12,7 @@ pub struct OrderSettlementBuilder {
 
 impl OrderSettlementBuilder {
     pub fn new(
-        id: Option<i32>,
+        id: Option<Id>,
         started_at: DateTime<Utc>,
         settled_at: Option<DateTime<Utc>>,
         settlement_status: SettlementStatus,
@@ -25,9 +25,10 @@ impl OrderSettlementBuilder {
         }
     }
 
-    pub fn build(self, buying_order: Order, selling_order: Order) -> OrderSettlement {
+    pub fn build(self, starting_user: Id, buying_order: Order, selling_order: Order) -> OrderSettlement {
         OrderSettlement {
             id: self.id,
+            starting_user: starting_user,
             started_at: self.started_at,
             settled_at: self.settled_at,
             settlement_status: self.settlement_status,
@@ -39,7 +40,7 @@ impl OrderSettlementBuilder {
 
 impl TryFromRow for OrderSettlementBuilder {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        let id_match: Option<i32> = row.get("order_settlement_id");
+        let id_match: Option<Id> = row.get("order_settlement_id");
         let id = try!(id_match.ok_or(TryFromRowError::missing_field(
             "OrderSettlementBuilder",
             "id",

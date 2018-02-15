@@ -37,10 +37,10 @@ CREATE TABLE asset_order (
 
 CREATE TABLE order_settlement (
     id SERIAL PRIMARY KEY,
-    started_at TIMESTAMP NOT NULL,
+    started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     settled_at TIMESTAMP,
-    authorship_id SERIAL REFERENCES authorship(id) UNIQUE NOT NULL,
-    status settlement_status NOT NULL,
+    starting_user SERIAL REFERENCES users(id) UNIQUE NOT NULL,
+    status settlement_status NOT NULL DEFAULT 'settling',
     transaction_id SERIAL REFERENCES eth_transactions(id),
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
@@ -81,25 +81,65 @@ CREATE OR REPLACE FUNCTION begin_settlement(
 )
 RETURNS VOID AS $$
 DECLARE 
+  buying_order RECORD;
+  selling_order RECORD;
   account_id_var INTEGER;
   asset_type_id INTEGER;
+  existing_settlements INTEGER;
 BEGIN
-    -- Create an authorship
-    INSERT INTO authorship(business_ends, authoring_user, message) VALUES ('order_settlement', starting_user, 'Settling two orders');
+    -- buying in the sense that they're BUYING with fiat currency
+    SELECT * INTO selling_order FROM asset_order WHERE id = buying_crypto_order_id;
+    SELECT * INTO buying_order FROM asset_order WHERE id = buying_currency_order_id;
 
-    -- Transfer fiat currency from buying_crypto guy
-    SELECT account.id INTO account_id_var FROM
-        account
-    JOIN account_owner ON account.owner_id = account_owner.id
-    JOIN orders ON orders.owner_id = account_owner.id
-    JOIN account ON account_owner.id = account.owner_id
-    WHERE orders.id = buying_crypto_id AND
-          account.account_business_type = 'order_payment_hold';
+    IF selling_order IS NULL THEN
+        RAISE EXCEPTION 'Crypto-buying order not found';
+    END IF;
 
+    IF buying_order IS NULL THEN
+        RAISE EXCEPTION 'Currency-buying order not found';
+    END IF;
 
-    -- literally cant be fucked
+    IF buying_order.sell_asset_type != selling_order.buy_asset_type THEN
+        RAISE EXCEPTION 'Order sell type does not match other order buy type.';
+    END IF;
 
+    IF buying_order.buy_asset_type != selling_order.sell_asset_type THEN
+        RAISE EXCEPTION 'Order buy type does not match other order sell type.';
+    END IF;
 
+    IF buying_order.sell_asset_units != selling_order.buy_asset_units THEN
+        RAISE EXCEPTION 'Orders are not fairly matched.';
+    END IF;
 
+    IF buying_order.buy_asset_units != selling_order.sell_asset_units THEN
+        RAISE EXCEPTION 'Orders are not fairly matched.';
+    END IF;
+
+    IF buying_order.expires_at >= (now() at time zone 'utc') THEN
+        RAISE EXCEPTION 'Crypto-buying order has expired.';
+    END IF;
+
+    IF selling_order.expires_at >= (now() at time zone 'utc') THEN
+        RAISE EXCEPTION 'Crypto-selling order has expired.';
+    END IF;
+
+    SELECT COUNT(*) INTO existing_settlements 
+    WHERE buying_crypto_id = selling_order.id OR 
+          buying_crypto_id = buying_order.id OR 
+          selling_crypto_id = selling_order.id OR 
+          selling_crypto_id = buying_order.id;
+
+    IF existing_settlements > 0 THEN
+        RAISE EXCEPTION 'Settlements with those orders already exist';
+    END IF;
+
+    INSERT INTO order_settlement(starting_user, buying_crypto_id, buying_fiat_id)  
+        VALUES (starting_user, buying_crypto_order_id, buying_currency_order_id);
 END;
 $$ LANGUAGE plpgsql;
+
+-- next stage involves logging an ethereum_outbound_transaction, and transferring fiat currency to the
+-- selling user to the appropriate holding account
+
+-- final stage marks the ethereum transaction as either completely passed or failed.
+-- funds are released from the holding account to the selling user

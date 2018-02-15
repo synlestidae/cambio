@@ -51,7 +51,7 @@ impl<T: PostgresHelper> OrderService<T> {
             expires_at: self.get_order_expiry(),
             status: OrderStatus::Active
         };
-        unimplemented!()
+        self.order_repo.create(&order)
     }
 
     fn get_order_expiry(&self) -> DateTime<Utc> {
@@ -78,8 +78,19 @@ impl<T: PostgresHelper> OrderService<T> {
         }
     }
 
-    pub fn get_orders(&mut self, user: Option<String>, only_active: bool) {
-        unimplemented!()
+    pub fn get_orders(&mut self, user: Option<&str>, only_active: bool) 
+        -> Result<Vec<Order>, CambioError> {
+        let clause: repository::UserClause;
+        clause = match user {
+            None => repository::UserClause::All(only_active),
+            Some(email_address) => repository::UserClause::EmailAddress(email_address.to_owned())
+        };
+        let orders = try!(self.order_repo.read(&clause))
+            .into_iter()
+            .filter(|order| !only_active || order.status == domain::OrderStatus::Active)
+            .collect();
+
+        Ok(orders)
     }
 }
 
