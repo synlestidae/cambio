@@ -28,6 +28,9 @@ mod photo_status;
 mod session;
 mod session_state;
 mod settlement_status;
+mod stored_media;
+mod media_resource;
+mod media_file_format;
 mod transaction;
 mod unique_id;
 mod user;
@@ -69,3 +72,7 @@ pub use self::unique_id::UniqueId;
 pub use self::user::User;
 pub use self::currency::Currency;
 pub use self::account_set::AccountSet;
+
+pub use self::stored_media::StoredMedia;
+pub use self::media_resource::MediaResource;
+pub use self::media_file_format::MediaFileFormat;

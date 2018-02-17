@@ -138,3 +138,4 @@ const INSERT: &'static str = "INSERT INTO
 const UPDATE_BY_ID: &'static str = "UPDATE account SET 
     owner_id = $2, asset_type = $3, account_type = $4, account_business_type = $5, account_role = $6, account_status = $7
     WHERE id = $1";
+
