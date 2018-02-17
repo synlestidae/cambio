@@ -1,17 +1,44 @@
- use repository;
+use chrono::prelude::*;
+use db::{TryFromRow, TryFromRowError, CambioError};
 use db;
+use domain::{Id, OrderSettlement};
 use domain;
 use postgres::types::ToSql;
+use postgres;
+use repositories::OrderRepository;
+use repository;
+use repository::Repository;
 
 #[derive(Clone)]
 pub struct SettlementRepository<T: db::PostgresHelper> {
+    order_repository: OrderRepository<T>,
     db_helper: T
 }
 
 impl<T: db::PostgresHelper> SettlementRepository<T> {
     pub fn new(db: T) -> Self {
         Self {
+            order_repository: OrderRepository::new(db.clone()),
             db_helper: db
+        }
+    }
+
+    fn _add_orders(&mut self, row: SettlementRow) -> Result<OrderSettlement, CambioError> {
+        let buying_order = try!(self.order_repository.read(&repository::UserClause::Id(row.buying_crypto_id))).pop();
+        let selling_order = try!(self.order_repository.read(&repository::UserClause::Id(row.buying_crypto_id))).pop();
+        match (buying_order, selling_order) {
+            (Some(b), Some(s)) => Ok(OrderSettlement {
+                id: row.id,
+                started_at: row.started_at,
+                settled_at: row.settled_at,
+                starting_user: row.starting_user,
+                settlement_status: row.settlement_status,
+                buying_order: b,
+                selling_order: s 
+            }),
+            _ => Err(db::CambioError::not_found_search(
+                    "Cannot find buying and/or selling order for settlement", 
+                    "Either buying or selling order does not exist in DB"))
         }
     }
 }
@@ -21,8 +48,25 @@ impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
     type Clause = repository::UserClause;
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
-        unimplemented!()
+        let sql_items: (&str, Vec<&ToSql>) = match clause {
+            &repository::UserClause::All(true) => (SELECT_ALL, vec![]),
+            &repository::UserClause::All(false) => (SELECT_ACTIVE, vec![]),
+            &repository::UserClause::Id(ref id) => (SELECT_ID, vec![id]),
+            &repository::UserClause::EmailAddress(ref e) => (SELECT_EMAIL, vec![e]),
+            _ => return Err(db::CambioError::format_obj(
+                    "Don't have the right query to find settlement", 
+                    "Clause not support"))
+        };
+        let (sql, params) = sql_items;
+        let rows: Vec<SettlementRow> = try!(self.db_helper.query(sql, &params));
+        let mut settlements = vec![];
+        for row in rows.into_iter() {
+            let settlement = try!(self._add_orders(row));
+            settlements.push(settlement);
+        }
+        Ok(settlements)
     }
+
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         try!(self.db_helper.execute(BEGIN_SETTLEMENT, &[
@@ -30,153 +74,84 @@ impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
             &item.selling_order.id, 
             &item.starting_user]));
 
-        let settlement_array: Vec<domain::OrderSettlementBuilder> = try!(self.db_helper.execute(SELECT_SETTLEMENT, &[
-            &item.buying_order.id, 
-            &item.selling_order.id, 
-        ]));
+        let mut rows = try!(self.db_helper.query(SELECT_ORDERS, &[&item.buying_order.id, 
+            &item.selling_order.id]));
+
+        let s = match rows.pop() {
+            Some(s) => s,
+            None => return Err(CambioError::db_update_failed("OrderSettlement"))
+        };
+
+        self._add_orders(s)
     }
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        unimplemented!()
+        let id = match item.id {
+            Some(id) => id,
+            _ => return Err(db::CambioError::format_obj(
+                "Cannot update order without ID", 
+                "Order id was None"))
+        };
+        self.db_helper.execute(UPDATE_SETTLEMENT, &[
+            &id,
+            &item.settlement_status
+        ]);
+        let updated_settlement = try!(self.read(&repository::UserClause::Id(id))).pop();
+        match updated_settlement {
+            Some(s) => Ok(s),
+            _ => Err(db::CambioError::db_update_failed("OrderSettlement"))
+        }
     }
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        unimplemented!()
+        let id = match item.id {
+            Some(ref id) => id,
+            None => return Err(CambioError::format_obj(
+                "Cannot remove a settlement without ID", 
+                "Item ID was None"))
+        };
+        Err(CambioError::shouldnt_happen(
+            "Settlements can't be deleted or cancelled.", 
+            "Cannot delete a settlement"))
     }
+}
+
+#[derive(TryFromRow)]
+struct SettlementRow {
+    pub id: Option<Id>,
+    pub started_at: DateTime<Utc>,
+    pub settled_at: Option<DateTime<Utc>>,
+    pub starting_user: Id,
+    pub settlement_status: domain::SettlementStatus,
+    pub buying_crypto_id: Id,
+    pub buying_fiat_id: Id
 }
 
 const BEGIN_SETTLEMENT: &'static str = "
     SELECT begin_settlement($1, $2, $3);
 ";
-       
 
-/*let settlement_result = self.db_helper.query(SELECT_ORDER_BY_ID_SQL, &[&order_id]);
-        let settlement: OrderSettlementBuilder;
+const UPDATE_SETTLEMENT: &'static str = "
+    UPDATE asset_order SET order_status = $2;";
 
-        if let Some(s) = try!(settlement_result).pop() {
-            settlement = s;
-        } else {
-            return Ok(None);
-        }
+const SELECT_ID: &'static str = "
+    SELECT * FROM order_settlement where id = $1
+";
 
-        let settlement_id = settlement.id.unwrap();
-
-        let mut orders_in_settlement_result: Vec<OrderSettlementBuilder> =
-            try!(self.db_helper.query(
-                SELECT_ORDERS_IN_SETTLEMENT_SQL,
-                &[&settlement_id],
-            ));
-
-        let order_settlement_builder: OrderSettlementBuilder;
+const SELECT_ORDERS: &'static str = "
+    SELECT * FROM order_settlement where buying_crypto_id = $1 AND buying_fiat_id = $2
+";
 
 
-            /*let buy_id = buying_crypto_order.id.unwrap();
-            let sell_id = selling_order.id.unwrap();
-            // steps to settle 
-            // -1 check that orders aren't settled already
-            let buying_settlement = try!(self.get_order_settlement_status(buy_id));
-            let selling_settlement = try!(self.get_order_settlement_status(sell_id));
-            if buying_settlement.is_none() || selling_settlement.is_none() {
-                    return Err(CambioError::unfair_operation("At least one order is already in settlement.",
-                        "At least one order has an existing settlement status."));
-            }
-            // 0 check that past transactions haven't already been made for this order
-            // TODO! 
-            // retrieve two orders from DB 
+const SELECT_ALL: &'static str = "
+    SELECT * FROM order_settlement
+";
 
-            // check orders both match - they must be what user is looking for
-            if !selling_order.is_fair(&buying_crypto_order) {
-                return Err(CambioError::unfair_operation("Cannot settle two orders who aren't mutual.",
-                    "Order is_fair returned false"));
-                unimplemented!() // TODO return an error 
-            }
+const SELECT_EMAIL: &'static str = "
+    SELECT * FROM order_settlement
+";
 
-            // retrieve the monetary account for the fiat-currency receiver
-            let buying_user = self.get_order_owner(buy_id).unwrap();
-            let selling_user = self.get_order_owner(sell_id).unwrap();
+const SELECT_ACTIVE: &'static str = "
+    SELECT * FROM order_settlement WHERE status = 'settling'
+";
 
-            // retrieve the ethereum account for the crypto-currency seller 
-            let account = try!(self._get_order_account(sell_id, selling_order));
-
-            // check that both accounts have sufficient funds
-            let account_id = account.id.unwrap();
-            let statement = try!(self.account_service.get_latest_statement(account_id));
-            if statement.closing_balance < buying_crypto_order.sell_asset_units {
-                let mut error = CambioError::unfair_operation("Insufficient funds to buy crypto",
-                    "User closing balance is less than order value");
-                return Err(error);
-            }
-
-            // insert settlement into DB
-            // transfer fiat funds from crypto-currency receiver to holding account
-            // mark settlement as pending ethereum transaction
-            // perform ethereum transaction
-            // 10 check ethereum transaction has been confirmed, and do one API lookup
-            // 11 mark settlement as ethereum confirmed, pending fiat fund transfer
-            // 12 transfer fiat funds from holding account to fiat currency receiver
-            // 13 mark settlement as finished
-        */
-
-        if let Some(s) = orders_in_settlement_result.pop() {
-            order_settlement_builder = s;
-        } else {
-            return Ok(None);
-        }
-
-        let mut order_result: Vec<Order> = try!(self.db_helper.query(
-            SELECT_ORDERS_IN_SETTLEMENT_SQL,
-            &[&settlement_id],
-        ));
-
-        let buying_order: Order;
-        let selling_order: Order;
-        if order_result.len() != 2 {
-            let sys_message = format!("Expected 2 orders, got {}", order_result.len());
-            return Err(CambioError::shouldnt_happen("Failed to match the orders in settlement. ", &sys_message));
-        }
-        buying_order = order_result.pop().unwrap();
-        selling_order = order_result.pop().unwrap();
-
-        let settlement = order_settlement_builder.build(buying_order, selling_order);
-
-        Ok(Some(settlement))*/
-
-
-    /*fn _get_order_account(&mut self, user_id: Id, order: &Order) -> Result<Account, CambioError> {
-        let q = repository::UserClause::Id(user_id);
-        let user_match = try!(self.user_repo.read(&q)).pop();
-        if let None = user_match  {
-            return Err(CambioError::not_found_search("Cannot find the user who made part of this order", 
-                "User id was None"));
-        }
-        let user = user_match.unwrap();
-        let q = repository::UserClause::EmailAddress(user.email_address.clone());
-        let accounts = try!(self.account_repo.read(&q));
-        for account in accounts.into_iter() {
-            if order.buy_asset_type == account.asset_type && 
-            order.buy_asset_denom == account.asset_denom && 
-            account.account_business_type == AccountBusinessType::UserCashWallet {
-                    return Ok(account)
-            }
-        }
-        Err(CambioError::not_found_search("Could not found an account to credit for this order", 
-            "No account matches order asset type and wallet business type"))
-    }*/
-/*
- *
-
-
-    pub fn get_order_settlement_status(
-        &mut self,
-        order_id: Id,
-    ) -> Result<Option<OrderSettlement>, CambioError> {
-        unimplemented!();
-    }
-
-    // ALL METHODS MUST BE IMMUNE TO REPLAY ATTACKS
-    pub fn begin_order_settlement(&mut self, buying_crypto_order: &Order, selling_order: &Order) 
-        -> Result<OrderSettlement, CambioError> {
-            unimplemented!()
-    }
-
-*/
