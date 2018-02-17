@@ -61,7 +61,8 @@ impl<T: PostgresHelper> AccountService<T> {
 }
 
 const LATEST_STATEMENT_QUERY: &'static str = "
-    SELECT *, users.id as user_id, journal.id as journal_entry_id FROM users
+    SELECT *, users.id as user_id, journal.id as journal_entry_id, j.account_id AS to_account_id
+    FROM users, journal j
         JOIN account_owner ON users.id = account_owner.user_id
         JOIN account ON account_owner.id = account.owner_id 
         JOIN journal ON account.id = journal.account_id 
@@ -69,6 +70,7 @@ const LATEST_STATEMENT_QUERY: &'static str = "
         JOIN authorship ON journal.authorship_id = authorship.id
         JOIN asset_type ON account.asset_type = asset_type.id
     WHERE
+        j.correspondence_id = journal.correspondence_id
         account.id = $1 AND
         accounting_period = (SELECT MAX(id) FROM accounting_period) 
     ORDER BY journal.id

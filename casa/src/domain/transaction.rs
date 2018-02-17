@@ -8,15 +8,42 @@ use db::TryFromRowError;
 #[derive(Debug, Clone)]
 pub struct Transaction {
     pub id: Id,
-    pub other_party: Option<Id>,
+    pub from_account: Id,
+    pub to_account: Id,
     pub asset_type: AssetType,
     pub asset_denom: Denom,
     pub value: i64,
     pub transaction_time: DateTime<Utc>,
-    pub accounting_period_id: i32,
+    pub accounting_period_id: Id,
     pub balance: i64,
     pub message: String,
     pub business_ends: BusinessEnds,
+}
+
+impl Transaction {
+    pub fn waller_to_hold() -> Self {
+        unimplemented!()
+    }
+
+    pub fn hold_reversal() -> Self {
+        unimplemented!()
+    }
+
+    pub fn hold_to_wallet() -> Self {
+        unimplemented!()
+    }
+
+    pub fn fee_transfer() -> Self {
+        unimplemented!()
+    }
+
+    pub fn wallet_deposit() -> Self {
+        unimplemented!()
+    }
+
+    pub fn wallet_withdrawal() -> Self {
+        unimplemented!()
+    }
 }
 
 impl TryFromRow for Transaction {
@@ -27,17 +54,25 @@ impl TryFromRow for Transaction {
             "journal_entry_id",
         )));
 
-        let other_party: Option<i32> = None;
         let asset_type_match: Option<AssetType> = row.get("asset_code");
         let asset_type: AssetType = try!(asset_type_match.ok_or(TryFromRowError::missing_field("Transaction", "asset_code")));
         let credit_match: Option<i64> = row.get("credit");
         let debit_match: Option<i64> = row.get("debit");
+
+        let from_id_option: Option<Id> = row.get("account_id");
+        let to_id_option: Option<Id> = row.get("to_account_id");
+
+        let (from_id, to_id) = match (from_id_option, to_id_option) {
+            (Some(f), Some(t)) => (f, t),
+            _ => return Err(TryFromRowError::missing_field("Transaction", "account"))
+        };
+
         let transaction_time_match: Option<NaiveDateTime> = row.get("transaction_time");
         let transaction_time: NaiveDateTime = try!(transaction_time_match.ok_or(
             TryFromRowError::missing_field("Transaction", "transaction_time"),
         ));
-        let accounting_period_match: Option<i32> = row.get("accounting_period");
-        let accounting_period: i32 = try!(accounting_period_match.ok_or(
+        let accounting_period_match: Option<Id> = row.get("accounting_period");
+        let accounting_period: Id = try!(accounting_period_match.ok_or(
             TryFromRowError::missing_field(
                 "Transaction",
                 "accounting_period",
@@ -78,7 +113,8 @@ impl TryFromRow for Transaction {
 
         Ok(Transaction {
             id: transaction_id,
-            other_party: None,
+            from_account: from_id,
+            to_account: to_id,
             asset_type: asset_type,
             asset_denom: denom,
             value: value,
