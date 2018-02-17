@@ -1,9 +1,12 @@
 use db::TryFromRow;
-use bcrypt::verify;
+use bcrypt::{verify, hash};
 use db::TryFromRowError;
 use std;
 use domain::Id;
 use postgres::rows::Row;
+
+
+const BCRYPT_COST: u32 = 8;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct User {
@@ -15,6 +18,17 @@ pub struct User {
 }
 
 impl User {
+    pub fn new_register(email_address: &str, password: String) -> User {
+        let password_hash = hash(&password, BCRYPT_COST).unwrap();
+        User {
+            id: None,
+            email_address: email_address.to_owned(),
+            password: None,
+            password_hash: Some(hash(&password, BCRYPT_COST).unwrap()),
+            owner_id: None
+        }
+    }
+
     pub fn password_matches_hash(&self, hash: &str) -> bool {
         match self.password {
             Some(ref password) => verify(&password, &hash).is_ok(),
@@ -24,9 +38,16 @@ impl User {
 
     pub fn hash_matches_password(&self, password: &str) -> bool {
         match self.password_hash {
-            Some(ref hash) => verify(&password, &hash).is_ok(),
+            Some(ref hash) => match verify(&password, &hash) {
+                Ok(is_match) => is_match,
+                _ => false
+            },
             _ => false,
         }
+    }
+
+    pub fn change_password(&mut self, password: &str) {
+        self.password = Some(hash(&password, BCRYPT_COST).unwrap());
     }
 }
 
