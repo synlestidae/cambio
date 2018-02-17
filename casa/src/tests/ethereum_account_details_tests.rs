@@ -1,1 +1,0 @@
-use domain::EthAccount;
