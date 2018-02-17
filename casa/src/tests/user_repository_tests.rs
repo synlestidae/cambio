@@ -41,3 +41,18 @@ fn creates_one_user() {
     let updated_guy = repo.update(&our_guy).unwrap();
     updated_guy.hash_matches_password("il0vebogota");
 }
+
+#[test]
+fn prevents_double_registration() {
+    let mut repo = UserRepository::new(get_db_helper());
+    let user = domain::User::new_register("mate@fernando.com", "ilovecali123".to_owned());
+    let new_user = repo.create(&user);
+    let same_user = domain::User::new_register("mate@fernando.com", "differentpassword".to_owned());
+    assert!(repo.create(&same_user).is_err());
+
+
+    let email_clause = repository::UserClause::EmailAddress("mate@fernando.com".to_owned());
+    let original = repo.read(&email_clause).unwrap().pop().unwrap();
+    assert!(original.hash_matches_password("ilovecali123"));
+    assert!(!original.hash_matches_password("differentpassword"));
+}

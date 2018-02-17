@@ -122,10 +122,13 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
 
 const SELECT_BY_ID: &'static str = "SELECT *, id as account_id FROM account WHERE id = $1";
 
-const SELECT_BY_EMAIL: &'static str = "SELECT *, id as account_id 
-    FROM account WHERE id = $1
+const SELECT_BY_EMAIL: &'static str = "SELECT *, account.id as account_id, asset_type.asset_code, asset_type.denom as asset_denom
+    FROM account 
     JOIN account_owner ON account.owner_id = account_owner.id 
-    JOIN users ON account_owner.user_id = users.id";
+    JOIN users ON account_owner.user_id = users.id
+    JOIN asset_type ON account.asset_type = asset_type.id
+    WHERE
+    users.email_address = $1";
 
 const INSERT: &'static str = "INSERT INTO 
     account(owner_id, asset_type, account_type, account_business_type, account_role, account_status) 

@@ -1,6 +1,7 @@
 CREATE TYPE ACCOUNT_TYPE AS ENUM (
-    'credit_normal',
-    'debit_normal'
+    'asset',
+    'liability',
+    'equity'
 );
 CREATE TABLE accounting_period (
     id SERIAL PRIMARY KEY,

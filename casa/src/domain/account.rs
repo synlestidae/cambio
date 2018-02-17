@@ -7,9 +7,9 @@ use postgres;
 pub struct Account {
     #[column_id(account_id)]
     pub id: Option<Id>,
-    #[column_id(user_id)]
+    #[column_id(owner_id)]
     pub owner_user_id: Option<Id>,
-    #[column_id(asset_code)]
+    #[column_id(asset_type)]
     pub asset_type: AssetType,
     #[column_id(denom)]
     pub asset_denom: Denom,

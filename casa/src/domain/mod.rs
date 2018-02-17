@@ -31,6 +31,7 @@ mod settlement_status;
 mod transaction;
 mod unique_id;
 mod user;
+mod account_set;
 
 
 //pub use self::order::OrderInfo;
@@ -67,3 +68,4 @@ pub use self::transaction::Transaction;
 pub use self::unique_id::UniqueId;
 pub use self::user::User;
 pub use self::currency::Currency;
+pub use self::account_set::AccountSet;

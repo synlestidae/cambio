@@ -10,6 +10,7 @@ const BCRYPT_COST: u32 = 8;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct User {
+    #[column_id(user_id)]
     pub id: Option<Id>,
     pub email_address: String,
     pub password: Option<String>,
