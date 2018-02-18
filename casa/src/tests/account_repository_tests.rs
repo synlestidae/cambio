@@ -27,7 +27,7 @@ fn creates_all_accounts_for_user() {
         .pop()
         .unwrap();
 
-    let hold = account_repo.read(&repository::UserClause::Id(accounts.nzd_wallet()))
+    let hold = account_repo.read(&repository::UserClause::Id(accounts.nzd_hold()))
         .unwrap()
         .pop()
         .unwrap();
@@ -36,4 +36,9 @@ fn creates_all_accounts_for_user() {
     assert_eq!(wallet.asset_denom, domain::Denom::Cent);
     assert_eq!(wallet.account_type, domain::AccountType::Liability);
     assert_eq!(wallet.account_business_type, domain::AccountBusinessType::UserCashWallet);
+
+    assert_eq!(hold.asset_type, domain::AssetType::NZD);
+    assert_eq!(hold.asset_denom, domain::Denom::Cent);
+    assert_eq!(hold.account_type, domain::AccountType::Liability);
+    assert_eq!(hold.account_business_type, domain::AccountBusinessType::OrderPaymentHold);
 }

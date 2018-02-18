@@ -116,13 +116,16 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
             "DELETE for account table not supported"
         ))
     }
-
-    
 }
 
-const SELECT_BY_ID: &'static str = "SELECT *, id as account_id FROM account WHERE id = $1";
+const SELECT_BY_ID: &'static str = "
+    SELECT *, account.id as account_id, asset_type.asset_code as account_asset_type, asset_type.denom as denom
+    FROM account 
+    JOIN asset_type ON account.asset_type = asset_type.id
+    WHERE account.id = $1";
 
-const SELECT_BY_EMAIL: &'static str = "SELECT *, account.id as account_id, asset_type.asset_code, asset_type.denom as asset_denom
+const SELECT_BY_EMAIL: &'static str = "
+    SELECT *, account.id as account_id, asset_type.asset_code as account_asset_type, asset_type.denom as denom
     FROM account 
     JOIN account_owner ON account.owner_id = account_owner.id 
     JOIN users ON account_owner.user_id = users.id

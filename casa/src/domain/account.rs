@@ -9,7 +9,7 @@ pub struct Account {
     pub id: Option<Id>,
     #[column_id(owner_id)]
     pub owner_user_id: Option<Id>,
-    #[column_id(asset_type)]
+    #[column_id(account_asset_type)]
     pub asset_type: AssetType,
     #[column_id(denom)]
     pub asset_denom: Denom,
@@ -18,3 +18,13 @@ pub struct Account {
     pub account_business_type: AccountBusinessType,
     pub account_role: AccountRole,
 }
+
+/*struct AccountRow {
+    id: Id, 
+    owner_id: Id, 
+    asset_type SERIAL REFERENCES asset_type(id),
+    account_type ACCOUNT_TYPE NOT NULL,
+    account_business_type account_business_type NOT NULL,
+    account_role account_role NOT NULL,
+    account_status account_status_type NOT NULL DEFAULT 'active'
+}*/

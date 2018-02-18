@@ -20,4 +20,4 @@ psql test_database_only < all.sql
 cd ..
 
 echo "Running tests"
-cargo test  -- --nocapture
+cargo test  $1 -- --nocapture

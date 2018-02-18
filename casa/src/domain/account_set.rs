@@ -18,7 +18,7 @@ impl AccountSet {
             .filter(|a| is_nzd_hold(a))
             .collect::<Vec<_>>().pop();
 
-        match (h, w) {
+        match (w, h) {
             (Some(wallet), Some(hold)) => Ok(AccountSet {
                 nzd_wallet_account: wallet,
                 nzd_holding_account: hold
