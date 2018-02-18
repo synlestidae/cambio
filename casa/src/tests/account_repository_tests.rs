@@ -86,6 +86,36 @@ fn fails_create_duplicate_account() {
     assert!(account_repo.create(&account).is_err());
 }
 
+
+#[test]
+fn freezes_accounts() {
+    const SANDY: &'static str = "sandy.scawthorpe@waller.fm";
+    // create the user first
+    let user = domain::User::new_register(SANDY, "nolove".to_owned());
+    let mut user_repo = UserRepository::new(get_db_helper());
+    let mut account_repo = AccountRepository::new(get_db_helper());
+    user_repo.create(&user).unwrap(); 
+
+    let accounts = account_repo.read(&repository::UserClause::EmailAddress(SANDY.to_owned())).unwrap();
+    let account_set = domain::AccountSet::from(accounts).unwrap();
+
+    let wallet_clause = repository::UserClause::Id(account_set.nzd_wallet());
+    let mut wallet = account_repo.read(&wallet_clause)
+        .unwrap()
+        .pop()
+        .unwrap();
+
+    wallet.account_status = domain::AccountStatus::Frozen;
+    account_repo.update(&wallet).unwrap();
+
+    wallet = account_repo.read(&wallet_clause)
+        .unwrap()
+        .pop()
+        .unwrap();
+
+    assert_eq!(wallet.account_status, domain::AccountStatus::Frozen);
+}
+
 #[test]
 fn fails_delete_account() {
     // create the user first

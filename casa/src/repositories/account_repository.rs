@@ -20,7 +20,7 @@ impl<T: db::PostgresHelper> AccountRepository<T> {
     fn _get_asset_id(&mut self, asset_type: &domain::AssetType, asset_denom: &domain::Denom) 
         -> Result<domain::Id, db::CambioError> {
         let asset_id_vec = 
-            try!(self.db_helper.query_raw("SELECT get_asset_type($1, $2) AS id", 
+            try!(self.db_helper.query_raw("SELECT get_asset_id($1, $2) AS id", 
                 &[asset_type, asset_denom]));
         if asset_id_vec.len() == 0 {
             return Err(db::CambioError::bad_input("Unknown asset and denom combination", 
