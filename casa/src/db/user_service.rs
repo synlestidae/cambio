@@ -34,7 +34,6 @@ impl<T: PostgresHelper> UserService<T> {
             return Err(CambioError::bad_input("Please check that the email entered is valid", "Email address is invalid"));
         }
 
-
         let query = repository::UserClause::EmailAddress(email_address.to_owned());
         // check user exists
         if let Some(_) = try!(self.user_repository.read(&query)).pop() {

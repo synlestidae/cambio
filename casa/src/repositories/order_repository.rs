@@ -38,6 +38,7 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
     }
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
+        //println!("PAM PAM {:?}", item);
         let params: &[&ToSql] = &[
             &item.buy_asset_type,
             &item.buy_asset_denom,
@@ -162,13 +163,13 @@ const SELECT_BY_ID: &'static str = "
 
 const UPDATE_BY_ID: &'static str = "
     UPDATE asset_order
-    SET order_status = $2, expires_at = $3
+    SET status = $2, expires_at = $3
     WHERE id = $1
 ";
 
 const UPDATE_BY_UID: &'static str = "
     UPDATE asset_order
-    SET order_status = $2, expires_at = $3
+    SET _status = $2, expires_at = $3
     WHERE unique_id = $1
 ";
 
