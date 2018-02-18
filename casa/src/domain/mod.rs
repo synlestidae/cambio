@@ -34,6 +34,7 @@ mod media_file_format;
 mod transaction;
 mod unique_id;
 mod user;
+mod user_payment;
 mod account_set;
 mod storage_location;
 
@@ -78,3 +79,4 @@ pub use self::stored_media::StoredMedia;
 pub use self::media_resource::MediaResource;
 pub use self::media_file_format::MediaFileFormat;
 pub use self::storage_location::StorageLocation;
+pub use self::user_payment::UserPayment;

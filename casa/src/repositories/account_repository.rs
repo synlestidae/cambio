@@ -1,4 +1,5 @@
 use repository;
+use repository::*;
 use repositories::UserRepository;
 use db;
 use domain;
@@ -126,17 +127,6 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for AccountRepository<T> {
                     "read(id) after update() returned empty Vec"))
             }
         }
-    }
-}
-
-impl<T: db::PostgresHelper> repository::RepoDelete for AccountRepository<T> {
-    type Item = domain::Account;
-
-    fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        Err(db::CambioError::shouldnt_happen(
-            "Cannot remove asset account from database", 
-            "DELETE for account table not supported"
-        ))
     }
 }
 

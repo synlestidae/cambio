@@ -2,6 +2,7 @@ use repository;
 use db;
 use domain;
 use checkmail;
+use repository::*;
 
 #[derive(Clone)]
 pub struct UserRepository<T: db::PostgresHelper> {
@@ -16,7 +17,7 @@ impl<T: db::PostgresHelper> UserRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoRead for UserRepository<T> {
     type Item = domain::User;
     type Clause = repository::UserClause;
 
@@ -30,6 +31,10 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
                     &format!("Clause {:?} not supported by AccountRepository", clause)))
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoCreate for UserRepository<T> {
+    type Item = domain::User;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         if !checkmail::validate_email(&item.email_address) {
@@ -45,6 +50,10 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
             None => Err(err)
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoUpdate for UserRepository<T> {
+    type Item = domain::User;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let result = if let Some(ref id) = item.id {
@@ -55,6 +64,10 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
         try!(result);
         Ok(item.clone())
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoDelete for UserRepository<T> {
+    type Item = domain::User;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         Err(db::CambioError::shouldnt_happen(

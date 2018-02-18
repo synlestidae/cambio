@@ -5,6 +5,7 @@ use domain;
 use postgres;
 use postgres::rows::Rows;
 use repository;
+use repository::*;
 use std::path::{PathBuf, Path};
 use std::convert::Into;
 
@@ -23,7 +24,7 @@ impl<T: db::PostgresHelper> MediaRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::Repository for MediaRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoRead for MediaRepository<T> {
     type Item = domain::StoredMedia;
     type Clause = repository::UserClause;
 
@@ -44,6 +45,10 @@ impl<T: db::PostgresHelper> repository::Repository for MediaRepository<T> {
         }
         Ok(items)
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoCreate for MediaRepository<T> {
+    type Item = domain::StoredMedia;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let size = match item.resource.size() {
@@ -69,6 +74,10 @@ impl<T: db::PostgresHelper> repository::Repository for MediaRepository<T> {
             item_vec.pop().ok_or(db::CambioError::db_update_failed("StoredMedia"))
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoUpdate for MediaRepository<T> {
+    type Item = domain::StoredMedia;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let size = match item.resource.size() {
@@ -85,6 +94,10 @@ impl<T: db::PostgresHelper> repository::Repository for MediaRepository<T> {
             try!(updated.pop().ok_or(db::CambioError::db_update_failed("StoredMedia")));
         updated_match.into()
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoDelete for MediaRepository<T> {
+    type Item = domain::StoredMedia;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let mut deleted: Vec<MediaRow> = try!(self.db_helper.query(DELETE, &[&item.id]));

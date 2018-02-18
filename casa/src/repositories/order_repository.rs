@@ -2,6 +2,7 @@ use repository;
 use db;
 use domain;
 use postgres::types::ToSql;
+use repository::*;
 
 #[derive(Clone)]
 pub struct OrderRepository<T: db::PostgresHelper> {
@@ -16,7 +17,7 @@ impl<T: db::PostgresHelper> OrderRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoRead for OrderRepository<T> {
     type Item = domain::Order;
     type Clause = repository::UserClause;
 
@@ -36,6 +37,10 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
                 "Unsupported query"))
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
+    type Item = domain::Order;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         //println!("PAM PAM {:?}", item);
@@ -62,7 +67,10 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
             }
         }
     }
+}
 
+impl<T: db::PostgresHelper> repository::RepoUpdate for OrderRepository<T> {
+    type Item = domain::Order;
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let id = match item.id {
             Some(id) => id,
@@ -88,7 +96,10 @@ impl<T: db::PostgresHelper> repository::Repository for OrderRepository<T> {
             }
         }
     }
+}
 
+impl<T: db::PostgresHelper> repository::RepoDelete for OrderRepository<T> {
+    type Item = domain::Order;
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let mut order_match = if let Some(id) = item.id {
             try!(self.read(&repository::UserClause::Id(id))).pop()

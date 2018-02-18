@@ -2,6 +2,7 @@ use repository;
 use db;
 use domain;
 use chrono::prelude::*;
+use repository::*;
 
 #[derive(Clone)]
 pub struct SessionRepository<T: db::PostgresHelper> {
@@ -16,7 +17,7 @@ impl<T: db::PostgresHelper> SessionRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoRead for SessionRepository<T> {
     type Item = domain::Session;
     type Clause = repository::UserClause;
 
@@ -33,6 +34,10 @@ impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
                     &format!("Clause {:?} not supported by SessionRepository", clause)))
         }
     }
+}
+
+impl <T: db::PostgresHelper> repository::RepoCreate for SessionRepository<T> {
+    type Item = domain::Session;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         if let Some(ref email) = item.email_address {
@@ -53,6 +58,10 @@ impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
             )
         }
     }
+}
+
+impl <T: db::PostgresHelper> repository::RepoUpdate for SessionRepository<T> {
+    type Item = domain::Session;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let id = match item.id {
@@ -75,6 +84,10 @@ impl<T: db::PostgresHelper> repository::Repository for SessionRepository<T> {
         let session_result = try!(self.read(&repository::UserClause::Id(id))).pop();
         session_result.ok_or(update_error)
     }
+}
+
+impl <T: db::PostgresHelper> repository::RepoDelete for SessionRepository<T> {
+    type Item = domain::Session;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let mut item_copy = item.clone();
