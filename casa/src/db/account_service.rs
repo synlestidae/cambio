@@ -3,7 +3,7 @@ use std::error::Error;
 use domain::{Account, Id, AccountStatement, Transaction};
 use repositories;
 use repository;
-use repository::Repository;
+use repository::*;
 
 #[derive(Clone)]
 pub struct AccountService<T: PostgresHelper> {

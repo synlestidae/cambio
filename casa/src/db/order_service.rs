@@ -3,7 +3,7 @@ use db::{CambioError, PostgresHelper};
 use domain::{Order, Id, Currency, OrderStatus};
 use domain;
 use repositories;
-use repository::Repository;
+use repository::*;
 use repository;
 
 #[derive(Clone)]

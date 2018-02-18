@@ -35,7 +35,7 @@ impl<T: db::PostgresHelper> AccountRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoRead for AccountRepository<T> {
     type Item = domain::Account;
     type Clause = repository::UserClause;
 
@@ -55,6 +55,10 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
                     &format!("Clause {:?} not supported by AccountRepository", clause)))
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoCreate for AccountRepository<T> {
+    type Item = domain::Account;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let err = db::CambioError::shouldnt_happen(
@@ -93,6 +97,10 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
             }
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoUpdate for AccountRepository<T> {
+    type Item = domain::Account;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let (id, owner_id) = match (&item.id, &item.owner_user_id) {
@@ -119,6 +127,10 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
             }
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoDelete for AccountRepository<T> {
+    type Item = domain::Account;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         Err(db::CambioError::shouldnt_happen(

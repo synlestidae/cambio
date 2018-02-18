@@ -1,6 +1,6 @@
 use db::{PostgresHelper, CambioError};
 use domain::{User, Session, Id, SessionState};
-use repository::Repository;
+use repository::*;
 use repositories;
 use repository;
 use std::error::Error;

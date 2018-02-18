@@ -4,7 +4,7 @@ use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
 use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
 use hex;
 use repositories;
-use repository::Repository;
+use repository::*;
 use repository;
 use std::str::FromStr;
 use web3::futures::Future;

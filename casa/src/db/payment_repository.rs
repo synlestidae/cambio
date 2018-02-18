@@ -3,7 +3,7 @@ use std::error::Error;
 use domain::{Account, Payment, AccountRole, Transaction, AccountStatement, Id, PaymentBuilder};
 use chrono::{DateTime, Utc};
 use repositories::{UserRepository, AccountRepository};
-use repository::Repository;
+use repository::*;
 use repository;
 
 const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_payment(user_id_var := $1, 

@@ -7,7 +7,7 @@ use postgres::types::ToSql;
 use postgres;
 use repositories::OrderRepository;
 use repository;
-use repository::Repository;
+use repository::{RepoRead, RepoCreate, RepoUpdate};
 
 #[derive(Clone)]
 pub struct SettlementRepository<T: db::PostgresHelper> {
@@ -43,7 +43,7 @@ impl<T: db::PostgresHelper> SettlementRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoRead for SettlementRepository<T> {
     type Item = domain::OrderSettlement;
     type Clause = repository::UserClause;
 
@@ -66,7 +66,10 @@ impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
         }
         Ok(settlements)
     }
+}
 
+impl<T: db::PostgresHelper> repository::RepoCreate for SettlementRepository<T> {
+    type Item = domain::OrderSettlement;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         try!(self.db_helper.execute(BEGIN_SETTLEMENT, &[
@@ -84,6 +87,10 @@ impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
 
         self._add_orders(s)
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoUpdate for SettlementRepository<T> {
+    type Item = domain::OrderSettlement;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let id = match item.id {
@@ -102,6 +109,10 @@ impl<T: db::PostgresHelper> repository::Repository for SettlementRepository<T> {
             _ => Err(db::CambioError::db_update_failed("OrderSettlement"))
         }
     }
+}
+
+impl<T: db::PostgresHelper> repository::RepoDelete for SettlementRepository<T> {
+    type Item = domain::OrderSettlement;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let id = match item.id {

@@ -1,6 +1,6 @@
 use domain;
 use repositories::{UserRepository, OrderRepository};
-use repository::Repository;
+use repository::*;
 use repository;
 use tests::get_db_helper;
 
