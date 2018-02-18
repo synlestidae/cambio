@@ -49,7 +49,6 @@ fn no_accounts_created_for_empty_user() {
     let mut user_repo = UserRepository::new(get_db_helper());
     let mut account_repo = AccountRepository::new(get_db_helper());
     let user_result = user_repo.create(&user);
-    println!("Cunts {:?}", user_result);
     assert!(user_result.is_err());
 
     // get the account collection
@@ -85,4 +84,24 @@ fn fails_create_duplicate_account() {
     };
 
     assert!(account_repo.create(&account).is_err());
+}
+
+#[test]
+fn fails_delete_account() {
+    // create the user first
+    let user = domain::User::new_register("terry@waller.fm", "adventurequestiongame".to_owned());
+    let mut user_repo = UserRepository::new(get_db_helper());
+    let mut account_repo = AccountRepository::new(get_db_helper());
+    user_repo.create(&user).unwrap(); 
+
+    let mut accounts = account_repo.read(&repository::UserClause::EmailAddress("terry@waller.fm".to_owned())).unwrap();
+    let account_set = domain::AccountSet::from(accounts).unwrap();
+
+    let target = account_repo.read(&repository::UserClause::Id(account_set.nzd_wallet()))
+        .unwrap()
+        .pop()
+        .unwrap();
+    assert!(account_repo.delete(&target).is_err());
+    accounts = account_repo.read(&repository::UserClause::EmailAddress("terry@waller.fm".to_owned())).unwrap();
+    assert_eq!(2, accounts.len());
 }
