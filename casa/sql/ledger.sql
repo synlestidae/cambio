@@ -140,7 +140,8 @@ CREATE TABLE account (
     account_type ACCOUNT_TYPE NOT NULL,
     account_business_type account_business_type NOT NULL,
     account_role account_role NOT NULL,
-    account_status account_status_type NOT NULL DEFAULT 'active'
+    account_status account_status_type NOT NULL DEFAULT 'active',
+    UNIQUE (owner_id, asset_type, account_type, account_business_type, account_role)
 );
 
 CREATE TABLE vendor (

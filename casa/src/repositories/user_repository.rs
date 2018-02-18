@@ -1,6 +1,7 @@
 use repository;
 use db;
 use domain;
+use checkmail;
 
 #[derive(Clone)]
 pub struct UserRepository<T: db::PostgresHelper> {
@@ -31,6 +32,10 @@ impl<T: db::PostgresHelper> repository::Repository for UserRepository<T> {
     }
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
+        if !checkmail::validate_email(&item.email_address) {
+            return Err(db::CambioError::bad_input("Invalid email format", "Invalid email format"));
+        }
+
         let err = db::CambioError::shouldnt_happen("Failed to locate account after creating it", 
             "Error during user creation");
         let rows_affected = try!(self.db_helper.execute(INSERT, &[&item.email_address, &item.password_hash]));

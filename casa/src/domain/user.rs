@@ -1,9 +1,10 @@
-use db::TryFromRow;
+use db::{TryFromRow, CambioError};
 use bcrypt::{verify, hash};
 use db::TryFromRowError;
 use std;
 use domain::Id;
 use postgres::rows::Row;
+use checkmail;
 
 
 const BCRYPT_COST: u32 = 8;

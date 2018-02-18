@@ -1,15 +1,18 @@
 use repository;
+use repositories::UserRepository;
 use db;
 use domain;
 
 #[derive(Clone)]
 pub struct AccountRepository<T: db::PostgresHelper> {
+    user_repository: UserRepository<T>,
     db_helper: T
 }
 
 impl<T: db::PostgresHelper> AccountRepository<T> {
     pub fn new(db: T) -> Self {
         AccountRepository {
+            user_repository: UserRepository::new(db.clone()),
             db_helper: db
         }
     }
@@ -39,8 +42,15 @@ impl<T: db::PostgresHelper> repository::Repository for AccountRepository<T> {
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         match clause {
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
-            &repository::UserClause::EmailAddress(ref email_address) => self.db_helper.query(SELECT_BY_EMAIL,
-                &[email_address]),
+            &repository::UserClause::EmailAddress(ref email_address) => {
+                let c = repository::UserClause::EmailAddress(email_address.to_owned());
+                let users = try!(self.user_repository.read(&c));
+                if users.len() == 0 {
+                    return Err(db::CambioError::not_found_search("User with that email not found", 
+                        "User with that email not found"))
+                }
+                self.db_helper.query(SELECT_BY_EMAIL, &[email_address])
+            },
             _ => Err(db::CambioError::shouldnt_happen("Invalid query to get account", 
                     &format!("Clause {:?} not supported by AccountRepository", clause)))
         }
