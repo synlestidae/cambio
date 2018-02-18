@@ -35,6 +35,7 @@ mod transaction;
 mod unique_id;
 mod user;
 mod account_set;
+mod storage_location;
 
 
 //pub use self::order::OrderInfo;
@@ -76,3 +77,4 @@ pub use self::account_set::AccountSet;
 pub use self::stored_media::StoredMedia;
 pub use self::media_resource::MediaResource;
 pub use self::media_file_format::MediaFileFormat;
+pub use self::storage_location::StorageLocation;
