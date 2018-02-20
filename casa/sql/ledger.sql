@@ -67,21 +67,19 @@ accounting_period_end_var DATE;
 
 debit_account_id INTEGER;
 credit_account_id INTEGER;
+
 BEGIN
     SELECT asset_type.id INTO asset_type_id FROM asset_type WHERE asset_code = asset_type_var AND denom = asset_denom_var LIMIT 1;
     IF asset_type_id IS NULL THEN
         RAISE EXCEPTION 'Cannot complete credit payment with unknown asset type (% in %s)', asset_type, asset_denom; 
     END IF;
 
-    /*SELECT id INTO vendor_id 
-        FROM vendor 
-        WHERE name = vendor_name;*/
-
     SELECT intake_account INTO intake_account_var
         FROM vendor 
         WHERE name = vendor_name;
 
-    SELECT account.id INTO user_credited_account FROM account
+    SELECT account.id INTO user_credited_account 
+        FROM account
         JOIN account_owner ON account.owner_id = account_owner.id
         JOIN users ON account_owner.user_id = users.id
     WHERE 
@@ -93,9 +91,11 @@ BEGIN
         RAISE EXCEPTION 'Could not find the account to credit with payment';
     END IF;
 
+    SELECT vendor.id INTO vendor_id FROM vendor WHERE name = vendor_name;
+
     -- this payment will be linked to the actual transfer in the ledger
     INSERT INTO user_payment(vendor, payment_method, datetime_payment_made, asset_type, units, unique_id)
-        VALUES (asset_type_id, payment_method_var, datetime_payment_made_var, asset_type_id, units, unique_id)
+        VALUES (vendor_id, payment_method_var, datetime_payment_made_var, asset_type_id, units, unique_id)
         RETURNING id into user_payment_id;
 
     INSERT INTO entry(user_payment) VALUES(user_payment_id) RETURNING id INTO entry_id;
@@ -113,6 +113,7 @@ BEGIN
 
     -- if units are positive then it is a standard credit to the users account
     -- they have bought money and get it added to their account
+
     IF units >= 0 THEN
         credit_account_id = user_credited_account; 
         debit_account_id = intake_account_var;

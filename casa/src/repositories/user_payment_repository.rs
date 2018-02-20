@@ -63,6 +63,8 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
 
         let account_id = account.id.unwrap();
 
+        println!("Calling the sp");
+
         // call the payment stored procedure
         let procedure_result = self.db_helper.execute(
             CALL_CREDIT_ACCOUNT_PROCEDURE,
@@ -91,6 +93,7 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
         // load the statement
         let account_id = try!(account.id.ok_or(account_error));
         let statement = self.account_service.get_latest_statement(account_id);
+        println!("gotty statement");
         statement
     }
 }
