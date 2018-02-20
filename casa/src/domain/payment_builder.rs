@@ -42,8 +42,7 @@ impl PaymentBuilder {
             vendor: self.vendor,
             unique_id: unique_id.to_owned(),
             datetime_payment_made: datetime_payment_made,
-            user_credit: credit,
-            message: None,
+            user_credit: credit
         })
     }
 }

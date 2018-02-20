@@ -131,6 +131,7 @@ BEGIN
         credit_account := credit_account_id, 
         units := CAST (abs(units) AS UINT), 
         authorship_id := authorship_id);
+    RETURN;
 END;
 $$ LANGUAGE plpgsql;
 

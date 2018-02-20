@@ -31,9 +31,7 @@ fn credits_account() {
         email_address: "anne@economist.com".to_owned()
     };
 
-    println!("Flunks");
     payment_repo.create(&user_payment).unwrap();
-    println!("Chunts");
     let accounts = account_repo.read(&repository::UserClause::EmailAddress("anne@economist.com".to_owned())).unwrap();
     let set = domain::AccountSet::from(accounts).unwrap();
     let mut account_service = db::AccountService::new(get_db_helper());

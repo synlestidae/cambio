@@ -63,25 +63,23 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
 
         let account_id = account.id.unwrap();
 
-        println!("Calling the sp");
-
         // call the payment stored procedure
+        let params: &[&ToSql] = &[
+            &user_id,
+            &user.email_address,
+            &account_id,
+            &account.asset_type,
+            &account.asset_denom,
+            &payment.vendor,
+            &payment.payment_method,
+            &payment.datetime_payment_made.naive_utc(),
+            &payment.unique_id,
+            &payment.user_credit,
+            &message,
+        ];
         let procedure_result = self.db_helper.execute(
             CALL_CREDIT_ACCOUNT_PROCEDURE,
-            &[
-                &user_id,
-                &user.email_address,
-                &account_id,
-                &account.asset_type,
-                &account.asset_denom,
-                &payment.vendor,
-                &payment.payment_method,
-                &payment.datetime_payment_made.naive_utc(),
-                &payment.unique_id,
-                &payment.user_credit,
-                &message,
-            ],
-        );
+            params);
 
         try!(procedure_result);
 
@@ -93,7 +91,6 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
         // load the statement
         let account_id = try!(account.id.ok_or(account_error));
         let statement = self.account_service.get_latest_statement(account_id);
-        println!("gotty statement");
         statement
     }
 }
@@ -117,7 +114,21 @@ impl<T: db::PostgresHelper> RepoCreate for UserPaymentRepository<T> {
     }
 }
 
-const SELECT_USER_PAYMENT: &'static str = "SELECT * FROM user_payment WHERE unique_id = $1";
+const SELECT_USER_PAYMENT: &'static str = "
+    SELECT 
+        user_payment.id, 
+        user_payment.unique_id,
+        asset_type.asset_code as asset_type, 
+        asset_type.denom as asset_denom, 
+        user_payment.datetime_payment_made, 
+        user_payment.payment_method, 
+        vendor.name as vendor, 
+        user_payment.units as user_credit
+    FROM user_payment 
+    JOIN asset_type ON user_payment.asset_type = asset_type.id
+    JOIN vendor ON user_payment.vendor = vendor.id
+    WHERE user_payment.unique_id = $1
+";
 
 const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_payment(user_id_var := $1, 
         email_address_var := $2, 

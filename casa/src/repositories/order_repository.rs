@@ -43,7 +43,6 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
     type Item = domain::Order;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
-        //println!("PAM PAM {:?}", item);
         let params: &[&ToSql] = &[
             &item.buy_asset_type,
             &item.buy_asset_denom,

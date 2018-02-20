@@ -1,9 +1,9 @@
 use domain::{UniqueId, AssetType, Denom, PaymentVendor, PaymentMethod, Id};
-use chrono::{DateTime, Utc};
+use chrono::prelude::*;
 use postgres;
 use db::{TryFromRow, TryFromRowError};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, TryFromRow)]
 pub struct Payment {
     pub id: Option<Id>,
     pub unique_id: UniqueId,
@@ -12,12 +12,24 @@ pub struct Payment {
     pub datetime_payment_made: DateTime<Utc>,
     pub payment_method: PaymentMethod,
     pub vendor: PaymentVendor,
-    pub user_credit: i64,
-    pub message: Option<String>,
+    pub user_credit: i64
 }
 
-impl TryFromRow for Payment {
+/*impl TryFromRow for Payment {
     fn try_from_row<'a>(row: &postgres::rows::Row<'a>) -> Result<Self, TryFromRowError> {
         unimplemented!()
     }
-}
+}*/
+
+
+/*struct PaymentRow {
+    id: Id,
+    vendor_name: domain::PaymentVendor, 
+    payment_method: domain::PaymentMethod,
+    datetime_payment_made: DateTime<Utc>,
+    datetime_recorded: DateTime<Utc>,
+    asset_code: domain::AssetType,
+    asset_denom: domain::AssetDenom,
+    units: i64 ,
+    unique_id: String
+}*/
