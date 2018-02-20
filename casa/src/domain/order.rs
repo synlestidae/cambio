@@ -32,6 +32,8 @@ impl Order {
         let now = Utc::now();
         let expiry = now + Duration::minutes(ttl_minutes as i64);
 
+        println!("burns order expires at {}", expiry);
+
         Order {
             id: None,
             owner_id: owner,
@@ -74,6 +76,10 @@ impl Order {
 
     pub fn is_fair(&self, other_order: &Order) -> bool {
         unimplemented!()
+    }
+
+    pub fn is_expired(&self) -> bool {
+        self.expires_at <= Utc::now() 
     }
 }
 

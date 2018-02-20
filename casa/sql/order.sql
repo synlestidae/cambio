@@ -107,11 +107,11 @@ BEGIN
         RAISE EXCEPTION 'Currency-buying order not found';
     END IF;
 
-    IF buying_order.sell_asset_type != selling_order.buy_asset_type THEN
+    IF buying_order.sell_asset_type_id != selling_order.buy_asset_type_id THEN
         RAISE EXCEPTION 'Order sell type does not match other order buy type.';
     END IF;
 
-    IF buying_order.buy_asset_type != selling_order.sell_asset_type THEN
+    IF buying_order.buy_asset_type_id != selling_order.sell_asset_type_id THEN
         RAISE EXCEPTION 'Order buy type does not match other order sell type.';
     END IF;
 
@@ -124,7 +124,7 @@ BEGIN
     END IF;
 
     IF buying_order.expires_at >= (now() at time zone 'utc') THEN
-        RAISE EXCEPTION 'Crypto-buying order has expired.';
+        RAISE EXCEPTION 'Crypto-buying order has expired. Current time is %s, but order expired at %s', buying_order.expires_at, (now() at time zone 'utc');
     END IF;
 
     IF selling_order.expires_at >= (now() at time zone 'utc') THEN
