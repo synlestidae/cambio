@@ -27,7 +27,7 @@ CREATE TABLE asset_order (
 
     sell_asset_units BIGUINT NOT NULL,
     buy_asset_units BIGUINT NOT NULL,
-    sell_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
+    sell_asset_type_id SERIAL,
     buy_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
 
     status order_status NOT NULL DEFAULT 'active',
@@ -41,12 +41,13 @@ CREATE TABLE order_settlement (
     settled_at TIMESTAMP,
     starting_user SERIAL REFERENCES users(id) UNIQUE NOT NULL,
     status settlement_status NOT NULL DEFAULT 'settling',
-    transaction_id SERIAL REFERENCES eth_transactions(id),
+    transaction_id SERIAL,
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
 
+ALTER TABLE order_settlement ADD CONSTRAINT Settlement_eth_transaction FOREIGN KEY (transaction_id) REFERENCES eth_transactions(id);
 
 CREATE OR REPLACE FUNCTION place_order(
     buy_asset_type_var ASSET_CODE_TYPE,
@@ -123,26 +124,27 @@ BEGIN
         RAISE EXCEPTION 'Orders are not fairly matched.';
     END IF;
 
-    IF buying_order.expires_at >= (now() at time zone 'utc') THEN
-        RAISE EXCEPTION 'Crypto-buying order has expired. Current time is %s, but order expired at %s', buying_order.expires_at, (now() at time zone 'utc');
+    IF buying_order.expires_at < (now() at time zone 'utc') THEN
+        RAISE EXCEPTION 'Crypto-buying order has expired. Current time is %s, but order expired at %s', (now() at time zone 'utc'), buying_order.expires_at;
     END IF;
 
-    IF selling_order.expires_at >= (now() at time zone 'utc') THEN
+    IF selling_order.expires_at < (now() at time zone 'utc') THEN
         RAISE EXCEPTION 'Crypto-selling order has expired.';
     END IF;
 
     SELECT COUNT(*) INTO existing_settlements 
+    FROM order_settlement
     WHERE buying_crypto_id = selling_order.id OR 
           buying_crypto_id = buying_order.id OR 
-          selling_crypto_id = selling_order.id OR 
-          selling_crypto_id = buying_order.id;
+          buying_fiat_id = selling_order.id OR 
+          buying_fiat_id = buying_order.id;
 
     IF existing_settlements > 0 THEN
         RAISE EXCEPTION 'Settlements with those orders already exist';
     END IF;
 
-    INSERT INTO order_settlement(starting_user, buying_crypto_id, buying_fiat_id)  
-        VALUES (starting_user, buying_crypto_order_id, buying_currency_order_id);
+    INSERT INTO order_settlement(starting_user, buying_crypto_id, buying_fiat_id, transaction_id) 
+        VALUES (starting_user, buying_crypto_order_id, buying_currency_order_id, NULL);
 END;
 $$ LANGUAGE plpgsql;
 
