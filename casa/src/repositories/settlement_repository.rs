@@ -127,7 +127,6 @@ impl<T: db::PostgresHelper> repository::RepoDelete for SettlementRepository<T> {
     }
 }
 
-#[derive(TryFromRow)]
 struct SettlementRow {
     pub id: Option<Id>,
     pub started_at: DateTime<Utc>,
@@ -136,6 +135,29 @@ struct SettlementRow {
     pub settlement_status: domain::SettlementStatus,
     pub buying_crypto_id: Id,
     pub buying_fiat_id: Id
+}
+
+// TODO this will panic if row format is slightly off
+impl TryFromRow for SettlementRow {
+    fn try_from_row<'a>(row: &postgres::rows::Row<'a>) -> Result<Self, db::TryFromRowError> {
+        let id: Option<Id> = row.get("id");
+        let started_at: NaiveDateTime = row.get("started_at");
+        let settled_at: Option<NaiveDateTime> = row.get("settled_at");
+        let starting_user: Id = row.get("starting_user");
+        let settlement_status: domain::SettlementStatus = row.get("status");
+        let buying_crypto_id: Id = row.get("buying_crypto_id");
+        let buying_fiat_id: Id = row.get("buying_fiat_id");
+
+        Ok(SettlementRow {
+            id: id,
+            started_at: DateTime::from_utc(started_at, Utc),
+            settled_at: settled_at.map(|s| DateTime::from_utc(s, Utc)),
+            starting_user: starting_user,
+            settlement_status: settlement_status,
+            buying_crypto_id: buying_crypto_id,
+            buying_fiat_id: buying_fiat_id
+        })
+    }
 }
 
 const BEGIN_SETTLEMENT: &'static str = "

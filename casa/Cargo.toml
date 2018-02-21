@@ -16,7 +16,7 @@ chrono =  { version = "0.4", features = ["serde"] }
 time = "*"
 checkmail = "0.1.1"
 postgres-derive = "0.3"
-uuid = "0.4"
+uuid = {version = "0.4", features = ["serde", "v4"] }
 r2d2 = "0.8.2"
 r2d2_postgres = "0.14.0"
 persistent = "0.4.0"

@@ -28,7 +28,7 @@ pub struct Order {
 }
 
 impl Order {
-    pub fn buy_szabo(owner: Id, buy: u64, nzd_cents: u64, ttl_minutes: u32) -> Self {
+    pub fn buy_szabo(owner: Id, buy: u64, nzd_cents: u32, ttl_minutes: u32) -> Self {
         let now = Utc::now();
         let expiry = now + Duration::minutes(ttl_minutes as i64);
 
@@ -50,7 +50,7 @@ impl Order {
     }
 
 
-    pub fn sell_szabo(owner: Id, buy_cents: u64, szabo: u64, ttl_minutes: u32) -> Self {
+    pub fn sell_szabo(owner: Id, buy_cents: u32, szabo: u64, ttl_minutes: u32) -> Self {
         let now = Utc::now();
         let expiry = now + Duration::minutes(ttl_minutes as i64);
 

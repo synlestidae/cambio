@@ -41,13 +41,14 @@ CREATE TABLE order_settlement (
     settled_at TIMESTAMP,
     starting_user SERIAL REFERENCES users(id) UNIQUE NOT NULL,
     status settlement_status NOT NULL DEFAULT 'settling',
-    transaction_id SERIAL,
+    transaction_id SERIAL REFERENCES eth_transactions(id),
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
 
-ALTER TABLE order_settlement ADD CONSTRAINT Settlement_eth_transaction FOREIGN KEY (transaction_id) REFERENCES eth_transactions(id);
+-- TODO Find out why the FUCK I have to do this
+ALTER TABLE order_settlement ALTER COLUMN transaction_id DROP NOT NULL;
 
 CREATE OR REPLACE FUNCTION place_order(
     buy_asset_type_var ASSET_CODE_TYPE,
