@@ -1,7 +1,9 @@
 CREATE TYPE ACCOUNT_TYPE AS ENUM (
     'asset',
     'liability',
-    'equity'
+    'equity',
+    'income',
+    'expense'
 );
 CREATE TABLE accounting_period (
     id SERIAL PRIMARY KEY,
@@ -143,7 +145,7 @@ CREATE TABLE account (
     account_business_type account_business_type NOT NULL,
     account_role account_role NOT NULL,
     account_status account_status_type NOT NULL DEFAULT 'active',
-    UNIQUE (owner_id, asset_type, account_type, account_business_type, account_role)
+    UNIQUE (owner_id, asset_type, account_business_type, account_role)
 );
 
 CREATE TABLE vendor (
@@ -182,7 +184,7 @@ CREATE TABLE authorship (
     business_ends business_ends_type NOT NULL,
     authoring_user SERIAL REFERENCES users(id) NOT NULL, 
     message TEXT,
-    entry SERIAL UNIQUE REFERENCES entry
+    entry SERIAL REFERENCES entry
 );
 
 CREATE TABLE journal (

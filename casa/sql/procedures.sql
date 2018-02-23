@@ -57,6 +57,13 @@ BEGIN
        last_credit_account_balance = 0;
     END IF;
 
+    IF last_debit_account_balance - units < 0 THEN
+        IF EXISTS(SELECT * FROM account WHERE 
+            account_business_type IN ('user_cash_wallet', 'order_payment_hold') AND id = debit_account) THEN
+            RAISE EXCEPTION 'Insufficient funds. Account % has balance %, cannot deduct %', debit_account, last_debit_account_balance, units;
+        END IF;
+    END IF;
+
     -- Still need to do the whole authorship thing
     
     correspondence_id := nextval('correspondence_id_seq');

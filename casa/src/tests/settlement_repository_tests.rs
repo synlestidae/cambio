@@ -59,7 +59,7 @@ fn settlement_makes_money_unavailable() {
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
 
     let (order1, order2) = quick_order("seymour@skinner.com", "edna@krandel.com", 
-        100000, 200*100, 100000, 200 * 100);
+        100000, 200 * 100, 100000, 200 * 100);
     let skinner = get_user("seymour@skinner.com");
 
     // the system matches the orders with a settlement
@@ -90,13 +90,14 @@ fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_
     let mut user1 = domain::User::new_register(buyer, "excellent123".to_owned());
     let mut user2 = domain::User::new_register(seller, "dohnut123".to_owned());
     let mut user_repo = repositories::UserRepository::new(get_db_helper());
+
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
     let mut order_repo = repositories::OrderRepository::new(get_db_helper());
+    let mut payment_repo = repositories::UserPaymentRepository::new(get_db_helper());
+
     user1 = user_repo.create(&user1).unwrap(); 
     user2 = user_repo.create(&user2).unwrap(); 
 
-
-    let mut payment_repo = repositories::UserPaymentRepository::new(get_db_helper());
     let payment_builder = domain::PaymentBuilder::new(domain::AssetType::NZD,
         domain::Denom::Cent,
         domain::PaymentMethod::NZBankDeposit,
@@ -104,16 +105,15 @@ fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_
     let payment = payment_builder.transaction_details(
         &uuid::Uuid::new_v4().to_string(),
         Utc::now(),
-        200 * 100).unwrap();
+        sell_money as i64).unwrap();
 
     let user_payment = domain::UserPayment {
         payment: payment,
         email_address: buyer.to_owned()
     };
 
-    payment_repo.create(&user_payment).unwrap();
+    let payment = payment_repo.create(&user_payment).unwrap();
 
-    // burns and homer now make orders
     let mut order1 = domain::Order::buy_szabo(user1.id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user1.id.unwrap(), buy_money, sell_szabo, 10);
 

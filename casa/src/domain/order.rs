@@ -32,8 +32,6 @@ impl Order {
         let now = Utc::now();
         let expiry = now + Duration::minutes(ttl_minutes as i64);
 
-        println!("burns order expires at {}", expiry);
-
         Order {
             id: None,
             owner_id: owner,

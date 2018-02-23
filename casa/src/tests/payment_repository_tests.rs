@@ -19,9 +19,17 @@ fn test_payment_saved() {
 
     let mut user = domain::User::new_register("bill@microsoft.com", "$$$malariasucks".to_owned());
     let mut user_repo = UserRepository::new(get_db_helper());
+    let mut account_service = db::AccountService::new(get_db_helper());
     let mut payment_repo = PaymentRepository::new(get_db_helper());
     user = user_repo.create(&user).unwrap(); 
 
     payment_repo.create(&payment).unwrap();
+
+    let set =
+        domain::AccountSet::from(&account_service.read(repository::UserClause::EmailAddress("bill@microsoft.com".to_owned())).unwrap()).unwrap();
+
+    let statement = account_service.get_latest_statement(set.nzd_wallet()).unwrap();
+
+    assert_eq!(200 * 100, statement.closing_balance);
 
 }

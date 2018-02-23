@@ -93,13 +93,24 @@ RETURNS VOID AS $$
 DECLARE 
   buying_order RECORD;
   selling_order RECORD;
-  account_id_var INTEGER;
   asset_type_id INTEGER;
   existing_settlements INTEGER;
+
+  fiat_account INTEGER;
+  hold_account INTEGER;
+
+  accounting_period_start_var DATE;
+  accounting_period_end_var DATE;
+
+  asset_denom_var denom_type;
+  asset_type_var asset_code_type;
+
+  authoring_user_var INTEGER;
+  authorship_id_var INTEGER;
 BEGIN
     -- buying in the sense that they're BUYING with fiat currency
-    SELECT * INTO selling_order FROM asset_order WHERE id = buying_crypto_order_id;
-    SELECT * INTO buying_order FROM asset_order WHERE id = buying_currency_order_id;
+    SELECT * INTO buying_order FROM asset_order WHERE id = buying_crypto_order_id;
+    SELECT * INTO selling_order FROM asset_order WHERE id = buying_currency_order_id;
 
     IF selling_order IS NULL THEN
         RAISE EXCEPTION 'Crypto-buying order not found';
@@ -132,6 +143,55 @@ BEGIN
     IF selling_order.expires_at < (now() at time zone 'utc') THEN
         RAISE EXCEPTION 'Crypto-selling order has expired.';
     END IF;
+
+    SELECT id INTO hold_account FROM account
+    WHERE 
+        account.owner_id = buying_order.owner_id AND
+        account.asset_type = buying_order.sell_asset_type_id AND
+        account.account_business_type  = 'order_payment_hold' AND
+        account.account_role = 'system';
+
+    IF hold_account IS NULL THEN
+        RAISE EXCEPTION 'Failed to find hold account with owner % and asset type %', buying_order.owner_id, buying_order.sell_asset_type_id;
+    END IF;
+
+    SELECT id INTO fiat_account FROM account
+    WHERE 
+        account.owner_id = buying_order.owner_id AND
+        account.asset_type = buying_order.sell_asset_type_id AND
+        account.account_business_type  = 'user_cash_wallet' AND
+        account.account_role = 'primary'
+    LIMIT 1;
+
+    IF fiat_account IS NULL THEN
+        RAISE EXCEPTION 'Failed to find fiat account';
+    END IF;
+
+    SELECT from_date INTO accounting_period_start_var FROM accounting_period
+        WHERE id = (SELECT MAX(id) FROM accounting_period);
+
+    SELECT to_date INTO accounting_period_end_var FROM accounting_period
+        WHERE id = (SELECT MAX(id) FROM accounting_period);
+
+    SELECT asset_code INTO asset_type_var FROM asset_type WHERE id = buying_order.buy_asset_type_id;
+    SELECT denom INTO asset_denom_var FROM asset_type WHERE id = buying_order.buy_asset_type_id;
+
+    SELECT user_id INTO authoring_user_var FROM account_owner WHERE id = buying_order.owner_id;
+
+    INSERT INTO authorship(business_ends, authoring_user, message) 
+    VALUES ('order_settlement', authoring_user_var, 'Holding funds for settlement')
+    RETURNING id INTO authorship_id_var;
+
+    -- do the transfer here
+    PERFORM transfer_asset(
+        asset_code_var := asset_type_var, 
+        asset_denom_var := asset_denom_var, 
+        account_period_start := accounting_period_start_var, 
+        account_period_end := accounting_period_end_var, 
+        debit_account := fiat_account,
+        credit_account := hold_account, 
+        units := buying_order.sell_asset_units, 
+        authorship_id := authorship_id_var);
 
     SELECT COUNT(*) INTO existing_settlements 
     FROM order_settlement

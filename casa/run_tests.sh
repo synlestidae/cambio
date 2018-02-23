@@ -6,7 +6,7 @@ set -o pipefail
 clean_up () {
     echo "Killing geth"
     pkill geth
-    echo "DROP DATABASE test_database_only" | psql
+    #echo "DROP DATABASE test_database_only" | psql
 }
 
 
@@ -20,4 +20,4 @@ psql test_database_only < all.sql
 cd ..
 
 echo "Running tests"
-cargo test  $1 -- --nocapture
+cargo test  $1 -- --nocapture --test-threads=1

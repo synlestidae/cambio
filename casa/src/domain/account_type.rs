@@ -7,4 +7,8 @@ pub enum AccountType {
     Liability,
     #[postgres(name = "equity")]
     Equity,
+    #[postgres(name = "income")]
+    Income,
+    #[postgres(name = "expense")]
+    Expense
 }
