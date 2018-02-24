@@ -1,5 +1,5 @@
 use chrono::prelude::*;
-use db::UserService;
+use services::UserService;
 use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
 use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
 use hex;

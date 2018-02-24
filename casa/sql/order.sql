@@ -11,6 +11,7 @@ CREATE TYPE order_status AS ENUM (
 
 CREATE TYPE settlement_status AS ENUM (
     'settling',
+    'waiting_eth',
     'settled',
     'cancelled',
     'invalid'
@@ -39,7 +40,7 @@ CREATE TABLE order_settlement (
     id SERIAL PRIMARY KEY,
     started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     settled_at TIMESTAMP,
-    starting_user SERIAL REFERENCES users(id) UNIQUE NOT NULL,
+    starting_user SERIAL REFERENCES users(id) NOT NULL,
     status settlement_status NOT NULL DEFAULT 'settling',
     transaction_id SERIAL REFERENCES eth_transactions(id),
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
@@ -178,8 +179,8 @@ BEGIN
 
     SELECT user_id INTO authoring_user_var FROM account_owner WHERE id = buying_order.owner_id;
 
-    INSERT INTO authorship(business_ends, authoring_user, message) 
-    VALUES ('order_settlement', authoring_user_var, 'Holding funds for settlement')
+    INSERT INTO authorship(business_ends, authoring_user, message, entry) 
+    VALUES ('order_settlement', authoring_user_var, 'Holding funds for settlement', NULL)
     RETURNING id INTO authorship_id_var;
 
     -- do the transfer here

@@ -5,6 +5,7 @@ use repository;
 use tests::get_db_helper;
 use chrono::prelude::*;
 use db;
+use services;
 use uuid;
 
 #[test]
@@ -38,7 +39,7 @@ fn refuses_unfair_order() {
 #[test]
 fn settlement_makes_money_unavailable() {
     let mut settlement_repo = repositories::SettlementRepository::new(get_db_helper());
-    let mut account_service = db::AccountService::new(get_db_helper());
+    let mut account_service = services::AccountService::new(get_db_helper());
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
 
     let (order1, order2) = quick_order("seymour@skinner.com", "edna@krandel.com", 
@@ -59,7 +60,7 @@ fn settlement_makes_money_unavailable() {
 #[test]
 fn doesnt_settle_already_settle() {
     let mut settlement_repo = repositories::SettlementRepository::new(get_db_helper());
-    let mut account_service = db::AccountService::new(get_db_helper());
+    let mut account_service = services::AccountService::new(get_db_helper());
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
 
     let (order1, order2) = quick_order("bort@simpson.com", "lisa@simpson.com", 
@@ -86,27 +87,22 @@ fn doesnt_settle_already_settle() {
 #[test]
 fn doesnt_settle_when_credit_runs_out() {
     let mut settlement_repo = repositories::SettlementRepository::new(get_db_helper());
-    let mut account_service = db::AccountService::new(get_db_helper());
+    let mut account_service = services::AccountService::new(get_db_helper());
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
+    const MONEY: u32 = 200 * 100;
 
-    let (order1, order2) = quick_order("bort@simpson.com", "lisa@simpson.com", 
-        100000, 200 * 100, 100000, 200 * 100);
-    let (order3, order4) = quick_order("itchy@springfield.com", "scratchy@springfield.com", 
-        100000, 200 * 100, 100000, 200 * 100);
+    let (order1, order2) = quick_order("ralph@wiggum.com", "chief@wiggum.com", 
+        100000, MONEY, 100000, MONEY);
 
-    quick_credit("bort@simpson.com", 2 * 200 * 100);
-    quick_credit("itchy@springfield.com", 2 * 200 * 100);
+    let (order3, order4) = just_order("ralph@wiggum.com", "chief@wiggum.com", 
+        100000, MONEY, 100000, MONEY);
 
-    let bort = get_user("bort@simpson.com");
-    let itchy = get_user("itchy@springfield.com");
-    let settlement1 = domain::OrderSettlement::from(bort.id.unwrap(), &order1, &order2);
-    let settlement2 = domain::OrderSettlement::from(bort.id.unwrap(), &order3, &order4);
-    let settlement3 = domain::OrderSettlement::from(itchy.id.unwrap(), &order1, &order4);
-    let settlement4 = domain::OrderSettlement::from(itchy.id.unwrap(), &order2, &order3);
-    settlement_repo.create(&settlement1).unwrap();
-    settlement_repo.create(&settlement2).unwrap();
-    assert!(settlement_repo.create(&settlement3).is_err());
-    assert!(settlement_repo.create(&settlement4).is_err());
+    let ralph = get_user("ralph@wiggum.com");
+    quick_credit("ralph@wiggum.com",  MONEY);
+    let settlement1 = domain::OrderSettlement::from(ralph.id.unwrap(), &order1, &order2);
+    let settlement2 = domain::OrderSettlement::from(ralph.id.unwrap(), &order3, &order4);
+    assert!(settlement_repo.create(&settlement1).is_ok());
+    assert!(settlement_repo.create(&settlement2).is_err());
 }
 
 fn get_user(email: &str) -> domain::User {
@@ -125,6 +121,30 @@ fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_
 
     user1 = user_repo.create(&user1).unwrap(); 
     user2 = user_repo.create(&user2).unwrap(); 
+
+    let mut order1 = domain::Order::buy_szabo(user1.id.unwrap(), buy_szabo, sell_money, 10);
+    let mut order2 = domain::Order::sell_szabo(user1.id.unwrap(), buy_money, sell_szabo, 10);
+
+    order1 = order_repo.create(&order1).unwrap();
+    order2 = order_repo.create(&order2).unwrap();
+
+    (order1, order2)
+}
+
+
+fn just_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
+    let mut user_repo = repositories::UserRepository::new(get_db_helper());
+    let mut account_repo = repositories::AccountRepository::new(get_db_helper());
+    let mut order_repo = repositories::OrderRepository::new(get_db_helper());
+
+    let user1 = user_repo.read(&repository::UserClause::EmailAddress(buyer.to_owned()))
+        .unwrap()
+        .pop()
+        .unwrap(); 
+    let user2 = user_repo.read(&repository::UserClause::EmailAddress(seller.to_owned())) 
+        .unwrap()
+        .pop()
+        .unwrap(); 
 
     let mut order1 = domain::Order::buy_szabo(user1.id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user1.id.unwrap(), buy_money, sell_szabo, 10);

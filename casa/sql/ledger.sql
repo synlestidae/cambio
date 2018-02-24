@@ -187,6 +187,7 @@ CREATE TABLE authorship (
     entry SERIAL REFERENCES entry
 );
 
+ALTER TABLE authorship ALTER COLUMN entry DROP NOT NULL;
 CREATE TABLE journal (
     id SERIAL PRIMARY KEY,
     accounting_period SERIAL REFERENCES accounting_period(id),

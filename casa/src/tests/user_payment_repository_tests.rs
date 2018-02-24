@@ -6,6 +6,7 @@ use repository::*;
 use repository;
 use tests::get_db_helper;
 use chrono::prelude::*;
+use services;
 use db;
 
 #[test]
@@ -34,7 +35,7 @@ fn credits_account() {
     payment_repo.create(&user_payment).unwrap();
     let accounts = account_repo.read(&repository::UserClause::EmailAddress("anne@economist.com".to_owned())).unwrap();
     let set = domain::AccountSet::from(accounts).unwrap();
-    let mut account_service = db::AccountService::new(get_db_helper());
+    let mut account_service = services::AccountService::new(get_db_helper());
     let statement = account_service.get_latest_statement(set.nzd_wallet()).unwrap();
     assert_eq!(200 * 100, statement.closing_balance);
 }

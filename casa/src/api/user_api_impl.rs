@@ -1,6 +1,7 @@
 use api::{Registration, Profile, ApiResult, ApiError, LogIn, UserApiTrait, get_api_obj};
 use iron::{Request, Response};
-use db::{ConnectionSource, UserService, PostgresHelper};
+use db::{ConnectionSource, PostgresHelper};
+use services::UserService;
 use domain::{User, Session};
 use hyper::mime::Mime;
 use serde_json;

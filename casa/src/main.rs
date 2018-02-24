@@ -44,6 +44,7 @@ mod db;
 mod domain;
 mod tests;
 mod api;
+mod services;
 mod repository;
 mod repositories;
 

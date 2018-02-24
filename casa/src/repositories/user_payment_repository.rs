@@ -3,13 +3,14 @@ use repositories;
 use repository;
 use db;
 use domain;
+use services;
 use domain::Id;
 use postgres::types::ToSql;
 
 #[derive(Clone)]
 pub struct UserPaymentRepository<T: db::PostgresHelper> {
     user_repository: repositories::UserRepository<T>,
-    account_service: db::AccountService<T>,
+    account_service: services::AccountService<T>,
     account_repo: repositories::AccountRepository<T>,
     db_helper: T
 }
@@ -18,7 +19,7 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
     pub fn new(db: T) -> Self {
         UserPaymentRepository {
             user_repository: repositories::UserRepository::new(db.clone()),
-            account_service: db::AccountService::new(db.clone()),
+            account_service: services::AccountService::new(db.clone()),
             account_repo: repositories::AccountRepository::new(db.clone()),
             db_helper: db
         }
