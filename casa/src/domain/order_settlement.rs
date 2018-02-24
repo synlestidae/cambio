@@ -13,3 +13,17 @@ pub struct OrderSettlement {
     pub buying_order: Order,
     pub selling_order: Order,
 }
+
+impl OrderSettlement {
+    pub fn from(user_id: Id, buy_order: &Order, sell_order: &Order) -> Self {
+        OrderSettlement {
+            id: None,
+            started_at: Utc::now(),
+            settled_at: None,
+            starting_user: user_id ,
+            settlement_status: SettlementStatus::Settling,
+            buying_order: buy_order.clone(),
+            selling_order: sell_order.clone()
+        }
+    }
+}
