@@ -15,14 +15,14 @@ pub struct Order {
     pub id: Option<Id>,
     pub owner_id: Id,
     pub unique_id: String,
-    pub sell_asset_units: i64,
-    pub buy_asset_units: i64,
     #[column_id(sell_asset_code)]
     pub sell_asset_type: AssetType,
     pub sell_asset_denom: Denom,
+    pub sell_asset_units: i64,
     #[column_id(buy_asset_code)]
     pub buy_asset_type: AssetType,
     pub buy_asset_denom: Denom,
+    pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
     pub status: OrderStatus
 }
