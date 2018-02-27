@@ -1,27 +1,30 @@
-use db::{PostgresHelper, CambioError};
-use domain::{User, Session, Id, SessionState};
-use repository::*;
-use repositories;
-use repository;
-use std::error::Error;
 use bcrypt::hash;
 use checkmail;
+use db::{PostgresHelper, CambioError};
+use domain::{User, Session, Id, SessionState};
+use repositories;
+use repository::*;
+use repository;
+use services;
+use std::error::Error;
 
 #[derive(Clone)]
 pub struct UserService<T: PostgresHelper> {
     user_repository: repositories::UserRepository<T>,
     session_repository: repositories::SessionRepository<T>,
+    ethereum_service: services::EthereumService<T>
 }
 
 const BCRYPT_COST: u32 = 8;
 
 impl<T: PostgresHelper> UserService<T> {
-    pub fn new(db_helper: T) -> Self {
+    pub fn new(db_helper: T, web3_address: &str) -> Self {
         let users = repositories::UserRepository::new(db_helper.clone());
         let sessions = repositories::SessionRepository::new(db_helper.clone());
         Self { 
             user_repository: users,
-            session_repository: sessions
+            session_repository: sessions,
+            ethereum_service: services::EthereumService::new(db_helper.clone(), web3_address)
         }
     }
 

@@ -27,7 +27,6 @@ impl<T: db::PostgresHelper> SettlementService<T> {
         self.settlement_repo.create(&settlement)
     }
 
-
     pub fn begin_eth_transfer(&mut self,
             settlement_id: Id, 
             unique_id: &str, 

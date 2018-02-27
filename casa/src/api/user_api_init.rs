@@ -20,11 +20,15 @@ use std;
 #[derive(Clone)]
 pub struct UserApiInit<T: PostgresHelper> {
     helper: T,
+    web3_address: String
 }
 
 impl<T: PostgresHelper> UserApiInit<T> {
-    pub fn new(helper: T) -> Self {
-        Self { helper: helper }
+    pub fn new(helper: T, web3_address: &str) -> Self {
+        Self { 
+            helper: helper,
+            web3_address: web3_address.to_owned() 
+        }
     }
 }
 
@@ -37,11 +41,15 @@ where
         let log_in_helper: Arc<T> = Arc::new(self.helper.clone());
         let profile_helper: Arc<T> = Arc::new(self.helper.clone());
 
+        let a1 = self.web3_address.to_owned();
+        let a2 = self.web3_address.to_owned();
+        let a3 = self.web3_address.to_owned();
+
         router.put(
             "/users/register/",
             move |r: &mut Request| {
                 let this_helper_ref: &T = register_helper.borrow();
-                let mut api = UserApi::new(this_helper_ref.clone());
+                let mut api = UserApi::new(this_helper_ref.clone(), &a1);
                 Ok(api.put_register(r))
             },
             "put_register",
@@ -51,7 +59,7 @@ where
             "/users/log_in/",
             move |r: &mut Request| {
                 let this_helper_ref: &T = log_in_helper.borrow();
-                let mut api = UserApi::new(this_helper_ref.clone());
+                let mut api = UserApi::new(this_helper_ref.clone(), &a2);
                 Ok(api.post_log_in(r))
             },
             "post_log_in",
@@ -61,7 +69,7 @@ where
             "/users/profile/",
             move |r: &mut Request| {
                 let profile_helper_ref: &T = profile_helper.borrow();
-                let mut api = UserApi::new(profile_helper_ref.clone());
+                let mut api = UserApi::new(profile_helper_ref.clone(), &a3);
                 Ok(api.get_profile(r))
             },
             "get_profile",

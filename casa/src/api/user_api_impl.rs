@@ -13,8 +13,10 @@ pub struct UserApi<C: PostgresHelper> {
 }
 
 impl<C: PostgresHelper> UserApi<C> {
-    pub fn new(helper: C) -> Self {
-        Self { user_service: UserService::new(helper) }
+    pub fn new(helper: C, web3_address: &str) -> Self {
+        Self { 
+            user_service: UserService::new(helper, web3_address) 
+        }
     }
 }
 

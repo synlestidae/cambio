@@ -8,8 +8,10 @@ pub struct TotalApiInit<T: PostgresHelper> {
 }
 
 impl<T: PostgresHelper> TotalApiInit<T> {
-    pub fn new(helper: T) -> Self {
-        Self { user_api_init: UserApiInit::new(helper) }
+    pub fn new(helper: T, web3_address: &str) -> Self {
+        Self { 
+            user_api_init: UserApiInit::new(helper, web3_address) 
+        }
     }
 }
 
