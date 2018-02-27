@@ -1,5 +1,10 @@
 use db;
+use domain::Id;
 use domain;
+use repositories;
+use repository::*;
+use repository;
+use services;
 
 pub struct SettlementService<T: db::PostgresHelper> {
     settlement_repo: repositories::SettlementRepository<T>,
@@ -9,43 +14,52 @@ pub struct SettlementService<T: db::PostgresHelper> {
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
 
 impl<T: db::PostgresHelper> SettlementService<T> {
-    pub fn new(db_helper: T) -> Self {
+    pub fn new(db_helper: T, eth_address: &str) -> Self {
         Self {
             settlement_repo: repositories::SettlementRepository::new(db_helper.clone()),
-            eth_service: services::EthereumService::new(db_helper)
+            eth_service: services::EthereumService::new(db_helper, eth_address)
         }
     }
 
-    pub fn create_settlement(&self, user_id: &domain::Id, buying_order: &domain::Order, 
+    pub fn create_settlement(&mut self, user_id: domain::Id, buying_order: &domain::Order, 
         selling_order: &domain::Order) -> SettleResult {
         let settlement = domain::OrderSettlement::from(user_id, buying_order, selling_order);
         self.settlement_repo.create(&settlement)
     }
 
 
-    pub fn begin_eth_transfer(&self, settlement_id: unique_id, Id, starting_user_password: String, unique_id: &str, max_cost_wei: u64) -> SettleResult {
-        let settlement = try!(self.settlement_repo.read(repository::UserClause::Id(settlement_id)));
-        if settlement.status !== domain::Settling {
+    pub fn begin_eth_transfer(&mut self,
+            settlement_id: Id, 
+            unique_id: &str, 
+            starting_user_password: String,
+            max_cost_wei: u64) -> SettleResult {
+        let mut settlement = match try!(self.settlement_repo.read(&repository::UserClause::Id(settlement_id))).pop() {
+            Some(s) => s,
+            None => return Err(db::CambioError::not_found_search("Settlement could not be found.", 
+                "Settlement Repo returned empty array."))
+        };
+        if settlement.settlement_status != domain::SettlementStatus::Settling {
             return Err(db::CambioError::unfair_operation("Can only tranfer ETH when settlement is active.", 
-                format!("Settlement status was {}", settlement.status)));
+                &format!("Settlement status was {:?}", settlement.settlement_status)));
         }
-        settlement.status = domain::SettlementStatus::WaitingEth;
+        settlement.settlement_status = domain::SettlementStatus::WaitingEth;
         let eth_account: domain::EthAccount = unimplemented!();
         let selling_order = settlement.selling_order;
         let szabo = match (selling_order.sell_asset_type, selling_order.sell_asset_denom) {
-            (domain::AssetType::Eth, domain::denom::Szabo) => selling_order.sell_asset_units,
+            (domain::AssetType::ETH, domain::Denom::Szabo) => selling_order.sell_asset_units,
             _ => return Err(db::CambioError::format_obj("Buying order must be for Szabo", 
                 "Error with settlement: unsupported selling type."))
-        }
-        let wei = szabo * 1000000000000;
-        self.eth_service.register_transaction(eth_account, 
+        };
+        let wei = (szabo as u64) * 1000000000000;
+        self.eth_service.register_transaction(&eth_account, 
             starting_user_password,
             wei,
             max_cost_wei,
             eth_account.address,
-
+            unique_id);
     }
 
     fn get_cost(&self) -> Result<u64, db::CambioError> {
+        unimplemented!()
     }
 }
