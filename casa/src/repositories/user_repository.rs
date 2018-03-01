@@ -15,6 +15,11 @@ impl<T: db::PostgresHelper> UserRepository<T> {
             db_helper: db
         }
     }
+
+    pub fn get_owner(&mut self, clause: &repository::UserClause) -> repository::ItemResult<domain::User> {
+        unimplemented!()
+    }
+
 }
 
 impl<T: db::PostgresHelper> repository::RepoRead for UserRepository<T> {

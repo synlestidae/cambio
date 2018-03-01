@@ -1,5 +1,4 @@
 use base64::{encode, decode};
-use bcrypt::hash;
 use crypto::digest::Digest;
 use crypto;
 use db::{TryFromRow, TryFromRowError};
@@ -11,13 +10,13 @@ use rand::{OsRng, Rng};
 use rand;
 use std::iter;
 use std;
+use bcrypt::hash;
 use web3::types::{H160, U256, Transaction};
 
 const BCRYPT_COST: u32 = 8;
 
-#[Derive(Debug, Clone, TryFromRow)]
+#[derive(Debug, Clone)]
 pub struct EthAccount {
-    pub id: Option<Id>,
     pub address: H160,
     pub password_hash_bcrypt: String,
     pub owner_id: Id, 

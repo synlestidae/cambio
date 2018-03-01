@@ -23,7 +23,8 @@ CREATE TABLE ethereum_outbound_transaction (
 );
 
 CREATE TABLE ethereum_account_details (
-    address TX_ADDRESS PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    address TX_ADDRESS UNIQUE,
     password_hash_bcrypt VARCHAR NOT NULL,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id)
 );

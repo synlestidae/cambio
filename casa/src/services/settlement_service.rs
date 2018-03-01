@@ -8,7 +8,8 @@ use services;
 
 pub struct SettlementService<T: db::PostgresHelper> {
     settlement_repo: repositories::SettlementRepository<T>,
-    eth_service: services::EthereumService<T>
+    eth_service: services::EthereumService<T>,
+    user_repo: repositories::UserRepository<T>
 }
 
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
@@ -17,7 +18,8 @@ impl<T: db::PostgresHelper> SettlementService<T> {
     pub fn new(db_helper: T, eth_address: &str) -> Self {
         Self {
             settlement_repo: repositories::SettlementRepository::new(db_helper.clone()),
-            eth_service: services::EthereumService::new(db_helper, eth_address)
+            eth_service: services::EthereumService::new(db_helper, eth_address),
+            user_repo: repositories::UserRepository::new(db_helper.clone())
         }
     }
 
@@ -42,7 +44,8 @@ impl<T: db::PostgresHelper> SettlementService<T> {
                 &format!("Settlement status was {:?}", settlement.settlement_status)));
         }
         settlement.settlement_status = domain::SettlementStatus::WaitingEth;
-        let eth_account: domain::EthAccount = unimplemented!();
+        let source_account = try!(self.get_eth_account(&settlement.selling_order));
+        let dest_account = try!(self.get_eth_account(&settlement.buying_order));
         let selling_order = settlement.selling_order;
         let szabo = match (selling_order.sell_asset_type, selling_order.sell_asset_denom) {
             (domain::AssetType::ETH, domain::Denom::Szabo) => selling_order.sell_asset_units,
@@ -50,12 +53,25 @@ impl<T: db::PostgresHelper> SettlementService<T> {
                 "Error with settlement: unsupported selling type."))
         };
         let wei = (szabo as u64) * 1000000000000;
-        self.eth_service.register_transaction(&eth_account, 
+        self.eth_service.register_transaction(&source_account, 
             starting_user_password,
             wei,
             max_cost_wei,
-            eth_account.address,
+            dest_account.address,
             unique_id);
+        unimplemented!()
+    }
+
+    fn get_eth_account(&mut self, order: &domain::Order) 
+        -> Result<domain::EthAccount, db::CambioError> {
+        let owner_id = order.owner_id;
+        let clause = repository::UserClause::Id(owner_id);
+        let user = try!(self.user_repo.get_owner(&clause));
+        let eth_account_match = try!(self.eth_repo.read(&repository::UserClause::EmailAddress(email_address)));
+        let not_found_error = Err(db::CambioError::not_found_search(
+            "User does not have an Ethereum account yet.", 
+            "Could not find Ethereum account."));
+        eth_account_match.pop().ok_or(not_found_error)
     }
 
     fn get_cost(&self) -> Result<u64, db::CambioError> {

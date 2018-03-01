@@ -12,7 +12,7 @@ use std::error::Error;
 pub struct UserService<T: PostgresHelper> {
     user_repository: repositories::UserRepository<T>,
     session_repository: repositories::SessionRepository<T>,
-    ethereum_service: services::EthereumService<T>
+    eth_service: services::EthereumService<T>
 }
 
 const BCRYPT_COST: u32 = 8;
@@ -24,7 +24,7 @@ impl<T: PostgresHelper> UserService<T> {
         Self { 
             user_repository: users,
             session_repository: sessions,
-            ethereum_service: services::EthereumService::new(db_helper.clone(), web3_address)
+            eth_service: services::EthereumService::new(db_helper.clone(), web3_address)
         }
     }
 
@@ -33,6 +33,7 @@ impl<T: PostgresHelper> UserService<T> {
         email_address: &str,
         password: String,
     ) -> Result<User, CambioError> {
+        let eth_password = password.clone(); // TODO Eth password should come from somewhere else
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input("Please check that the email entered is valid", "Email address is invalid"));
         }
@@ -45,7 +46,6 @@ impl<T: PostgresHelper> UserService<T> {
 
         // get the BCrypt hash
         let password_hash = try!(hash(&password, BCRYPT_COST));
-
         drop(password);
 
         let mut user = User {
@@ -57,6 +57,7 @@ impl<T: PostgresHelper> UserService<T> {
         };
 
         user = try!(self.user_repository.create(&user));
+        try!(self.eth_service.new_account(email_address, eth_password));
         Ok(user)
     }
 
