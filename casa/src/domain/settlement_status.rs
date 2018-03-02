@@ -11,4 +11,6 @@ pub enum SettlementStatus {
     Cancelled,
     #[postgres(name = "invalid")]
     Invalid,
+    #[postgres(name = "eth_failed")]
+    EthFailed
 }

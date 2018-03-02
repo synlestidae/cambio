@@ -105,12 +105,12 @@ fn doesnt_settle_when_credit_runs_out() {
     assert!(settlement_repo.create(&settlement2).is_err());
 }
 
-fn get_user(email: &str) -> domain::User {
+pub fn get_user(email: &str) -> domain::User {
     let mut user_repo = repositories::UserRepository::new(get_db_helper());
     user_repo.read(&repository::UserClause::EmailAddress(email.to_owned())).unwrap().pop().unwrap()
 }
 
-fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
+pub fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
     // create the user first
     let mut user1 = domain::User::new_register(buyer, "excellent123".to_owned());
     let mut user2 = domain::User::new_register(seller, "dohnut123".to_owned());
@@ -132,7 +132,7 @@ fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_
 }
 
 
-fn just_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
+pub fn just_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
     let mut user_repo = repositories::UserRepository::new(get_db_helper());
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
     let mut order_repo = repositories::OrderRepository::new(get_db_helper());
@@ -155,7 +155,7 @@ fn just_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_s
     (order1, order2)
 }
 
-fn quick_credit(who: &str, how_much: u32) {
+pub fn quick_credit(who: &str, how_much: u32) {
     let mut payment_repo = repositories::UserPaymentRepository::new(get_db_helper());
     let payment_builder = domain::PaymentBuilder::new(domain::AssetType::NZD,
         domain::Denom::Cent,

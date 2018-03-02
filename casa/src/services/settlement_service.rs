@@ -9,7 +9,8 @@ use services;
 pub struct SettlementService<T: db::PostgresHelper> {
     settlement_repo: repositories::SettlementRepository<T>,
     eth_service: services::EthereumService<T>,
-    user_repo: repositories::UserRepository<T>
+    user_repo: repositories::UserRepository<T>,
+    eth_repo: repositories::EthAccountRepository<T>
 }
 
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
@@ -18,8 +19,9 @@ impl<T: db::PostgresHelper> SettlementService<T> {
     pub fn new(db_helper: T, eth_address: &str) -> Self {
         Self {
             settlement_repo: repositories::SettlementRepository::new(db_helper.clone()),
-            eth_service: services::EthereumService::new(db_helper, eth_address),
-            user_repo: repositories::UserRepository::new(db_helper.clone())
+            eth_service: services::EthereumService::new(db_helper.clone(), eth_address),
+            user_repo: repositories::UserRepository::new(db_helper.clone()),
+            eth_repo: repositories::EthAccountRepository::new(db_helper.clone())
         }
     }
 
@@ -67,10 +69,12 @@ impl<T: db::PostgresHelper> SettlementService<T> {
         let owner_id = order.owner_id;
         let clause = repository::UserClause::Id(owner_id);
         let user = try!(self.user_repo.get_owner(&clause));
-        let eth_account_match = try!(self.eth_repo.read(&repository::UserClause::EmailAddress(email_address)));
-        let not_found_error = Err(db::CambioError::not_found_search(
+        let email_address = user.email_address.to_owned();
+        let eth_clause = repository::UserClause::EmailAddress(email_address);
+        let mut eth_account_match = try!(self.eth_repo.read(&eth_clause));
+        let not_found_error = db::CambioError::not_found_search(
             "User does not have an Ethereum account yet.", 
-            "Could not find Ethereum account."));
+            "Could not find Ethereum account.");
         eth_account_match.pop().ok_or(not_found_error)
     }
 

@@ -14,7 +14,8 @@ CREATE TYPE settlement_status AS ENUM (
     'waiting_eth',
     'settled',
     'cancelled',
-    'invalid'
+    'invalid',
+    'eth_failed'
 );
 
 CREATE TABLE eth_transactions (
