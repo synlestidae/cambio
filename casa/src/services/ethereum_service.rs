@@ -20,6 +20,7 @@ pub struct EthereumService<T: PostgresHelper> {
 impl<T: PostgresHelper> EthereumService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
         let user_repo = repositories::UserRepository::new(db_helper.clone());
+        println!("Will connect to {}", web3_address);
         Self {
             db_helper: db_helper,
             user_repo: user_repo,

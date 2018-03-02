@@ -15,15 +15,15 @@ pub fn get_user(email: &str) -> domain::User {
 
 pub fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
     // create the user first
-    let mut user1 = domain::User::new_register(buyer, "excellent123".to_owned());
-    let mut user2 = domain::User::new_register(seller, "dohnut123".to_owned());
-    let mut user_repo = repositories::UserRepository::new(get_db_helper());
+    //let mut user1 = domain::User::new_register(buyer, "excellent123".to_owned());
+    //let mut user2 = domain::User::new_register(seller, "dohnut123".to_owned());
+    let mut user_service = services::UserService::new(get_db_helper(), "http://localhost:8080");
 
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
     let mut order_repo = repositories::OrderRepository::new(get_db_helper());
 
-    user1 = user_repo.create(&user1).unwrap(); 
-    user2 = user_repo.create(&user2).unwrap(); 
+    let user1 = user_service.register_user(buyer, "excellent123".to_owned()).unwrap(); 
+    let user2 = user_service.register_user(seller, "dohnut123".to_owned()).unwrap(); 
 
     let mut order1 = domain::Order::buy_szabo(user1.id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user1.id.unwrap(), buy_money, sell_szabo, 10);

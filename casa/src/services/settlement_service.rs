@@ -68,7 +68,7 @@ impl<T: db::PostgresHelper> SettlementService<T> {
         -> Result<domain::EthAccount, db::CambioError> {
         let owner_id = order.owner_id;
         let clause = repository::UserClause::Id(owner_id);
-        let user = try!(self.user_repo.get_owner(&clause));
+        let user = try!(self.user_repo.get_owner(owner_id));
         let email_address = user.email_address.to_owned();
         let eth_clause = repository::UserClause::EmailAddress(email_address);
         let mut eth_account_match = try!(self.eth_repo.read(&eth_clause));

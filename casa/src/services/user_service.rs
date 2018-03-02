@@ -12,7 +12,8 @@ use std::error::Error;
 pub struct UserService<T: PostgresHelper> {
     user_repository: repositories::UserRepository<T>,
     session_repository: repositories::SessionRepository<T>,
-    eth_service: services::EthereumService<T>
+    eth_service: services::EthereumService<T>,
+    eth_account_repo: repositories::EthAccountRepository<T>
 }
 
 const BCRYPT_COST: u32 = 8;
@@ -21,10 +22,12 @@ impl<T: PostgresHelper> UserService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
         let users = repositories::UserRepository::new(db_helper.clone());
         let sessions = repositories::SessionRepository::new(db_helper.clone());
+        let eth_account_repo = repositories::EthAccountRepository::new(db_helper.clone());
         Self { 
             user_repository: users,
             session_repository: sessions,
-            eth_service: services::EthereumService::new(db_helper.clone(), web3_address)
+            eth_service: services::EthereumService::new(db_helper.clone(), web3_address),
+            eth_account_repo: eth_account_repo
         }
     }
 
@@ -57,7 +60,10 @@ impl<T: PostgresHelper> UserService<T> {
         };
 
         user = try!(self.user_repository.create(&user));
-        try!(self.eth_service.new_account(email_address, eth_password));
+        println!("Makey account {}", email_address);
+        let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
+        let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
+        println!("new eth account {:?}", new_eth_account);
         Ok(user)
     }
 

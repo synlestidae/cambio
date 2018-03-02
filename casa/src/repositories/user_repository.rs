@@ -16,8 +16,13 @@ impl<T: db::PostgresHelper> UserRepository<T> {
         }
     }
 
-    pub fn get_owner(&mut self, clause: &repository::UserClause) -> repository::ItemResult<domain::User> {
-        unimplemented!()
+    pub fn get_owner(&mut self, owner_id: domain::Id) -> repository::ItemResult<domain::User> {
+        let mut matches = try!(self.db_helper.query(SELECT_BY_OWNER, &[&owner_id]));
+        match matches.pop() {
+            Some(user) => Ok(user),
+            None => Err(db::CambioError::not_found_search("Could not find owner.", 
+                "SELECT_BY_OWNER query returned 0 rows"))
+        }
     }
 
 }
@@ -87,6 +92,12 @@ const SELECT_BY_ID: &'static str = "
     FROM users 
     JOIN account_owner ON account_owner.user_id = users.id 
     WHERE users.id = $1";
+
+const SELECT_BY_OWNER : &'static str = "
+    SELECT *, users.id as user_id, account_owner.id as owner_id
+    FROM users 
+    JOIN account_owner ON account_owner.user_id = users.id 
+    WHERE account_owner.id = $1";
 
 const SELECT_ALL: &'static str = "
     SELECT *, users.id as user_id, account_owner.id as owner_id
