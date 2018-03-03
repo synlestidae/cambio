@@ -4,7 +4,9 @@ use domain;
 use checkmail;
 use repository::*;
 use std;
+use web3;
 use postgres;
+use base64;
 use domain::Id;
 use db::{TryFromRow, TryFromRowError};
 
@@ -77,13 +79,29 @@ struct EthRow {
 
 impl std::convert::Into<domain::EthAccount> for EthRow {
     fn into(self) -> domain::EthAccount {
-        unimplemented!()
+        let bytes = base64::decode(&self.address).unwrap();
+        let mut array = [0; 20];
+        for (i, b) in bytes.into_iter().enumerate() {
+            array[i] = b;
+        }
+        domain::EthAccount {
+            id: self.id,
+            address: web3::types::H160(array),
+            password_hash_bcrypt: self.password_hash_bcrypt,
+            owner_id: self.owner_id
+        }
     }
 }
 
 impl std::convert::Into<EthRow> for domain::EthAccount {
     fn into(self) -> EthRow {
-        unimplemented!()
+        let bytes = self.address.0;
+        EthRow {
+            id: self.id,
+            address: base64::encode(&bytes),
+            password_hash_bcrypt: self.password_hash_bcrypt,
+            owner_id: self.owner_id
+        }
     }
 }
 const SELECT_BY_ID: &'static str = "SELECT * FROM ethereum_account_details WHERE id = $1 ";
