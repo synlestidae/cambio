@@ -27,7 +27,7 @@ fn refuses_settlement_no_eth_balance() {
     let result = settlement_service.begin_eth_transfer(settlement.id.unwrap(),
         "981upr983ucn982qr2349t9y34%tp9q83tup983q4",
         "dohnut123".to_owned(),
-        21000000000000).unwrap();
+        21000000000000);
 
-    //assert!(result.is_err());
+    assert!(result.is_err());
 }

@@ -35,7 +35,7 @@ impl<T: db::PostgresHelper> SettlementService<T> {
             settlement_id: Id, 
             unique_id: &str, 
             starting_user_password: String,
-            max_cost_wei: u64) -> SettleResult {
+            max_cost_wei: u64) -> Result<domain::EthereumOutboundTransaction, db::CambioError> {
         let mut settlement = match try!(self.settlement_repo.read(&repository::UserClause::Id(settlement_id))).pop() {
             Some(s) => s,
             None => return Err(db::CambioError::not_found_search("Settlement could not be found.", 
@@ -60,8 +60,7 @@ impl<T: db::PostgresHelper> SettlementService<T> {
             wei,
             max_cost_wei,
             dest_account.address,
-            unique_id);
-        unimplemented!()
+            unique_id)
     }
 
     fn get_eth_account(&mut self, order: &domain::Order) 
