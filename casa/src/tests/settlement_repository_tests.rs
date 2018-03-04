@@ -16,8 +16,11 @@ fn settles_two_orders() {
     let burns = get_user("burns@springfield.com");
 
     let mut settlement = domain::OrderSettlement::from(burns.id.unwrap(), &order1, &order2);
-    settlement = settlement_repo.create(&settlement).unwrap();
+    let mut created_settlement = settlement_repo.create(&settlement).unwrap();
+    created_settlement.id = None;
     assert_eq!(settlement.settlement_status, domain::SettlementStatus::Settling);
+    assert_eq!(settlement.buying_order, created_settlement.buying_order);
+    assert_eq!(settlement.selling_order, created_settlement.selling_order);
 }
 
 

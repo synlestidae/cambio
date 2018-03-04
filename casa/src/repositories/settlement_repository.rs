@@ -25,7 +25,7 @@ impl<T: db::PostgresHelper> SettlementRepository<T> {
 
     fn _add_orders(&mut self, row: SettlementRow) -> Result<OrderSettlement, CambioError> {
         let buying_order = try!(self.order_repository.read(&repository::UserClause::Id(row.buying_crypto_id))).pop();
-        let selling_order = try!(self.order_repository.read(&repository::UserClause::Id(row.buying_crypto_id))).pop();
+        let selling_order = try!(self.order_repository.read(&repository::UserClause::Id(row.buying_fiat_id))).pop();
         match (buying_order, selling_order) {
             (Some(b), Some(s)) => Ok(OrderSettlement {
                 id: row.id,
