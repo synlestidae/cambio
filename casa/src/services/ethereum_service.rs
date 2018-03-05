@@ -20,7 +20,6 @@ pub struct EthereumService<T: PostgresHelper> {
 impl<T: PostgresHelper> EthereumService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
         let user_repo = repositories::UserRepository::new(db_helper.clone());
-        println!("Will connect to {}", web3_address);
         Self {
             db_helper: db_helper,
             user_repo: user_repo,
@@ -44,7 +43,7 @@ impl<T: PostgresHelper> EthereumService<T> {
     }
 
     pub fn register_transaction(&mut self, 
-        account: &EthAccount, 
+        source_account: &EthAccount, 
         password: String,
         amount_wei: u64,
         max_cost_wei: u64,
@@ -61,7 +60,7 @@ impl<T: PostgresHelper> EthereumService<T> {
         let confirmations = block.low_u64() + BLOCK_CONFIRMATIONS;
         let gas = U256::from(21000);
         let transaction_req = TransactionRequest {
-           from: account.address,
+           from: source_account.address,
            to: Some(destination_address),
            gas: Some(gas),
            gas_price: Some(gas_price_wei),
@@ -74,7 +73,7 @@ impl<T: PostgresHelper> EthereumService<T> {
         if gas_wei > U256::from(max_cost_wei) {
             panic!("Need to put an error here");
         }
-        let account_unlocked = try!(personal.unlock_account(account.address, &password, None).wait());
+        let account_unlocked = try!(personal.unlock_account(source_account.address, &password, None).wait());
         if !account_unlocked {
             let mut err = CambioError::shouldnt_happen("Failed to get your Ethereum account. Try again.", "Unlocking account failed.");
             err.reccomendation = ErrorReccomendation::TryAgainNow;

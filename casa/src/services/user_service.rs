@@ -60,10 +60,8 @@ impl<T: PostgresHelper> UserService<T> {
         };
 
         user = try!(self.user_repository.create(&user));
-        println!("Makey account {}", email_address);
         let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
         let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
-        println!("new eth account {:?}", new_eth_account);
         Ok(user)
     }
 

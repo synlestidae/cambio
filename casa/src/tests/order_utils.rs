@@ -15,8 +15,6 @@ pub fn get_user(email: &str) -> domain::User {
 
 pub fn quick_order(buyer: &str, seller: &str, buy_szabo: u64, sell_money: u32, sell_szabo: u64, buy_money: u32) -> (domain::Order, domain::Order) {
     // create the user first
-    //let mut user1 = domain::User::new_register(buyer, "excellent123".to_owned());
-    //let mut user2 = domain::User::new_register(seller, "dohnut123".to_owned());
     let mut user_service = services::UserService::new(get_db_helper(), "/Users/mate/work/cambio/eth_test/data/geth.ipc");
 
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
@@ -75,4 +73,9 @@ pub fn quick_credit(who: &str, how_much: u32) {
     };
 
     let payment = payment_repo.create(&user_payment).unwrap();
+}
+
+
+pub fn quick_credit_szabo(who: &str, how_much: u64) {
+    unimplemented!()
 }

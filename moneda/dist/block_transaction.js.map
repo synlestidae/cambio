@@ -1,0 +1,1 @@
+{"version":3,"file":"block_transaction.js","sourceRoot":"","sources":["../block_transaction.ts"],"names":[],"mappings":";;AAEA;IAII,YAAY,cAAmB,EAAE,WAAmB;QAChD,IAAI,CAAC,cAAc,GAAG,cAAc,CAAC;QACrC,IAAI,CAAC,WAAW,GAAG,WAAW,CAAC;IACnC,CAAC;IAED,kBAAkB,CAAC,eAAgC;QAC/C,MAAM,IAAI,KAAK,CAAC,kBAAkB,CAAC,CAAC;IACxC,CAAC;CACJ;AAZD,4CAYC"}

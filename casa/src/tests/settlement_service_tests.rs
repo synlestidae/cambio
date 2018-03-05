@@ -31,3 +31,28 @@ fn refuses_settlement_no_eth_balance() {
 
     assert!(result.is_err());
 }
+
+
+#[test]
+fn completes_settlement_exact_balance() {
+    let mut settlement_service = 
+        services::SettlementService::new(get_db_helper(), "/Users/mate/work/cambio/eth_test/data/geth.ipc");
+    let (order1, order2) = 
+        quick_order("farsnworth@planetexpress.com", "hermes@jamaica.com", 1000000, 200*100, 100000, 200 * 100);
+    quick_credit("farsnworth@planetexpress.com", 200 * 100);
+    quick_credit_szabo("hermes@jamaica.com", 1000000 + 21);
+    let hermes = get_user("hermes@jamaica.com");
+
+    let mut settlement = settlement_service
+        .create_settlement(hermes.id.unwrap(), &order1, &order2)
+        .unwrap();
+
+    assert_eq!(settlement.settlement_status, domain::SettlementStatus::Settling);
+
+    let result = settlement_service.begin_eth_transfer(settlement.id.unwrap(),
+        "881upr983ucn982qr2349t9y34%tp9q83tup983q5",
+        "dohnut123".to_owned(),
+        21000000000000);
+
+    assert!(result.is_ok());
+}
