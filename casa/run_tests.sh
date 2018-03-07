@@ -14,6 +14,10 @@ source run_eth.sh &
 
 trap clean_up EXIT
 
+cd ../eth_test/
+npm install
+cd -
+
 echo "CREATE DATABASE test_database_only" | psql
 cd sql/
 psql test_database_only < all.sql

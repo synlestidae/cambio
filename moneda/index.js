@@ -13,43 +13,25 @@ let web3 = new Web3(new Web3.providers.HttpProvider(host));
 
 ethTransaction.fromAddress = fromAddress;
 ethTransaction.toAddress = toAddress;
-ethTransaction.value = web3.utils.toWei(String(value), 'ether');
+ethTransaction.value = value;
 
 // we control the rest
 ethTransaction.nonce = 0;
-ethTransaction.gasLimit = '21000'; //transaction.gasLimit;
+ethTransaction.gasLimit = '0xFFFF'; 
 ethTransaction.data = '0x0';
-ethTransaction.gasPrice = web3.utils.toWei(String('4000000000'), 'wei');//web3.eth.gasPrice;
+ethTransaction.gasPrice = '0x40000000000';
+ethTransaction.gas = '0xF000';
 
-var feeCost = ethTransaction.getUpfrontCost();//'0x5208';//String(21000);//;
-ethTransaction.gas = '21000';//feeCost;
 ethTransaction.sign(new Buffer(privateKey, 'hex'));
-
-console.log('gas go', ethTransaction.gas);
-
-web3.eth.getBlock(0, function(err, result) {
-    if (err) {
-        console.error('Error:', err);
-    } else {
-        console.log('The block', result);
-    }
-});
-
-web3.eth.getBalance(fromAddress, function(err, result) {
-    if (err) {
-        console.error(err);
-    } else {
-        console.log('Balance:', result);
-    }
-});
 
 // now send baby
 let serialisedTx = ethTransaction.serialize().toString('hex');
 web3.eth.sendSignedTransaction('0x' + serialisedTx, function(err, result) {
     if (err) {
-        console.log(err);
+        console.error('Error:', err);
+        process.exit(1);
     } else {
-        console.log(result);
+        console.log('Success:', result);
+        process.exit(0);
     }
 });
-

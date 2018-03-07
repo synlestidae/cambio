@@ -11,6 +11,4 @@ rm -rf data/
 echo "Creating genesis block"
 geth --identity “LocalTestNode” --rpc --rpcport 8080 --rpccorsdomain “*” --datadir data/ --port 30303 --nodiscover --rpcapi db,eth,net,web3,personal --networkid 1999 --maxpeers 0 --verbosity 6 init CustomGenesis.json 2>&1 /dev/null/
 echo "Starting geth"
-geth --identity “LocalTestNode” --rpc --rpcport 8080  --datadir data/ --port 30303 --nodiscover --rpcapi="db,eth,net,web3,personal,web3" --gasprice 4000000000 -networkid 1999 --maxpeers 0 2>&1 /dev/null/
-
-#--mine --etherbase '0x9f23fedfa2ce3a321f20f6a95d0c2cbabb5876dd' 
+geth --identity “LocalTestNode” --rpc --rpcport 8080  --datadir data/ --port 30303 --nodiscover --rpcapi="db,eth,net,web3,personal,web3" --gasprice 4000000000 -networkid 1999 --maxpeers 0 --mine --etherbase '0xA990F82d33Fd19C3872dc12c588A66224b9330A6' > /dev/null 2>&1 
