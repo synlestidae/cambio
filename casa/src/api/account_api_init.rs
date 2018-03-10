@@ -15,6 +15,14 @@ pub struct AccountApiInit<T: PostgresHelper> {
     helper: T
 }
 
+impl<T: PostgresHelper> AccountApiInit<T> {
+    pub fn new(helper: T) -> Self {
+        Self {
+            helper: helper
+        }
+    }
+}
+
 pub fn get_session_token(cookie_header: &Cookie) -> Option<String> {
     for cookie in cookie_header.0.iter() {
         let cookie_bits: Vec<String> = cookie.clone().split("=").map(|s| s.to_owned()).collect();
