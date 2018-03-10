@@ -54,7 +54,6 @@ use iron::status;
 use iron::headers::AccessControlAllowOrigin;
 use persistent::Read;
 use router::Router;
-use api::ApiInit;
 use bcrypt::{DEFAULT_COST, hash, verify};
 use postgres::{Connection, TlsMode};
 use domain::{User, Order, Session};

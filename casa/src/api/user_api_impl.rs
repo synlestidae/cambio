@@ -21,6 +21,7 @@ impl<C: PostgresHelper> UserApi<C> {
 }
 
 impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
+    #[api_route("/users/register/")]
     fn put_register(&mut self, request: &mut Request) -> Response {
         debug!("Parsing request body");
         let registration: Registration = match get_api_obj(request) {
