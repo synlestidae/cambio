@@ -38,9 +38,9 @@ fn completes_settlement_exact_balance() {
     let mut settlement_service = 
         services::SettlementService::new(get_db_helper(), "/Users/mate/work/cambio/eth_test/data/geth.ipc");
     let (order1, order2) = 
-        quick_order("farsnworth@planetexpress.com", "hermes@jamaica.com", 1000000, 200*100, 100000, 200 * 100);
+        quick_order("farsnworth@planetexpress.com", "hermes@jamaica.com", 1000000, 200 * 100, 1000000, 200 * 100);
     quick_credit("farsnworth@planetexpress.com", 200 * 100);
-    quick_credit_szabo("hermes@jamaica.com", 1000000 + 21);
+    quick_credit_szabo("hermes@jamaica.com", 3000000);
     let hermes = get_user("hermes@jamaica.com");
 
     let mut settlement = settlement_service
@@ -54,5 +54,5 @@ fn completes_settlement_exact_balance() {
         "dohnut123".to_owned(),
         21000000000000);
 
-    assert!(result.is_ok());
+    result.unwrap();
 }

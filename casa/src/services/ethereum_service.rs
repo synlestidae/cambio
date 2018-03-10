@@ -59,20 +59,18 @@ impl<T: PostgresHelper> EthereumService<T> {
         let block = try!(eth.block_number().wait());
         let confirmations = block.low_u64() + BLOCK_CONFIRMATIONS;
         let gas = U256::from(21000);
+        let value = U256::from(amount_wei) + gas_price_wei.full_mul(U256::from(21000)).into();
+        println!("Balance needs to be at least {}", value.low_u64());
         let transaction_req = TransactionRequest {
            from: source_account.address,
            to: Some(destination_address),
            gas: Some(gas),
            gas_price: Some(gas_price_wei),
-           value: Some(U256::from(amount_wei)),
+           value: Some(value),
            data: None, 
            nonce: None,
            condition: Some(web3::types::TransactionCondition::Block(confirmations))
         };
-        let gas_wei = try!(eth.gas_price().wait());
-        if gas_wei > U256::from(max_cost_wei) {
-            panic!("Need to put an error here");
-        }
         let account_unlocked = try!(personal.unlock_account(source_account.address, &password, None).wait());
         if !account_unlocked {
             let mut err = CambioError::shouldnt_happen("Failed to get your Ethereum account. Try again.", "Unlocking account failed.");
