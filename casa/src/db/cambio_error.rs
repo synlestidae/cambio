@@ -8,7 +8,7 @@ use postgres;
 use bcrypt;
 use r2d2;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CambioError {
     pub user_message: String,
     pub system_message: String,

@@ -98,20 +98,21 @@ impl <T: db::PostgresHelper> repository::RepoDelete for SessionRepository<T> {
 
 const SELECT_BY_EMAIL: &'static str = "SELECT user_session.*, user_session.id AS session_id
     FROM user_session
-    JOIN session_info ON session_info.session_info_id ON users_session.id
+    JOIN session_info ON session_info.session_info_id = users_session.id
     JOIN users ON users.id = user_session.user_id
         WHERE users.email_address = $1 AND 
         (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
 
-const SELECT_BY_ID: &'static str = "SELECT *, user_sessoin.id AS session_id
+const SELECT_BY_ID: &'static str = "
+    SELECT *, user_sessoin.id AS session_id
     FROM user_session
-    JOIN session_info ON session_info.session_info_id ON users_session.id
+    JOIN session_info ON session_info.session_info_id = users_session.id
     WHERE user_session.id = $1 AND 
         (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
 
 const SELECT_BY_TOKEN: &'static str = "SELECT *, user_sessoin.id AS session_id
     FROM user_session
-    JOIN session_info ON session_info.session_info_id ON users_session.id
+    JOIN session_info ON session_info.session_info_id = users_session.id
     WHERE session_info.session_token = $1 AND 
         (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
 

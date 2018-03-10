@@ -2,9 +2,10 @@ import {Session} from './session';
 
 export class Api {
     session: Session|null = null;
+    baseUrl = "http://localhost:3000";
 
     asyncLogInUser(email_address: string, password: string): Promise<Session> {
-        let login_promise = this.makeRequest('http://localhost:3000/users/log_in/', 'POST', {
+        let login_promise = this.makeRequest('/users/log_in/', 'POST', {
             email_address: email_address,
             password: password
         });
@@ -22,7 +23,19 @@ export class Api {
             });
     }
 
+    public asyncRegisterUser(email_address: string, password: string): Promise<Session> {
+        let that = this;
+
+        return this.makeRequest('/users/register/', 'POST', {
+            email_address: email_address,
+            password: password
+        }).then(() => that.asyncLogInUser(email_address, password));
+    }
+
     private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
+        let urlObj = new URL(this.baseUrl);
+        urlObj.pathname = url;
+        url = urlObj.toString();
         let headers = {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json'

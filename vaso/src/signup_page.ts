@@ -17,14 +17,20 @@ const template: string =
               <label for="inputPassword" class="sr-only">Password</label>
               <input type="password" id="inputPassword" class="form-control" v-model="password" placeholder="Password" required="">
             </div>
-            <div class="form-row">
+            <div class="form-row" v-if="!signupMode">
               <button class="btn btn-lg btn-primary btn-block" type="submit" v-on:click.prevent="doLogIn()">Sign in</button>
+            </div>
+            <div class="form-row" v-if="signupMode">
+              <button class="btn btn-lg btn-primary btn-block" type="submit" v-on:click.prevent="doSignup()">Create account</button>
             </div>
             <div class="form-row error-text" v-if="appState.loginPage.loginState === 'LogInFailed'">
                 <em>Logging in failed. Check your email address and password and try again.</em>
             </div>
-            <div class="form-row">
-              Don't have an account? <a href="javascript: void">Sign up</a> 
+            <div class="form-row" v-if="!signupMode">
+              Don't have an account? <a href="javascript: void" v-on:click="changeToSignup()">Create an account.</a>.
+            </div>
+            <div class="form-row" v-if="signupMode">
+              <a href="javascript: void" v-on:click="changeToLogin()">I already have an account.</a> 
             </div>
           </form>
       </div>`;
@@ -45,6 +51,7 @@ export class SignupPage extends Vue {
     emailAddress: string;
     password: string;
     appState: AppState;
+    signupMode: boolean = false;
 
     public created(thing: any):void {
         this.appState = AppState.getGlobalState();
@@ -56,6 +63,10 @@ export class SignupPage extends Vue {
         this.appState.log_in(this.emailAddress, this.password);
     }
 
+    doSignup(): void {
+        this.appState.signUp(this.emailAddress, this.password);
+    }
+
     data() {
         this.appState = AppState.getGlobalState();
         return {
@@ -63,5 +74,13 @@ export class SignupPage extends Vue {
             password: this.password,
             appState: this.appState
         };
+    }
+
+    changeToSignup() {
+        this.signupMode = true;
+    }
+
+    changeToLogin() {
+        this.signupMode = false;
     }
 }

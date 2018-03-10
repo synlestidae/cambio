@@ -59,9 +59,14 @@ impl<T: PostgresHelper> UserService<T> {
             owner_id: None
         };
 
+        info!("Creating user {}", user.email_address);
         user = try!(self.user_repository.create(&user));
+        info!("Creating ethereum account for {}", user.email_address);
         let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
         let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
+        info!("User {} has eth address ethereum account {}", 
+              user.email_address,
+              new_eth_account.address);
         Ok(user)
     }
 
@@ -70,17 +75,20 @@ impl<T: PostgresHelper> UserService<T> {
         let query = repository::UserClause::EmailAddress(email_address.to_owned());
         let user_option = try!(self.user_repository.read(&query)).pop();
         if user_option.is_none() {
+            info!("User {} does not exist", email_address);
             return Err(CambioError::not_found_search("Could not account for that email", 
                 "User repository returned None for User"));
         }
         let user = user_option.unwrap();
         if !user.hash_matches_password(&password) {
+            info!("Hash does not match password");
             return Err(CambioError::invalid_password());
         }
 
         drop(password);
 
         let mut session = Session::new(email_address, SESSION_TIME_MILLISECONDS);
+        info!("Creating a session");
         let session = try!(self.session_repository.create(&session));
         Ok(session)
     }

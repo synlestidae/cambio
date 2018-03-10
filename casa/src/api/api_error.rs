@@ -6,11 +6,14 @@ use serde_json;
 use std::convert::Into;
 use std::error::Error;
 use std::fmt;
+use db;
+use db::CambioError;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiError {
     desc: String,
     error_type: ErrorType,
+    error: Option<db::CambioError>
 }
 
 impl fmt::Display for ApiError {
@@ -25,6 +28,15 @@ impl ApiError {
         ApiError {
             desc: description,
             error_type: err_type,
+            error: None
+        }
+    }
+
+    pub fn cambio_error(description: String, err_type: ErrorType, cambio_err: CambioError) -> Self {
+        ApiError {
+            desc: description,
+            error_type: err_type,
+            error: Some(cambio_err)
         }
     }
 
@@ -80,6 +92,7 @@ impl Into<Response> for ApiError {
         let status: Status = self.error_type.into();
         let response_json = serde_json::to_string(&self).unwrap();
         let content_type = "application/json".parse::<Mime>().unwrap();
+        println!("Bad boy! {}", response_json);
         iron::Response::with((iron::status::BadRequest, response_json, content_type))
     }
 }

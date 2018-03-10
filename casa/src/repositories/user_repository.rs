@@ -32,6 +32,7 @@ impl<T: db::PostgresHelper> repository::RepoRead for UserRepository<T> {
     type Clause = repository::UserClause;
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
+        debug!("Getting user using clause {:?}", clause);
         match clause {
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
             &repository::UserClause::EmailAddress(ref email_address) => self.db_helper.query(SELECT_BY_EMAIL,

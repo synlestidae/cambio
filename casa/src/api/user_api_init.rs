@@ -45,7 +45,7 @@ where
         let a2 = self.web3_address.to_owned();
         let a3 = self.web3_address.to_owned();
 
-        router.put(
+        router.post(
             "/users/register/",
             move |r: &mut Request| {
                 let this_helper_ref: &T = register_helper.borrow();

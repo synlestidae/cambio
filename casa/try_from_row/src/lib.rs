@@ -50,7 +50,6 @@ fn from_row_string(source: String) -> TokenStream {
                     {}
                 }}
             }}", struct_name, body_string, struct_declaration);
-            //panic!("Poo poo pee pee: {}", impl_string);
             let token_stream = TokenStream::from_str(&impl_string);
             token_stream.unwrap()
         },

@@ -3,7 +3,7 @@ import {Api} from './api';
 
 export type CurrentPage = 'LogIn' | 'Home' | 'MyAccount';
 
-export type LoginState = 'NotLoggedIn' | 'LoggingIn' | 'LogInFailed';
+export type LoginState = 'NotLoggedIn' | 'LoggingIn' | 'LogInFailed' | 'RegistrationFailed';
 
 export abstract class Page {
 }
@@ -44,6 +44,17 @@ export class AppState {
             })
             .catch((e: any) => {
                 that.loginPage.loginState = 'LogInFailed'
+            })
+    }
+
+    public signUp(username: string, password: string) {
+        let that = this;
+        this.api.asyncRegisterUser(username, password)
+            .then((e: any) => {
+                that.changePage('MyAccount');
+            })
+            .catch((e: any) => {
+                that.loginPage.loginState = 'RegistrationFailed';
             })
     }
 

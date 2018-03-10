@@ -1,4 +1,4 @@
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum ErrorReccomendation {
     TryAgainNow,
     TryAgainLater,

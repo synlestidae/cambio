@@ -1,4 +1,4 @@
-use api::{Registration, Profile, ApiResult, ApiError, LogIn, UserApiTrait, get_api_obj};
+use api::{Registration, Profile, ApiResult, ErrorType, ApiError, LogIn, UserApiTrait, get_api_obj};
 use iron::{Request, Response};
 use db::{ConnectionSource, PostgresHelper};
 use services::UserService;
@@ -43,11 +43,16 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
         const GENERIC_FAIL_MSG: &str = "Failed to register user";
 
         match register_result {
-            Err(error) => ApiError::unknown(GENERIC_FAIL_MSG).into(),
-            Ok(user) => {
-                let response_json = serde_json::to_string(&user).unwrap();
+            Ok(result) => {
+                let response_json = serde_json::to_string(&result).unwrap();
                 let content_type = "application/json".parse::<Mime>().unwrap();
                 iron::Response::with((iron::status::Ok, response_json, content_type))
+            },
+            Err(cambio_err) => {
+                let err = ApiError::cambio_error("Failed to register user.".to_owned(), 
+                    ErrorType::Unknown,
+                    cambio_err);
+                err.into()
             }
         }
     }
@@ -61,13 +66,19 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
             &log_in.email_address,
             log_in.password,
         );
+
         match log_in_result {
-            Ok(session) => {
-                let response_json = serde_json::to_string(&session).unwrap();
+            Ok(result) => {
+                let response_json = serde_json::to_string(&result).unwrap();
                 let content_type = "application/json".parse::<Mime>().unwrap();
                 iron::Response::with((iron::status::Ok, response_json, content_type))
             },
-            Err(error) => ApiError::unknown("Could not log you in").into(),
+            Err(cambio_err) => {
+                let err = ApiError::cambio_error("Failed to log you in.".to_owned(), 
+                    ErrorType::Unknown,
+                    cambio_err);
+                err.into()
+            }
         }
     }
 
