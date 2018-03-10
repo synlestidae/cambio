@@ -1,6 +1,6 @@
 use api::{AccountApiTrait, ApiResult, ApiError, ErrorType};
 use domain::{Account, Id, Transaction};
-use db::{ConnectionSource, PostgresHelper};
+use db::{ConnectionSource, PostgresHelper, CambioError};
 use repositories::{AccountRepository, SessionRepository, UserRepository};
 use repository;
 use services::AccountService;
@@ -42,12 +42,7 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
     fn get_accounts(&mut self, email_address: &str, session_token: &str) 
         -> ApiResult<Vec<Account>> {
         let clause = repository::UserClause::EmailAddress(email_address.to_owned());
-        //let user = try!(self.user_repository.read(&clause)).pop().unwrap();
         let accounts = try!(self.account_repo.read(&clause));
-        /*let owner_id = match user.owner_id {
-            Some(owner_id) => owner_id,
-            None => unimplemented!()
-        };*/
         let session = try!(self.session_repo.read(&clause)).pop().unwrap();
         if session.email_address.unwrap() == email_address {
             let visible_accounts = accounts.into_iter().filter(|a| a.is_user_visible()).collect();
@@ -57,18 +52,41 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
         }
     }
 
-    fn get_account(&mut self, account_id: &Id, session_token: &str) 
+    fn get_account(&mut self, account_id: Id, session_token: &str) 
         -> ApiResult<Account> {
-        unimplemented!()
+        let clause = repository::UserClause::Id(account_id);
+        let mut accounts = try!(self.account_repo.read(&clause));
+        let session = try!(self.session_repo.read(&clause)).pop().unwrap();
+        match accounts.pop() {
+            Some(account) => {
+                let owner_user_id = account.owner_user_id.unwrap();
+                let user_clause = repository::UserClause::Id(owner_user_id);
+                let account_user = try!(self.user_repo.read(&user_clause)).pop().unwrap();
+                if session.email_address != Some(account_user.email_address) {
+                    unimplemented!()
+                }
+                Ok(account)
+            }, 
+            None => {
+                Err(ApiError::not_found("Account"))
+            }
+        }
     }
 
-    fn get_transactions(&mut self, account_id: &Id, session_token: &str) 
+    fn get_transactions(&mut self, account_id: Id, session_token: &str) 
         -> ApiResult<Vec<Transaction>> {
-        unimplemented!()
+        let account = try!(self.get_account(account_id, session_token));
+        let statement = try!(self.account_service.get_latest_statement(account_id));
+        Ok(statement.transactions)
     }
 
-    fn get_transaction(&mut self, account_id: &Id, transaction_id: &Id, session_token: &str) 
+    fn get_transaction(&mut self, account_id: Id, transaction_id: Id, session_token: &str) 
         -> ApiResult<Transaction> {
-        unimplemented!()
+        let transactions = try!(self.get_transactions(account_id, session_token));
+        let mut txs: Vec<Transaction> = transactions.into_iter().filter(|a| a.id == transaction_id).collect();
+        match txs.pop() {
+            Some(tx) => Ok(tx),
+            None => Err(ApiError::not_found("Transaction"))
+        }
     }
 }

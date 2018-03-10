@@ -75,6 +75,10 @@ impl ApiError {
     pub fn internal(description: &str) -> Self {
         Self::new(description.to_owned(), ErrorType::InternalError)
     }
+
+    pub fn not_found(object_name: &str) -> Self {
+        Self::new(format!("{} not found.", object_name), ErrorType::NotFound)
+    }
 }
 
 impl Error for ApiError {
