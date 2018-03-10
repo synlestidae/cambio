@@ -3,7 +3,7 @@ use hyper::mime::Mime;
 use iron::Response;
 use iron;
 use serde_json;
-use std::convert::Into;
+use std::convert::{From, Into};
 use std::error::Error;
 use std::fmt;
 use db;
@@ -126,5 +126,11 @@ impl Into<Status> for ErrorType {
             ErrorType::NotLoggedIn => Status::Unauthorized,
             ErrorType::NotFound=> Status::NotFound
         }
+    }
+}
+
+impl From<CambioError> for ApiError {
+    fn from(err: CambioError) -> Self {
+        ApiError::cambio_error("An error occurred.".to_owned(), ErrorType::Unknown, err)
     }
 }

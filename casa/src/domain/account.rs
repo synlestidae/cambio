@@ -19,6 +19,13 @@ pub struct Account {
     pub account_role: AccountRole,
 }
 
+impl Account {
+    pub fn is_user_visible(&self) -> bool {
+        return self.account_business_type == AccountBusinessType::UserCashWallet && 
+            self.account_role == AccountRole::Primary
+    }
+}
+
 /*struct AccountRow {
     id: Id, 
     owner_id: Id, 
