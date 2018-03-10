@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use services::UserService;
 use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
-use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction};
+use domain::{Order, OrderSettlement, Id, EthAccount, EthereumOutboundTransaction, EthTransferRequest};
 use hex;
 use repositories;
 use repository::*;
@@ -42,52 +42,74 @@ impl<T: PostgresHelper> EthereumService<T> {
         Ok(EthAccount::new(&address, account_password, owner_id))
     }
 
-    pub fn register_transaction(&mut self, 
-        source_account: &EthAccount, 
-        password: String,
-        amount_wei: u64,
-        max_cost_wei: u64,
-        destination_address: H160,
-        unique_id: &str) -> Result<EthereumOutboundTransaction, CambioError> {
-
+    fn get_request(&mut self, transfer: &EthTransferRequest) 
+        -> Result<TransactionRequest, CambioError> {
         const BLOCK_CONFIRMATIONS: u64 = 4;
+        const GAS_TRANSFER: u64 = 21000;
 
         let (_eloop, web3) = try!(self.get_web3_inst());
         let personal = web3.personal();
         let eth = web3.eth();
+
         let gas_price_wei = try!(eth.gas_price().wait());
         let block = try!(eth.block_number().wait());
         let confirmations = block.low_u64() + BLOCK_CONFIRMATIONS;
-        let gas = U256::from(21000);
-        let value = U256::from(amount_wei) + gas_price_wei.full_mul(U256::from(21000)).into();
-        println!("Balance needs to be at least {}", value.low_u64());
-        let transaction_req = TransactionRequest {
-           from: source_account.address,
-           to: Some(destination_address),
+        let gas_cost: U256 = gas_price_wei.full_mul(U256::from(GAS_TRANSFER)).into();
+        if (gas_cost > transfer.max_fee) {
+            return Err(CambioError::over_user_limit("Gas price too high for your maximum fee.", 
+                "Gas price too high: gas_price_wei * 21000 > max_fee"));
+        }
+        let gas = U256::from(GAS_TRANSFER);
+        Ok(TransactionRequest {
+           from: transfer.from_address,
+           to: Some(transfer.to_address),
            gas: Some(gas),
            gas_price: Some(gas_price_wei),
-           value: Some(value),
+           value: Some(transfer.value_wei),
            data: None, 
            nonce: None,
            condition: Some(web3::types::TransactionCondition::Block(confirmations))
-        };
-        let account_unlocked = try!(personal.unlock_account(source_account.address, &password, None).wait());
-        if !account_unlocked {
-            let mut err = CambioError::shouldnt_happen("Failed to get your Ethereum account. Try again.", "Unlocking account failed.");
-            err.reccomendation = ErrorReccomendation::TryAgainNow;
-            return Err(err);
-        }
-        let hash = try!(eth.send_transaction(transaction_req).wait());
+        })
+    }
+
+    pub fn send_transaction(&mut self, request: TransactionRequest) 
+        -> Result<web3::types::Transaction, CambioError> {
+        let (_eloop, web3) = try!(self.get_web3_inst());
+        let eth = web3.eth();
+
+        let hash = try!(eth.send_transaction(request).wait());
         let transaction = try!(eth.transaction(web3::types::TransactionId::Hash(hash)).wait());
-        if let Some(eth_transaction) = transaction {
-            Ok(EthereumOutboundTransaction {
-                id: None,
-                eth_transaction: eth_transaction,
-                unique_id: unique_id.to_string()
-            })    
-        } else {
-            Err(CambioError::not_found_search("Could not find transaction on the block", "eth.transaction returned None"))
+        let not_found_err = CambioError::not_found_search("Could not find transaction on the block", 
+            "eth.transaction returned None");
+
+        match transaction {
+            Some(tx) => Ok(tx),
+            None => Err(not_found_err)
         }
+    }
+
+    pub fn register_transaction(&mut self, 
+        source_account: &EthAccount, 
+        password: String,
+        dst_account: &EthAccount,
+        value_wei: U256,
+        max_fee: U256,
+        unique_id: &str) -> Result<EthereumOutboundTransaction, CambioError> {
+        let (_eloop, web3) = try!(self.get_web3_inst());
+        let personal = web3.personal();
+        try!(personal.unlock_account(source_account.address, &password, None).wait());
+
+        let transfer = EthTransferRequest {
+            from_address: source_account.address,
+            to_address: dst_account.address,
+            value_wei: value_wei,
+            max_fee
+        };
+
+        let tx_request = try!(self.get_request(&transfer));
+        let outbound_transaction = try!(self.send_transaction(tx_request));
+
+        unimplemented!()
     }
 
     fn get_web3_inst(&self) -> Result<Web3Pair, CambioError> {

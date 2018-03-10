@@ -106,6 +106,15 @@ impl CambioError {
             reccomendation: ErrorReccomendation::Nothing
         }
     }
+
+    pub fn over_user_limit(user_msg: &str, sys_msg: &str) -> Self {
+        Self {
+            user_message: user_msg.to_owned(),
+            system_message: sys_msg.to_owned(),
+            kind: ErrorKind::OverUserLimit,
+            reccomendation: ErrorReccomendation::CheckInput
+        }
+    }
 }
 
 impl error::Error for CambioError {

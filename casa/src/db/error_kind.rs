@@ -13,5 +13,6 @@ pub enum ErrorKind {
     NotFound,
     UnexpectedState,
     UnfairOperation,
-    StateChangeNotPermitted
+    StateChangeNotPermitted,
+    OverUserLimit
 }

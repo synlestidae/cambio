@@ -5,6 +5,7 @@ use repositories;
 use repository::*;
 use repository;
 use services;
+use web3::types::U256;
 
 pub struct SettlementService<T: db::PostgresHelper> {
     settlement_repo: repositories::SettlementRepository<T>,
@@ -54,12 +55,12 @@ impl<T: db::PostgresHelper> SettlementService<T> {
             _ => return Err(db::CambioError::format_obj("Buying order must be for Szabo", 
                 "Error with settlement: unsupported selling type."))
         };
-        let wei = (szabo as u64) * 1000000000000;
+        let wei = U256::from((szabo as u64) * 1000000000000);
         self.eth_service.register_transaction(&source_account, 
             starting_user_password,
+            &dest_account,
             wei,
-            max_cost_wei,
-            dest_account.address,
+            U256::from(max_cost_wei),
             unique_id)
     }
 
