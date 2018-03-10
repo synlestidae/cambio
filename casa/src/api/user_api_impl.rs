@@ -1,5 +1,6 @@
 use api::{Registration, Profile, ApiResult, ErrorType, ApiError, LogIn, UserApiTrait, get_api_obj};
 use iron::{Request, Response};
+use iron::headers::SetCookie;
 use db::{ConnectionSource, PostgresHelper};
 use services::UserService;
 use domain::{User, Session};
@@ -71,7 +72,11 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
             Ok(result) => {
                 let response_json = serde_json::to_string(&result).unwrap();
                 let content_type = "application/json".parse::<Mime>().unwrap();
-                iron::Response::with((iron::status::Ok, response_json, content_type))
+                let mut response = iron::Response::with((iron::status::Ok, response_json, content_type));
+                response.headers.set(SetCookie(vec![
+                    format!("session_token={}", result.session_token)
+                ]));
+                response
             },
             Err(cambio_err) => {
                 let err = ApiError::cambio_error("Failed to log you in.".to_owned(), 

@@ -108,14 +108,16 @@ const SELECT_BY_EMAIL: &'static str = "
 const SELECT_BY_ID: &'static str = "
     SELECT user_session.id AS session_id, session_info.*, users.email_address
     FROM user_session
-    JOIN session_info ON session_info.session_info_id = user_session.id
+    JOIN session_info ON session_info.id = user_session.session_info_id
+    JOIN users ON user_session.user_id = users.id
     WHERE user_session.id = $1 AND 
         (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
 
-const SELECT_BY_TOKEN: &'static str = "SELECT *, user_sessoin.id AS session_id
+const SELECT_BY_TOKEN: &'static str = "
     SELECT user_session.id AS session_id, session_info.*, users.email_address
     FROM user_session
-    JOIN session_info ON session_info.session_info_id = user_session.id
+    JOIN session_info ON session_info.id = user_session.session_info_id
+    JOIN users ON user_session.user_id = users.id
     WHERE session_info.session_token = $1 AND 
         (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
 
@@ -124,5 +126,6 @@ const ACTIVATE: &'static str = "SELECT activate_user_session($1)";
 const UPDATE: &'static str = "UPDATE session_info SET 
     session_token=$2, started_at=$3, ttl_milliseconds=$4
     FROM user_session 
+    JOIN users ON user_session.user_id = users.id
     WHERE user_session=$1 AND 
         user_session.session_info_id = session_info.id";
