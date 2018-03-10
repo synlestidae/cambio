@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 import {SignupPage} from './signup_page';
+import {AccountPage} from './account_page';
 import {AppState} from './app_state';
 import {Api} from './api';
 
@@ -24,7 +25,8 @@ Component.registerHooks(['created']);
         currentPage: String
     },
     components: {
-        'signup-page': SignupPage 
+        'signup-page': SignupPage,
+        'account-page': AccountPage 
     },
     props: []
 })

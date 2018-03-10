@@ -102,6 +102,8 @@ pub enum ErrorType {
     DatabaseDriver,
     NotLoggedIn,
     InvalidLogin,
+    Unauthorised,
+    NotFound,
     BadFormat,
     MissingFieldOrParam,
     QueryResultFormat,
@@ -120,6 +122,9 @@ impl Into<Status> for ErrorType {
             ErrorType::QueryResultFormat => Status::InternalServerError,
             ErrorType::InternalError => Status::InternalServerError,
             ErrorType::Unknown => Status::InternalServerError,
+            ErrorType::Unauthorised=> Status::Unauthorized,
+            ErrorType::NotLoggedIn => Status::Unauthorized,
+            ErrorType::NotFound=> Status::NotFound
         }
     }
 }

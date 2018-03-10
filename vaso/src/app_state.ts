@@ -1,5 +1,6 @@
 import {Account} from './domain/account';
 import {Api} from './api';
+import {getCookie, setCookie} from './util/cookie';
 
 export type CurrentPage = 'LogIn' | 'Home' | 'MyAccount';
 
@@ -29,6 +30,11 @@ export class AppState {
         this.currentPage = 'LogIn';
         this.loginPage = new LogInPage();
         this.api = new Api();
+        let token = getCookie('session_token');
+        console.log('token!', token);
+        if (token) {
+            this.currentPage = 'MyAccount';
+        }
     }
    
 
@@ -41,6 +47,7 @@ export class AppState {
         this.api.asyncLogInUser(username, password)
             .then((e: any) => {
                 that.changePage('MyAccount')
+                setCookie('session_token', e.session_token);
             })
             .catch((e: any) => {
                 that.loginPage.loginState = 'LogInFailed'
