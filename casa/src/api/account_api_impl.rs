@@ -5,7 +5,6 @@ use repositories::{AccountRepository, SessionRepository, UserRepository};
 use repository;
 use services::AccountService;
 use repository::RepoRead;
-use hyper::mime::{Mime};
 
 #[derive(Clone)]
 pub struct AccountApiImpl<C: PostgresHelper> {
