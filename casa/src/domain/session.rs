@@ -14,7 +14,7 @@ pub struct Session {
     pub id: Option<Id>,
     pub session_token: String,
     pub started_at: DateTime<Utc>,
-    pub ttl_milliseconds: i32,
+    pub ttl_milliseconds: i64,
     pub email_address: Option<String>,
     pub session_state: SessionState
 }
@@ -45,7 +45,7 @@ fn random_token_string() -> String {
     token
 }
 
-const SESSION_TIME_MILLISECONDS: i32 = 1000 * 60 * 15;
+const SESSION_TIME_MILLISECONDS: i64 = 1000 * 60 * 15;
 
 /*impl TryFromRow for Session {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError>
