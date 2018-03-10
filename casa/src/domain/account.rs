@@ -3,7 +3,7 @@ use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 use postgres;
 
-#[derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
+#[derive(Debug, Clone, PartialEq, Eq, TryFromRow, Serialize)]
 pub struct Account {
     #[column_id(account_id)]
     pub id: Option<Id>,

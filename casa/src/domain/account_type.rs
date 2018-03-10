@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize, Deserialize)]
 #[postgres(name = "account_type")]
 pub enum AccountType {
     #[postgres(name = "asset")]

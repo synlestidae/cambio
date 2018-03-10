@@ -2,7 +2,7 @@ use std::fmt;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize, Deserialize)]
 #[postgres(name = "account_business_type")]
 pub enum AccountBusinessType {
     #[postgres(name = "user_cash_wallet")]

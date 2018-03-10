@@ -5,6 +5,7 @@ use repositories::{AccountRepository, SessionRepository, UserRepository};
 use repository;
 use services::AccountService;
 use repository::RepoRead;
+use hyper::mime::{Mime};
 
 #[derive(Clone)]
 pub struct AccountApiImpl<C: PostgresHelper> {
@@ -39,17 +40,14 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
 }
 
 impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
-    fn get_accounts(&mut self, email_address: &str, session_token: &str) 
+    fn get_accounts(&mut self, session_token: &str) 
         -> ApiResult<Vec<Account>> {
-        let clause = repository::UserClause::EmailAddress(email_address.to_owned());
-        let accounts = try!(self.account_repo.read(&clause));
+        let clause = repository::UserClause::SessionToken(session_token.to_owned());
         let session = try!(self.session_repo.read(&clause)).pop().unwrap();
-        if session.email_address.unwrap() == email_address {
-            let visible_accounts = accounts.into_iter().filter(|a| a.is_user_visible()).collect();
-            Ok(visible_accounts)
-        } else {
-            unimplemented!()
-        }
+        let email_clause = repository::UserClause::EmailAddress(session.email_address.unwrap());
+        let accounts = try!(self.account_repo.read(&email_clause));
+        let visible_accounts = accounts.into_iter().filter(|a| a.is_user_visible()).collect();
+        Ok(visible_accounts)
     }
 
     fn get_account(&mut self, account_id: Id, session_token: &str) 
