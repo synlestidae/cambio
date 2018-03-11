@@ -25,7 +25,9 @@ impl<T: PostgresHelper> AccountApiInit<T> {
 
 pub fn get_session_token(cookie_header: &Cookie) -> Option<String> {
     for cookie in cookie_header.0.iter() {
+        println!("Cook {:?}", cookie);
         let cookie_bits: Vec<String> = cookie.clone().split("=").map(|s| s.to_owned()).collect();
+        println!("Cookie bits {:?}", cookie_bits);
         if cookie_bits[0] == "session_token" {
             let token = cookie_bits[1].clone();
             return Some(token);
@@ -48,14 +50,19 @@ where
         router.get(
             "/accounts/",
             move |r: &mut Request| {
+                println!("Getting cookies...");
                 let cookies_match: Option<&Cookie> = r.headers.get();
+                println!("Unwrapping cookies. {:?}", cookies_match);
                 let cookies = cookies_match.unwrap();
+                println!("Getting token... {:?}", cookies);
                 let session_token = get_session_token(cookies).unwrap();
                 let this_helper_ref: &T = transaction_helper.borrow();
                 let mut api = AccountApiImpl::new(this_helper_ref.clone());
                 let content_type = "application/json".parse::<Mime>().unwrap();
+                debug!("Getting accounts...");
                 Ok(match api.get_accounts(&session_token) {
                     Ok(accounts) => {
+                        debug!("Got {} accounts", accounts.len());
                         let response_json = serde_json::to_string(&accounts).unwrap();
                         iron::Response::with((iron::status::Ok, response_json, content_type))
                     },

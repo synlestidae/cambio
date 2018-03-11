@@ -74,7 +74,7 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
                 let content_type = "application/json".parse::<Mime>().unwrap();
                 let mut response = iron::Response::with((iron::status::Ok, response_json, content_type));
                 response.headers.set(SetCookie(vec![
-                    format!("session_token={}", result.session_token)
+                    format!("session_token={}; Domain=localhost", result.session_token)
                 ]));
                 response
             },

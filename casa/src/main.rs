@@ -47,7 +47,9 @@ mod api;
 mod services;
 mod repository;
 mod repositories;
+mod cors_middleware;
 
+use cors_middleware::CorsMiddleware;
 use iron::prelude::*;
 use iron::{Iron, Request, Response, IronResult, AfterMiddleware};
 use iron::status;
@@ -62,12 +64,17 @@ use api::ApiError;
 use db::{PostgresHelperImpl, PostgresHelper};
 use std::error::Error;
 use time::PreciseTime;
-use iron_cors::CorsMiddleware;
+//use iron_cors::CorsMiddleware;
 
 fn main() {
+    use std::collections::HashSet;
     use web3::futures::Future;
     env_logger::init().expect("Could not start logger");
-    let middleware = CorsMiddleware::with_allow_any();
+    let mut allowed = HashSet::new();
+    allowed.insert("http://localhost".to_owned());
+    allowed.insert("http://127.0.0.1".to_owned());
+    allowed.insert("http://127.0.0.1:8080".to_owned());
+    let middleware = CorsMiddleware {}; //CorsMiddleware::with_whitelist(allowed);
     let helper =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let mut router = Router::new();
