@@ -1,7 +1,7 @@
 export interface ILogger {
-    info(msg: any);
-    warn(msg: any);
-    error(msg: any);
+    info(msg: any): void;
+    warn(msg: any): void;
+    error(msg: any): void;
 }
 
 export class Logger implements ILogger {

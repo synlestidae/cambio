@@ -47,13 +47,11 @@ export class Api {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json'
         };
-        if (this.session) {
-            headers['Authorization'] = `Bearer ${this.session.session_token}`;
-        }
+        let body: string|null = null;
         let params = {
             method: method,
             headers: headers,
-            body: undefined
+            body: body
         };
 
         if (jsonBody) {
@@ -68,14 +66,12 @@ export class Api {
 
         (<any>params).credentials = 'include';
 
-        return new Promise(function(res: any, rej: any) {
-            fetch(url, params).then(function(response: Response) {
-                if (response.status >= 400) {
-                    rej(response);
-                } else {
-                    res(response);
-                }
-            });
+        return fetch(url, params).then(function(response: Response) {
+            if (response.status >= 400) {
+                return response;
+            } else {
+                throw response;
+            }
         });
     }
 }
