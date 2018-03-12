@@ -79,6 +79,10 @@ impl ApiError {
     pub fn not_found(object_name: &str) -> Self {
         Self::new(format!("{} not found.", object_name), ErrorType::NotFound)
     }
+
+    pub fn unauthorised() -> Self {
+        Self::new(format!("Please log in to access this."), ErrorType::Unauthorised)
+    }
 }
 
 impl Error for ApiError {

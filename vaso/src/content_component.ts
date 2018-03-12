@@ -9,10 +9,10 @@ export type Page = 'LogIn' | 'MyAccount'
 
 const template: string = `
     <div id="main-content">
-      <div class="signup-container" v-if="appState.currentPage === 'LogIn'">
+      <div class="page-container signup-container" v-if="appState.currentPage === 'LogIn'">
         <signup-page></signup-page>
       </div>
-      <div class="account-page-container" v-if="appState.currentPage === 'MyAccount'">
+      <div class="page-container account-page-container" v-if="appState.currentPage === 'MyAccount' && appState.accountPage.accounts.length > 0">
         <account-page></account-page>
       </div>
     </div>`;
@@ -35,17 +35,14 @@ export class ContentComponent extends Vue {
 
     constructor() {
         super();
-        console.log('content', this);
     }
 
     public beforeCreate(): void {
         this.appState = AppState.getGlobalState();
-        console.log('the stae!', this.appState);
     }
 
     data() {
         let state = this.appState;
-        console.log('l\'état!', state);
         return {
             appState: state
         };

@@ -47,12 +47,17 @@ body {
   max-width: 330px;
 }
 
+.page-container {
+    margin-top: 25px;
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
 .signup-container {
     display: flex;
     flex-direction: column; 
     justify-content: center;
     align-items: center;
-    margin-top: 25px;
 }
 
 .form-signin {
@@ -105,4 +110,16 @@ button.btn {
 
 .error-text {
     color: $error-color;
+}
+
+.account-list-item {
+    background-color: $sub-color;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 15px;
+}
+
+.currency-icon {
+    padding: 15px;
+    width: 80px;
 }

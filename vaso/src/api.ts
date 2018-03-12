@@ -1,10 +1,11 @@
 import {Session} from './session';
+import {Account} from './domain/account';
 
 export class Api {
     session: Session|null = null;
     baseUrl = "http://localhost:3000";
 
-    asyncLogInUser(email_address: string, password: string): Promise<Session> {
+    public asyncLogInUser(email_address: string, password: string): Promise<Session> {
         let login_promise = this.makeRequest('/users/log_in/', 'POST', {
             email_address: email_address,
             password: password
@@ -30,6 +31,12 @@ export class Api {
             email_address: email_address,
             password: password
         }).then(() => that.asyncLogInUser(email_address, password));
+    }
+
+    public asyncGetAccounts(): Promise<Account[]> {
+        return this.makeRequest('accounts/', 'GET')
+            .then((r: Response) => r.json())
+            .then((accounts: any) => (<Account[]>accounts));
     }
 
     private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
@@ -58,6 +65,8 @@ export class Api {
             }
             params.body = bodyString;
         }
+
+        (<any>params).credentials = 'include';
 
         return new Promise(function(res: any, rej: any) {
             fetch(url, params).then(function(response: Response) {

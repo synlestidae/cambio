@@ -1,50 +1,34 @@
-const helpers = require('./helpers'),
-  webpackConfig = require('./webpack.config.base'),
-  HtmlWebpackPlugin = require('html-webpack-plugin'),
-  DefinePlugin = require('webpack/lib/DefinePlugin'),
-  env = require('../environment/dev.env');
+module.exports = {
+    entry: "./src/index.tsx",
+    output: {
+        filename: "bundle.js",
+        path: __dirname + "/dist"
+    },
 
-webpackConfig.module.rules = [...webpackConfig.module.rules,
-  {
-    test: /\.scss$/,
-    use: [{
-        loader: 'style-loader'
-      },
-      {
-        loader: 'css-loader'
-      },
-      {
-        loader: 'sass-loader'
-      }
-    ]
-  },
-  {
-    test: /\.(jpg|png|gif|eot|svg|ttf|woff|woff2)$/,
-    loader: 'file-loader'
-  }
-];
+    // Enable sourcemaps for debugging webpack's output.
+    devtool: "source-map",
 
-webpackConfig.plugins = [...webpackConfig.plugins,
-  new HtmlWebpackPlugin({
-    inject: true,
-    template: helpers.root('/src/index.html'),
-    favicon: helpers.root('/src/favicon.ico')
-  }),
-  new DefinePlugin({
-    'process.env': env
-  })
-];
+    resolve: {
+        // Add '.ts' and '.tsx' as resolvable extensions.
+        extensions: [".ts", ".tsx", ".js", ".json"]
+    },
 
-webpackConfig.devServer = {
-  port: 8080,
-  host: 'localhost',
-  historyApiFallback: true,
-  watchOptions: {
-    aggregateTimeout: 300,
-    poll: 1000
-  },
-  contentBase: './src',
-  open: true
+    module: {
+        rules: [
+            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+            { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+
+            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
+        ]
+    },
+
+    // When importing a module whose path matches one of the following, just
+    // assume a corresponding global variable exists and use that instead.
+    // This is important because it allows us to avoid bundling all of our
+    // dependencies, which allows browsers to cache those libraries between builds.
+    externals: {
+        "react": "React",
+        "react-dom": "ReactDOM"
+    },
 };
-
-module.exports = webpackConfig;

@@ -16,12 +16,19 @@ export class LogInPage extends Page {
 }
 
 export class MyAccountPage extends Page {
-    accounts: Account[]
+    api = new Api();
+    accounts: Account[];
+
+    public loadAccounts() {
+        let parent = this;
+        this.api.asyncGetAccounts().then((accounts: Account[]) => parent.accounts = accounts);
+    }
 }
 
 export class AppState {
     public currentPage: CurrentPage;
     public loginPage: LogInPage;
+    public accountPage: MyAccountPage;
 
     private api: Api;
     private static globalState: AppState = new AppState();
@@ -30,11 +37,6 @@ export class AppState {
         this.currentPage = 'LogIn';
         this.loginPage = new LogInPage();
         this.api = new Api();
-        let token = getCookie('session_token');
-        console.log('token!', token);
-        if (token) {
-            this.currentPage = 'MyAccount';
-        }
     }
    
 
@@ -46,7 +48,7 @@ export class AppState {
         let that = this;
         this.api.asyncLogInUser(username, password)
             .then((e: any) => {
-                that.changePage('MyAccount')
+                that.changePage('MyAccount');
                 setCookie('session_token', e.session_token);
             })
             .catch((e: any) => {
@@ -66,6 +68,10 @@ export class AppState {
     }
 
     changePage(page: CurrentPage) {
+        if (page === 'MyAccount') {
+            this.accountPage = new MyAccountPage();
+            this.accountPage.loadAccounts();
+        }
         this.currentPage = page;
     }
 }
