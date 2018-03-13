@@ -2,14 +2,20 @@ import * as React from "react";
 
 export class SignupPage extends React.Component<any, any> {
     constuctor(props: any) {
-        this.state = {
+    }
+
+    componentDidMount() {
+        this.setState({
             emailAddress: '',
             password: '',
             signupMode: false
-        };
+        });
     }
 
-    return() {
+    render() {
+        if (this.state === null) {
+            return null;
+        }
         return (
      <div className="signup-form">
           <form className="form-signin">

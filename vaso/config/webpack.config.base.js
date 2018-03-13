@@ -3,9 +3,7 @@ const helpers = require('./helpers'),
   CopyWebpackPlugin = require('copy-webpack-plugin');
 
 let config = {
-  entry: {
-    'main': helpers.root('/src/main.ts')
-  },
+  entry: helpers.root('src/index.tsx'),
   output: {
     path: helpers.root('/dist'),
     filename: 'js/[name].[hash].js',

@@ -4,6 +4,7 @@ import {ContentComponent} from './content_component';
 
 export function App() {
     return <div>
+        Hi mum!
         <NavbarComponent></NavbarComponent>
         <ContentComponent></ContentComponent>
     </div>;

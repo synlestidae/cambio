@@ -1,119 +1,34 @@
-const glob = require('glob'),
-  path = require('path'),
-  CommonsChunkPlugin = require('webpack/lib/optimize/CommonsChunkPlugin'),
-  UglifyJsPlugin = require('webpack/lib/optimize/UglifyJsPlugin'),
-  HtmlWebpackPlugin = require('html-webpack-plugin'),
-  CompressionPlugin = require('compression-webpack-plugin'),
-  ExtractTextPlugin = require('extract-text-webpack-plugin'),
-  PurifyCSSPlugin = require('purifycss-webpack'),
-  FaviconsWebpackPlugin = require('favicons-webpack-plugin'),
-  autoprefixer = require('autoprefixer'),
-  webpackConfig = require('./webpack.config.base'),
-  helpers = require('./helpers'),
-  DefinePlugin = require('webpack/lib/DefinePlugin'),
-  env = require('../environment/prod.env');
+module.exports = {
+    entry: "./src/index.tsx",
+    output: {
+        filename: "bundle.js",
+        path: __dirname + "/dist"
+    },
 
-const extractSass = new ExtractTextPlugin({
-  filename: 'css/[name].[contenthash].css',
-  disable: process.env.NODE_ENV === 'development'
-});
+    // Enable sourcemaps for debugging webpack's output.
+    devtool: "source-map",
 
-const purifyCss = new PurifyCSSPlugin({
-  paths: glob.sync(path.join(__dirname, '../src/**/*.html')),
-  purifyOptions: {
-    info: true,
-    whitelist: []
-  }
-});
+    resolve: {
+        // Add '.ts' and '.tsx' as resolvable extensions.
+        extensions: [".ts", ".tsx", ".js", ".json"]
+    },
 
-webpackConfig.module.rules = [...webpackConfig.module.rules,
-  {
-    test: /\.scss$/,
-    use: extractSass.extract({
-      use: [{
-          loader: 'css-loader',
-          options: {
-            minimize: true,
-            sourceMap: true,
-            importLoaders: 2
-          }
-        },
-        {
-          loader: 'postcss-loader',
-          options: {
-            plugins: () => [autoprefixer]
-          }
-        },
-        {
-          loader: 'sass-loader',
-          options: {
-            outputStyle: 'expanded',
-            sourceMap: true,
-            sourceMapContents: true
-          }
-        }
-      ],
-      // use style-loader in development
-      fallback: 'style-loader'
-    })
-  },
-  {
-    test: /\.(jpg|png|gif)$/,
-    loader: 'file-loader?name=assets/img/[name].[ext]'
-  },
-  {
-    test: /\.(eot|svg|ttf|woff|woff2)$/,
-    loader: 'file-loader?name=fonts/[name].[ext]'
-  }
-];
+    module: {
+        rules: [
+            // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+            { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
 
-// ensure ts lint fails the build
-webpackConfig.module.rules[0].options = {
-  failOnHint: true
+            // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
+        ]
+    },
+
+    // When importing a module whose path matches one of the following, just
+    // assume a corresponding global variable exists and use that instead.
+    // This is important because it allows us to avoid bundling all of our
+    // dependencies, which allows browsers to cache those libraries between builds.
+    externals: {
+        "react": "React",
+        "react-dom": "ReactDOM"
+    },
 };
-
-webpackConfig.plugins = [...webpackConfig.plugins,
-  new CommonsChunkPlugin({
-    name: 'vendor',
-    minChunks: function(module){
-      return module.context && module.context.indexOf('node_modules') !== -1;
-    }
-  }),
-  new CommonsChunkPlugin({
-    name: 'manifest',
-    minChunks: Infinity
-  }),
-  extractSass,
-  purifyCss,
-  new HtmlWebpackPlugin({
-    inject: true,
-    template: helpers.root('/src/index.html'),
-    favicon: helpers.root('/src/favicon.ico'),
-    minify: {
-      removeComments: true,
-      collapseWhitespace: true,
-      removeRedundantAttributes: true,
-      useShortDoctype: true,
-      removeEmptyAttributes: true,
-      removeStyleLinkTypeAttributes: true,
-      keepClosingSlash: true,
-      minifyJS: true,
-      minifyCSS: true,
-      minifyURLs: true
-    }
-  }),
-  new UglifyJsPlugin({
-    include: /\.js$/,
-    minimize: true
-  }),
-  new CompressionPlugin({
-    asset: '[path].gz[query]',
-    test: /\.js$/
-  }),
-  new DefinePlugin({
-    'process.env': env
-  }),
-  new FaviconsWebpackPlugin(helpers.root('/src/icon.png'))
-];
-
-module.exports = webpackConfig;

@@ -3,13 +3,12 @@ import * as React from "react";
 const links = ['Home', 'Board', 'Buy', 'Sell', 'My account'];
 
 export function NavbarComponent() {
-    let navLinks = links.map((link: string) => (<div className="nav-element clickable">
-        {link}
-      </div>));
+    let navLinks = links.map((link: string, i: number) => (<div key={i} className="nav-element clickable">{link}</div>));
+    console.log('linky bois', navLinks);
     return <div id="top-nav">
       <div className="nav-logo">
         CAMBIO Ltd.
       </div>
-      {{navLinks}}
+      {navLinks}
     </div>;
 }
