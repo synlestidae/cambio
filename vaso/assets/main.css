@@ -1,0 +1,129 @@
+
+/*@import "~bootstrap-sass/assets/stylesheets/_bootstrap.scss";*/
+/*
+    --icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
+    */
+
+:root {
+    --main-color: #294595;
+    --sub-color: #17284F;
+    --error-color: #CA1823;
+}
+
+body {
+  font-family: helvetica;
+  background-color: var(--main-color);
+  color: #294595;
+  margin: 0;
+  color: white;
+}
+
+#top-nav {
+    background-color: var(--sub-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: none;
+}
+
+.nav-element {
+    margin: 10px;
+    border-style: solid;
+    width: 120px;
+    padding: 5px;
+    border-width: 1px;
+}
+
+.nav-logo {
+    margin: 10px;
+    width: 120px;
+    padding: 5px;
+    border-width: 1px;
+    margin-right: 20px;
+}
+
+.main-content {
+    max-width: 720px;
+    padding: 15px;
+}
+
+.form-signin {
+  max-width: 330px;
+}
+
+.page-container {
+    margin-top: 25px;
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+.signup-container {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+}
+
+.form-signin {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+    min-width: 330px;
+}
+
+.form-row {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+button.btn {
+    background-color: var(--sub-color);
+    border-color: var(--sub-color);
+}
+
+a {
+    color: white;
+    background-color: initial;
+    text-decoration: underline;
+}
+
+button.form-control {
+    border-radius: 0;
+}
+
+input[type=text].form-control {
+    border-radius: 0;
+}
+
+input[type=email].form-control {
+    border-radius: 0;
+}
+
+input[type=password].form-control {
+    border-radius: 0;
+}
+
+button.btn {
+    border-radius: 0;
+}
+
+.clickable:hover {
+    cursor: pointer;
+}
+
+.error-text {
+    color: var(--error-color);
+}
+
+.account-list-item {
+    background-color: var(--sub-color);
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 15px;
+}
+
+.currency-icon {
+    padding: 15px;
+    width: 80px;
+}
