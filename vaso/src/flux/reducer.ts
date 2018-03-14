@@ -16,7 +16,7 @@ function reduceLogin(state: AppState, action: Action): AppState {
             case 'LOGIN_AUTH_FAIL': 
                 state.page.loadingState.name = 'Error';
                 break;
-            case 'LOGIN_ERORR': 
+            case 'LOGIN_ERROR': 
                 state.page.loadingState.name = 'Error';
                 break;
             case 'LOGIN_SUCCESS': 
@@ -30,5 +30,6 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 break;
         }
     }
+    console.log('new state', state);
     return state;
 }

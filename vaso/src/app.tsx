@@ -5,10 +5,11 @@ import {reduce} from './flux/reducer';
 import {AppState} from './flux/app_state';
 import {Store} from './flux/store';
 import {Action} from './flux/action';
+import {ActionCreators} from './flux/action_creators';
 
 interface TopLevelProps {
-    dispatch: (action: Action) => void,
-    store: Store
+    store: Store,
+    actions: ActionCreators
 }
 
 export class App extends React.Component<TopLevelProps, AppState> {
@@ -24,7 +25,7 @@ export class App extends React.Component<TopLevelProps, AppState> {
     render() {
         return <div>
             <NavbarComponent></NavbarComponent>
-            <ContentComponent state={this.state} dispatch={this.props.dispatch}>
+            <ContentComponent state={this.state} actions={this.props.actions}>
             </ContentComponent>
         </div>;
     }

@@ -65,9 +65,10 @@ export class Api {
         }
 
         (<any>params).credentials = 'include';
+        (<any>params)['mode'] = 'no-cors';
 
         return fetch(url, params).then(function(response: Response) {
-            if (response.status >= 400) {
+            if (!(response.status >= 400)) {
                 return response;
             } else {
                 throw response;
