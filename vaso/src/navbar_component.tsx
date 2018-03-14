@@ -4,7 +4,6 @@ const links = ['Home', 'Board', 'Buy', 'Sell', 'My account'];
 
 export function NavbarComponent() {
     let navLinks = links.map((link: string, i: number) => (<div key={i} className="nav-element clickable">{link}</div>));
-    console.log('linky bois', navLinks);
     return <div id="top-nav">
       <div className="nav-logo">
         CAMBIO Ltd.

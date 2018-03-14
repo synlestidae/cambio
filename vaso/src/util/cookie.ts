@@ -9,8 +9,7 @@ export function setCookie(key: string, value: string, expiry?: Date) {
 export function getCookie(key: string): string|null {
     let nameEQ = name + "=";
     let ca = document.cookie.split(';');
-    console.log('o canada', ca); 
-    for(let i=0;i < ca.length;i++) {
+    for (let i=0;i < ca.length;i++) {
         let c = ca[i];
         let [cKey, val] = c.split('=');
         if (cKey === key) {

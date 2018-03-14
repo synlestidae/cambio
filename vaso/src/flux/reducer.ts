@@ -22,6 +22,12 @@ function reduceLogin(state: AppState, action: Action): AppState {
             case 'LOGIN_SUCCESS': 
                 state.page.loadingState.name = 'Success';
                 break;
+            case 'SET_EMAIL_ADDRESS':
+                state.page.emailAddress = action.value;
+                break;
+            case 'SET_PASSWORD':
+                state.page.password = action.value;
+                break;
         }
     }
     return state;

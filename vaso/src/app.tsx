@@ -24,7 +24,8 @@ export class App extends React.Component<TopLevelProps, AppState> {
     render() {
         return <div>
             <NavbarComponent></NavbarComponent>
-            <ContentComponent></ContentComponent>
+            <ContentComponent state={this.state} dispatch={this.props.dispatch}>
+            </ContentComponent>
         </div>;
     }
 }

@@ -2,7 +2,7 @@ import {AppState} from './app_state';
 
 export class Store {
     private state: AppState;
-    private listeners: Array<(state: AppState) => void>;
+    private listeners: Array<(state: AppState) => void> = [];
 
     constructor(state: AppState) {
         this.state = state;

@@ -1,43 +1,37 @@
 import * as React from "react";
+import {LoginPage} from './flux/state/login_page';
+import {Action} from './flux/action';
+import {ActionCreators} from './flux/action_creators';
 
-export class SignupPage extends React.Component<any, any> {
-    constuctor(props: any) {
-    }
+interface LoginPageProps {
+    page: LoginPage,
+    dispatch: (action: Action) => void
+}
 
-    componentDidMount() {
-        this.setState({
-            emailAddress: '',
-            password: '',
-            signupMode: false
-        });
-    }
-
-    render() {
-        if (this.state === null) {
-            return null;
-        }
-        return (
-     <div className="signup-form">
-          <form className="form-signin">
+export function SignupPage(props: LoginPageProps) {
+    let actions = new ActionCreators();
+    return <div className="signup-form">
+        <form className="form-signin">
             <div className="form-row">
               <div>Cambio allows you to buy, sell and trade Ethereum with ease</div>
             </div>
             <div className="form-row">
               <label className="sr-only">Email address</label>
-              <input type="email" id="inputEmail" className="form-control" value={this.state.emailAddress} placeholder="Email address">
+              <input type="email" id="inputEmail" className="form-control" value={props.page.emailAddress} placeholder="Email address" 
+                onChange={(e: any) => props.dispatch(actions.setEmailAddress(e.target.value as string))}>
               </input>
             </div>
             <div className="form-row">
               <label className="sr-only">Password</label>
-              <input type="password" id="inputPassword" className="form-control" value={this.state.password} placeholder="Password">
+              <input type="password" id="inputPassword" className="form-control" value={props.page.password} placeholder="Password" 
+                onChange={(e: any) => props.dispatch(actions.setPassword(e.target.value as string))}>
               </input>
             </div>
-            <LoginButton signupMode={this.state.signupMode}></LoginButton>
+            <LoginButton signupMode={true}></LoginButton>
             <LoginMessage></LoginMessage>
-            <LoginOptions signupMode={this.state.signupMode}></LoginOptions>
+            <LoginOptions signupMode={false}></LoginOptions>
           </form>
-      </div>);
-    }
+      </div>;
 }
 
 interface LoginButtonProps {

@@ -6,6 +6,7 @@
         "module": "commonjs",
         "target": "es5",
         "jsx": "react",
+        "lib": ["es5", "es6", "DOM"],
         "structNullChecks": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,

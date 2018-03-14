@@ -1,16 +1,11 @@
 import {Action} from './action';
 import {Store} from './store';
+import {BasicAction} from './action';
 import * as Actions from './actions';
 
-class ActionCreators {
-    private store: Store;
-
-    constructor(store: Store) {
-        this.store = store;
-    }
-
+export class ActionCreators {
     public startLogin() {
-        this.store
+        throw new Error();
     }
 
     public loginError(): Action {
@@ -23,5 +18,13 @@ class ActionCreators {
 
     public loginSuccess(): Action {
         return Actions.LOGIN_SUCCESS;
+    }
+
+    public setEmailAddress(emailAddress: string): Action {
+        return new BasicAction('SET_EMAIL_ADDRESS', emailAddress);
+    }
+
+    public setPassword(password: string): Action {
+        return new BasicAction('SET_PASSWORD', password);
     }
 }
