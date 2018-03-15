@@ -6,11 +6,12 @@ export interface Action {
 
 export class BasicAction implements Action {
     public readonly name: string;
-    public readonly value: string; 
+    public readonly value: string|null; 
     public readonly payload: any|null = null;
 
-    constructor(name: string, value?: string) {
+    constructor(name: string, value?: string|null, payload?: any|null) {
         this.name = name;
         this.value = value || null;
+        this.payload = payload || null;
     }
 }

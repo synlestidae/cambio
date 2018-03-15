@@ -3,6 +3,7 @@ import {Store} from './store';
 import {BasicAction} from './action';
 import * as Actions from './actions';
 import {Api} from '../api';
+import {Account} from '../domain/account';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -39,9 +40,16 @@ export class ActionCreators {
             .catch((r: any) => this.handleLoginReject(r));
     }
 
+    public openAccountPage() {
+        this.dispatch(new BasicAction('OPEN_PAGE', 'ACCOUNTS'));
+        this.api.asyncGetAccounts()
+            .then((accounts: Account[]) => new BasicAction('ADD_ACCOUNTS', null, accounts));
+    }
+
     private handleLoginResolve(response: any) {
         console.log('login resolve', response);
         this.loginSuccess();
+        this.openAccountPage();
     }
 
     private handleLoginReject(response: any) {
