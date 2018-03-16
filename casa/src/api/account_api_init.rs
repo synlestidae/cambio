@@ -1,7 +1,7 @@
 use api::api_init::ApiInit;
 use api::{AccountApiTrait, AccountApiImpl, ApiError};
 use db::{PostgresHelper};
-use iron::headers::Cookie;
+use iron::headers::{Cookie, Authorization, Bearer};
 use iron::request::Request;
 use iron;
 use router::Router;
@@ -84,6 +84,11 @@ where
 }
 
 pub fn get_session_token(r: &Request) -> Option<String> {
+    let authorization:Option<&Authorization<Bearer>> = r.headers.get();
+    match authorization {
+        Some(ref bearer) => return Some(bearer.token.to_owned()),
+        None => {}
+    }
     let cookies_match: Option<&Cookie> = r.headers.get();
     if cookies_match.is_none() {
         return None;

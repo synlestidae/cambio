@@ -14,6 +14,7 @@ window.onload = () => {
     let store = new Store(state);
     let dispatch = getDispatcher(store, reduce);
     let actions = new ActionCreators(new Api(), dispatch);
+    actions.changeURL(window.location.hash);
     ReactDOM.render(
             <App store={store} actions={actions}/>,
             document.getElementById("app")

@@ -20,6 +20,8 @@ export class App extends React.Component<TopLevelProps, AppState> {
 
     componentDidMount() {
         this.props.store.subscribe((s: AppState) => this.setState(s));
+        window.onhashchange = (e: HashChangeEvent) => 
+            this.props.actions.changeURL(window.location.hash);
     }
 
     render() {

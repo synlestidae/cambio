@@ -14,6 +14,10 @@ export function reduce(state: AppState, action: Action): AppState {
 function reduceLogin(state: AppState, action: Action): AppState {
     if (state.page instanceof LoginPage) {
         switch (action.name) {
+            case 'SIGNUP_MODE': 
+                state.page.isSignup = action.value === 'SIGNUP';
+                state.page.loadingState.name = 'Ready';
+                break;
             case 'LOGIN_START': 
                 state.page.loadingState.name = 'Loading';
                 break;
@@ -28,9 +32,11 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 break;
             case 'SET_EMAIL_ADDRESS':
                 state.page.emailAddress = action.value;
+                state.page.loadingState.name = 'Ready';
                 break;
             case 'SET_PASSWORD':
                 state.page.password = action.value;
+                state.page.loadingState.name = 'Ready';
                 break;
         }
     }

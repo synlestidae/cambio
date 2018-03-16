@@ -27,17 +27,17 @@ export function SignupPage(props: LoginPageProps) {
               </input>
             </div>
             <div className="form-row">
-              <LoginButton emailAddress={props.page.emailAddress} password={props.page.password} signupMode={false} actions={props.actions}>
+              <LoginButton emailAddress={props.page.emailAddress} password={props.page.password} isSignup={props.page.isSignup} actions={props.actions}>
               </LoginButton>
             </div>
             <LoginMessage page={props.page}></LoginMessage>
-            <LoginOptions signupMode={false} actions={props.actions}></LoginOptions>
+            <LoginOptions isSignup={props.page.isSignup} actions={props.actions}></LoginOptions>
           </form>
       </div>;
 }
 
 interface LoginButtonProps {
-    signupMode: boolean,
+    isSignup: boolean,
     emailAddress: string,
     password: string,
     actions: ActionCreators
@@ -47,13 +47,13 @@ function LoginButton(props: LoginButtonProps) {
     let text: string;
     const callback = (e: any) => {
         e.preventDefault();
-        if (props.signupMode) {
-            throw new Error('Not yet implemented!');
+        if (props.isSignup) {
+            props.actions.submitSignup(props.emailAddress, props.password);
         } else {
             props.actions.submitLogin(props.emailAddress, props.password);
         }
     };
-    if (props.signupMode) {
+    if (props.isSignup) {
         text = 'Create account';
     } else {
         text = 'Sign in';
@@ -69,7 +69,6 @@ interface LoginMessageProps {
 
 function LoginMessage(props: LoginMessageProps) {
     let loginFailed = props.page.loadingState.name === 'Error';
-    console.log('loading boi', props.page.loadingState);
     if (loginFailed) {
         return <div className="form-row error-text">
             <em>Logging in failed. Check your email address and password and try again.</em>
@@ -81,17 +80,17 @@ function LoginMessage(props: LoginMessageProps) {
 
 interface LoginOptionsProps {
     actions: ActionCreators,
-    signupMode: boolean
+    isSignup: boolean
 }
 
 function LoginOptions(props: LoginOptionsProps) {
-    if (props.signupMode) {
+    if (props.isSignup) {
         return <div className="form-row">
-          <a href="javascript: void">I already have an account.</a> 
+          <a href="javascript: void" onClick={() => props.actions.loginMode()}>I already have an account.</a> 
         </div>;
     } else {
         return <div className="form-row">
-          Don't have an account? <a href="javascript: void">Create one.</a>.
+          Don't have an account? <a href="javascript: void" onClick={() => props.actions.signupMode()}>Create one.</a>.
         </div>;
     }
 }

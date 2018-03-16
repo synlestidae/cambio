@@ -6,4 +6,5 @@ export class LoginPage implements Page {
     public loadingState: LoadingState = new LoadingState();
     public emailAddress: string = '';
     public password: string = '';
+    public isSignup = false;
 }

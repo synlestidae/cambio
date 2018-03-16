@@ -42,6 +42,7 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
     fn get_accounts(&mut self, session_token: &str) 
         -> ApiResult<Vec<Account>> {
         let clause = repository::UserClause::SessionToken(session_token.to_owned());
+        println!("A sessio token for the ages {}", session_token);
         let session = try!(self.session_repo.read(&clause)).pop().unwrap();
         let email_clause = repository::UserClause::EmailAddress(session.email_address.unwrap());
         let accounts = try!(self.account_repo.read(&email_clause));

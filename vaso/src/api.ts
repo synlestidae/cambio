@@ -2,10 +2,10 @@ import {Session} from './session';
 import {Account} from './domain/account';
 
 export class Api {
-    session: Session|null = null;
     baseUrl = "http://localhost:3000";
+    sessionToken: string|null = null;
 
-    public asyncLogInUser(email_address: string, password: string): Promise<Session> {
+    public asyncLogInUser(email_address: string, password: string): Promise<void> {
         let login_promise = this.makeRequest('/users/log_in/', 'POST', {
             email_address: email_address,
             password: password
@@ -13,18 +13,13 @@ export class Api {
 
         let parent = this;
 
-        return login_promise
-            .then((response: Response) => response.json())
-            .then((json: any) => {
-                return Session.parse(json);
-            })
-            .then((session: Session) => {
-                parent.session = session;
-                return session;
+        return login_promise.then((r: Response) => r.json())
+            .then((session_json: any) => {
+                parent.sessionToken = session_json.session_token;
             });
     }
 
-    public asyncRegisterUser(email_address: string, password: string): Promise<Session> {
+    public asyncRegisterUser(email_address: string, password: string): Promise<void> {
         let that = this;
 
         return this.makeRequest('/users/register/', 'POST', {
@@ -34,7 +29,7 @@ export class Api {
     }
 
     public asyncGetAccounts(): Promise<Account[]> {
-        return this.makeRequest('accounts/', 'GET')
+        return this.makeRequest('/accounts/', 'GET')
             .then((r: Response) => r.json())
             .then((accounts: any) => (<Account[]>accounts));
     }
@@ -43,10 +38,12 @@ export class Api {
         let urlObj = new URL(this.baseUrl);
         urlObj.pathname = url;
         url = urlObj.toString();
-        let headers = {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json'
-        };
+        let headers = new Headers();
+        headers.set('Accept', 'application/json, text/plain, */*');
+        headers.set('Content-Type', 'application/json');
+        if (this.sessionToken !== null) {
+            headers.set('Authorization', `Bearer ${this.sessionToken}`)
+        }
         let body: string|null = null;
         let params = {
             method: method,
@@ -65,7 +62,6 @@ export class Api {
         }
 
         (<any>params).credentials = 'include';
-        (<any>params)['mode'] = 'no-cors';
 
         return fetch(url, params).then(function(response: Response) {
             if (!(response.status >= 400)) {

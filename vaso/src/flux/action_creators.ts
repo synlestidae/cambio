@@ -26,6 +26,14 @@ export class ActionCreators {
         this.dispatch(Actions.LOGIN_SUCCESS);
     }
 
+    public signupMode() {
+        this.dispatch(new BasicAction('SIGNUP_MODE', 'SIGNUP'));
+    }
+
+    public loginMode() {
+        this.dispatch(new BasicAction('SIGNUP_MODE', 'LOGIN'));
+    }
+
     public setEmailAddress(emailAddress: string) {
         this.dispatch(new BasicAction('SET_EMAIL_ADDRESS', emailAddress));
     }
@@ -40,20 +48,30 @@ export class ActionCreators {
             .catch((r: any) => this.handleLoginReject(r));
     }
 
+    public submitSignup(email: string, password: string) {
+        return this.api.asyncRegisterUser(email, password)
+            .then((r: any) => this.handleLoginResolve(r))
+            .catch((r: any) => this.handleLoginReject(r));
+    }
+
+    public changeURL(hash: string) {
+        if (hash.startsWith('#accounts')) {
+            this.openAccountPage();
+        }
+    }
+
     public openAccountPage() {
-        this.dispatch(new BasicAction('OPEN_PAGE', 'ACCOUNTS'));
+        this.dispatch(new BasicAction('OPEN_PAGE', 'Accounts'));
         this.api.asyncGetAccounts()
             .then((accounts: Account[]) => new BasicAction('ADD_ACCOUNTS', null, accounts));
     }
 
     private handleLoginResolve(response: any) {
-        console.log('login resolve', response);
         this.loginSuccess();
         this.openAccountPage();
     }
 
     private handleLoginReject(response: any) {
-        console.log('login reject', response);
         if (response.status === 401 || response.status === 403) {
             this.loginAuthFail();
         }
