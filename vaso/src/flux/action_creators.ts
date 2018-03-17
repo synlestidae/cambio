@@ -56,6 +56,7 @@ export class ActionCreators {
 
     public changeURL(hash: string) {
         if (hash.startsWith('#accounts')) {
+            window.location.hash = '#accounts';
             this.openAccountPage();
         }
     }
@@ -63,12 +64,25 @@ export class ActionCreators {
     public openAccountPage() {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Accounts'));
         this.api.asyncGetAccounts()
-            .then((accounts: Account[]) => new BasicAction('ADD_ACCOUNTS', null, accounts));
+            .then((accounts: Account[]) => {
+                this.dispatch(new BasicAction('ADD_ACCOUNTS', null, accounts));
+                for (let a of accounts) {
+                    this.getAccountTransactions(a);
+                }
+                return accounts;
+            });
+    }
+
+    public async getAccountTransactions(account: Account) {
+        let transactions = await this.api.asyncGetAccountTransactions(account.id.toString());
+        console.log('principals a tranny', transactions);
+        this.dispatch(new BasicAction('SET_ACCOUNT_TRANSACTIONS', account.id.toString(), transactions));
     }
 
     private handleLoginResolve(response: any) {
         this.loginSuccess();
-        this.openAccountPage();
+        //this.openAccountPage();
+        this.changeURL('#accounts');
     }
 
     private handleLoginReject(response: any) {

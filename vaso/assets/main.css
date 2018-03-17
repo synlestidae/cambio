@@ -127,3 +127,13 @@ button.btn {
     padding: 15px;
     width: 80px;
 }
+
+.btn {
+    color: white;
+    border-width: 1px;
+    border-color: white;
+}
+
+button:hover {
+    cursor: pointer;
+}

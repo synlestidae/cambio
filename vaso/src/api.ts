@@ -1,5 +1,6 @@
 import {Session} from './session';
 import {Account} from './domain/account';
+import {Transaction} from './domain/transaction';
 
 export class Api {
     baseUrl = "http://localhost:3000";
@@ -32,6 +33,12 @@ export class Api {
         return this.makeRequest('/accounts/', 'GET')
             .then((r: Response) => r.json())
             .then((accounts: any) => (<Account[]>accounts));
+    }
+
+    public asyncGetAccountTransactions(accountId: string): Promise<Transaction[]> {
+        return this.makeRequest(`/accounts/${accountId}/transactions`, 'GET')
+            .then((r: Response) => r.json())
+            .then((transactions: any) => (<Transaction[]>transactions));
     }
 
     private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {

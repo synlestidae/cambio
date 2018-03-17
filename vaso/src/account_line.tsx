@@ -1,15 +1,15 @@
 import * as React from "react";
 
-function AccountLine() {
+export function AccountLine() {
     return <div className="account-list-item" style={{maxWidth: '500px'}}>
         <div className="currency-icon" style={{margin: '15px'}}>
             <i className="fas fa-money-bill-alt" aria-hidden="true" style={{fontSize: '40px'}}></i>
         </div>
     <div className="account-description" style={{padding: '15px'}}>
         <div style={{fontSize: '12pt'}}>Cash Wallet (NZD)</div>
-        <a href="javascript: void(0)">Credit account</a>
-        <a href="javascript: void(0)">Cash out</a>
-        <a href="javascript: void(0)">Transactions</a>
+        <button className="btn">Credit account</button>
+        <button className="btn">Cash out</button>
+        <button className="btn">Transactions</button>
       </div> 
     <div className="account-summary" style={{padding: '15px', 'marginLeft': 'auto'}}>
         <div style={{fontSize: '12pt'}}>$10.30</div>

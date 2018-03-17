@@ -103,6 +103,3 @@ pub fn get_session_token(r: &Request) -> Option<String> {
     }
     None
 }
-
-
-

@@ -48,6 +48,7 @@ function reduceAccounts(state: AppState, action: Action): AppState{
         let payload = action.payload;
         switch (action.name) {
             case 'ADD_ACCOUNTS':
+                console.log('Accounts', action);
                 if (action.payload instanceof Array) {
                     state.page.accounts = <Account[]> action.payload;
                 } else {
