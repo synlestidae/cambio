@@ -1,10 +1,16 @@
 use api::{AccountApiTrait, ApiResult, ApiError, ErrorType};
-use domain::{Account, Id, Transaction};
 use db::{ConnectionSource, PostgresHelper, CambioError};
+use domain::{Account, Id, Transaction, Session};
+use hyper::mime::{Mime};
+use iron::headers::{Cookie, Authorization, Bearer};
+use iron::request::Request;
+use iron;
 use repositories::{AccountRepository, SessionRepository, UserRepository};
-use repository;
-use services::AccountService;
 use repository::RepoRead;
+use repository;
+use serde_json;
+use serde::Serialize;
+use services::AccountService;
 
 #[derive(Clone)]
 pub struct AccountApiImpl<C: PostgresHelper> {
@@ -36,18 +42,38 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
         }
         Ok(())
     }
+
+    fn get_session(&mut self, request: &Request) -> Result<Session, iron::Response> {
+        let session_token_match = get_session_token(request);
+        let session_token = match session_token_match {
+            Some(t) => t,
+            None => return Err(ApiError::unauthorised().into())
+        };
+
+        let clause = repository::UserClause::SessionToken(session_token.to_owned());
+        match self.session_repo.read(&clause).map(|mut s| s.pop())  {
+            Ok(Some(session)) => Ok(session),
+            _ => Err(ApiError::unauthorised().into())
+        }
+    }
 }
 
 impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
-    fn get_accounts(&mut self, session_token: &str) 
-        -> ApiResult<Vec<Account>> {
-        let clause = repository::UserClause::SessionToken(session_token.to_owned());
-        println!("A sessio token for the ages {}", session_token);
-        let session = try!(self.session_repo.read(&clause)).pop().unwrap();
+    fn get_accounts(&mut self, request: &Request) -> iron::Response {
+        let session = match self.get_session(request) {
+            Ok(s) => s,
+            Err(_) => return ApiError::unauthorised().into()
+        };
         let email_clause = repository::UserClause::EmailAddress(session.email_address.unwrap());
-        let accounts = try!(self.account_repo.read(&email_clause));
+        let accounts = match self.account_repo.read(&email_clause) {
+            Ok(a) => a,
+            Err(err) => {
+                let api_error: ApiError = err.into();
+                return api_error.into();
+            }
+        };
         let visible_accounts = accounts.into_iter().filter(|a| a.is_user_visible()).collect();
-        Ok(visible_accounts)
+        to_response::<Vec<Account>>(Ok(visible_accounts))
     }
 
     fn get_account(&mut self, account_id: Id, session_token: &str) 
@@ -88,3 +114,39 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
         }
     }
 }
+
+pub fn get_session_token(r: &Request) -> Option<String> {
+    let authorization:Option<&Authorization<Bearer>> = r.headers.get();
+    match authorization {
+        Some(ref bearer) => return Some(bearer.token.to_owned()),
+        None => {}
+    }
+    let cookies_match: Option<&Cookie> = r.headers.get();
+    if cookies_match.is_none() {
+        return None;
+    }
+    let cookie_header = cookies_match.unwrap();
+    for cookie in cookie_header.0.iter() {
+        let cookie_bits: Vec<String> = cookie.clone().split("=").map(|s| s.to_owned()).collect();
+        if cookie_bits[0] == "session_token" {
+            let token = cookie_bits[1].clone();
+            return Some(token);
+        }
+    }
+    None
+}
+
+fn to_response<E: Serialize>(result: Result<E, CambioError>) -> iron::Response {
+    let content_type = "application/json".parse::<Mime>().unwrap();
+    match result {
+        Ok(response_obj) => {
+            let response_json = serde_json::to_string(&response_obj).unwrap();
+            iron::Response::with((iron::status::Ok, response_json, content_type))
+        },
+        Err(err) => {
+            let api_error: ApiError = err.into();
+            api_error.into()
+        }
+    }
+}
+

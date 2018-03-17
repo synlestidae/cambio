@@ -7,7 +7,6 @@ use iron;
 use router::Router;
 use std::borrow::Borrow;
 use std::sync::Arc;
-use hyper::mime::{Mime};
 use serde_json;
 
 #[derive(Clone)]
@@ -36,23 +35,9 @@ where
         router.get(
             "/accounts/",
             move |r: &mut Request| {
-                let session_token_match = get_session_token(r);
-                let session_token = match session_token_match {
-                    Some(t) => t,
-                    None => return Ok(ApiError::unauthorised().into())
-                };
                 let this_helper_ref: &T = transaction_helper.borrow();
                 let mut api = AccountApiImpl::new(this_helper_ref.clone());
-                let content_type = "application/json".parse::<Mime>().unwrap();
-                Ok(match api.get_accounts(&session_token) {
-                    Ok(accounts) => {
-                        let response_json = serde_json::to_string(&accounts).unwrap();
-                        iron::Response::with((iron::status::Ok, response_json, content_type))
-                    },
-                    Err(err) => {
-                        err.into()
-                    }
-                })
+                Ok(api.get_accounts(r))
             },
             "get_account",
         );
@@ -81,25 +66,4 @@ where
             "get_transaction",
         );
     }
-}
-
-pub fn get_session_token(r: &Request) -> Option<String> {
-    let authorization:Option<&Authorization<Bearer>> = r.headers.get();
-    match authorization {
-        Some(ref bearer) => return Some(bearer.token.to_owned()),
-        None => {}
-    }
-    let cookies_match: Option<&Cookie> = r.headers.get();
-    if cookies_match.is_none() {
-        return None;
-    }
-    let cookie_header = cookies_match.unwrap();
-    for cookie in cookie_header.0.iter() {
-        let cookie_bits: Vec<String> = cookie.clone().split("=").map(|s| s.to_owned()).collect();
-        if cookie_bits[0] == "session_token" {
-            let token = cookie_bits[1].clone();
-            return Some(token);
-        }
-    }
-    None
 }
