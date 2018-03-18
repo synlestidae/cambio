@@ -5,7 +5,7 @@ use postgres::rows::Row;
 use db::TryFromRow;
 use db::TryFromRowError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Transaction {
     pub id: Id,
     pub from_account: Id,

@@ -34,5 +34,9 @@ rlp = "0.2.1"
 secp256k1 = "0.8.1"
 byteorder = "1.2.1"
 
+[dependencies.params]
+git = "https://github.com/iron/params.git"
+tag = "0.7.1" 
+
 [dependencies.bodyparser]
 git = "https://github.com/iron/body-parser.git"

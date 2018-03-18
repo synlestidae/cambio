@@ -2,6 +2,7 @@
 
 extern crate bcrypt;
 extern crate iron;
+extern crate params;
 extern crate hyper;
 #[macro_use]
 extern crate postgres;
