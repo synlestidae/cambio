@@ -1,8 +1,8 @@
 import * as React from "react";
 import {Account} from './domain/account';
-import {AccountPage} from './flux/state/account_page';
 import {ActionCreators} from './flux/action_creators';
 import {AccountLine} from './account_line';
+import {AccountPage} from './flux/state/account_page';
 
 interface AccountPageComponentProps {
     actions: ActionCreators,
@@ -13,7 +13,8 @@ export function AccountPageComponent(props: AccountPageComponentProps) {
     if (props.page.accounts === null) {
         return <div>Loading your accounts...</div>;
     }
-    let accounts = props.page.accounts.map((account: Account, i: number) => <AccountLine key={i}/>);
+    let accounts = props.page.accounts.map((account: Account, i: number) => 
+        <AccountLine key={i} actions={props.actions} account={account} isOpen={props.page.openAccount === String(account.id)} openOptions={props.page.openOptions}/>);
     return <div>
         {accounts}
         </div>;

@@ -1,32 +1,27 @@
 import * as React from "react";
+import {ActionCreators} from './flux/action_creators';
 
-export class CreditCardInputProps {
-    private _cardNumber: string = '';
-    private _expiryMonth: string = '' ;
-    private _expiryYear: string = '';
-    private _cvv: string = '';
-
-    get cardNumber() {
-        return this._cardNumber;
-    }
-
-    set cardNumber(cardNumber: string) {
-        cardNumber = cardNumber.replace(/[^0-9]/g, '');
-        cardNumber = cardNumber.replace(/\d{4}/g, (x:string) => x + '-');
-        if (cardNumber[cardNumber.length - 1] === '-') {
-            cardNumber = cardNumber.substr(0, cardNumber.length - 1);
-        }
-        this._cardNumber = cardNumber;
-    }
+export interface CreditCardInputProps {
+    cardNumber: string;
+    expiryMonth: string;
+    expiryYear: string;
+    cvv: string;
+    actions: ActionCreators
 }
 
-export function CreditCardInput() {
+export function CreditCardInput(props: CreditCardInputProps) {
+    const actions = props.actions;
+    const onChangeCCNumber = (e: any) => actions.changeCCDetail('CARD_NUMBER', String(e.target.value));
+    const onChangeExpiryMonth = (e: any) => actions.changeCCDetail('EXPIRY_MONTH', String(e.target.value));
+    const onChangeExpiryYear = (e: any) => actions.changeCCDetail('EXPIRY_YEAR', String(e.target.value));
+    const onChangeCVV = (e: any) => actions.changeCCDetail('CVV', String(e.target.value));
+
     return (
     <div className="container">
       <div className="credit-card-details">
         <div className="cc-number">
           <label className="cc-label">CC Number</label>
-          <input type="text" placeholder="0000-0000-0000-0000" className="form-control cc-input">
+          <input type="text" size={20} placeholder="0000-0000-0000-0000" className="form-control cc-input" onChange={onChangeCCNumber} value={props.cardNumber}>
           </input>
         </div>
         <div className="cc-expiry-container">
@@ -34,9 +29,9 @@ export function CreditCardInput() {
             Expiry
           </label>
           <div>
-            <input type="text" size={3} maxLength={2} className="form-control cc-expiry cc-input" placeholder="mm">
+            <input type="text" size={3} maxLength={2} className="form-control cc-expiry cc-input" placeholder="mm" onChange={onChangeExpiryMonth}  value={props.expiryMonth}>
             </input>
-            <input type="text" size={3} maxLength={2} className="form-control cc-expiry cc-input" placeholder="yy">
+            <input type="text" size={3} maxLength={2} className="form-control cc-expiry cc-input" placeholder="yy" onChange={onChangeExpiryYear}  value={props.expiryYear}>
             </input>
           </div>
         </div>
@@ -45,7 +40,7 @@ export function CreditCardInput() {
             CVV
           </label>
           <div>
-            <input type="text" size={4} maxLength={3} className="form-control cc-expiry cc-input" placeholder="cvv">
+            <input type="text" size={4} maxLength={3} className="form-control cc-expiry cc-input" placeholder="cvv" onChange={onChangeCVV} value={props.cvv}>
             </input>
           </div>
         </div>

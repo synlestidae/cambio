@@ -73,6 +73,14 @@ export class ActionCreators {
             });
     }
 
+    public toggleCreditAccount(account: Account) {
+        this.dispatch(new BasicAction('TOGGLE_CREDIT_ACCOUNT', account.id.toString()));
+    }
+
+    public changeCCDetail(field: string, value: string) {
+        this.dispatch(new BasicAction('CHANGE_CC_DETAIL', field, value));
+    }
+
     public async getAccountTransactions(account: Account) {
         let transactions = await this.api.asyncGetAccountTransactions(account.id.toString());
         console.log('principals a tranny', transactions);
@@ -81,7 +89,6 @@ export class ActionCreators {
 
     private handleLoginResolve(response: any) {
         this.loginSuccess();
-        //this.openAccountPage();
         this.changeURL('#accounts');
     }
 

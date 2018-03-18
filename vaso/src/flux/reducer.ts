@@ -1,4 +1,4 @@
-import {AccountPage} from './state/account_page';
+import {AccountPage, CreditAccountOption} from './state/account_page';
 import {Action} from './action';
 import {AppState, PageName} from './app_state';
 import {LoginPage} from './state/login_page';
@@ -43,12 +43,11 @@ function reduceLogin(state: AppState, action: Action): AppState {
     return state;
 }
 
-function reduceAccounts(state: AppState, action: Action): AppState{
+function reduceAccounts(state: AppState, action: Action): AppState {
     if (state.page instanceof AccountPage) {
         let payload = action.payload;
         switch (action.name) {
             case 'ADD_ACCOUNTS':
-                console.log('Accounts', action);
                 if (action.payload instanceof Array) {
                     state.page.accounts = <Account[]> action.payload;
                 } else {
@@ -56,6 +55,40 @@ function reduceAccounts(state: AppState, action: Action): AppState{
                     throw new Error(`ADD_ACCOUNTS should have Account[] payload, but got ${objName}`);
                 }
                 break;
+            case 'TOGGLE_CREDIT_ACCOUNT':
+                let id = String(action.value);
+                if (state.page.openOptions) {
+                    state.page.openOptions = null;
+                    state.page.openAccount = null;
+                } else {
+                    state.page.openOptions = new CreditAccountOption();
+                    state.page.openAccount = id;
+                }
+                break;
+            case 'CHANGE_CC_DETAIL':
+                const correctPayloads = typeof action.payload === 'string' && typeof action.value === 'string';
+                if (state.page.openOptions instanceof CreditAccountOption && correctPayloads) {
+                    let val = action.payload as string;
+                    let details = state.page.openOptions.creditCardDetails;
+
+                    switch (action.value) {
+                        case 'CVV':
+                            details.cvv = val;
+                           break; 
+                        case 'CARD_NUMBER':
+                            details.cardNumber= val;
+                            break;
+                        case 'EXPIRY_MONTH':
+                            details.expiryMonth = val;
+                            break;
+                        case 'EXPIRY_YEAR':
+                            details.expiryYear = val;
+                            break;
+                        default: 
+                            throw new Error(`Unknown CC detail field: ${action.value}`)
+                    }
+                }
+            break;
         }
     }
     return state;

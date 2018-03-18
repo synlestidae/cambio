@@ -1,8 +1,41 @@
 import * as React from "react";
-import {CreditCardOption} from './credit_card_option';
+import {Account} from './domain/account';
+import {CreditCardChoice} from './credit_card_choice';
 import {CreditCardInput} from './credit_card_input';
+import {CreditOrderInput} from './credit_order_input';
+import {ActionCreators} from './flux/action_creators';
+import {AccountPage, AccountOption, CreditAccountOption, CreditCardDetails} from './flux/state/account_page';
 
-export function AccountLine() {
+export interface AccountLineProps {
+    actions: ActionCreators,
+    openOptions: AccountOption,
+    account: Account,
+    isOpen: boolean
+}
+
+export function AccountLine(props: AccountLineProps) {
+    let options: any[] = [];
+    let isCrediting = false;
+    if (props.openOptions instanceof CreditAccountOption) {
+        isCrediting = props.isOpen;
+    }
+    if (isCrediting) {
+        let ccOptions = props.openOptions as CreditAccountOption;
+        let ccDetails = ccOptions.creditCardDetails;
+        options = [
+            <CreditCardChoice></CreditCardChoice>,
+            <CreditCardInput 
+              actions={props.actions}
+              cardNumber={ccDetails.cardNumber} 
+              expiryMonth={ccDetails.expiryMonth} 
+              expiryYear={ccDetails.expiryYear} 
+              cvv={ccDetails.cvv}>
+            </CreditCardInput>,
+            <CreditOrderInput></CreditOrderInput>
+        ];
+    }
+    let creditAccountClass = `btn ${isCrediting? 'active' : ''}`;
+    let toggleCredit = (e: any) => props.actions.toggleCreditAccount(props.account);
     return (
     <div className="account-container " style={{maxWidth: '500px'}}>
         <div className="account-list-item">
@@ -18,7 +51,9 @@ export function AccountLine() {
         </div>
         <div className="account-options">
             <div className="account-option">
-                <button className="btn">Credit account</button>
+                <button className={creditAccountClass} onClick={toggleCredit}>
+                  Credit account
+                </button>
             </div>
             <div className="account-option">
                 <button className="btn">Cash out</button>
@@ -27,8 +62,7 @@ export function AccountLine() {
                 <button className="btn">Transactions</button>
             </div>
         </div>
-        <CreditCardOption></CreditCardOption>
-        <CreditCardInput></CreditCardInput>
+        {options}
     </div>
     );
 }

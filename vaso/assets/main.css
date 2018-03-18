@@ -187,6 +187,7 @@ button:hover {
 
 .credit-card-details {
     display: flex;
+    justify-content: space-between;
 }
 
 .cc-details {
@@ -213,15 +214,36 @@ button:hover {
 .cc-expiry-container {
     display: flex; 
     flex-direction: column;
-    flex: 1;
 }
 
 
 .cvv-container {
-    flex: 1;
 }
 
-.cc-number {
-    flex: 2;
+.form-row {
+    display: flex;
+    justify-content: space-between;
 }
 
+.form-label {
+    line-height: 1em; 
+    margin-right: 15px; 
+    font-size: 10pt;
+}
+
+.form-input {
+    width: initial; 
+    padding: 3px;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.form-row .btn {
+  width: 100%;
+}
+
+.form-col3 {
+  width: 33.33%;
+}
