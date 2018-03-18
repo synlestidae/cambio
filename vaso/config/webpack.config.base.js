@@ -5,10 +5,12 @@ const helpers = require('./helpers'),
 let config = {
   entry: helpers.root('src/index.tsx'),
   output: {
-    path: helpers.root('/dist'),
-    filename: 'js/[name].[hash].js',
-    chunkFilename: 'js/[name].[hash].js',
-    publicPath: '/'
+        filename: "bundle.js",
+        path: __dirname + "/dist"
+    //path: helpers.root('/dist'),
+    //filename: 'js/[name].[hash].js',
+    //chunkFilename: 'js/[name].[hash].js',
+    //publicPath: '/'
   },
   devtool: 'source-map',
   resolve: {

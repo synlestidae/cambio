@@ -6,6 +6,13 @@ export class Api {
     baseUrl = "http://localhost:3000";
     sessionToken: string|null = null;
 
+    constructor() {
+        let item = localStorage.getItem("session_token");
+        if (item) {
+            this.sessionToken = item;
+        }
+    }
+
     public asyncLogInUser(email_address: string, password: string): Promise<void> {
         let login_promise = this.makeRequest('/users/log_in/', 'POST', {
             email_address: email_address,
@@ -17,6 +24,7 @@ export class Api {
         return login_promise.then((r: Response) => r.json())
             .then((session_json: any) => {
                 parent.sessionToken = session_json.session_token;
+                localStorage.setItem("session_token", parent.sessionToken);
             });
     }
 
@@ -36,7 +44,7 @@ export class Api {
     }
 
     public asyncGetAccountTransactions(accountId: string): Promise<Transaction[]> {
-        return this.makeRequest(`/accounts/${accountId}/transactions`, 'GET')
+        return this.makeRequest(`/accounts/${accountId}/transactions/`, 'GET')
             .then((r: Response) => r.json())
             .then((transactions: any) => (<Transaction[]>transactions));
     }
@@ -48,7 +56,7 @@ export class Api {
         let headers = new Headers();
         headers.set('Accept', 'application/json, text/plain, */*');
         headers.set('Content-Type', 'application/json');
-        if (this.sessionToken !== null) {
+        if (this.sessionToken) {
             headers.set('Authorization', `Bearer ${this.sessionToken}`)
         }
         let body: string|null = null;
@@ -57,6 +65,8 @@ export class Api {
             headers: headers,
             body: body
         };
+
+        console.log('making request', body, params);
 
         if (jsonBody) {
             let bodyString: string;

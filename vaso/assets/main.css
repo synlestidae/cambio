@@ -79,7 +79,6 @@ body {
 
 button.btn {
     background-color: var(--sub-color);
-    border-color: var(--sub-color);
 }
 
 a {
@@ -108,6 +107,11 @@ button.btn {
     border-radius: 0;
 }
 
+button.btn.active {
+    color: var(--sub-color);
+    background-color: white;
+}
+
 .clickable:hover {
     cursor: pointer;
 }
@@ -116,15 +120,17 @@ button.btn {
     color: var(--error-color);
 }
 
-.account-list-item {
+.account-container {
     background-color: var(--sub-color);
-    display: flex;
-    flex-direction: row;
     margin-bottom: 15px;
 }
 
+.account-list-item {
+    display: flex;
+    flex-direction: row;
+}
+
 .currency-icon {
-    padding: 15px;
     width: 80px;
 }
 
@@ -137,3 +143,85 @@ button.btn {
 button:hover {
     cursor: pointer;
 }
+
+.account-option {
+    margin-bottom: 15px;
+}
+
+.account-option button.btn {
+}
+
+.account-options {
+    display: flex;
+    padding-left: 15px;
+    padding-right: 15px;
+    justify-content: space-between;
+}
+
+.cc-options {
+    display: flex;
+}
+
+.container {
+    padding: 15px; 
+}
+
+.cc-option {
+    display: flex; 
+    align-items: center;
+    flex: 0.2;
+}
+
+.cc-icon {
+    font-size: 40px; 
+    margin-right: 15px;
+}
+
+.cc-radio {
+    width: initial;
+}
+
+.credit-card-options {
+    display: flex;
+}
+
+.credit-card-details {
+    display: flex;
+}
+
+.cc-details {
+    display: flex; 
+    flex-direction: row; 
+    justify-content: space-between;
+}
+
+.cc-label {
+    line-height: 1em; 
+    margin-right: 15px; 
+    font-size: 10pt;
+}
+
+.cc-input {
+    width: initial; 
+    padding: 3px;
+}
+
+.cc-expiry {
+    display: inline;
+}
+
+.cc-expiry-container {
+    display: flex; 
+    flex-direction: column;
+    flex: 1;
+}
+
+
+.cvv-container {
+    flex: 1;
+}
+
+.cc-number {
+    flex: 2;
+}
+

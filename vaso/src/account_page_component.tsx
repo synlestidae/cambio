@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Account} from './domain/Account';
+import {Account} from './domain/account';
 import {AccountPage} from './flux/state/account_page';
 import {ActionCreators} from './flux/action_creators';
 import {AccountLine} from './account_line';
