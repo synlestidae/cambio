@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use postgres;
 use db::{TryFromRow, TryFromRowError};
 
-#[derive(Clone, Debug, TryFromRow)]
+#[derive(Clone, Debug, TryFromRow, Deserialize, Serialize)]
 pub struct Payment {
     pub id: Option<Id>,
     pub unique_id: UniqueId,

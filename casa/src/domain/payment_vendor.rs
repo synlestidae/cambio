@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Deserialize, Serialize)]
 #[postgres(name = "payment_vendor")]
 pub enum PaymentVendor {
     #[postgres(name = "Poli")]

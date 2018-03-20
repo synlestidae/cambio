@@ -3,6 +3,7 @@ use db::{ConnectionSource, PostgresHelper, CambioError};
 use domain::{Account, Id, Transaction, Session};
 use hyper::mime::{Mime};
 use iron::headers::{Cookie, Authorization, Bearer};
+use api::utils::{get_session_token, to_response};
 use iron::request::Request;
 use iron;
 use iron::prelude::*;
@@ -144,40 +145,3 @@ pub fn get_account_id(request: &Request) -> Option<Id> {
     };
     Some(id)
 }
-
-pub fn get_session_token(r: &Request) -> Option<String> {
-    let authorization:Option<&Authorization<Bearer>> = r.headers.get();
-    println!("Autho {:?}", authorization);
-    match authorization {
-        Some(ref bearer) => return Some(bearer.token.to_owned()),
-        None => {}
-    }
-    let cookies_match: Option<&Cookie> = r.headers.get();
-    if cookies_match.is_none() {
-        return None;
-    }
-    let cookie_header = cookies_match.unwrap();
-    for cookie in cookie_header.0.iter() {
-        let cookie_bits: Vec<String> = cookie.clone().split("=").map(|s| s.to_owned()).collect();
-        if cookie_bits[0] == "session_token" {
-            let token = cookie_bits[1].clone();
-            return Some(token);
-        }
-    }
-    None
-}
-
-fn to_response<E: Serialize>(result: Result<E, CambioError>) -> iron::Response {
-    let content_type = "application/json".parse::<Mime>().unwrap();
-    match result {
-        Ok(response_obj) => {
-            let response_json = serde_json::to_string(&response_obj).unwrap();
-            iron::Response::with((iron::status::Ok, response_json, content_type))
-        },
-        Err(err) => {
-            let api_error: ApiError = err.into();
-            api_error.into()
-        }
-    }
-}
-
