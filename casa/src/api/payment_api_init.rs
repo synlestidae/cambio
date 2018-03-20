@@ -12,11 +12,16 @@ use std::borrow::Borrow;
 use std::sync::Arc;
 use api::utils::to_response;
 
-struct PaymentApiInit<T: PostgresHelper> {
+pub struct PaymentApiInit<T: PostgresHelper> {
     helper: T
 }
 
 impl<T: PostgresHelper> PaymentApiInit<T> {
+    pub fn new(helper: T) -> Self {
+        Self {
+            helper: helper
+        }
+    }
 }
 
 impl<T: 'static + PostgresHelper> ApiInit for PaymentApiInit<T> {
