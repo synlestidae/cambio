@@ -31,7 +31,8 @@ export function AccountLine(props: AccountLineProps) {
               expiryYear={ccDetails.expiryYear} 
               cvv={ccDetails.cvv}>
             </CreditCardInput>,
-            <CreditOrderInput></CreditOrderInput>
+            <CreditOrderInput amount={ccOptions.creditDollars} actions={props.actions}>
+            </CreditOrderInput>
         ];
     }
     let creditAccountClass = `btn ${isCrediting? 'active' : ''}`;

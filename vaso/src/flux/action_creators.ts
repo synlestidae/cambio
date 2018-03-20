@@ -4,6 +4,7 @@ import {BasicAction} from './action';
 import * as Actions from './actions';
 import {Api} from '../api';
 import {Account} from '../domain/account';
+import {DollarPayment} from '../domain/payment';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -79,6 +80,15 @@ export class ActionCreators {
 
     public changeCCDetail(field: string, value: string) {
         this.dispatch(new BasicAction('CHANGE_CC_DETAIL', field, value));
+    }
+
+    public changeCreditAmount(amount: string) {
+        this.dispatch(new BasicAction('CHANGE_CREDIT_AMOUNT', amount));
+    }
+
+    public sendPayment(amount: string) {
+        this.api.asyncPostPayment(new DollarPayment(parseFloat(amount) * 100));
+        //this.dispatch(new BasicAction('CHANGE_CREDIT_AMOUNT', amount));
     }
 
     public async getAccountTransactions(account: Account) {

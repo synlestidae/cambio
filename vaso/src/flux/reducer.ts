@@ -88,7 +88,15 @@ function reduceAccounts(state: AppState, action: Action): AppState {
                             throw new Error(`Unknown CC detail field: ${action.value}`)
                     }
                 }
-            break;
+                break;
+            case 'CHANGE_CREDIT_AMOUNT': 
+                const DOLLAR_PATTERN = /(\d+(\.\d+)?)/;
+                let match =  DOLLAR_PATTERN.exec(action.value);
+                let amount = match[1] || '0.00';
+                if (state.page.openOptions instanceof CreditAccountOption) {
+                    state.page.openOptions.creditDollars = amount;
+                }
+                break;
         }
     }
     return state;

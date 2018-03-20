@@ -1,5 +1,6 @@
 import {Session} from './session';
 import {Account} from './domain/account';
+import {Payment} from './domain/Payment';
 import {Transaction} from './domain/transaction';
 
 export class Api {
@@ -47,6 +48,12 @@ export class Api {
         return this.makeRequest(`/accounts/${accountId}/transactions/`, 'GET')
             .then((r: Response) => r.json())
             .then((transactions: any) => (<Transaction[]>transactions));
+    }
+
+    public async asyncPostPayment(payment: Payment): Promise<Payment> {
+        let result = await this.makeRequest('/payment', 'POST', payment);
+        let body = await result.json();
+        return <Payment>body;
     }
 
     private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
