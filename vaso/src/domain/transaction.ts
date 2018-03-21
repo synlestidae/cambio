@@ -1,6 +1,11 @@
 export interface Transaction {
-    utc_date: Date,
-    message: string,
-    value: string,
-    balance: string
+  id: number,
+  asset_type: string,
+  asset_denom: string,
+  value: number,
+  transaction_time: string,
+  accounting_period_id: number,
+  balance: number,
+  message: string,
+  business_ends: string 
 }

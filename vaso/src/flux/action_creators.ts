@@ -78,6 +78,11 @@ export class ActionCreators {
         this.dispatch(new BasicAction('TOGGLE_CREDIT_ACCOUNT', account.id.toString()));
     }
 
+    public toggleTransactions(account: Account) {
+        this.dispatch(new BasicAction('TOGGLE_TRANSACTIONS', account.id.toString()));
+        this.getAccountTransactions(account);
+    }
+
     public changeCCDetail(field: string, value: string) {
         this.dispatch(new BasicAction('CHANGE_CC_DETAIL', field, value));
     }
@@ -92,9 +97,14 @@ export class ActionCreators {
     }
 
     public async getAccountTransactions(account: Account) {
-        let transactions = await this.api.asyncGetAccountTransactions(account.id.toString());
-        console.log('principals a tranny', transactions);
-        this.dispatch(new BasicAction('SET_ACCOUNT_TRANSACTIONS', account.id.toString(), transactions));
+        this.dispatch(new BasicAction('START_LOADING_TRANSACTIONS'));
+        try {
+            let transactions = await this.api.asyncGetAccountTransactions(account.id.toString());
+            this.dispatch(new BasicAction('SET_ACCOUNT_TRANSACTIONS', account.id.toString(), transactions));
+            this.dispatch(new BasicAction('SUCCESS_LOADING_TRANSACTIONS'));
+        } catch (e) {
+            this.dispatch(new BasicAction('ERROR_LOADING_TRANSACTIONS', null, e));
+        }
     }
 
     private handleLoginResolve(response: any) {

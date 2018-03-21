@@ -1,8 +1,9 @@
-import {AccountPage, CreditAccountOption} from './state/account_page';
+import {AccountPage, CreditAccountOption, TransactionListOption} from './state/account_page';
 import {Action} from './action';
 import {AppState, PageName} from './app_state';
 import {LoginPage} from './state/login_page';
 import {Account} from '../domain/Account';
+import {Transaction} from '../domain/transaction';
 
 export function reduce(state: AppState, action: Action): AppState {
     state = reducePage(state, action);
@@ -65,6 +66,34 @@ function reduceAccounts(state: AppState, action: Action): AppState {
                     state.page.openAccount = id;
                 }
                 break;
+            case 'TOGGLE_TRANSACTIONS':
+                state.page.openOptions = new TransactionListOption();
+                break;
+            case 'START_LOADING_TRANSACTIONS':
+                if (state.page.openOptions instanceof TransactionListOption) {
+                    state.page.openOptions.loadingState.startLoading();
+                }
+                break;
+            case 'SUCCESS_LOADING_TRANSACTIONS':
+                if (state.page.openOptions instanceof TransactionListOption) {
+                    state.page.openOptions.loadingState.success();
+                }
+                break;
+
+            case 'ERROR_LOADING_TRANSACTIONS':
+                if (state.page.openOptions instanceof TransactionListOption) {
+                    if (payload instanceof Error) {
+                        state.page.openOptions.loadingState.error(payload);
+                    } else {
+                        state.page.openOptions.loadingState.error();
+                    }
+                }
+                break;
+            case 'SET_ACCOUNT_TRANSACTIONS':
+                if (state.page.openOptions instanceof TransactionListOption) {
+                    state.page.openOptions.transactions = <Transaction[]>payload;
+                }
+                break;
             case 'CHANGE_CC_DETAIL':
                 const correctPayloads = typeof action.payload === 'string' && typeof action.value === 'string';
                 if (state.page.openOptions instanceof CreditAccountOption && correctPayloads) {
@@ -90,7 +119,7 @@ function reduceAccounts(state: AppState, action: Action): AppState {
                 }
                 break;
             case 'CHANGE_CREDIT_AMOUNT': 
-                const DOLLAR_PATTERN = /(\d+(\.\d+)?)/;
+                const DOLLAR_PATTERN = /^(\d*(\.\d*)?)/;
                 let match =  DOLLAR_PATTERN.exec(action.value);
                 let amount = match[1] || '0.00';
                 if (state.page.openOptions instanceof CreditAccountOption) {

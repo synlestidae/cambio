@@ -1,6 +1,7 @@
 import {Page} from './page';
 import {LoadingState} from './loading_state';
 import {Account} from '../../domain/account';
+import {Transaction} from '../../domain/transaction';
 
 export type AccountOption = CreditAccountOption | CashOutOption | TransactionListOption | null;
 
@@ -23,7 +24,8 @@ export class CashOutOption {
 } 
 
 export class TransactionListOption {
-
+    public loadingState: LoadingState = new LoadingState();
+    public transactions: Transaction[]|null = null;
 }
 
 export class CreditCardDetails {
