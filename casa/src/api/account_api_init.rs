@@ -33,6 +33,7 @@ where
         let account_helper: Arc<T> = Arc::new(self.helper.clone());
         let accounts_helpers: Arc<T> = Arc::new(self.helper.clone());
         let transactions_helper: Arc<T> = Arc::new(self.helper.clone());
+        let transaction_helper: Arc<T> = Arc::new(self.helper.clone());
 
         router.get(
             "/accounts/",
@@ -67,7 +68,9 @@ where
         router.get(
             "/accounts/:account_id/transactions/:transaction_id",
             move |r: &mut Request| {
-                unimplemented!()
+                let this_helper_ref: &T = transaction_helper.borrow();
+                let mut api = AccountApiImpl::new(this_helper_ref.clone());
+                Ok(api.get_transaction(r))
             },
             "get_transaction",
         );

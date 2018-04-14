@@ -1,6 +1,6 @@
 use api::{AccountApiTrait, ApiResult, ApiError, ErrorType};
 use db::{ConnectionSource, PostgresHelper, CambioError};
-use domain::{Account, Id, Transaction, Session};
+use domain::{Account, Id, Transaction, Session, AccountStatement};
 use hyper::mime::{Mime};
 use iron::headers::{Cookie, Authorization, Bearer};
 use api::utils::{get_session_token, to_response};
@@ -33,6 +33,20 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
         }
     }
 
+
+    fn get_statement(&mut self, request: &Request) -> Result<AccountStatement, iron::Response> {
+        let account_id = get_param(request).unwrap();
+        let session_token = get_session_token(request).unwrap();
+        let account = self._get_account(request).unwrap();
+        if let Err(err) = self.check_owner(account.owner_user_id.unwrap(), &session_token) {
+            return Err(err.into());
+        }
+        match self.account_service.get_latest_statement(account_id) {
+            Ok(s) => Ok(s),
+            err => Err(to_response(err))
+        }
+    }
+
     fn check_owner(&mut self, owner_id: Id, session_token: &str) -> Result<(), ApiError> {
         let clause = repository::UserClause::SessionToken(session_token.to_owned());
         let session = self.session_repo.read(&clause).unwrap().pop().unwrap();
@@ -61,7 +75,7 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
     }
 
     fn _get_account(&mut self, request: &Request) -> Option<Account> {
-        let account_id = get_account_id(request).unwrap();
+        let account_id = get_param(request).unwrap();
         let clause = repository::UserClause::Id(account_id);
         let session_token = get_session_token(request).unwrap();
         let session_clause = repository::UserClause::SessionToken(session_token);
@@ -112,34 +126,26 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
     }
 
     fn get_transactions(&mut self, request: &Request) -> iron::Response {
-        let account_id = get_account_id(request).unwrap();
-        let session_token = get_session_token(request).unwrap();
-        println!("Token black {:?}", session_token);
-        let account = self._get_account(request).unwrap();
-        if let Err(err) = self.check_owner(account.owner_user_id.unwrap(), &session_token) {
-            println!("Owner check failed!");
-            return err.into();
+        match self.get_statement(request) {
+            Ok(statement) => to_response(Ok(statement.transactions)),
+            Err(err) => err
         }
-        let statement = self.account_service.get_latest_statement(account_id).unwrap();
-        to_response(Ok(statement.transactions))
     }
 
     fn get_transaction(&mut self, request: &Request) -> iron::Response {
-        unimplemented!()
-        //let transactions = try!(self.get_transactions(account_id, session_token));
-        //let mut txs: Vec<Transaction> = transactions.into_iter().filter(|a| a.id == transaction_id).collect();
-        //match txs.pop() {
-        //    Some(tx) => Ok(tx),
-        //    None => Err(ApiError::not_found("Transaction"))
+        let statement = self.get_statement(request);
+        //for tx in statement.transactions.into_iter() {
+        //    if tx.id === 
         //}
+        unimplemented!()
     }
+
 }
 
-pub fn get_account_id(request: &Request) -> Option<Id> {
+pub fn get_param(request: &Request) -> Option<Id> {
     let mut url = request.url.path();//.clone();
     let id = match url[1] {//.pop().unwrap() {
         id_string => {
-            println!("poop {:?}", id_string);
             Id(i32::from_str_radix(id_string, 10).unwrap())
         }
     };
