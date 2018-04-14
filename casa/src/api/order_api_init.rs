@@ -1,13 +1,12 @@
-use api::api_init::ApiInit;
-//use api::{AccountApiTrait, AccountApiImpl, ApiError};
+use api::{OrderApiTrait, OrderApiImpl, ApiInit};
 use db::{PostgresHelper};
 use iron::headers::{Cookie, Authorization, Bearer};
 use iron::request::Request;
 use iron;
 use router::Router;
+use serde_json;
 use std::borrow::Borrow;
 use std::sync::Arc;
-use serde_json;
 
 #[derive(Clone)]
 pub struct OrderApiInit<T: PostgresHelper> {
@@ -27,10 +26,14 @@ where
     T: 'static,
 {
     fn init_api(&mut self, router: &mut Router) {
+        let active_orders_helper: Arc<T> = Arc::new(self.helper.clone());
+
         router.get(
             "/orders/active/",
             move |r: &mut Request| {
-                unimplemented!()
+                let this_helper_ref: &T = active_orders_helper.borrow();
+                let mut api = OrderApiImpl::new();//this_helper_ref.clone());
+                Ok(api.get_active_orders(r))
             },
             "get_active_orders",
         );

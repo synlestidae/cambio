@@ -35,7 +35,7 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
 
 
     fn get_statement(&mut self, request: &Request) -> Result<AccountStatement, iron::Response> {
-        let account_id = get_param(request).unwrap();
+        let account_id = get_param(request, 1).unwrap();
         let session_token = get_session_token(request).unwrap();
         let account = self._get_account(request).unwrap();
         if let Err(err) = self.check_owner(account.owner_user_id.unwrap(), &session_token) {
@@ -75,7 +75,7 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
     }
 
     fn _get_account(&mut self, request: &Request) -> Option<Account> {
-        let account_id = get_param(request).unwrap();
+        let account_id = get_param(request, 1).unwrap();
         let clause = repository::UserClause::Id(account_id);
         let session_token = get_session_token(request).unwrap();
         let session_clause = repository::UserClause::SessionToken(session_token);
@@ -133,18 +133,30 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
     }
 
     fn get_transaction(&mut self, request: &Request) -> iron::Response {
-        let statement = self.get_statement(request);
-        //for tx in statement.transactions.into_iter() {
-        //    if tx.id === 
-        //}
-        unimplemented!()
+        let statement = match self.get_statement(request) {
+            Ok(s) => s,
+            Err(err) => return err
+        };
+        let id = match get_param(request, 1) {
+            Some(id) => id,
+            None => return to_response::<Transaction>(Err(CambioError::format_obj("Cannot parse ID from URL", 
+                "Could not get param at index 1")))
+        };
+        for tx in statement.transactions.into_iter() {
+            if tx.id == id {
+                return to_response(Ok(tx));
+            }
+        }
+        to_response::<Transaction>(Err(CambioError::not_found_search(
+            &format!("Transaction with ID {} not found in latest statement", id),
+            "Could not find that transaction")))
     }
 
 }
 
-pub fn get_param(request: &Request) -> Option<Id> {
+pub fn get_param(request: &Request, idx: usize) -> Option<Id> {
     let mut url = request.url.path();//.clone();
-    let id = match url[1] {//.pop().unwrap() {
+    let id = match url[idx] {
         id_string => {
             Id(i32::from_str_radix(id_string, 10).unwrap())
         }
