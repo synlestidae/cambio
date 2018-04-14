@@ -14,7 +14,7 @@ export interface ContentComponentProps {
 
 export function ContentComponent(props: ContentComponentProps) {
     return <div id="main-content">
-      <div className="page-container signup-container">
+      <div className="page-container">
         <PageComponent state={props.state} actions={props.actions}/>
       </div>
     </div>;
