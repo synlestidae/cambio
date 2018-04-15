@@ -1,5 +1,5 @@
 use api::{OrderApiTrait, OrderApiImpl, ApiInit};
-use db::{PostgresHelper};
+use db;
 use iron::headers::{Cookie, Authorization, Bearer};
 use iron::request::Request;
 use iron;
@@ -9,11 +9,11 @@ use std::borrow::Borrow;
 use std::sync::Arc;
 
 #[derive(Clone)]
-pub struct OrderApiInit<T: PostgresHelper> {
+pub struct OrderApiInit<T: db::PostgresHelper> {
     helper: T
 }
 
-impl<T: PostgresHelper> OrderApiInit<T> {
+impl<T: db::PostgresHelper> OrderApiInit<T> {
     pub fn new(helper: T) -> Self {
         Self {
             helper: helper
@@ -21,7 +21,7 @@ impl<T: PostgresHelper> OrderApiInit<T> {
     }
 }
 
-impl<T: PostgresHelper> ApiInit for OrderApiInit<T>
+impl<T: db::PostgresHelper> ApiInit for OrderApiInit<T>
 where
     T: 'static,
 {
@@ -32,7 +32,7 @@ where
             "/orders/active/",
             move |r: &mut Request| {
                 let this_helper_ref: &T = active_orders_helper.borrow();
-                let mut api = OrderApiImpl::new();//this_helper_ref.clone());
+                let mut api: OrderApiImpl<db::PostgresHelperImpl> = OrderApiImpl::new();
                 Ok(api.get_active_orders(r))
             },
             "get_active_orders",

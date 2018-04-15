@@ -26,6 +26,15 @@ impl CambioError {
         }
     }
 
+    pub fn unauthorised() -> Self {
+        Self {
+            user_message: "Please log in.".to_owned(),
+            system_message: "User is not authorised for this operation".to_owned(),
+            kind: ErrorKind::Unauthorised,
+            reccomendation: ErrorReccomendation::LogIn
+        }
+    }
+
     pub fn user_exists() -> Self {
         Self {
             user_message: "This user is already registered. Please log in.".to_owned(),
