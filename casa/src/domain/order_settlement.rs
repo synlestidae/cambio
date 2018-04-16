@@ -4,6 +4,7 @@ use domain::{SettlementStatus, Order, Id};
 use db::{TryFromRow, TryFromRowError};
 use postgres;
 
+#[derive(Serialize)]
 pub struct OrderSettlement {
     pub id: Option<Id>,
     pub started_at: DateTime<Utc>,

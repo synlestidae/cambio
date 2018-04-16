@@ -12,6 +12,7 @@ use rand;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Session {
     pub id: Option<Id>,
+    pub user_id: Id,
     pub session_token: String,
     pub started_at: DateTime<Utc>,
     pub ttl_milliseconds: i64,
@@ -21,9 +22,10 @@ pub struct Session {
 
 
 impl Session {
-    pub fn new(email_address: &str, ttl_milliseconds: i32) -> Self {
+    pub fn new(email_address: &str, user_id: Id, ttl_milliseconds: i32) -> Self {
         Self {
             id: None,
+            user_id: user_id,
             session_token: random_token_string(),
             started_at: Utc::now(),
             ttl_milliseconds: SESSION_TIME_MILLISECONDS,

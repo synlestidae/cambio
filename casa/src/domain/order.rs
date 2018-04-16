@@ -67,17 +67,36 @@ impl Order {
         }
     }
 
-    pub fn can_exchange(&self, other_order: &Order) -> bool {
-        return self.buy_asset_type == other_order.sell_asset_type &&
-            self.buy_asset_denom == other_order.sell_asset_denom;
+    pub fn can_exchange(&self, 
+        buy_currency: &domain::Currency, 
+        sell_currency: &domain::Currency) -> bool {
+        let are_compatible = (
+            self.buy_asset_type == sell_currency.asset_type &&
+            self.buy_asset_denom == sell_currency.denom &&
+            self.sell_asset_type == buy_currency.asset_type &&
+            self.sell_asset_denom == buy_currency.denom
+        );
+        let one_is_crypto = (
+            self.buy_asset_type.is_crypto() != sell_currency.asset_type.is_crypto() &&
+            self.sell_asset_type.is_crypto() != buy_currency.asset_type.is_crypto()
+        );
+        return are_compatible && one_is_crypto;
     }
 
-    pub fn is_fair(&self, other_order: &Order) -> bool {
+    pub fn is_fair(&self, 
+        buy_currency: &domain::Currency, 
+        sell_currency: &domain::Currency,
+        buy_units: u64,
+        sell_units: u64) -> bool {
         unimplemented!()
     }
 
     pub fn is_expired(&self) -> bool {
         self.expires_at <= Utc::now() 
+    }
+
+    pub fn is_active(&self) -> bool {
+        !self.is_expired() && self.status == domain::OrderStatus::Active
     }
 }
 

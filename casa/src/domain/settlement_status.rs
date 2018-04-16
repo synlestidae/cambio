@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql)]
+#[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize)]
 #[postgres(name = "settlement_status")]
 pub enum SettlementStatus {
     #[postgres(name = "settling")]

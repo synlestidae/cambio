@@ -1,17 +1,21 @@
 use api::utils;
 use api;
-use db;
 use db::PostgresHelper;
+use db;
 use domain;
+use hyper::mime::{Mime};
 use iron;
 use repositories;
-use repository;
 use repository::RepoRead;
+use repository;
+use serde_json;
 use services;
 
 pub struct OrderApiImpl<C: PostgresHelper>  {
     order_repo: repositories::AccountRepository<C>,
     order_service: services::OrderService<C>,
+    settlement_service: services::SettlementService<C>,
+    order_repository: repositories::OrderRepository<C>,
     session_repo: repositories::SessionRepository<C>,
     user_repo: repositories::UserRepository<C>
 }
@@ -61,7 +65,12 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
         };
         let clause = repository::UserClause::SessionToken(session_token.to_owned());
         let session = match self.session_repo.read(&clause).map(|mut s| s.pop()) {
-            Ok(Some(s)) => s,
+            Ok(Some(s)) => {
+                if !s.is_valid() {
+                        return Err(api::ApiError::unauthorised());
+                }
+                s
+            },
             Ok(None) => return Err(api::ApiError::unauthorised()),
             Err(err) => return Err(api::ApiError::from(err))
         };
@@ -133,12 +142,80 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
     }
 
     fn post_buy_order(&mut self, request: &mut iron::Request) -> iron::Response {
+        let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
+        let order: api::OrderBuy = match api::get_api_obj(request) {
+            Ok(obj) => obj,
+            Err(response) => return response
+        };
         // locate the target order
-        // check that owner is different
-        // create a corresponding order
-        // save that order
-        // settle the order 
-        // make some kind of receipt
-        unimplemented!()
+        let order_clause = repository::UserClause::Id(order.order_id);
+        let read_result = self.order_repository.read(&order_clause);
+        let target_order = match read_result.map(|mut o| o.pop()) {
+            Ok(Some(o)) => o,
+            Ok(None) => return api::ApiError::not_found("Order").into(),
+            Err(err) => return api::ApiError::from(err).into()
+        };
+
+        // check the orders are valid and compatible with each other 
+        let unfair_err = db::CambioError::unfair_operation(
+            "The order you chose is either incompatible or no longer active",
+            "Target order.is_fair() returned false");
+        if !target_order.is_active() {
+            let err = db::CambioError::not_permitted(
+                "The order you chose is expired or no longer active",
+                "Target order is expired or is not active"
+            );
+            return api::ApiError::from(err).into();
+        }
+        let request_copy = order.order_request.clone();
+        let buy_currency = domain::Currency::new(
+            request_copy.buy_asset_type, 
+            request_copy.buy_asset_denom);
+        let sell_currency = domain::Currency::new(
+            request_copy.sell_asset_type, 
+            request_copy.sell_asset_denom);
+        if !target_order.is_fair(
+            &buy_currency, 
+            &sell_currency, 
+            request_copy.buy_asset_units,
+            request_copy.sell_asset_units) {
+            return api::ApiError::from(unfair_err).into();
+        }
+        if !target_order.can_exchange(&buy_currency, &sell_currency) {
+            return  api::ApiError::from(unfair_err).into();
+        }
+
+        // create and save a corresponding order
+        let session = match self.get_session(request) {
+            Ok(s) => s,
+            Err(err) => return err.into()
+        };
+        let email_address = session.email_address.unwrap();
+        let our_order = match self.create_order(order.order_request, &email_address) {
+            Ok(o) => o,
+            Err(resp) => return resp
+        };
+
+        // save the settlement
+        let settlement_result = if target_order.buy_asset_type.is_crypto() {
+            // target_order is the buying order
+            self.settlement_service.create_settlement(session.user_id, 
+                &target_order, 
+                &our_order)
+        } else {
+            self.settlement_service.create_settlement(session.user_id, 
+                &our_order,
+                &target_order)
+        };
+
+        // generate the receipt
+        match settlement_result {
+            Ok(settlement) => {
+                let response_json = serde_json::to_string(&settlement).unwrap();
+                let content_type = "application/json".parse::<Mime>().unwrap();
+                iron::Response::with((iron::status::Ok, response_json, content_type))
+            },
+            Err(err) => api::ApiError::from(err).into()
+        }
     }
 }

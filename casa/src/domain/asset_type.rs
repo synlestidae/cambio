@@ -12,6 +12,15 @@ pub enum AssetType {
     ETH
 }
 
+impl AssetType {
+    pub fn is_crypto(&self) -> bool {
+        match self {
+            ref NZD => false,
+            _ => true
+        }
+    }
+}
+
 impl ToString for AssetType {
     fn to_string(&self) -> String {
         let asset_type_str = match self {

@@ -84,10 +84,11 @@ impl<T: PostgresHelper> UserService<T> {
             info!("Hash does not match password");
             return Err(CambioError::invalid_password());
         }
+        let user_id = user.id.unwrap();
 
         drop(password);
 
-        let mut session = Session::new(email_address, SESSION_TIME_MILLISECONDS);
+        let mut session = Session::new(email_address, user_id, SESSION_TIME_MILLISECONDS);
         info!("Creating a session");
         let session = try!(self.session_repository.create(&session));
         Ok(session)
