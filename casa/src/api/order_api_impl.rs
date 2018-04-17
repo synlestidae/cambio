@@ -147,6 +147,7 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
             Ok(obj) => obj,
             Err(response) => return response
         };
+
         // locate the target order
         let order_clause = repository::UserClause::Id(order.order_id);
         let read_result = self.order_repository.read(&order_clause);
