@@ -2,6 +2,9 @@ import {Session} from './session';
 import {Account} from './domain/account';
 import {Payment} from './domain/Payment';
 import {Transaction} from './domain/transaction';
+import {UserOrder} from './domain/user_order';
+import {CurrencyCode} from './domain/currency_code';
+import {CurrencyDenom} from './domain/currency_denom';
 
 export class Api {
     baseUrl = "http://localhost:3000";
@@ -12,6 +15,7 @@ export class Api {
         if (item) {
             this.sessionToken = item;
         }
+        console.log('APE!', this);
     }
 
     public asyncLogInUser(email_address: string, password: string): Promise<void> {
@@ -54,6 +58,30 @@ export class Api {
         let result = await this.makeRequest('/payment', 'POST', payment);
         let body = await result.json();
         return <Payment>body;
+    }
+
+    public async asyncGetActiveOrders(): Promise<UserOrder[]> {
+        let result = await this.makeRequest('/orders/active/', 'GET');
+        let body = await result.json();
+        if (body instanceof Array) {
+            let orders = [];
+            for (let order of body) {
+                let userOrder = new UserOrder(
+                    <string>order.id.toString(),
+                    new Date(order.expires_at),
+                    <string>order.status,
+                    <CurrencyCode>order.sell_asset_type,
+                    <CurrencyDenom>order.sell_asset_denom,
+                    <number>order.sell_asset_units,
+                    <CurrencyCode>order.buy_asset_type,
+                    <CurrencyDenom>order.buy_asset_denom,
+                    <number>order.buy_asset_units
+                );
+                orders.push(userOrder);
+            }
+            return orders;
+        }
+        throw new Error(`Unexpected type for asyncGetActiveOrders ${body.constructor.name || typeof body}`);
     }
 
     private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {

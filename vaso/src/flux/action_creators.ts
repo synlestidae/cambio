@@ -60,6 +60,10 @@ export class ActionCreators {
             window.location.hash = '#accounts';
             this.openAccountPage();
         }
+        if (hash.startsWith('#board')) {
+            window.location.hash = '#board';
+            this.openBoardPage();
+        }
     }
 
     public openAccountPage() {
@@ -72,6 +76,11 @@ export class ActionCreators {
                 }
                 return accounts;
             });
+    }
+
+    public openBoardPage() {
+        this.dispatch(new BasicAction('OPEN_PAGE', 'Board'));
+        this.updateOrderBoard();
     }
 
     public toggleCreditAccount(account: Account) {
@@ -96,6 +105,10 @@ export class ActionCreators {
         //this.dispatch(new BasicAction('CHANGE_CREDIT_AMOUNT', amount));
     }
 
+    public sortOrders(field: string) {
+        this.dispatch(new BasicAction('SORT_ACTIVE_ORDERS', field));
+    }
+
     public async getAccountTransactions(account: Account) {
         this.dispatch(new BasicAction('START_LOADING_TRANSACTIONS'));
         try {
@@ -105,6 +118,19 @@ export class ActionCreators {
         } catch (e) {
             this.dispatch(new BasicAction('ERROR_LOADING_TRANSACTIONS', null, e));
         }
+    }
+
+    public async updateOrderBoard() {
+        let ordersPromise = this.api.asyncGetActiveOrders(); 
+        this.dispatch(new BasicAction('START_LOADING_ACTIVE_ORDERS'));
+        try {
+            let orders = await ordersPromise; 
+            console.log('got board!', orders);
+            this.dispatch(new BasicAction('SET_ACTIVE_ORDERS', null, orders));
+        } catch (e) {
+            this.dispatch(new BasicAction('ERROR_LOADING_ACTIVE_ORDERS', null, e));
+        }
+    
     }
 
     private handleLoginResolve(response: any) {

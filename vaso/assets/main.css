@@ -247,3 +247,8 @@ button:hover {
 .form-col3 {
   width: 33.33%;
 }
+
+.column-form {
+    display: flex;
+    flex-direction: row;
+}

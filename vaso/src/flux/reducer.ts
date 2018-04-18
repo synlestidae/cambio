@@ -2,13 +2,16 @@ import {AccountPage, CreditAccountOption, TransactionListOption} from './state/a
 import {Action} from './action';
 import {AppState, PageName} from './app_state';
 import {LoginPage} from './state/login_page';
+import {BoardPage} from './state/board_page';
 import {Account} from '../domain/Account';
+import {UserOrder} from '../domain/user_order';
 import {Transaction} from '../domain/transaction';
 
 export function reduce(state: AppState, action: Action): AppState {
     state = reducePage(state, action);
     state = reduceLogin(state, action);
     state = reduceAccounts(state, action);
+    state = reduceOrderBoard(state, action);
     return state;
 }
 
@@ -137,6 +140,29 @@ function reducePage(state: AppState, action: Action): AppState {
             state.navigateTo(<PageName>action.value);
         } else {
             throw new Error('Cannot open page. Page name value was missing');
+        }
+    }
+    return state;
+}
+
+function reduceOrderBoard(state: AppState, action: Action): AppState  {
+    if (state.page instanceof BoardPage) {
+        let page = <BoardPage> state.page;
+        switch (action.name) {
+            case 'START_LOADING_ACTIVE_ORDERS':
+                page.loadingState.startLoading();
+                break;
+            case 'SET_ACTIVE_ORDERS':
+                console.log('paypay', action.payload);
+                page.active_orders = <UserOrder[]>action.payload;
+                page.loadingState.success();
+                break;
+            case 'ERROR_LOADING_ACTIVE_ORDERS':
+                page.loadingState.error(action.payload);
+                break;
+            case 'SORT_ACTIVE_ORDERS':
+                page.sortField = action.value;
+                break;
         }
     }
     return state;

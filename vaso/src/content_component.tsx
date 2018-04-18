@@ -4,8 +4,10 @@ import {AccountPage} from './flux/state/account_page';
 import {AppState} from './flux/app_state';
 import {SignupPage} from './signup_page';
 import {AccountPageComponent} from './account_page_component';
+import {BoardPageComponent} from './board_page_component';
 import {Action} from './flux/action'
 import {ActionCreators} from './flux/action_creators'
+import {BoardPage} from './flux/state/board_page';
 
 export interface ContentComponentProps {
     state: AppState,
@@ -33,6 +35,13 @@ function PageComponent(props: ContentComponentProps) {
         return <div>
             <AccountPageComponent page={accountPage} actions={props.actions}>
             </AccountPageComponent>
+        </div>;
+    }
+    if (props.state.page instanceof BoardPage) {
+        let accountPage: BoardPage = props.state.page as BoardPage;
+        return <div>
+            <BoardPageComponent page={accountPage} actions={props.actions}>
+            </BoardPageComponent>
         </div>;
     }
     return null;

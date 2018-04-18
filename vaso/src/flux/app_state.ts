@@ -1,8 +1,9 @@
 import {Page} from './state/page';
 import {LoginPage} from './state/login_page';
 import {AccountPage} from './state/account_page';
+import {BoardPage} from './state/board_page';
 
-export type PageName = 'Login' | 'Accounts';
+export type PageName = 'Login' | 'Accounts' | 'Board';
 
 export class AppState {
     public loggedInAs: string|null;
@@ -28,6 +29,9 @@ export class AppState {
                 break;
             case 'Login':
                 this.page = new LoginPage();
+                break;
+            case 'Board':
+                this.page = new BoardPage();
                 break;
             default: 
                 throw new Error(`Unknown page name: ${pageName}`);
