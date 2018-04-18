@@ -12,17 +12,25 @@ use serde_json;
 use services;
 
 pub struct OrderApiImpl<C: PostgresHelper>  {
-    order_repo: repositories::AccountRepository<C>,
+    order_repo: repositories::OrderRepository<C>,
     order_service: services::OrderService<C>,
     settlement_service: services::SettlementService<C>,
-    order_repository: repositories::OrderRepository<C>,
     session_repo: repositories::SessionRepository<C>,
     user_repo: repositories::UserRepository<C>
 }
 
 impl<C: PostgresHelper> OrderApiImpl<C> {
-    pub fn new() -> Self {
-        unimplemented!()
+    pub fn new(db_helper: C) -> Self {
+        let eth_path = "/Users/mate/work/cambio/eth_test/data/geth.ipc";
+        let settlement_service = 
+                services::SettlementService::new(db_helper.clone(), eth_path);
+        Self {
+            order_repo: repositories::OrderRepository::new(db_helper.clone()),
+            order_service: services::OrderService::new(db_helper.clone()),
+            settlement_service: settlement_service,
+            session_repo: repositories::SessionRepository::new(db_helper.clone()),
+            user_repo: repositories::UserRepository::new(db_helper)
+        }
     }
 
     fn check_owner(&mut self, owner_id: domain::Id, session_token: &str) -> Result<(), api::ApiError> {
@@ -150,7 +158,7 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
 
         // locate the target order
         let order_clause = repository::UserClause::Id(order.order_id);
-        let read_result = self.order_repository.read(&order_clause);
+        let read_result = self.order_repo.read(&order_clause);
         let target_order = match read_result.map(|mut o| o.pop()) {
             Ok(Some(o)) => o,
             Ok(None) => return api::ApiError::not_found("Order").into(),

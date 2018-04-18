@@ -25,7 +25,7 @@ CREATE TABLE eth_transactions (
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
-    unique_id VARCHAR(32) NOT NULL,
+    unique_id VARCHAR(32) NOT NULL UNIQUE,
 
     sell_asset_units BIGUINT NOT NULL,
     buy_asset_units BIGUINT NOT NULL,
@@ -76,7 +76,10 @@ BEGIN
     END IF;
 
     IF sell_asset_type_id_var IS NULL THEN
-        RAISE EXCEPTION 'Buy asset ID not found';
+        RAISE EXCEPTION 'Sell asset ID % not found for % %', 
+            sell_asset_type_id_var, 
+            sell_asset_type_var, 
+            sell_asset_denom_var;
     END IF;
 
     INSERT INTO asset_order(owner_id, unique_id, sell_asset_units, buy_asset_units, sell_asset_type_id,

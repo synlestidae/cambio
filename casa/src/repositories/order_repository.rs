@@ -58,6 +58,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
             &item.buy_asset_units,
             &item.expires_at.naive_utc()
         ];
+        println!("Pampams {:?}", params);
         let rows = try!(self.db_helper.execute(PLACE_ORDER, params));
         if rows == 0 {
             Err(db::CambioError::db_update_failed("Order"))
@@ -140,9 +141,14 @@ const SELECT_ALL: &'static str = "
         buy_asset_type.asset_code AS buy_asset_code,  
         buy_asset_type.denom AS buy_asset_denom
     FROM asset_order orders,
-         account_owner owners, 
          asset_type buy_asset_type, 
-         asset_type sell_asset_type";
+         asset_type sell_asset_type,
+         account_owner owner 
+    WHERE 
+        orders.buy_asset_type_id = buy_asset_type.id AND
+        orders.sell_asset_type_id = sell_asset_type.id AND
+        orders.owner_id = owner.id";
+    
 
 const SELECT_ALL_ACTIVE: &'static str = "
     SELECT 
@@ -153,10 +159,15 @@ const SELECT_ALL_ACTIVE: &'static str = "
         buy_asset_type.asset_code AS buy_asset_code,  
         buy_asset_type.denom AS buy_asset_denom
     FROM asset_order orders,
-         account_owner owners, 
          asset_type buy_asset_type, 
-         asset_type sell_asset_type
-    WHERE orders.status = 'active'";
+         asset_type sell_asset_type,
+         account_owner owner 
+    WHERE 
+        orders.status = 'active' AND
+        orders.buy_asset_type_id = buy_asset_type.id AND
+        orders.sell_asset_type_id = sell_asset_type.id AND
+        orders.owner_id = owner.id AND
+        now() at time zone 'utc' < orders.expires_at";
 
 const SELECT_BY_ID: &'static str = "
     SELECT 
