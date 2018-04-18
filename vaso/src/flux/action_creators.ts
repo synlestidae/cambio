@@ -145,7 +145,6 @@ export class ActionCreators {
         this.dispatch(new BasicAction('START_LOADING_ACTIVE_ORDERS'));
         try {
             let orders = await ordersPromise; 
-            console.log('got board!', orders);
             this.dispatch(new BasicAction('SET_ACTIVE_ORDERS', null, orders));
         } catch (e) {
             this.dispatch(new BasicAction('ERROR_LOADING_ACTIVE_ORDERS', null, e));

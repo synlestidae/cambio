@@ -15,7 +15,6 @@ export class Api {
         if (item) {
             this.sessionToken = item;
         }
-        console.log('APE!', this);
     }
 
     public asyncLogInUser(email_address: string, password: string): Promise<void> {
@@ -100,8 +99,6 @@ export class Api {
             headers: headers,
             body: body
         };
-
-        console.log('making request', body, params);
 
         if (jsonBody) {
             let bodyString: string;

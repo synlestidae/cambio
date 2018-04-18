@@ -10,7 +10,6 @@ export interface TransactionListProps {
 }
 
 export function TransactionList(props: TransactionListProps) {
-    console.log('transaccos', props);
     if (props.loadingState.name === 'Loading') {
         return <div className="container">Loading this account's transactions...</div>
     }

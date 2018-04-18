@@ -154,7 +154,6 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 page.loadingState.startLoading();
                 break;
             case 'SET_ACTIVE_ORDERS':
-                console.log('paypay', action.payload);
                 page.active_orders = <UserOrder[]>action.payload;
                 page.loadingState.success();
                 break;
@@ -176,7 +175,6 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                     page.sortDir = 'asc';
                 }
                 page.sortField = action.value;
-                console.log('sorted boi', page);
                 break;
 
             case 'NEW_ORDER':

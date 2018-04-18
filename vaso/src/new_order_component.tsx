@@ -84,7 +84,13 @@ interface CurrencyInputProps {
 
 function CurrencyInput(props: CurrencyInputProps) {
     return <div>
-        <input type="number" value={props.value} onChange={(e: any) => props.onChange(e.target.value as number)}>
+        <input type="number" value={props.value} onChange={(e: any) => {
+            let valNumber = parseFloat(e.target.value);
+            if (isNaN(valNumber) || !isFinite(valNumber)) {
+                throw new Error(`Failed to correct parse unit value '${e.target.value}'`);
+            }
+            props.onChange(valNumber)
+        }}>
         </input>
         <span> 
           <i>{formatCurrency(props.value, props.currencyCode, props.currencyDenom)}</i>
