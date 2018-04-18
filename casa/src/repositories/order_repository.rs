@@ -58,7 +58,6 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
             &item.buy_asset_units,
             &item.expires_at.naive_utc()
         ];
-        println!("Pampams {:?}", params);
         let rows = try!(self.db_helper.execute(PLACE_ORDER, params));
         if rows == 0 {
             Err(db::CambioError::db_update_failed("Order"))

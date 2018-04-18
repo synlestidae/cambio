@@ -86,7 +86,6 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
     let mut eth_account_repo = repositories::EthAccountRepository::new(get_db_helper());
     let clause = repository::UserClause::EmailAddress(who.to_owned());
     let account = eth_account_repo.read(&clause).unwrap().pop().unwrap();
-    println!("Crediting 0x{:#x} with 0x{:#x} wei", account.address, wei);
     let args = &["../moneda/index.js", 
         "../eth_test/data/geth.ipc", 
         "0xA990F82d33Fd19C3872dc12c588A66224b9330A6",
@@ -94,7 +93,6 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
         &format!("0x{:#x}", wei),
         "77173c4b349c6342ae695f86c5610688606de77361769bd8919301fc55823f1b" 
     ];
-    println!("{:?}", args);
     let mut output = Command::new("node")
         .args(args) 
         .spawn()
