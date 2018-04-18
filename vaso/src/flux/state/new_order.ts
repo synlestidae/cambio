@@ -3,7 +3,10 @@ import {Order} from '../../domain/Order';
 export class NewOrder {
     public order: Order = new Order('NZD', 'Cent', 0, 'ETH', 'Szabo', 0);
     public unique_id: string = getUniqueID(10);
+    public orderState: OrderState = 'Initial';
 }
+
+export type OrderState = 'Initial' | 'ReadyToSubmit' | 'Failed' | 'Submitted';
 
 function getUniqueID(length: number) {
     const POSSIBLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
