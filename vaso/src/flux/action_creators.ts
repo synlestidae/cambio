@@ -5,6 +5,7 @@ import * as Actions from './actions';
 import {Api} from '../api';
 import {Account} from '../domain/account';
 import {DollarPayment} from '../domain/payment';
+import {CurrencyCode} from '../domain/currency_code';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -81,6 +82,25 @@ export class ActionCreators {
     public openBoardPage() {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Board'));
         this.updateOrderBoard();
+    }
+
+    public setNewOrderBuyCurrency(currency: CurrencyCode) {
+        this.dispatch(new BasicAction('SET_NEW_ORDER', 'buy_asset_type', currency));
+    }
+
+    public setNewOrderSellCurrency(currency: CurrencyCode) {
+        this.dispatch(new BasicAction('SET_NEW_ORDER', 'sell_asset_type', currency));
+    }
+    public setNewOrderBuyUnits(units: number) {
+        this.dispatch(new BasicAction('SET_NEW_ORDER', 'buy_asset_units', units));
+    }
+
+    public setNewOrderSellUnits(units: number) {
+        this.dispatch(new BasicAction('SET_NEW_ORDER', 'sell_asset_units', units));
+    }
+
+    public newOrder() {
+        this.dispatch(new BasicAction('NEW_ORDER'));
     }
 
     public toggleCreditAccount(account: Account) {

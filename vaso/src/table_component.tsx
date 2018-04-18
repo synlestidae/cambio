@@ -41,17 +41,19 @@ function getColumnHeader<E>(h: Column<E>, i: number, sortCB?: (field: string) =>
      </span>
         &nbsp;
      <span>
-        {h.sortable? <i className="fas fa-sort" onClick={() => sortCB && sortCB(h.title)}></i> : null}
+        {h.sortable? <i className="fas fa-sort clickable" onClick={() => sortCB && sortCB(h.title)}></i> : null}
       </span>
     </th>;
 }
 
 function getRow<E>(headers: FieldColumn<E>[], row: E, i: number) {
     let columns = [];
+    let key = 0;
     for (let header of headers) {
         let contents: string;
         contents = header.cell(row);
-        columns.push(<td>{contents}</td>);
+        columns.push(<td key={key}>{contents}</td>);
+        key++;
     }
     return <tr key={i}>{columns}</tr>;
 }
@@ -66,5 +68,5 @@ export function TableComponent<E>(props: TableComponentProps<E>) {
         </tr>
         {rows}
       </tbody>
-    </table>;
+    </table>
 }

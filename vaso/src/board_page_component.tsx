@@ -32,18 +32,31 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     let orders = props.page.active_orders;
     let columns = getColumns();
     let sortCB = (field: string) => props.actions.sortOrders(field);
-    sortRows(orders, props.page.sortField);
+    orders = sortRows(orders, props.page.sortField);
+    let newOrder = props.page.newOrder;
+    let newOrderComponent = newOrder? 
+        <NewOrderComponent newOrder={newOrder} actions={props.actions}>
+        </NewOrderComponent> : 
+        <NewOrderButton onClick={() => props.actions.newOrder()}>
+        </NewOrderButton>;
     return <div>
         <TableComponent columns={columns} rows={orders} sortCB={sortCB}>
-        </TableComponent>;
+        </TableComponent>
         <div>
-          <NewOrderComponent></NewOrderComponent>
+          {newOrderComponent}
         </div>
     </div>;
 }
 
-function sortRows(orders: UserOrder[], field: string) {
-    orders.sort(function(o1: UserOrder, o2: UserOrder) {
+function NewOrderButton(props: {onClick: () => void}) {
+    return <button className="btn btn-primary" type="submit" onClick={props.onClick}>
+        Place order
+    </button>;
+}
+
+function sortRows(orders: UserOrder[], field: string): UserOrder[]{
+    orders = orders.filter(() => true);
+    return orders.sort(function(o1: UserOrder, o2: UserOrder) {
         if (!field) {
             return 0;
         }

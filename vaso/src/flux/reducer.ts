@@ -6,6 +6,7 @@ import {BoardPage} from './state/board_page';
 import {Account} from '../domain/Account';
 import {UserOrder} from '../domain/user_order';
 import {Transaction} from '../domain/transaction';
+import {NewOrder} from './state/new_order';
 
 export function reduce(state: AppState, action: Action): AppState {
     state = reducePage(state, action);
@@ -161,7 +162,28 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 page.loadingState.error(action.payload);
                 break;
             case 'SORT_ACTIVE_ORDERS':
+                if (page.sortField === action.value) {
+                    if (page.sortDir === null) {
+                        page.sortDir = 'asc';
+                    } else if (page.sortDir === 'asc') {
+                        page.sortDir = 'desc';
+                    } else {
+                        page.sortDir = null;
+                        page.sortField = null;
+                        return state;
+                    }
+                } else {
+                    page.sortDir = 'asc';
+                }
                 page.sortField = action.value;
+                console.log('sorted boi', page);
+                break;
+
+            case 'NEW_ORDER':
+                page.newOrder = new NewOrder();
+                break;
+            case 'SET_NEW_ORDER': 
+                (page.newOrder.order as any)[action.value] = action.payload;
                 break;
         }
     }
