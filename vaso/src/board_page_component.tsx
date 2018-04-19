@@ -4,6 +4,7 @@ import {ActionCreators} from './flux/action_creators';
 import {BoardPage} from './flux/state/board_page';
 import {TableComponent, Column, FieldColumn} from './table_component';
 import {NewOrderComponent} from './new_order_component';
+import {ConfirmOrderComponent} from './confirm_order_component';
 
 interface BoardPageComponentProps {
     actions: ActionCreators,
@@ -34,11 +35,17 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     let sortCB = (field: string) => props.actions.sortOrders(field);
     orders = sortRows(orders, props.page.sortField);
     let newOrder = props.page.newOrder;
-    let newOrderComponent = newOrder? 
-        <NewOrderComponent newOrder={newOrder} actions={props.actions}>
-        </NewOrderComponent> : 
-        <NewOrderButton onClick={() => props.actions.newOrder()}>
+    let newOrderComponent; //= newOrder? 
+    if (!newOrder) {
+        newOrderComponent = <NewOrderButton onClick={() => props.actions.newOrder()}>
         </NewOrderButton>;
+    } else if (newOrder.orderState === 'Initial') {
+        newOrderComponent = <NewOrderComponent newOrder={newOrder} actions={props.actions}>
+        </NewOrderComponent>; 
+    } else {
+        newOrderComponent = <ConfirmOrderComponent actions={props.actions} newOrder={newOrder}>
+            </ConfirmOrderComponent>;
+    }
     return <div>
         <div>
           {newOrderComponent}

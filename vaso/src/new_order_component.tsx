@@ -15,7 +15,7 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
     const onChangeBuyUnits = (v: number) => props.actions.setNewOrderBuyUnits(v);
     const onChangeSellUnits = (v: number) => props.actions.setNewOrderSellUnits(v);
     const onChangeConfirm = (v: string) => props.actions.setNewOrderUniqueId(v);
-    const onSubmit = () => {};
+    const onSubmit = () => {props.actions.startNewOrderConfirm()};
 
     let order = props.newOrder.order;
     return <div>

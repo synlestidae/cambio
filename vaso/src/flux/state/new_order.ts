@@ -12,7 +12,7 @@ export class NewOrder {
     }
 }
 
-export type OrderState = 'Initial' | 'ReadyToSubmit' | 'Failed' | 'Submitted';
+export type OrderState = 'Initial' | 'ReadyToConfirm' | 'ReadyToSubmit' | 'Failed' | 'Submitted';
 
 function getUniqueID(length: number) {
     const POSSIBLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";

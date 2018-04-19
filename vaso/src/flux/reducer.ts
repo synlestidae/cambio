@@ -6,7 +6,7 @@ import {BoardPage} from './state/board_page';
 import {Account} from '../domain/Account';
 import {UserOrder} from '../domain/user_order';
 import {Transaction} from '../domain/transaction';
-import {NewOrder} from './state/new_order';
+import {NewOrder, OrderState} from './state/new_order';
 
 export function reduce(state: AppState, action: Action): AppState {
     state = reducePage(state, action);
@@ -183,6 +183,8 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
             case 'SET_NEW_ORDER': 
                 (page.newOrder.order as any)[action.value] = action.payload;
                 break;
+            case 'SET_NEW_ORDER_STATE':
+                page.newOrder.orderState = <OrderState>action.value;
         }
     }
     return state;

@@ -103,6 +103,10 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'unique_id', uniqueId));
     }
 
+    public startNewOrderConfirm() {
+        this.dispatch(new BasicAction('SET_NEW_ORDER_STATE', 'ReadyToConfirm'));
+    }
+
     public newOrder() {
         this.dispatch(new BasicAction('NEW_ORDER'));
     }
