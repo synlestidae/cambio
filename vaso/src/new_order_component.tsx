@@ -14,7 +14,8 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
     const onSelectSell = (c: CurrencyCode) => props.actions.setNewOrderSellCurrency(c);
     const onChangeBuyUnits = (v: number) => props.actions.setNewOrderBuyUnits(v);
     const onChangeSellUnits = (v: number) => props.actions.setNewOrderSellUnits(v);
-    const onSubmit = () => {props.actions.startNewOrderConfirm()};
+    const onSubmit = () => props.actions.startNewOrderConfirm();
+    const onCancel = () => props.actions.cancelNewOrder();
 
     let order = props.newOrder.order;
 
@@ -57,6 +58,9 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
             <input value={order.formatPrice() || '--'} className="form-control"></input>
         </div>
     </div>
+        <div>
+            <button className="btn btn-primary" onClick={onCancel}>Cancel</button>
+        </div>
         <div>
             <button className="btn btn-primary" onClick={onSubmit}>Submit order</button>
         </div>

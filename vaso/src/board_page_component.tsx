@@ -16,7 +16,7 @@ function getColumns() {
 
     let sellHeader = new FieldColumn<UserOrder>('Wants to sell', 'sell_asset_type', (o: UserOrder) => o.sell_asset_type);
     let buyHeader = new FieldColumn<UserOrder>('Wants to buy', 'buy_asset_type', (o: UserOrder) => o.buy_asset_type);
-    let priceHeader = new FieldColumn<UserOrder>('Price', 'price', (o: UserOrder) => o.formatPrice() || '--');
+    let priceHeader = new FieldColumn<UserOrder>('Ether unit price', 'price', (o: UserOrder) => o.formatPrice() || '--');
     let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', (o: UserOrder) => o.formatExpiryMinutes());
     let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => o.status);
 
