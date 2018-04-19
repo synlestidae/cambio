@@ -4,10 +4,32 @@ import {CurrencyDenom} from './currency_denom';
 export class Order {
     sell_asset_type: CurrencyCode;
     sell_asset_denom: CurrencyDenom;
-    sell_asset_units: number;
+    _sell_asset_units: number;
     buy_asset_type: CurrencyCode;
     buy_asset_denom: CurrencyDenom;
-    buy_asset_units: number;
+    _buy_asset_units: number;
+
+    set buy_asset_units(units: number) {
+        if (units < 0) {
+            return;
+        }
+        this._buy_asset_units = units;
+    }
+
+    get buy_asset_units() {
+        return this._buy_asset_units;
+    }
+
+    set sell_asset_units(units: number) {
+        if (units < 0) {
+            return;
+        }
+        this._sell_asset_units = units;
+    }
+
+    get sell_asset_units() {
+        return this._sell_asset_units;
+    }
 
     constructor(sell_asset_type: CurrencyCode,
         sell_asset_denom: CurrencyDenom,
@@ -21,6 +43,17 @@ export class Order {
             this.buy_asset_type = buy_asset_type; 
             this.buy_asset_denom = buy_asset_denom; 
             this.buy_asset_units = buy_asset_units; 
+    }
+
+    public isValid() {
+        let sell = this.sell_asset_type;
+        let buy = this.buy_asset_type;
+
+        let currenciesCorrect = (buy === 'NZD' && sell === 'ETH') || (buy === 'ETH' && sell === 'NZD');
+        let unitsCorrect = this.buy_asset_units > 0 && this.sell_asset_units > 0;
+        let hasPrice = this.getEthPrice();
+
+        return hasPrice && currenciesCorrect;
     }
 
     public formatBuy() {
@@ -53,6 +86,10 @@ export class Order {
             numerator = order.sell_asset_units;
             denominator = order.buy_asset_units;
         } else {
+            return null;
+        }
+
+        if (numerator === 0) {
             return null;
         }
 

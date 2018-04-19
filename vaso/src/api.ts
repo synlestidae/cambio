@@ -3,6 +3,7 @@ import {Account} from './domain/account';
 import {Payment} from './domain/Payment';
 import {Transaction} from './domain/transaction';
 import {UserOrder} from './domain/user_order';
+import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
 
@@ -59,23 +60,29 @@ export class Api {
         return <Payment>body;
     }
 
+    public async asyncPostOrder(order: OrderRequest): Promise<UserOrder> {
+        let orderJSON = {
+            unique_id: order.unique_id,
+            sell_asset_type: order.sell_asset_type,
+            sell_asset_denom: order.sell_asset_denom,
+            sell_asset_units: order.sell_asset_units,
+            buy_asset_type: order.buy_asset_type,
+            buy_asset_denom: order.buy_asset_denom,
+            buy_asset_units: order.buy_asset_units,
+            expires_at: order.expiry.toISOString()
+        };
+        let orderResult = await this.makeRequest('/orders/new_order', 'POST', orderJSON); 
+        let resultJSON = await orderResult.json();
+        return parseUserOrder(resultJSON);
+    }
+
     public async asyncGetActiveOrders(): Promise<UserOrder[]> {
         let result = await this.makeRequest('/orders/active/', 'GET');
         let body = await result.json();
         if (body instanceof Array) {
             let orders = [];
             for (let order of body) {
-                let userOrder = new UserOrder(
-                    <string>order.id.toString(),
-                    new Date(order.expires_at),
-                    <string>order.status,
-                    <CurrencyCode>order.sell_asset_type,
-                    <CurrencyDenom>order.sell_asset_denom,
-                    <number>order.sell_asset_units,
-                    <CurrencyCode>order.buy_asset_type,
-                    <CurrencyDenom>order.buy_asset_denom,
-                    <number>order.buy_asset_units
-                );
+                let userOrder = parseUserOrder(order);
                 orders.push(userOrder);
             }
             return orders;
@@ -120,4 +127,18 @@ export class Api {
             }
         });
     }
+}
+
+function parseUserOrder(order: any) {
+    return new UserOrder(
+        <string>order.id.toString(),
+        new Date(order.expires_at),
+        <string>order.status,
+        <CurrencyCode>order.sell_asset_type,
+        <CurrencyDenom>order.sell_asset_denom,
+        <number>order.sell_asset_units,
+        <CurrencyCode>order.buy_asset_type,
+        <CurrencyDenom>order.buy_asset_denom,
+        <number>order.buy_asset_units
+    );
 }

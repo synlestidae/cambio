@@ -14,10 +14,14 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
     const onSelectSell = (c: CurrencyCode) => props.actions.setNewOrderSellCurrency(c);
     const onChangeBuyUnits = (v: number) => props.actions.setNewOrderBuyUnits(v);
     const onChangeSellUnits = (v: number) => props.actions.setNewOrderSellUnits(v);
-    const onChangeConfirm = (v: string) => props.actions.setNewOrderUniqueId(v);
     const onSubmit = () => {props.actions.startNewOrderConfirm()};
 
     let order = props.newOrder.order;
+
+    let showValidationError = props.newOrder.showValidation && !order.isValid();
+    let validationError = showValidationError? <div className="error-text">
+        Your order isn't valid. Check the fields and try again.
+    </div> : null;
     return <div>
       <div className="flex-horizontal">
         <div className="flex-vertical order-entry">
@@ -52,20 +56,12 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
             <label>Ethereum Price</label>
             <input value={order.formatPrice() || '--'} className="form-control"></input>
         </div>
-        <div className="flex-vertical order-entry">
-            <label>Confirm</label>
-            <input type="text" className="form-control" value={props.newOrder.unique_id} disabled>
-            </input>
-            <input type="text" 
-              className="form-control" 
-              onChange={(e: any) => onChangeConfirm(e.target.value as string)} 
-              value={props.newOrder.order.unique_id} 
-              placeholder="Copy the characters above">
-            </input>
-        </div>
     </div>
         <div>
             <button className="btn btn-primary" onClick={onSubmit}>Submit order</button>
+        </div>
+        <div>
+            {validationError}
         </div>
     </div>
 }
@@ -102,6 +98,9 @@ interface CurrencyInputProps {
 function CurrencyInput(props: CurrencyInputProps) {
     return <div>
         <input type="number" className="form-control" value={props.value} onChange={(e: any) => {
+            if (e.target.value === '') {
+                return;
+            }
             let valNumber = parseFloat(e.target.value);
             if (isNaN(valNumber) || !isFinite(valNumber)) {
                 throw new Error(`Failed to correct parse unit value '${e.target.value}'`);

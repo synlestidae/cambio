@@ -4,6 +4,7 @@ export class NewOrder {
     public unique_id: string = getUniqueID(10);
     public orderState: OrderState = 'Initial';
     public order: OrderRequest;
+    public showValidation = false;
 
     constructor() {
         let defaultExpiry = new Date(); 
@@ -12,7 +13,7 @@ export class NewOrder {
     }
 }
 
-export type OrderState = 'Initial' | 'ReadyToConfirm' | 'ReadyToSubmit' | 'Failed' | 'Submitted';
+export type OrderState = 'Initial' | 'ReadyToConfirm' | 'Submitting' | 'Failed' | 'Success';
 
 function getUniqueID(length: number) {
     const POSSIBLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";

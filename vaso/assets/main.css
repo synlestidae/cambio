@@ -265,3 +265,7 @@ button:hover {
 .order-entry + .order-entry{
     margin-left: 15px;
 }
+
+table.table-component {
+    text-align: left;
+}

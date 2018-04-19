@@ -180,11 +180,39 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
             case 'NEW_ORDER':
                 page.newOrder = new NewOrder();
                 break;
+            case 'EDIT_NEW_ORDER':
+                if (page.newOrder.orderState === 'ReadyToConfirm') {
+                    page.newOrder.orderState = 'Initial';
+                } else {
+                    let errMsg = `Can only handle ${action.name} if order state is ReadyToConfirm. Current state is ${page.newOrder.orderState}`;
+                    throw new Error(errMsg);
+                }
+                break;
+            case 'CANCEL_NEW_ORDER':
+                page.newOrder = null;
+                break;
             case 'SET_NEW_ORDER': 
                 (page.newOrder.order as any)[action.value] = action.payload;
                 break;
             case 'SET_NEW_ORDER_STATE':
+                let order = page.newOrder.order;
+                if (page.newOrder.orderState === 'Initial' && action.value === 'ReadyToConfirm') {
+                    if (!order.isValid()) {
+                        page.newOrder.showValidation = true;
+                        return state;
+                    }
+                }
                 page.newOrder.orderState = <OrderState>action.value;
+                break;
+            case 'BEGIN_SUBMITTING_ORDER':
+                page.newOrder.orderState = 'Submitting';
+                break;
+            case 'ORDER_SUBMIT_SUCCESS':
+                page.newOrder.orderState = 'Success';
+                break;
+            case 'ORDER_SUBMIT_FAIL':
+                page.newOrder.orderState = 'Failed';
+                break;
         }
     }
     return state;

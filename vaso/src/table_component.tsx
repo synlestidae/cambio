@@ -61,7 +61,7 @@ function getRow<E>(headers: FieldColumn<E>[], row: E, i: number) {
 export function TableComponent<E>(props: TableComponentProps<E>) {
     let columns = props.columns.map((h: Column<E>, i: number) => getColumnHeader(h, i, props.sortCB));
     let rows = props.rows.map((r: E, i: number) => getRow(props.columns, r, i));
-    return <table style={{width: '100%'}}>
+    return <table style={{width: '100%'}} className="table-component">
       <tbody>
         <tr>
           {columns}
