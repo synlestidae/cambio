@@ -1,9 +1,15 @@
-import {Order} from '../../domain/Order';
+import {OrderRequest} from '../../domain/order_request';
 
 export class NewOrder {
-    public order: Order = new Order('NZD', 'Cent', 0, 'ETH', 'Szabo', 0);
     public unique_id: string = getUniqueID(10);
     public orderState: OrderState = 'Initial';
+    public order: OrderRequest;
+
+    constructor() {
+        let defaultExpiry = new Date(); 
+        defaultExpiry.setMinutes(defaultExpiry.getMinutes() + 15);
+        this.order = new OrderRequest('', defaultExpiry, 'Active', 'NZD', 'Cent', 0, 'ETH', 'Szabo', 0);
+    }
 }
 
 export type OrderState = 'Initial' | 'ReadyToSubmit' | 'Failed' | 'Submitted';

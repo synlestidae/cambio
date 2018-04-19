@@ -99,6 +99,10 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'sell_asset_units', units));
     }
 
+    public setNewOrderUniqueId(uniqueId: string) {
+        this.dispatch(new BasicAction('SET_NEW_ORDER', 'unique_id', uniqueId));
+    }
+
     public newOrder() {
         this.dispatch(new BasicAction('NEW_ORDER'));
     }

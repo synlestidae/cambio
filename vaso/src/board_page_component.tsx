@@ -15,8 +15,8 @@ function getColumns() {
 
     let sellHeader = new FieldColumn<UserOrder>('Wants to sell', 'sell_asset_type', (o: UserOrder) => o.sell_asset_type);
     let buyHeader = new FieldColumn<UserOrder>('Wants to buy', 'buy_asset_type', (o: UserOrder) => o.buy_asset_type);
-    let priceHeader = new FieldColumn<UserOrder>('Price', 'price', formatPrice);
-    let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', formatExpiry);
+    let priceHeader = new FieldColumn<UserOrder>('Price', 'price', (o: UserOrder) => o.formatPrice() || '--');
+    let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', (o: UserOrder) => o.formatExpiryMinutes());
     let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => o.status);
 
     headers.push(sellHeader);
@@ -40,11 +40,11 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
         <NewOrderButton onClick={() => props.actions.newOrder()}>
         </NewOrderButton>;
     return <div>
-        <TableComponent columns={columns} rows={orders} sortCB={sortCB}>
-        </TableComponent>
         <div>
           {newOrderComponent}
         </div>
+        <TableComponent columns={columns} rows={orders} sortCB={sortCB}>
+        </TableComponent>
     </div>;
 }
 
@@ -61,7 +61,7 @@ function sortRows(orders: UserOrder[], field: string): UserOrder[]{
             return 0;
         }
         if (field === 'price') {
-            return getPrice(o1) - getPrice(o2);
+            return o1.getEthPrice() - o2.getEthPrice();
         }
         let val1 = (o1 as any);
         let val2 = (o2 as any);
@@ -70,35 +70,4 @@ function sortRows(orders: UserOrder[], field: string): UserOrder[]{
         }
         return val1 - val2;
     });
-}
-
-function getPrice(order: UserOrder) {
-    if (order.buy_asset_type === 'NZD') {
-        return order.buy_asset_units / order.sell_asset_units;
-    } else {
-        return order.sell_asset_units / order.buy_asset_units;
-    }
-}
-
-function formatPrice(order: UserOrder) {
-    let price: number = getPrice(order);
-    let priceWithDP = price.toFixed(4); 
-    return `$${priceWithDP}`;
-}
-
-function formatExpiry(order: UserOrder): string {
-    let date = order.expiry;
-    let delta = date.getTime() - new Date().getTime();
-    if (delta <= 0) {
-        return '--';
-    }
-    let minutes = delta / (1000 * 60);
-    if (minutes < 1) {
-        return 'Less than a minute';
-    }
-    if (minutes < 2) {
-        return '1 minute';
-    }
-    let minutesDP = minutes.toFixed(0);
-    return `${minutesDP} minutes`;
 }

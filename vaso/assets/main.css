@@ -261,3 +261,7 @@ button:hover {
 .clickable {
     cursor: pointer;
 }
+
+.order-entry + .order-entry{
+    margin-left: 15px;
+}

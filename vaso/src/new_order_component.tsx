@@ -14,16 +14,19 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
     const onSelectSell = (c: CurrencyCode) => props.actions.setNewOrderSellCurrency(c);
     const onChangeBuyUnits = (v: number) => props.actions.setNewOrderBuyUnits(v);
     const onChangeSellUnits = (v: number) => props.actions.setNewOrderSellUnits(v);
+    const onChangeConfirm = (v: string) => props.actions.setNewOrderUniqueId(v);
+    const onSubmit = () => {};
 
     let order = props.newOrder.order;
-    return <div className="flex-horizontal">
-        <div className="flex-vertical">
+    return <div>
+      <div className="flex-horizontal">
+        <div className="flex-vertical order-entry">
             <label>You want to buy</label>
             <CurrencyDropdown selected={order.buy_asset_type} onSelect={onSelectBuy}>
             </CurrencyDropdown>
         </div>
-        <div className="flex-vertical">
-            <label>Units to buy</label>
+        <div className="flex-vertical order-entry">
+            <label>Units to buy ({order.buy_asset_denom})</label>
             <CurrencyInput 
               currencyCode={order.buy_asset_type} 
               currencyDenom={order.buy_asset_denom} 
@@ -31,13 +34,13 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
               onChange={onChangeBuyUnits}>
             </CurrencyInput>
         </div>
-        <div className="flex-vertical">
+        <div className="flex-vertical order-entry">
             <label>You want to sell</label>
             <CurrencyDropdown selected={order.sell_asset_type} onSelect={onSelectSell}>
             </CurrencyDropdown>
         </div>
-        <div className="flex-vertical">
-            <label>Units to sell</label>
+        <div className="flex-vertical order-entry">
+            <label>Units to sell ({order.sell_asset_denom})</label>
             <CurrencyInput 
               currencyCode={order.sell_asset_type} 
               currencyDenom={order.sell_asset_denom} 
@@ -45,10 +48,24 @@ export function NewOrderComponent(props: NewOrderComponentProps) {
               onChange={onChangeSellUnits}>
             </CurrencyInput>
         </div>
-        <div className="flex-vertical">
+        <div className="flex-vertical order-entry">
+            <label>Ethereum Price</label>
+            <input value={order.formatPrice() || '--'} className="form-control"></input>
+        </div>
+        <div className="flex-vertical order-entry">
             <label>Confirm</label>
-            <input type="text" value={props.newOrder.unique_id} disabled></input>
-            <input type="text"></input>
+            <input type="text" className="form-control" value={props.newOrder.unique_id} disabled>
+            </input>
+            <input type="text" 
+              className="form-control" 
+              onChange={(e: any) => onChangeConfirm(e.target.value as string)} 
+              value={props.newOrder.order.unique_id} 
+              placeholder="Copy the characters above">
+            </input>
+        </div>
+    </div>
+        <div>
+            <button className="btn btn-primary" onClick={onSubmit}>Submit order</button>
         </div>
     </div>
 }
@@ -63,7 +80,7 @@ function CurrencyDropdown(props: CurrencyDropdownProps) {
         .map((c: CurrencyCode, i: number) => {
             return <option value={c} key={i}>{c}</option>;
         });
-    return <select value={props.selected} onChange={(e: any) => props.onSelect(e.target.value as CurrencyCode)}>
+    return <select value={props.selected} className="form-control" onChange={(e: any) => props.onSelect(e.target.value as CurrencyCode)}>
         {options}  
     </select>;
 }
@@ -84,7 +101,7 @@ interface CurrencyInputProps {
 
 function CurrencyInput(props: CurrencyInputProps) {
     return <div>
-        <input type="number" value={props.value} onChange={(e: any) => {
+        <input type="number" className="form-control" value={props.value} onChange={(e: any) => {
             let valNumber = parseFloat(e.target.value);
             if (isNaN(valNumber) || !isFinite(valNumber)) {
                 throw new Error(`Failed to correct parse unit value '${e.target.value}'`);

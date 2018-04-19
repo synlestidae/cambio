@@ -27,4 +27,22 @@ export class UserOrder extends Order {
         this.expiry = expiry;
         this.status = status;
     }
+
+    public formatExpiryMinutes(): string {
+        let order = this;
+        let date = order.expiry;
+        let delta = date.getTime() - new Date().getTime();
+        if (delta <= 0) {
+            return '--';
+        }
+        let minutes = delta / (1000 * 60);
+        if (minutes < 1) {
+            return 'Less than a minute';
+        }
+        if (minutes < 2) {
+            return '1 minute';
+        }
+        let minutesDP = minutes.toFixed(0);
+        return `${minutesDP} minutes`;
+    }
 }
