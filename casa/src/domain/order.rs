@@ -76,10 +76,7 @@ impl Order {
             self.sell_asset_type == buy_currency.asset_type &&
             self.sell_asset_denom == buy_currency.denom
         );
-        let one_is_crypto = (
-            self.buy_asset_type.is_crypto() != sell_currency.asset_type.is_crypto() &&
-            self.sell_asset_type.is_crypto() != buy_currency.asset_type.is_crypto()
-        );
+        let one_is_crypto = self.buy_asset_type.is_crypto() || buy_currency.asset_type.is_crypto();
         return are_compatible && one_is_crypto;
     }
 
@@ -88,7 +85,16 @@ impl Order {
         sell_currency: &domain::Currency,
         buy_units: u64,
         sell_units: u64) -> bool {
-        unimplemented!()
+        let units_match = 
+            self.sell_asset_units as u64 == buy_units&& 
+            self.buy_asset_units as u64 == sell_units;
+        let asset_types_match = 
+            self.sell_asset_type == buy_currency.asset_type &&
+            self.buy_asset_type == sell_currency.asset_type;
+        let denoms_match = 
+            self.sell_asset_denom == buy_currency.denom &&
+            self.buy_asset_denom == sell_currency.denom;
+        return units_match && asset_types_match && denoms_match;
     }
 
     pub fn is_expired(&self) -> bool {

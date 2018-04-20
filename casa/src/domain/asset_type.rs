@@ -15,8 +15,9 @@ pub enum AssetType {
 impl AssetType {
     pub fn is_crypto(&self) -> bool {
         match self {
-            ref NZD => false,
-            _ => true
+            &AssetType::BTC => true,
+            &AssetType::ETH => true,
+            _ => false
         }
     }
 }
