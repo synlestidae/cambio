@@ -5,13 +5,15 @@ import {BoardPage} from './flux/state/board_page';
 import {TableComponent, Column, OperationColumn, FieldColumn} from './table_component';
 import {NewOrderComponent} from './new_order_component';
 import {ConfirmOrderComponent} from './confirm_order_component';
+import {getUniqueID} from './flux/state/new_order';
 
 interface BoardPageComponentProps {
     actions: ActionCreators,
     page: BoardPage
 }
 
-function getColumns() {
+function getColumns(props: BoardPageComponentProps) {
+    let actions = props.actions;
     let headers: Column<UserOrder>[] = [];
 
     let sellHeader = new FieldColumn<UserOrder>('Wants to sell', 'sell_asset_type', (o: UserOrder) => o.sell_asset_type);
@@ -19,8 +21,7 @@ function getColumns() {
     let priceHeader = new FieldColumn<UserOrder>('Ether unit price', 'price', (o: UserOrder) => o.formatPrice() || '--');
     let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', (o: UserOrder) => o.formatExpiryMinutes());
     let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => o.status);
-    let operationHeader = new OperationColumn<UserOrder>('Buy', 'buy', (o: UserOrder) => void(0));
-    console.log('oppo header', operationHeader);
+    let operationHeader = new OperationColumn<UserOrder>('Buy', 'buy', (o: UserOrder) => actions.buyOrder(o, getUniqueID(10)));
 
     headers.push(sellHeader);
     headers.push(buyHeader);
@@ -34,7 +35,7 @@ function getColumns() {
 
 export function BoardPageComponent(props: BoardPageComponentProps) {
     let orders = props.page.active_orders;
-    let columns = getColumns();
+    let columns = getColumns(props);
     let sortCB = (field: string) => props.actions.sortOrders(field);
     orders = sortRows(orders, props.page.sortField);
     let newOrder = props.page.newOrder;

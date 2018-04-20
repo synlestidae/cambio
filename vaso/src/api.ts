@@ -76,6 +76,30 @@ export class Api {
         return parseUserOrder(resultJSON);
     }
 
+    public async asyncBuyOrder(order: UserOrder, uniqueId: string): Promise<any> {
+        let id = parseInt(order.id);
+        if (id.toString() !== order.id) {
+            throw new Error('Failed to convert order ID to integer');
+        }
+        let date = new Date();
+        date.setMinutes(date.getMinutes() + 10);
+        let orderJSON: any = {
+            order_id: id,
+            order_request: {
+                unique_id: uniqueId,
+                sell_asset_type: order.buy_asset_type,
+                sell_asset_denom: order.buy_asset_denom,
+                sell_asset_units: order.buy_asset_units,
+                buy_asset_type: order.sell_asset_type,
+                buy_asset_denom: order.sell_asset_denom,
+                buy_asset_units: order.sell_asset_units,
+                expires_at: date
+            }
+        };
+        let result = await this.makeRequest(`/orders/buy/${id}`, 'POST', orderJSON);
+        console.log('asyncBuyOrder', result);
+    }
+
     public async asyncGetActiveOrders(): Promise<UserOrder[]> {
         let result = await this.makeRequest('/orders/active/', 'GET');
         let body = await result.json();

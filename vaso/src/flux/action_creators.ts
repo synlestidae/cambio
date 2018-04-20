@@ -7,6 +7,7 @@ import {Account} from '../domain/account';
 import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
+import {UserOrder} from '../domain/user_order';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -113,16 +114,12 @@ export class ActionCreators {
     }
 
     public async confirmNewOrder(order: OrderRequest) {
-        // check the integrity of the order
         if (!order.isValid()) {
             throw new Error('Order is invalid and cannot be sent');
         }
-        // move to the submitting state
         this.dispatch(new BasicAction('BEGIN_SUBMITTING_ORDER'));
-        // submit the order to the api
         try {
             let orderResult = await this.api.asyncPostOrder(order);
-            // result is good. update the board and show confirmation message
             this.updateOrderBoard();
             this.dispatch(new BasicAction('ORDER_SUBMIT_SUCCESS'));
         } catch {
@@ -132,7 +129,11 @@ export class ActionCreators {
             // if in the board, log the error in the console and go to step (2)
             // if not in the board, prompt the failure action
         }
+    }
 
+    public async buyOrder(order: UserOrder, uniqueId: string) {
+        await this.api.asyncBuyOrder(order, uniqueId);
+        this.updateOrderBoard();
     }
 
     public startNewOrderConfirm() {

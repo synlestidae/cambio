@@ -15,7 +15,7 @@ export class NewOrder {
 
 export type OrderState = 'Initial' | 'ReadyToConfirm' | 'Submitting' | 'Failed' | 'Success';
 
-function getUniqueID(length: number) {
+export function getUniqueID(length: number) {
     const POSSIBLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-";
     let uniqueID = '';
     for (let i = 0; i < length; i++) {
