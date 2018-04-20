@@ -2,7 +2,7 @@ import * as React from "react";
 import {UserOrder} from './domain/user_order';
 import {ActionCreators} from './flux/action_creators';
 import {BoardPage} from './flux/state/board_page';
-import {TableComponent, Column, FieldColumn} from './table_component';
+import {TableComponent, Column, OperationColumn, FieldColumn} from './table_component';
 import {NewOrderComponent} from './new_order_component';
 import {ConfirmOrderComponent} from './confirm_order_component';
 
@@ -12,19 +12,22 @@ interface BoardPageComponentProps {
 }
 
 function getColumns() {
-    let headers: FieldColumn<UserOrder>[] = [];
+    let headers: Column<UserOrder>[] = [];
 
     let sellHeader = new FieldColumn<UserOrder>('Wants to sell', 'sell_asset_type', (o: UserOrder) => o.sell_asset_type);
     let buyHeader = new FieldColumn<UserOrder>('Wants to buy', 'buy_asset_type', (o: UserOrder) => o.buy_asset_type);
     let priceHeader = new FieldColumn<UserOrder>('Ether unit price', 'price', (o: UserOrder) => o.formatPrice() || '--');
     let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', (o: UserOrder) => o.formatExpiryMinutes());
     let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => o.status);
+    let operationHeader = new OperationColumn<UserOrder>('Buy', 'buy', (o: UserOrder) => void(0));
+    console.log('oppo header', operationHeader);
 
     headers.push(sellHeader);
     headers.push(buyHeader);
     headers.push(priceHeader);
     headers.push(expiryHeader);
     headers.push(statusHeader);
+    headers.push(operationHeader);
 
     return headers;
 }
@@ -46,11 +49,12 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
         newOrderComponent = <ConfirmOrderComponent actions={props.actions} newOrder={newOrder}>
             </ConfirmOrderComponent>;
     }
+    const emptyMessage = 'No orders to show.';
     return <div>
         <div>
           {newOrderComponent}
         </div>
-        <TableComponent columns={columns} rows={orders} sortCB={sortCB}>
+        <TableComponent columns={columns} rows={orders} sortCB={sortCB} emptyMessage={emptyMessage}>
         </TableComponent>
     </div>;
 }

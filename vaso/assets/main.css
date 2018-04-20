@@ -269,3 +269,13 @@ button:hover {
 table.table-component {
     text-align: left;
 }
+
+table.table-component tr.empty-row {
+    background-color: rgb(255, 255,255);
+    color: var(--main-color);
+}
+
+table.table-component tr.empty-row td {
+    text-align: center;
+}
+
