@@ -102,7 +102,7 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
         if !session.is_valid() {
             return unauth_response;
         }
-        let order_clause = repository::UserClause::All(false);
+        let order_clause = repository::UserClause::All(true);
         let order_result = self.order_repo.read(&order_clause);
         match order_result {
             Ok(orders) => utils::to_response(Ok(orders)),

@@ -20,7 +20,7 @@ function getColumns(props: BoardPageComponentProps) {
     let buyHeader = new FieldColumn<UserOrder>('Wants to buy', 'buy_asset_type', (o: UserOrder) => o.buy_asset_type);
     let priceHeader = new FieldColumn<UserOrder>('Ether unit price', 'price', (o: UserOrder) => o.formatPrice() || '--');
     let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', (o: UserOrder) => o.formatExpiryMinutes());
-    let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => o.status);
+    let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => getStatus(o));
     let operationHeader = new OperationColumn<UserOrder>('Buy', 'buy', (o: UserOrder) => actions.buyOrder(o, getUniqueID(10)));
 
     headers.push(sellHeader);
@@ -31,6 +31,13 @@ function getColumns(props: BoardPageComponentProps) {
     headers.push(operationHeader);
 
     return headers;
+}
+
+function getStatus(o: UserOrder) {
+    if (o.expiry < new Date()) {
+        return 'Expired';
+    }
+    return o.status;
 }
 
 export function BoardPageComponent(props: BoardPageComponentProps) {
