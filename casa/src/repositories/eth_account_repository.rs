@@ -12,14 +12,12 @@ use db::{TryFromRow, TryFromRowError};
 
 #[derive(Clone)]
 pub struct EthAccountRepository<T: db::PostgresHelper> {
-    db_helper: T
+    db_helper: T,
 }
 
 impl<T: db::PostgresHelper> EthAccountRepository<T> {
     pub fn new(db: T) -> Self {
-        EthAccountRepository {
-            db_helper: db
-        }
+        EthAccountRepository { db_helper: db }
     }
 }
 
@@ -30,11 +28,16 @@ impl<T: db::PostgresHelper> repository::RepoRead for EthAccountRepository<T> {
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         let result_match = match clause {
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
-            &repository::UserClause::EmailAddress(ref email_address) => self.db_helper.query(SELECT_BY_EMAIL,
-                &[email_address]),
+            &repository::UserClause::EmailAddress(ref email_address) => {
+                self.db_helper.query(SELECT_BY_EMAIL, &[email_address])
+            }
             &repository::UserClause::All(_) => self.db_helper.query(SELECT_ALL, &[]),
-            _ => return Err(db::CambioError::shouldnt_happen("Invalid query to get account", 
-                    &format!("Clause {:?} not supported by AccountRepository", clause)))
+            _ => {
+                return Err(db::CambioError::shouldnt_happen(
+                    "Invalid query to get account",
+                    &format!("Clause {:?} not supported by AccountRepository", clause),
+                ))
+            }
         };
         let result: Vec<EthRow> = try!(result_match);
         Ok(result.into_iter().map(|r| r.into()).collect())
@@ -47,9 +50,14 @@ impl<T: db::PostgresHelper> repository::RepoCreate for EthAccountRepository<T> {
     fn create(&mut self, account: &Self::Item) -> repository::ItemResult<Self::Item> {
         let account_copy: Self::Item = account.clone();
         let item: EthRow = account_copy.into();
-        let err = db::CambioError::shouldnt_happen("Failed to locate account after creating it", 
-            "Error during Eth account creation");
-        let id_row = try!(self.db_helper.query_raw(INSERT, &[&item.owner_id, &item.address, &item.password_hash_bcrypt]));
+        let err = db::CambioError::shouldnt_happen(
+            "Failed to locate account after creating it",
+            "Error during Eth account creation",
+        );
+        let id_row = try!(self.db_helper.query_raw(
+            INSERT,
+            &[&item.owner_id, &item.address, &item.password_hash_bcrypt]
+        ));
         if id_row.len() == 0 {
             return Err(err);
         }
@@ -74,7 +82,7 @@ struct EthRow {
     pub id: Option<domain::Id>,
     pub address: String,
     pub password_hash_bcrypt: String,
-    pub owner_id: Id, 
+    pub owner_id: Id,
 }
 
 impl std::convert::Into<domain::EthAccount> for EthRow {
@@ -88,7 +96,7 @@ impl std::convert::Into<domain::EthAccount> for EthRow {
             id: self.id,
             address: web3::types::H160(array),
             password_hash_bcrypt: self.password_hash_bcrypt,
-            owner_id: self.owner_id
+            owner_id: self.owner_id,
         }
     }
 }
@@ -100,7 +108,7 @@ impl std::convert::Into<EthRow> for domain::EthAccount {
             id: self.id,
             address: base64::encode(&bytes),
             password_hash_bcrypt: self.password_hash_bcrypt,
-            owner_id: self.owner_id
+            owner_id: self.owner_id,
         }
     }
 }

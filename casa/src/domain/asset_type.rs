@@ -4,12 +4,9 @@ use db::{TryFromRow, TryFromRowError};
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, FromSql, ToSql)]
 #[postgres(name = "asset_code_type")]
 pub enum AssetType {
-    #[postgres(name = "nzd")]
-    NZD,
-    #[postgres(name = "btc")]
-    BTC,
-    #[postgres(name = "eth")]
-    ETH
+    #[postgres(name = "nzd")] NZD,
+    #[postgres(name = "btc")] BTC,
+    #[postgres(name = "eth")] ETH,
 }
 
 impl AssetType {
@@ -17,7 +14,7 @@ impl AssetType {
         match self {
             &AssetType::BTC => true,
             &AssetType::ETH => true,
-            _ => false
+            _ => false,
         }
     }
 }

@@ -1,6 +1,6 @@
 use chrono::prelude::*;
 use db::{CambioError, PostgresHelper};
-use domain::{Order, Id, Currency, OrderStatus};
+use domain::{Currency, Id, Order, OrderStatus};
 use domain;
 use repositories;
 use repository::*;
@@ -10,33 +10,39 @@ use repository;
 pub struct OrderService<T: PostgresHelper> {
     user_repo: repositories::UserRepository<T>,
     order_repo: repositories::OrderRepository<T>,
-    account_repo: repositories::AccountRepository<T>
+    account_repo: repositories::AccountRepository<T>,
 }
 
 const ORDER_TIME_MINUTES: i64 = 10;
 
 impl<T: PostgresHelper> OrderService<T> {
     pub fn new(db_helper: T) -> Self {
-        Self { 
+        Self {
             user_repo: repositories::UserRepository::new(db_helper.clone()),
             order_repo: repositories::OrderRepository::new(db_helper.clone()),
-            account_repo: repositories::AccountRepository::new(db_helper.clone())
+            account_repo: repositories::AccountRepository::new(db_helper.clone()),
         }
     }
 
-    pub fn place_order(&mut self, 
-        email: &str, 
+    pub fn place_order(
+        &mut self,
+        email: &str,
         unique_id: &str,
-        sell_units: u64, 
+        sell_units: u64,
         sell_currency: Currency,
-        buy_units: u64, 
-        buy_currency: Currency) -> Result<Order, CambioError> {
+        buy_units: u64,
+        buy_currency: Currency,
+    ) -> Result<Order, CambioError> {
         let user_clause = repository::UserClause::EmailAddress(email.to_owned());
         let user = try!(self.user_repo.read(&user_clause)).pop();
         let user_owner_id = match user {
-            None => return Err(CambioError::not_found_search("Cannot find user for order", 
-                "UserRepository.read() returned None")),
-            Some(user) => user.owner_id.unwrap()
+            None => {
+                return Err(CambioError::not_found_search(
+                    "Cannot find user for order",
+                    "UserRepository.read() returned None",
+                ))
+            }
+            Some(user) => user.owner_id.unwrap(),
         };
         let order = Order {
             id: None,
@@ -49,7 +55,7 @@ impl<T: PostgresHelper> OrderService<T> {
             buy_asset_type: buy_currency.asset_type,
             buy_asset_denom: buy_currency.denom,
             expires_at: self.get_order_expiry(),
-            status: OrderStatus::Active
+            status: OrderStatus::Active,
         };
         self.order_repo.create(&order)
     }
@@ -71,19 +77,24 @@ impl<T: PostgresHelper> OrderService<T> {
                     try!(self.order_repo.delete(&modifying_order));
                     Ok(try!(self.order_repo.read(&order_clause)).pop())
                 } else {
-                    Err(CambioError::not_permitted("Can only cancel an active order", 
-                        "Can only change order status if status = 'active'"))
+                    Err(CambioError::not_permitted(
+                        "Can only cancel an active order",
+                        "Can only change order status if status = 'active'",
+                    ))
                 }
             }
         }
     }
 
-    pub fn get_orders(&mut self, user: Option<&str>, only_active: bool) 
-        -> Result<Vec<Order>, CambioError> {
+    pub fn get_orders(
+        &mut self,
+        user: Option<&str>,
+        only_active: bool,
+    ) -> Result<Vec<Order>, CambioError> {
         let clause: repository::UserClause;
         clause = match user {
             None => repository::UserClause::All(only_active),
-            Some(email_address) => repository::UserClause::EmailAddress(email_address.to_owned())
+            Some(email_address) => repository::UserClause::EmailAddress(email_address.to_owned()),
         };
         let orders = try!(self.order_repo.read(&clause))
             .into_iter()
@@ -99,7 +110,8 @@ const USER_FROM_ORDER: &'static str = "SELECT *, users.id as user_id from users
     JOIN orders ON orders.owner_id = account_owner.id
     WHERE orders.id = $1";
 
-const INSERT_NEW_ORDER_SQL: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";
+const INSERT_NEW_ORDER_SQL: &'static str =
+    "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";
 
 const SELECT_ORDER_UNIQUE_ID_SQL: &'static str = "SELECT 
         *, 
@@ -187,4 +199,3 @@ const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT
         order_settlement.buying_crypto_id = orders.id OR 
         order_settlement.buying_fiat_id = orders.id
 ";
-

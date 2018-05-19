@@ -6,5 +6,5 @@ pub struct StoredMedia {
     pub owner_id: Option<Id>,
     pub file_format: MediaFileFormat,
     pub file_size: u64,
-    pub resource: MediaResource
+    pub resource: MediaResource,
 }

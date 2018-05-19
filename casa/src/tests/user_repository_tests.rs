@@ -7,8 +7,7 @@ use tests::get_db_helper;
 #[test]
 fn creates_one_user() {
     let mut repo = UserRepository::new(get_db_helper());
-    let user = domain::User::new_register("jhon@fernando.com", 
-        "ilovecali123".to_owned());
+    let user = domain::User::new_register("jhon@fernando.com", "ilovecali123".to_owned());
     let created_user = (repo.create(&user)).unwrap();
     let email_clause = repository::UserClause::EmailAddress("jhon@fernando.com".to_owned());
     let mut users = repo.read(&email_clause).unwrap();
@@ -23,7 +22,8 @@ fn creates_one_user() {
     assert_eq!(created_user, id_user);
 
     let mut all_users = repo.read(&repository::UserClause::All(true)).unwrap();
-    let mut our_guy = all_users.into_iter()
+    let mut our_guy = all_users
+        .into_iter()
         .filter(|ref u| u.id == found_user.id)
         .collect::<Vec<_>>()
         .pop()
@@ -49,7 +49,6 @@ fn prevents_double_registration() {
     let new_user = repo.create(&user);
     let same_user = domain::User::new_register("mate@fernando.com", "differentpassword".to_owned());
     assert!(repo.create(&same_user).is_err());
-
 
     let email_clause = repository::UserClause::EmailAddress("mate@fernando.com".to_owned());
     let original = repo.read(&email_clause).unwrap().pop().unwrap();

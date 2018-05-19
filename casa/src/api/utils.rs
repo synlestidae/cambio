@@ -1,14 +1,14 @@
 use iron::request::Request;
-use iron::headers::{Cookie, Authorization, Bearer};
+use iron::headers::{Authorization, Bearer, Cookie};
 use iron;
 use serde::Serialize;
-use hyper::mime::{Mime};
+use hyper::mime::Mime;
 use serde_json;
 use api::ApiError;
 use db::CambioError;
 
 pub fn get_session_token(r: &Request) -> Option<String> {
-    let authorization:Option<&Authorization<Bearer>> = r.headers.get();
+    let authorization: Option<&Authorization<Bearer>> = r.headers.get();
     match authorization {
         Some(ref bearer) => return Some(bearer.token.to_owned()),
         None => {}
@@ -34,7 +34,7 @@ pub fn to_response<E: Serialize>(result: Result<E, CambioError>) -> iron::Respon
         Ok(response_obj) => {
             let response_json = serde_json::to_string(&response_obj).unwrap();
             iron::Response::with((iron::status::Ok, response_json, content_type))
-        },
+        }
         Err(err) => {
             let api_error: ApiError = err.into();
             api_error.into()

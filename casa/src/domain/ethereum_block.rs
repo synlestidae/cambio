@@ -6,7 +6,7 @@ use postgres;
 #[Derive(Debug, Clone, TryFromRow)]
 pub struct EthereumBlock {
     id: Option<Id>,
-    time: DateTime<Utc>, 
+    time: DateTime<Utc>,
     block: u64,
-    block_hash: String 
+    block_hash: String,
 }

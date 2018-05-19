@@ -5,18 +5,13 @@ use db::{TryFromRow, TryFromRowError};
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize)]
 #[postgres(name = "business_ends_type")]
 pub enum BusinessEnds {
-    #[postgres(name = "wallet_deposit")]
-    WalletDeposit,
-    #[postgres(name = "wallet_withdrawal")]
-    WalletWithdrawal,
-    #[postgres(name = "system_fee_charge")]
-    SystemFeeCharge,
+    #[postgres(name = "wallet_deposit")] WalletDeposit,
+    #[postgres(name = "wallet_withdrawal")] WalletWithdrawal,
+    #[postgres(name = "system_fee_charge")] SystemFeeCharge,
     //#[postgres(name = "cryptocurrency_purchase")]
     //CryptocurrencyPurchase,
-    #[postgres(name = "order_placement")]
-    OrderPlacement,
-    #[postgres(name = "order_settlement")]
-    OrderSettlement
+    #[postgres(name = "order_placement")] OrderPlacement,
+    #[postgres(name = "order_settlement")] OrderSettlement,
 }
 
 impl fmt::Display for BusinessEnds {
@@ -27,7 +22,7 @@ impl fmt::Display for BusinessEnds {
             &BusinessEnds::SystemFeeCharge => "system_fee_charge",
             //&BusinessEnds::CryptocurrencyPurchase => "cryptocurrency_purchase",
             &BusinessEnds::OrderPlacement => "order_placement",
-            &BusinessEnds::OrderSettlement => "order_settlement"
+            &BusinessEnds::OrderSettlement => "order_settlement",
         };
         write!(f, "{}", as_string)
     }

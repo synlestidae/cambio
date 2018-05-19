@@ -7,8 +7,7 @@ pub enum UserClause {
     Id(domain::Id),
     EmailAddress(String),
     SessionToken(String),
-    UniqueId(String)
+    UniqueId(String),
 }
 
-impl repository::Clause for UserClause {
-}
+impl repository::Clause for UserClause {}

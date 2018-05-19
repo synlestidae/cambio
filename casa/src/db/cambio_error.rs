@@ -7,6 +7,8 @@ use web3;
 use postgres;
 use bcrypt;
 use r2d2;
+use iron;
+use api::ApiError;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CambioError {
@@ -19,10 +21,10 @@ pub struct CambioError {
 impl CambioError {
     pub fn new(user_msg: &str, sys_msg: &str, kind: ErrorKind, recc: ErrorReccomendation) -> Self {
         Self {
-            user_message: user_msg.to_owned(), 
-            system_message: sys_msg.to_owned(), 
+            user_message: user_msg.to_owned(),
+            system_message: sys_msg.to_owned(),
             kind: kind,
-            reccomendation: recc
+            reccomendation: recc,
         }
     }
 
@@ -31,7 +33,7 @@ impl CambioError {
             user_message: "Please log in.".to_owned(),
             system_message: "User is not authorised for this operation".to_owned(),
             kind: ErrorKind::Unauthorised,
-            reccomendation: ErrorReccomendation::LogIn
+            reccomendation: ErrorReccomendation::LogIn,
         }
     }
 
@@ -40,7 +42,7 @@ impl CambioError {
             user_message: "This user is already registered. Please log in.".to_owned(),
             system_message: "User already exists in DB".to_owned(),
             kind: ErrorKind::UserExists,
-            reccomendation: ErrorReccomendation::Nothing
+            reccomendation: ErrorReccomendation::Nothing,
         }
     }
 
@@ -49,7 +51,7 @@ impl CambioError {
             user_message: "Wrong password.".to_owned(),
             system_message: "BCrypt password doesn't match hash".to_owned(),
             kind: ErrorKind::Unauthorised,
-            reccomendation: ErrorReccomendation::CheckInput
+            reccomendation: ErrorReccomendation::CheckInput,
         }
     }
 
@@ -58,7 +60,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: system_msg.to_owned(),
             kind: ErrorKind::UserInputFormat,
-            reccomendation: ErrorReccomendation::CheckInput
+            reccomendation: ErrorReccomendation::CheckInput,
         }
     }
 
@@ -67,7 +69,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: system_msg.to_owned(),
             kind: ErrorKind::UnexpectedState,
-            reccomendation: ErrorReccomendation::ContactProgrammer
+            reccomendation: ErrorReccomendation::ContactProgrammer,
         }
     }
 
@@ -76,7 +78,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: system_msg.to_owned(),
             kind: ErrorKind::NotFound,
-            reccomendation: ErrorReccomendation::CheckInput
+            reccomendation: ErrorReccomendation::CheckInput,
         }
     }
 
@@ -85,7 +87,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: system_msg.to_owned(),
             kind: ErrorKind::UnfairOperation,
-            reccomendation: ErrorReccomendation::Nothing
+            reccomendation: ErrorReccomendation::Nothing,
         }
     }
 
@@ -94,7 +96,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: system_msg.to_owned(),
             kind: ErrorKind::FormatObjInternal,
-            reccomendation: ErrorReccomendation::CheckState
+            reccomendation: ErrorReccomendation::CheckState,
         }
     }
 
@@ -103,7 +105,7 @@ impl CambioError {
             user_message: format!("Tried to update {} but nothing happened", entity),
             system_message: format!("Zero rows affected during update of {}", entity),
             kind: ErrorKind::Query,
-            reccomendation: ErrorReccomendation::ContactProgrammer
+            reccomendation: ErrorReccomendation::ContactProgrammer,
         }
     }
 
@@ -112,7 +114,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: sys_msg.to_owned(),
             kind: ErrorKind::StateChangeNotPermitted,
-            reccomendation: ErrorReccomendation::Nothing
+            reccomendation: ErrorReccomendation::Nothing,
         }
     }
 
@@ -121,7 +123,7 @@ impl CambioError {
             user_message: user_msg.to_owned(),
             system_message: sys_msg.to_owned(),
             kind: ErrorKind::OverUserLimit,
-            reccomendation: ErrorReccomendation::CheckInput
+            reccomendation: ErrorReccomendation::CheckInput,
         }
     }
 }
@@ -148,7 +150,7 @@ impl From<web3::Error> for CambioError {
             user_message: "Failed to communicate with Ethereum".to_owned(),
             system_message: format!("Web3 failed: {:?}", err),
             kind: ErrorKind::Web3,
-            reccomendation: ErrorReccomendation::ContactProgrammer
+            reccomendation: ErrorReccomendation::ContactProgrammer,
         }
     }
 }
@@ -159,7 +161,7 @@ impl From<db::TryFromRowError> for CambioError {
             user_message: "Something went wrong while converting internal data".to_owned(),
             system_message: format!("TryFromRowError: {}", err),
             kind: ErrorKind::ConvertingObjInternal,
-            reccomendation: ErrorReccomendation::ContactProgrammer
+            reccomendation: ErrorReccomendation::ContactProgrammer,
         }
     }
 }
@@ -170,7 +172,7 @@ impl From<postgres::Error> for CambioError {
             user_message: "Failed to connect to the database".to_owned(),
             system_message: format!("Postgres error: {:?}", err),
             kind: ErrorKind::DBConnection,
-            reccomendation: ErrorReccomendation::TryAgainNow
+            reccomendation: ErrorReccomendation::TryAgainNow,
         }
     }
 }
@@ -181,7 +183,7 @@ impl From<bcrypt::BcryptError> for CambioError {
             user_message: "Failed to create your account".to_owned(),
             system_message: format!("Bcrypt error {:?}", err),
             kind: ErrorKind::UnexpectedState,
-            reccomendation: ErrorReccomendation::ContactProgrammer
+            reccomendation: ErrorReccomendation::ContactProgrammer,
         }
     }
 }
@@ -192,7 +194,14 @@ impl From<r2d2::Error> for CambioError {
             user_message: "Failed to connect to the database".to_owned(),
             system_message: format!("r2d2 error: {:?}", err),
             kind: ErrorKind::DBConnection,
-            reccomendation: ErrorReccomendation::TryAgainNow
+            reccomendation: ErrorReccomendation::TryAgainNow,
         }
+    }
+}
+
+impl Into<iron::Response> for CambioError {
+    fn into(self) -> iron::Response {
+        let api_error: ApiError = self.into();
+        api_error.into()
     }
 }

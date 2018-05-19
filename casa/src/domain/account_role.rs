@@ -5,10 +5,8 @@ use postgres::rows::Row;
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize, Deserialize)]
 #[postgres(name = "account_role")]
 pub enum AccountRole {
-    #[postgres(name = "primary")]
-    Primary,
-    #[postgres(name = "system")]
-    System,
+    #[postgres(name = "primary")] Primary,
+    #[postgres(name = "system")] System,
 }
 
 impl fmt::Display for AccountRole {

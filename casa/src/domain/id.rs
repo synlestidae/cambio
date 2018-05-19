@@ -1,6 +1,6 @@
 use db::CambioError;
 use postgres::types::IsNull;
-use postgres::types::{ToSql, FromSql, Type};
+use postgres::types::{FromSql, ToSql, Type};
 use postgres;
 use std::fmt::Display;
 use std::io::Cursor;
@@ -19,27 +19,27 @@ impl Display for Id {
 }
 
 impl ToSql for Id {
-    fn to_sql(
-        &self, 
-        ty: &Type, 
-        out: &mut Vec<u8>) -> ToSqlResult {
+    fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
         self.0.to_sql(ty, out)
     }
 
-    fn accepts(ty: &Type) -> bool where Self: Sized {
+    fn accepts(ty: &Type) -> bool
+    where
+        Self: Sized,
+    {
         accepts(ty)
     }
 
-    fn to_sql_checked(&self, 
-        ty: &Type, 
-        out: &mut Vec<u8>) -> ToSqlResult {
+    fn to_sql_checked(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
         self.0.to_sql_checked(ty, out)
     }
-
 }
 
 impl FromSql for Id {
-    fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> {
+    fn from_sql(
+        ty: &Type,
+        raw: &[u8],
+    ) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> {
         let id = try!(i32::from_sql(ty, raw));
         Ok(Id(id))
     }
@@ -48,24 +48,25 @@ impl FromSql for Id {
         accepts(ty)
     }
 
-    fn from_sql_null(
-        ty: &Type
-    ) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> { 
+    fn from_sql_null(ty: &Type) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> {
         let id = try!(i32::from_sql_null(ty));
         Ok(Id(id))
     }
 
     fn from_sql_nullable(
-        ty: &Type, 
-        raw: Option<&[u8]>
-    ) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> { 
+        ty: &Type,
+        raw: Option<&[u8]>,
+    ) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> {
         let id = try!(i32::from_sql_nullable(ty, raw));
         Ok(Id(id))
     }
 }
 
 fn err() -> CambioError {
-    CambioError::shouldnt_happen("Couldn't convert database data", "Error converting Id to or from INT4")
+    CambioError::shouldnt_happen(
+        "Couldn't convert database data",
+        "Error converting Id to or from INT4",
+    )
 }
 
 fn accepts(ty: &Type) -> bool {

@@ -9,7 +9,9 @@ pub struct TryFromRowError {
 
 impl TryFromRowError {
     pub fn new(desc: &str) -> Self {
-        TryFromRowError { desc: desc.to_owned() }
+        TryFromRowError {
+            desc: desc.to_owned(),
+        }
     }
 
     pub fn missing_field(entity: &str, name: &str) -> Self {
@@ -22,15 +24,15 @@ impl TryFromRowError {
         TryFromRowError {
             desc: format!(
                 "Field '{}' on entity '{}' has invalid value: {}",
-                name,
-                entity,
-                val
+                name, entity, val
             ),
         }
     }
 
     pub fn unknown_value(entity: &str, value: &str) -> Self {
-        TryFromRowError { desc: format!("Unknown value for '{}': {}", entity, value) }
+        TryFromRowError {
+            desc: format!("Unknown value for '{}': {}", entity, value),
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
-use domain::{Id, Denom, BusinessEnds, AssetType};
+use domain::{AssetType, BusinessEnds, Denom, Id};
 use postgres::rows::Row;
 use db::TryFromRow;
 use db::TryFromRowError;
@@ -55,7 +55,9 @@ impl TryFromRow for Transaction {
         )));
 
         let asset_type_match: Option<AssetType> = row.get("asset_code");
-        let asset_type: AssetType = try!(asset_type_match.ok_or(TryFromRowError::missing_field("Transaction", "asset_code")));
+        let asset_type: AssetType = try!(
+            asset_type_match.ok_or(TryFromRowError::missing_field("Transaction", "asset_code"))
+        );
         let credit_match: Option<i64> = row.get("credit");
         let debit_match: Option<i64> = row.get("debit");
 
@@ -64,7 +66,7 @@ impl TryFromRow for Transaction {
 
         let (from_id, to_id) = match (from_id_option, to_id_option) {
             (Some(f), Some(t)) => (f, t),
-            _ => return Err(TryFromRowError::missing_field("Transaction", "account"))
+            _ => return Err(TryFromRowError::missing_field("Transaction", "account")),
         };
 
         let transaction_time_match: Option<NaiveDateTime> = row.get("transaction_time");
@@ -73,31 +75,22 @@ impl TryFromRow for Transaction {
         ));
         let accounting_period_match: Option<Id> = row.get("accounting_period");
         let accounting_period: Id = try!(accounting_period_match.ok_or(
-            TryFromRowError::missing_field(
-                "Transaction",
-                "accounting_period",
-            ),
+            TryFromRowError::missing_field("Transaction", "accounting_period",),
         ));
         let balance_match: Option<i64> = row.get("balance");
-        let balance: i64 = try!(balance_match.ok_or(TryFromRowError::missing_field(
-            "Transaction",
-            "balance",
-        )));
+        let balance: i64 =
+            try!(balance_match.ok_or(TryFromRowError::missing_field("Transaction", "balance",)));
 
         let message_match: Option<String> = row.get("message");
-        let message: String = try!(message_match.ok_or(TryFromRowError::missing_field(
-            "Transaction",
-            "message",
-        )));
+        let message: String =
+            try!(message_match.ok_or(TryFromRowError::missing_field("Transaction", "message",)));
 
-        let denom_match: Option<Denom> = row.get("denom");//try!(Denom::try_from_row(row)); //row.get("denom");
+        let denom_match: Option<Denom> = row.get("denom"); //try!(Denom::try_from_row(row)); //row.get("denom");
         let denom = try!(denom_match.ok_or(TryFromRowError::missing_field("Denom", "denom")));
         let business_ends_match: Option<BusinessEnds> = row.get("business_ends");
-        let business_ends: BusinessEnds =
-            try!(business_ends_match.ok_or(TryFromRowError::missing_field(
-                "Transaction",
-                "business_ends",
-            )));
+        let business_ends: BusinessEnds = try!(business_ends_match.ok_or(
+            TryFromRowError::missing_field("Transaction", "business_ends",)
+        ));
 
         let value = match (credit_match, debit_match) {
             (Some(credit), None) => credit,

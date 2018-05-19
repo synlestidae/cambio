@@ -13,7 +13,7 @@ use db::CambioError;
 pub struct ApiError {
     desc: String,
     error_type: ErrorType,
-    error: Option<db::CambioError>
+    error: Option<db::CambioError>,
 }
 
 impl fmt::Display for ApiError {
@@ -28,7 +28,7 @@ impl ApiError {
         ApiError {
             desc: description,
             error_type: err_type,
-            error: None
+            error: None,
         }
     }
 
@@ -36,7 +36,7 @@ impl ApiError {
         ApiError {
             desc: description,
             error_type: err_type,
-            error: Some(cambio_err)
+            error: Some(cambio_err),
         }
     }
 
@@ -81,7 +81,10 @@ impl ApiError {
     }
 
     pub fn unauthorised() -> Self {
-        Self::new(format!("Please log in to access this."), ErrorType::Unauthorised)
+        Self::new(
+            format!("Please log in to access this."),
+            ErrorType::Unauthorised,
+        )
     }
 }
 
@@ -129,9 +132,9 @@ impl Into<Status> for ErrorType {
             ErrorType::QueryResultFormat => Status::InternalServerError,
             ErrorType::InternalError => Status::InternalServerError,
             ErrorType::Unknown => Status::InternalServerError,
-            ErrorType::Unauthorised=> Status::Unauthorized,
+            ErrorType::Unauthorised => Status::Unauthorized,
             ErrorType::NotLoggedIn => Status::Unauthorized,
-            ErrorType::NotFound=> Status::NotFound
+            ErrorType::NotFound => Status::NotFound,
         }
     }
 }

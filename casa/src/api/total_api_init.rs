@@ -10,16 +10,16 @@ pub struct TotalApiInit<T: PostgresHelper> {
     user_api_init: UserApiInit<T>,
     account_api_init: AccountApiInit<T>,
     payment_api_init: PaymentApiInit<T>,
-    order_api_init: OrderApiInit<T>
+    order_api_init: OrderApiInit<T>,
 }
 
 impl<T: PostgresHelper> TotalApiInit<T> {
     pub fn new(helper: T, web3_address: &str) -> Self {
-        Self { 
+        Self {
             account_api_init: AccountApiInit::new(helper.clone()),
             user_api_init: UserApiInit::new(helper.clone(), web3_address),
             payment_api_init: PaymentApiInit::new(helper.clone()),
-            order_api_init: OrderApiInit::new(helper)
+            order_api_init: OrderApiInit::new(helper),
         }
     }
 }

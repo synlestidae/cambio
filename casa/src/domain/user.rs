@@ -1,11 +1,10 @@
-use db::{TryFromRow, CambioError};
-use bcrypt::{verify, hash};
+use db::{CambioError, TryFromRow};
+use bcrypt::{hash, verify};
 use db::TryFromRowError;
 use std;
 use domain::Id;
 use postgres::rows::Row;
 use checkmail;
-
 
 const BCRYPT_COST: u32 = 8;
 
@@ -16,7 +15,7 @@ pub struct User {
     pub email_address: String,
     pub password: Option<String>,
     pub password_hash: Option<String>,
-    pub owner_id: Option<Id>
+    pub owner_id: Option<Id>,
 }
 
 impl User {
@@ -27,7 +26,7 @@ impl User {
             email_address: email_address.to_owned(),
             password: None,
             password_hash: Some(hash(&password, BCRYPT_COST).unwrap()),
-            owner_id: None
+            owner_id: None,
         }
     }
 
@@ -42,7 +41,7 @@ impl User {
         match self.password_hash {
             Some(ref hash) => match verify(&password, &hash) {
                 Ok(is_match) => is_match,
-                _ => false
+                _ => false,
             },
             _ => false,
         }
@@ -69,7 +68,7 @@ impl TryFromRow for User {
                     email_address: email_address,
                     password_hash: Some(password_hash),
                     password: None,
-                    owner_id: Some(oi)
+                    owner_id: Some(oi),
                 });
             }
             _ => Err(TryFromRowError::new(

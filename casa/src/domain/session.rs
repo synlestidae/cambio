@@ -17,9 +17,8 @@ pub struct Session {
     pub started_at: DateTime<Utc>,
     pub ttl_milliseconds: i64,
     pub email_address: Option<String>,
-    pub session_state: SessionState
+    pub session_state: SessionState,
 }
-
 
 impl Session {
     pub fn new(email_address: &str, user_id: Id, ttl_milliseconds: i32) -> Self {
@@ -30,7 +29,7 @@ impl Session {
             started_at: Utc::now(),
             ttl_milliseconds: SESSION_TIME_MILLISECONDS,
             email_address: Some(email_address.to_owned()),
-            session_state: SessionState::Valid
+            session_state: SessionState::Valid,
         }
     }
     pub fn is_valid(&self) -> bool {
@@ -42,7 +41,7 @@ impl Session {
 fn random_token_string() -> String {
     let mut token = String::new();
     for _ in (0..10) {
-            token.push(rand::random::<u8>() as char);
+        token.push(rand::random::<u8>() as char);
     }
     token
 }

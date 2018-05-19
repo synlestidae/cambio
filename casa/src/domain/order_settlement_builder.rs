@@ -1,4 +1,4 @@
-use domain::{Order, OrderSettlement, SettlementStatus, Id};
+use domain::{Id, Order, OrderSettlement, SettlementStatus};
 use chrono::prelude::*;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
@@ -25,7 +25,12 @@ impl OrderSettlementBuilder {
         }
     }
 
-    pub fn build(self, starting_user: Id, buying_order: Order, selling_order: Order) -> OrderSettlement {
+    pub fn build(
+        self,
+        starting_user: Id,
+        buying_order: Order,
+        selling_order: Order,
+    ) -> OrderSettlement {
         OrderSettlement {
             id: self.id,
             starting_user: starting_user,
@@ -57,10 +62,7 @@ impl TryFromRow for OrderSettlementBuilder {
         )));
         let settlement_status_match: Option<SettlementStatus> = row.get("settlement_status");
         let settlement_status = try!(settlement_status_match.ok_or(
-            TryFromRowError::missing_field(
-                "OrderSettlementBuilder",
-                "settlement_status",
-            ),
+            TryFromRowError::missing_field("OrderSettlementBuilder", "settlement_status",),
         ));
 
         Ok(OrderSettlementBuilder {

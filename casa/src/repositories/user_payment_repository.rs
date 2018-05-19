@@ -12,7 +12,7 @@ pub struct UserPaymentRepository<T: db::PostgresHelper> {
     user_repository: repositories::UserRepository<T>,
     account_service: services::AccountService<T>,
     account_repo: repositories::AccountRepository<T>,
-    db_helper: T
+    db_helper: T,
 }
 
 impl<T: db::PostgresHelper> UserPaymentRepository<T> {
@@ -21,7 +21,7 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
             user_repository: repositories::UserRepository::new(db.clone()),
             account_service: services::AccountService::new(db.clone()),
             account_repo: repositories::AccountRepository::new(db.clone()),
-            db_helper: db
+            db_helper: db,
         }
     }
 
@@ -32,29 +32,29 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
     ) -> Result<domain::AccountStatement, db::CambioError> {
         let q = repository::UserClause::EmailAddress(email_address.to_owned());
         let user_not_found = db::CambioError::not_found_search(
-            "No user found with that email address", 
-            "get_user_by_email returned None"
+            "No user found with that email address",
+            "get_user_by_email returned None",
         );
         let user_match = try!(self.user_repository.read(&q)).pop();
         let user = try!(user_match.ok_or(user_not_found));
         let user_id: Id = user.id.unwrap();
         let q = repository::UserClause::EmailAddress(user.email_address.clone());
-        let account_list =
-            try!(self.account_repo.read(&q));
+        let account_list = try!(self.account_repo.read(&q));
         let message = format!("Credit to wallet using {}", payment.vendor);
 
         // extract the PRIMARY account with matching asset and denom
         let mut creditable_accounts: Vec<domain::Account> = account_list
             .into_iter()
             .filter(|account| {
-                account.asset_type == payment.asset_type &&
-                    account.asset_denom == payment.asset_denom &&
-                    account.account_role == domain::AccountRole::Primary
+                account.asset_type == payment.asset_type
+                    && account.asset_denom == payment.asset_denom
+                    && account.account_role == domain::AccountRole::Primary
             })
             .collect();
         let mut account_not_found_error = db::CambioError::not_found_search(
-            "An account to credit was not found", 
-            "Failed to found account with matching asset type for payment");
+            "An account to credit was not found",
+            "Failed to found account with matching asset type for payment",
+        );
         account_not_found_error.reccomendation = db::ErrorReccomendation::ContactSupport;
         let account = try!(creditable_accounts.pop().ok_or(account_not_found_error));
 
@@ -78,15 +78,16 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
             &payment.user_credit,
             &message,
         ];
-        let procedure_result = self.db_helper.execute(
-            CALL_CREDIT_ACCOUNT_PROCEDURE,
-            params);
+        let procedure_result = self.db_helper
+            .execute(CALL_CREDIT_ACCOUNT_PROCEDURE, params);
 
         try!(procedure_result);
 
         // if getting account ID failed, user can work around it
-        let mut account_error = db::CambioError::shouldnt_happen("Could not find your account while loading transactions.", 
-            "Account id field was None");
+        let mut account_error = db::CambioError::shouldnt_happen(
+            "Could not find your account while loading transactions.",
+            "Account id field was None",
+        );
         account_error.reccomendation = db::ErrorReccomendation::Continue;
 
         // load the statement
@@ -101,16 +102,17 @@ impl<T: db::PostgresHelper> RepoCreate for UserPaymentRepository<T> {
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         try!(self.register_credit_payment(&item.email_address, &item.payment));
-        let mut payments: Vec<domain::Payment> = try!(self.db_helper.query(SELECT_USER_PAYMENT, &[
-            &item.payment.unique_id
-        ]));
+        let mut payments: Vec<domain::Payment> = try!(
+            self.db_helper
+                .query(SELECT_USER_PAYMENT, &[&item.payment.unique_id])
+        );
 
         match payments.pop() {
-            Some(payment) => Ok(domain::UserPayment { 
+            Some(payment) => Ok(domain::UserPayment {
                 email_address: item.email_address.to_owned(),
-                payment: payment
+                payment: payment,
             }),
-            _ => Err(db::CambioError::db_update_failed("UserPayment"))
+            _ => Err(db::CambioError::db_update_failed("UserPayment")),
         }
     }
 }
@@ -131,7 +133,8 @@ const SELECT_USER_PAYMENT: &'static str = "
     WHERE user_payment.unique_id = $1
 ";
 
-const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str = "SELECT credit_account_from_payment(user_id_var := $1, 
+const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str =
+    "SELECT credit_account_from_payment(user_id_var := $1, 
         email_address_var := $2, 
         credited_account_id := $3, 
         asset_type_var := $4, 

@@ -5,12 +5,9 @@ use postgres::rows::Row;
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize)]
 #[postgres(name = "account_status_type")]
 pub enum AccountStatus {
-    #[postgres(name = "active")]
-    Active,
-    #[postgres(name = "frozen")]
-    Frozen,
-    #[postgres(name = "closed")]
-    Closed,
+    #[postgres(name = "active")] Active,
+    #[postgres(name = "frozen")] Frozen,
+    #[postgres(name = "closed")] Closed,
 }
 
 impl fmt::Display for AccountStatus {

@@ -3,7 +3,7 @@ use postgres::Connection;
 use postgres::types::ToSql;
 use postgres;
 use db::try_from_row::TryFromRow;
-use db::{PostgresSource, ConnectionSource, CambioError};
+use db::{CambioError, ConnectionSource, PostgresSource};
 use std::error;
 use std::error::Error;
 use std::fmt;
@@ -28,7 +28,9 @@ pub struct PostgresHelperImpl {
 
 impl PostgresHelperImpl {
     pub fn new(conn_source: PostgresSource) -> Self {
-        PostgresHelperImpl { conn_source: conn_source }
+        PostgresHelperImpl {
+            conn_source: conn_source,
+        }
     }
 
     pub fn new_from_conn_str(conn_str: &str) -> Self {
@@ -44,7 +46,7 @@ impl PostgresHelper for PostgresHelperImpl {
         params: &[&ToSql],
     ) -> Result<Vec<T>, CambioError> {
         let connection = try!(self.conn_source.get());
-        let rows = try!(connection.query(query, params)); 
+        let rows = try!(connection.query(query, params));
 
         let mut result_objs = Vec::new();
         for row in rows.iter() {

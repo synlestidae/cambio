@@ -1,5 +1,5 @@
-use db::{PostgresHelper, CambioError};
-use domain::{Address, PersonalIdentity, ContactInfo, Id};
+use db::{CambioError, PostgresHelper};
+use domain::{Address, ContactInfo, Id, PersonalIdentity};
 
 pub struct ProfileService<T: PostgresHelper> {
     db_helper: T,
@@ -7,7 +7,9 @@ pub struct ProfileService<T: PostgresHelper> {
 
 impl<T: PostgresHelper> ProfileService<T> {
     pub fn new(db_helper: T) -> Self {
-        ProfileService { db_helper: db_helper }
+        ProfileService {
+            db_helper: db_helper,
+        }
     }
 
     pub fn get_user_address(

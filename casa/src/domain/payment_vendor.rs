@@ -3,8 +3,7 @@ use std::fmt;
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Deserialize, Serialize)]
 #[postgres(name = "payment_vendor")]
 pub enum PaymentVendor {
-    #[postgres(name = "Poli")]
-    Poli,
+    #[postgres(name = "Poli")] Poli,
 }
 
 impl fmt::Display for PaymentVendor {

@@ -1,4 +1,4 @@
-use domain::{UniqueId, AssetType, Denom, PaymentVendor, PaymentMethod, Id};
+use domain::{AssetType, Denom, Id, PaymentMethod, PaymentVendor, UniqueId};
 use chrono::prelude::*;
 use postgres;
 use db::{TryFromRow, TryFromRowError};
@@ -12,7 +12,7 @@ pub struct Payment {
     pub datetime_payment_made: DateTime<Utc>,
     pub payment_method: PaymentMethod,
     pub vendor: PaymentVendor,
-    pub user_credit: i64
+    pub user_credit: i64,
 }
 
 /*impl TryFromRow for Payment {
@@ -20,7 +20,6 @@ pub struct Payment {
         unimplemented!()
     }
 }*/
-
 
 /*struct PaymentRow {
     id: Id,

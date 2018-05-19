@@ -6,14 +6,12 @@ use repository::*;
 
 #[derive(Clone)]
 pub struct OrderRepository<T: db::PostgresHelper> {
-    db_helper: T
+    db_helper: T,
 }
 
 impl<T: db::PostgresHelper> OrderRepository<T> {
     pub fn new(db: T) -> Self {
-        OrderRepository {
-            db_helper: db
-        }
+        OrderRepository { db_helper: db }
     }
 }
 
@@ -23,18 +21,22 @@ impl<T: db::PostgresHelper> repository::RepoRead for OrderRepository<T> {
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         match clause {
-            &repository::UserClause::All(include_all) => if include_all { 
-                self.db_helper.query(SELECT_ALL, &[]) 
-            } else { 
-                self.db_helper.query(SELECT_ALL_ACTIVE, &[]) 
+            &repository::UserClause::All(include_all) => if include_all {
+                self.db_helper.query(SELECT_ALL, &[])
+            } else {
+                self.db_helper.query(SELECT_ALL_ACTIVE, &[])
             },
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
-            &repository::UserClause::EmailAddress(ref email_address) => 
-                self.db_helper.query(SELECT_BY_ID, &[email_address]),
-            &repository::UserClause::UniqueId(ref unique_id) => 
-                self.db_helper.query(SELECT_BY_UID, &[unique_id]),
-            _ => Err(db::CambioError::shouldnt_happen("Cannot load orders with query", 
-                "Unsupported query"))
+            &repository::UserClause::EmailAddress(ref email_address) => {
+                self.db_helper.query(SELECT_BY_ID, &[email_address])
+            }
+            &repository::UserClause::UniqueId(ref unique_id) => {
+                self.db_helper.query(SELECT_BY_UID, &[unique_id])
+            }
+            _ => Err(db::CambioError::shouldnt_happen(
+                "Cannot load orders with query",
+                "Unsupported query",
+            )),
         }
     }
 }
@@ -44,8 +46,10 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         if item.is_expired() {
-            return Err(db::CambioError::not_permitted("Cannot create an order that has expired.",
-                "Order has expired"));
+            return Err(db::CambioError::not_permitted(
+                "Cannot create an order that has expired.",
+                "Order has expired",
+            ));
         }
         let params: &[&ToSql] = &[
             &item.buy_asset_type,
@@ -56,7 +60,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
             &item.owner_id,
             &item.sell_asset_units,
             &item.buy_asset_units,
-            &item.expires_at.naive_utc()
+            &item.expires_at.naive_utc(),
         ];
         let rows = try!(self.db_helper.execute(PLACE_ORDER, params));
         if rows == 0 {
@@ -66,7 +70,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
             let mut orders = try!(self.read(&clause));
             match orders.pop() {
                 Some(order) => Ok(order),
-                None => Err(db::CambioError::db_update_failed("Order"))
+                None => Err(db::CambioError::db_update_failed("Order")),
             }
         }
     }
@@ -79,23 +83,27 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for OrderRepository<T> {
             Some(id) => id,
             _ => {
                 return Err(db::CambioError::format_obj(
-                    "Cannot find Order without ID", "Order was
-                    None"));
+                    "Cannot find Order without ID",
+                    "Order was
+                    None",
+                ));
             }
         };
-        let result = self.db_helper.execute(UPDATE_BY_ID, 
-            &[&id, 
-            &item.status,
-            &item.expires_at.naive_utc()]);
+        let result = self.db_helper.execute(
+            UPDATE_BY_ID,
+            &[&id, &item.status, &item.expires_at.naive_utc()],
+        );
         let rows = try!(result);
         if rows == 0 {
-            Err(db::CambioError::shouldnt_happen("Cannot load orders with query", 
-                "Unsupported query"))
+            Err(db::CambioError::shouldnt_happen(
+                "Cannot load orders with query",
+                "Unsupported query",
+            ))
         } else {
             let clause = repository::UserClause::UniqueId(item.unique_id.to_owned());
             match try!(self.read(&clause)).pop() {
                 Some(order) => Ok(order),
-                _ => Err(db::CambioError::db_update_failed("Order"))
+                _ => Err(db::CambioError::db_update_failed("Order")),
             }
         }
     }
@@ -108,8 +116,9 @@ impl<T: db::PostgresHelper> repository::RepoDelete for OrderRepository<T> {
             try!(self.read(&repository::UserClause::Id(id))).pop()
         } else {
             return Err(db::CambioError::format_obj(
-                "Cannot cancel order with no ID", 
-                "delete(): item.id was None"));
+                "Cannot cancel order with no ID",
+                "delete(): item.id was None",
+            ));
         };
         match order_match {
             Some(mut order) => {
@@ -118,15 +127,15 @@ impl<T: db::PostgresHelper> repository::RepoDelete for OrderRepository<T> {
                     self.update(&order)
                 } else {
                     Err(db::CambioError::format_obj(
-                        "Can only mark an active order as deleted", 
-                        "delete(): item.id was None"))
+                        "Can only mark an active order as deleted",
+                        "delete(): item.id was None",
+                    ))
                 }
-            },
-            None => {
-                Err(db::CambioError::not_found_search(
-                    "Order with that ID not found", 
-                    "Order with ID does not exist"))
             }
+            None => Err(db::CambioError::not_found_search(
+                "Order with that ID not found",
+                "Order with ID does not exist",
+            )),
         }
     }
 }
@@ -147,7 +156,6 @@ const SELECT_ALL: &'static str = "
         orders.buy_asset_type_id = buy_asset_type.id AND
         orders.sell_asset_type_id = sell_asset_type.id AND
         orders.owner_id = owner.id";
-    
 
 const SELECT_ALL_ACTIVE: &'static str = "
     SELECT 

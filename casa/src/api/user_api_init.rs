@@ -2,11 +2,11 @@ use api::Registration;
 use api::api_init::ApiInit;
 use std::borrow::Borrow;
 use std::sync::Arc;
-use api::{UserApi, UserApiTrait, ApiError};
+use api::{ApiError, UserApi, UserApiTrait};
 use bodyparser;
-use db::{PostgresSource, PostgresHelper, PostgresHelperImpl, ConnectionSource};
-use hyper::header::{Headers, ContentType};
-use hyper::mime::{Mime, TopLevel, SubLevel, Attr, Value};
+use db::{ConnectionSource, PostgresHelper, PostgresHelperImpl, PostgresSource};
+use hyper::header::{ContentType, Headers};
+use hyper::mime::{Attr, Mime, SubLevel, TopLevel, Value};
 use hyper;
 use iron::request::Request;
 use iron::Handler;
@@ -20,14 +20,14 @@ use std;
 #[derive(Clone)]
 pub struct UserApiInit<T: PostgresHelper> {
     helper: T,
-    web3_address: String
+    web3_address: String,
 }
 
 impl<T: PostgresHelper> UserApiInit<T> {
     pub fn new(helper: T, web3_address: &str) -> Self {
-        Self { 
+        Self {
             helper: helper,
-            web3_address: web3_address.to_owned() 
+            web3_address: web3_address.to_owned(),
         }
     }
 }

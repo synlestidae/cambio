@@ -1,7 +1,7 @@
 use api::api_init::ApiInit;
-use api::{AccountApiTrait, AccountApiImpl, ApiError};
-use db::{PostgresHelper};
-use iron::headers::{Cookie, Authorization, Bearer};
+use api::{AccountApiImpl, AccountApiTrait, ApiError};
+use db::PostgresHelper;
+use iron::headers::{Authorization, Bearer, Cookie};
 use iron::request::Request;
 use iron;
 use router::Router;
@@ -11,14 +11,12 @@ use serde_json;
 
 #[derive(Clone)]
 pub struct AccountApiInit<T: PostgresHelper> {
-    helper: T
+    helper: T,
 }
 
 impl<T: PostgresHelper> AccountApiInit<T> {
     pub fn new(helper: T) -> Self {
-        Self {
-            helper: helper
-        }
+        Self { helper: helper }
     }
 }
 

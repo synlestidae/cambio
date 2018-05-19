@@ -14,5 +14,5 @@ pub enum ErrorKind {
     UnexpectedState,
     UnfairOperation,
     StateChangeNotPermitted,
-    OverUserLimit
+    OverUserLimit,
 }

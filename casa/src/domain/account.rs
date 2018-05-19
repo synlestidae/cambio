@@ -1,4 +1,4 @@
-use domain::{AssetType, Denom, Id, AccountStatus, AccountBusinessType, AccountRole, AccountType};
+use domain::{AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, Denom, Id};
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 use postgres;
@@ -21,8 +21,8 @@ pub struct Account {
 
 impl Account {
     pub fn is_user_visible(&self) -> bool {
-        return self.account_business_type == AccountBusinessType::UserCashWallet && 
-            self.account_role == AccountRole::Primary
+        return self.account_business_type == AccountBusinessType::UserCashWallet
+            && self.account_role == AccountRole::Primary;
     }
 }
 

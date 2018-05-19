@@ -27,9 +27,7 @@ where
         Some(Ok(value)) => Ok(value),
         Some(Err(err)) => Err(TryFromRowError::new(&format!(
             "Error getting field '{}' for {}: {}",
-            field,
-            entity,
-            err
+            field, entity, err
         ))),
         None => Err(TryFromRowError::missing_field(entity, field)),
     }

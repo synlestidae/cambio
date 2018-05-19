@@ -6,14 +6,12 @@ use repository::*;
 
 #[derive(Clone)]
 pub struct SessionRepository<T: db::PostgresHelper> {
-    db_helper: T
+    db_helper: T,
 }
 
 impl<T: db::PostgresHelper> SessionRepository<T> {
     pub fn new(db: T) -> Self {
-        SessionRepository {
-            db_helper: db
-        }
+        SessionRepository { db_helper: db }
     }
 }
 
@@ -25,19 +23,21 @@ impl<T: db::PostgresHelper> repository::RepoRead for SessionRepository<T> {
         debug!("Retrieving with clause: {:?}", clause);
         match clause {
             &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
-            &repository::UserClause::EmailAddress(ref email) => { 
+            &repository::UserClause::EmailAddress(ref email) => {
                 self.db_helper.query(SELECT_BY_EMAIL, &[email])
-            },
-            &repository::UserClause::SessionToken(ref token) => { 
-                self.db_helper.query(SELECT_BY_TOKEN, &[token]) 
-            },
-            _ => Err(db::CambioError::shouldnt_happen("Invalid query to get user", 
-                    &format!("Clause {:?} not supported by SessionRepository", clause)))
+            }
+            &repository::UserClause::SessionToken(ref token) => {
+                self.db_helper.query(SELECT_BY_TOKEN, &[token])
+            }
+            _ => Err(db::CambioError::shouldnt_happen(
+                "Invalid query to get user",
+                &format!("Clause {:?} not supported by SessionRepository", clause),
+            )),
         }
     }
 }
 
-impl <T: db::PostgresHelper> repository::RepoCreate for SessionRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoCreate for SessionRepository<T> {
     type Item = domain::Session;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
@@ -49,34 +49,41 @@ impl <T: db::PostgresHelper> repository::RepoCreate for SessionRepository<T> {
                 Some(session) => Ok(session),
                 None => Err(db::CambioError::shouldnt_happen(
                     "Tried to log you in but couldn't find session",
-                    "Could not retrieve session after activation"
-                ))
+                    "Could not retrieve session after activation",
+                )),
             }
         } else {
             Err(db::CambioError::format_obj(
-                "Tried to log you in but didn't have your email", 
-                "Cannot create session when email_address = None")
-            )
+                "Tried to log you in but didn't have your email",
+                "Cannot create session when email_address = None",
+            ))
         }
     }
 }
 
-impl <T: db::PostgresHelper> repository::RepoUpdate for SessionRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoUpdate for SessionRepository<T> {
     type Item = domain::Session;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let id = match item.id {
-            Some(id) => {
-                id
-            },
-            None => return Err(db::CambioError::format_obj(
-                "Session doesn't exist in database", "Cannot
-                update session without ID"))
+            Some(id) => id,
+            None => {
+                return Err(db::CambioError::format_obj(
+                    "Session doesn't exist in database",
+                    "Cannot
+                update session without ID",
+                ))
+            }
         };
-        let result = self.db_helper.execute(UPDATE, &[&id, 
-            &item.session_token, 
-            &item.started_at, 
-            &item.ttl_milliseconds]);
+        let result = self.db_helper.execute(
+            UPDATE,
+            &[
+                &id,
+                &item.session_token,
+                &item.started_at,
+                &item.ttl_milliseconds,
+            ],
+        );
         let update_error = db::CambioError::db_update_failed("Session");
         let rows = try!(result);
         if rows < 1 {
@@ -87,7 +94,7 @@ impl <T: db::PostgresHelper> repository::RepoUpdate for SessionRepository<T> {
     }
 }
 
-impl <T: db::PostgresHelper> repository::RepoDelete for SessionRepository<T> {
+impl<T: db::PostgresHelper> repository::RepoDelete for SessionRepository<T> {
     type Item = domain::Session;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {

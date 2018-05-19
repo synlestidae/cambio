@@ -1,6 +1,6 @@
-use api::{OrderApiTrait, OrderApiImpl, ApiInit};
+use api::{ApiInit, OrderApiImpl, OrderApiTrait};
 use db;
-use iron::headers::{Cookie, Authorization, Bearer};
+use iron::headers::{Authorization, Bearer, Cookie};
 use iron::request::Request;
 use iron;
 use router::Router;
@@ -10,14 +10,12 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct OrderApiInit<T: db::PostgresHelper> {
-    helper: T
+    helper: T,
 }
 
 impl<T: db::PostgresHelper> OrderApiInit<T> {
     pub fn new(helper: T) -> Self {
-        Self {
-            helper: helper
-        }
+        Self { helper: helper }
     }
 }
 
@@ -35,8 +33,7 @@ where
             "/orders/active/",
             move |r: &mut Request| {
                 let this_helper_ref: &T = active_orders_helper.borrow();
-                let mut api: OrderApiImpl<T> =
-                    OrderApiImpl::new(this_helper_ref.clone());
+                let mut api: OrderApiImpl<T> = OrderApiImpl::new(this_helper_ref.clone());
                 Ok(api.get_active_orders(r))
             },
             "get_active_orders",
@@ -46,8 +43,7 @@ where
             "/orders/me/",
             move |r: &mut Request| {
                 let this_helper_ref: &T = my_orders_helper.borrow();
-                let mut api: OrderApiImpl<T> =
-                    OrderApiImpl::new(this_helper_ref.clone());
+                let mut api: OrderApiImpl<T> = OrderApiImpl::new(this_helper_ref.clone());
                 Ok(api.get_user_orders(r))
             },
             "get_user_orders",
@@ -57,8 +53,7 @@ where
             "/orders/new_order",
             move |r: &mut Request| {
                 let this_helper_ref: &T = new_order_helper.borrow();
-                let mut api: OrderApiImpl<T> =
-                    OrderApiImpl::new(this_helper_ref.clone());
+                let mut api: OrderApiImpl<T> = OrderApiImpl::new(this_helper_ref.clone());
                 Ok(api.post_new_order(r))
             },
             "post_new_order",
@@ -68,8 +63,7 @@ where
             "/orders/buy/:id",
             move |r: &mut Request| {
                 let this_helper_ref: &T = buy_order_helper.borrow();
-                let mut api: OrderApiImpl<T> =
-                    OrderApiImpl::new(this_helper_ref.clone());
+                let mut api: OrderApiImpl<T> = OrderApiImpl::new(this_helper_ref.clone());
                 Ok(api.post_buy_order(r))
             },
             "post_buy_order",

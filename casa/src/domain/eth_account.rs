@@ -1,8 +1,8 @@
-use base64::{encode, decode};
+use base64::{decode, encode};
 use crypto::digest::Digest;
 use crypto;
 use db::{TryFromRow, TryFromRowError};
-use domain::{Id, DecryptError};
+use domain::{DecryptError, Id};
 use openssl::aes;
 use openssl::symm;
 use postgres;
@@ -11,7 +11,7 @@ use rand;
 use std::iter;
 use std;
 use bcrypt::hash;
-use web3::types::{H160, U256, Transaction};
+use web3::types::{H160, Transaction, U256};
 
 const BCRYPT_COST: u32 = 8;
 
@@ -20,7 +20,7 @@ pub struct EthAccount {
     pub id: Option<Id>,
     pub address: H160,
     pub password_hash_bcrypt: String,
-    pub owner_id: Id, 
+    pub owner_id: Id,
 }
 
 impl EthAccount {
@@ -31,7 +31,7 @@ impl EthAccount {
             id: None,
             address: *address,
             password_hash_bcrypt: bcrypted_password,
-            owner_id: owner_id
+            owner_id: owner_id,
         }
     }
 }

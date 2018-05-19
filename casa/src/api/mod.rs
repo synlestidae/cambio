@@ -1,6 +1,7 @@
 mod account_api_impl;
 mod settlement_api_trait;
 mod settlement_api_impl;
+mod settlement_eth_credentials;
 mod account_api_init;
 mod account_api_trait;
 mod api_error;
@@ -22,7 +23,7 @@ mod user_api_init;
 mod user_api_trait;
 mod utils;
 
-pub use self:: account_api_impl::*;
+pub use self::account_api_impl::*;
 pub use self::account_api_init::*;
 pub use self::account_api_trait::*;
 pub use self::api_error::*;
@@ -44,3 +45,4 @@ pub use self::order_request::*;
 pub use self::order_buy::*;
 pub use self::settlement_api_trait::*;
 pub use self::settlement_api_impl::*;
+pub use self::settlement_eth_credentials::*;

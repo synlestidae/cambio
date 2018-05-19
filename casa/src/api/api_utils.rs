@@ -18,16 +18,20 @@ where
         Ok(&None) => {
             let error_obj = ApiError::bad_format("Body of HTTP request cannot be empty");
             let response_json = serde_json::to_string(&error_obj).unwrap();
-            Err(Response::with(
-                (iron::status::BadRequest, response_json, content_type),
-            ))
+            Err(Response::with((
+                iron::status::BadRequest,
+                response_json,
+                content_type,
+            )))
         }
         Err(error) => {
             let error_obj = ApiError::bad_format(error.description());
             let response_json = serde_json::to_string(&error_obj).unwrap();
-            Err(Response::with(
-                (iron::status::Ok, response_json, content_type),
-            ))
+            Err(Response::with((
+                iron::status::Ok,
+                response_json,
+                content_type,
+            )))
         }
     }
 }

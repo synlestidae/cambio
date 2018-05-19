@@ -24,7 +24,7 @@ pub struct Order {
     pub buy_asset_denom: Denom,
     pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
-    pub status: OrderStatus
+    pub status: OrderStatus,
 }
 
 impl Order {
@@ -43,10 +43,9 @@ impl Order {
             buy_asset_type: domain::AssetType::ETH,
             buy_asset_denom: domain::Denom::Szabo,
             expires_at: expiry,
-            status: domain::OrderStatus::Active
+            status: domain::OrderStatus::Active,
         }
     }
-
 
     pub fn sell_szabo(owner: Id, buy_cents: u32, szabo: u64, ttl_minutes: u32) -> Self {
         let now = Utc::now();
@@ -63,42 +62,41 @@ impl Order {
             buy_asset_type: domain::AssetType::NZD,
             buy_asset_denom: domain::Denom::Cent,
             expires_at: expiry,
-            status: domain::OrderStatus::Active
+            status: domain::OrderStatus::Active,
         }
     }
 
-    pub fn can_exchange(&self, 
-        buy_currency: &domain::Currency, 
-        sell_currency: &domain::Currency) -> bool {
-        let are_compatible = (
-            self.buy_asset_type == sell_currency.asset_type &&
-            self.buy_asset_denom == sell_currency.denom &&
-            self.sell_asset_type == buy_currency.asset_type &&
-            self.sell_asset_denom == buy_currency.denom
-        );
+    pub fn can_exchange(
+        &self,
+        buy_currency: &domain::Currency,
+        sell_currency: &domain::Currency,
+    ) -> bool {
+        let are_compatible = (self.buy_asset_type == sell_currency.asset_type
+            && self.buy_asset_denom == sell_currency.denom
+            && self.sell_asset_type == buy_currency.asset_type
+            && self.sell_asset_denom == buy_currency.denom);
         let one_is_crypto = self.buy_asset_type.is_crypto() || buy_currency.asset_type.is_crypto();
         return are_compatible && one_is_crypto;
     }
 
-    pub fn is_fair(&self, 
-        buy_currency: &domain::Currency, 
+    pub fn is_fair(
+        &self,
+        buy_currency: &domain::Currency,
         sell_currency: &domain::Currency,
         buy_units: u64,
-        sell_units: u64) -> bool {
-        let units_match = 
-            self.sell_asset_units as u64 == buy_units&& 
-            self.buy_asset_units as u64 == sell_units;
-        let asset_types_match = 
-            self.sell_asset_type == buy_currency.asset_type &&
-            self.buy_asset_type == sell_currency.asset_type;
-        let denoms_match = 
-            self.sell_asset_denom == buy_currency.denom &&
-            self.buy_asset_denom == sell_currency.denom;
+        sell_units: u64,
+    ) -> bool {
+        let units_match =
+            self.sell_asset_units as u64 == buy_units && self.buy_asset_units as u64 == sell_units;
+        let asset_types_match = self.sell_asset_type == buy_currency.asset_type
+            && self.buy_asset_type == sell_currency.asset_type;
+        let denoms_match = self.sell_asset_denom == buy_currency.denom
+            && self.buy_asset_denom == sell_currency.denom;
         return units_match && asset_types_match && denoms_match;
     }
 
     pub fn is_expired(&self) -> bool {
-        self.expires_at <= Utc::now() 
+        self.expires_at <= Utc::now()
     }
 
     pub fn is_active(&self) -> bool {
@@ -106,11 +104,10 @@ impl Order {
     }
 }
 
-
 fn random_string() -> String {
     let mut token = String::new();
     for _ in (0..32) {
-            token.push(rand::random::<char>() as char);
+        token.push(rand::random::<char>() as char);
     }
     token
 }

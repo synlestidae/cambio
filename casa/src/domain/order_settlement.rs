@@ -1,6 +1,6 @@
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
-use domain::{SettlementStatus, Order, Id};
+use domain::{Id, Order, SettlementStatus};
 use db::{TryFromRow, TryFromRowError};
 use postgres;
 
@@ -21,10 +21,10 @@ impl OrderSettlement {
             id: None,
             started_at: Utc::now(),
             settled_at: None,
-            starting_user: user_id ,
+            starting_user: user_id,
             settlement_status: SettlementStatus::Settling,
             buying_order: buy_order.clone(),
-            selling_order: sell_order.clone()
+            selling_order: sell_order.clone(),
         }
     }
 }

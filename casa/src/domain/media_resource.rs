@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std;
 
 pub enum MediaResource {
-    File(PathBuf)
+    File(PathBuf),
 }
 
 impl MediaResource {
@@ -21,7 +21,7 @@ impl MediaResource {
             &MediaResource::File(ref path) => {
                 match path.to_str() {
                     Some(p) => p.to_owned(),
-                    None => String::new() // should never happen
+                    None => String::new(), // should never happen
                 }
             }
         }

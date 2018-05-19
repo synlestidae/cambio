@@ -1,6 +1,6 @@
 use api;
-use domain::{Id, Account, Transaction};
-use api::{ApiResult, ApiError};
+use domain::{Account, Id, Transaction};
+use api::{ApiError, ApiResult};
 use iron;
 
 pub trait AccountApiTrait {

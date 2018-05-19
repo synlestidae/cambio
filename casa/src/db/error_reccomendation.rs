@@ -8,5 +8,5 @@ pub enum ErrorReccomendation {
     CheckInput,
     CheckState,
     Nothing,
-    Continue
+    Continue,
 }

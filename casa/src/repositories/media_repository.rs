@@ -6,20 +6,20 @@ use postgres;
 use postgres::rows::Rows;
 use repository;
 use repository::*;
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 use std::convert::Into;
 
 #[derive(Clone)]
 pub struct MediaRepository<T: db::PostgresHelper> {
     db_helper: T,
-    base_path: PathBuf
+    base_path: PathBuf,
 }
 
 impl<T: db::PostgresHelper> MediaRepository<T> {
     pub fn new(db: T, base_path: &Path) -> Self {
         MediaRepository {
             db_helper: db,
-            base_path: base_path.to_path_buf()
+            base_path: base_path.to_path_buf(),
         }
     }
 }
@@ -32,9 +32,12 @@ impl<T: db::PostgresHelper> repository::RepoRead for MediaRepository<T> {
         let read_tuple: (&'static str, Vec<&postgres::types::ToSql>) = match clause {
             &repository::UserClause::Id(ref id) => unimplemented!(),
             &repository::UserClause::EmailAddress(ref id) => unimplemented!(),
-            bad_clause => return Err(db::CambioError::shouldnt_happen(
-                    "Can't find the file you uploaded", 
-                    &format!("Unsupported clause: {:?}", bad_clause)))
+            bad_clause => {
+                return Err(db::CambioError::shouldnt_happen(
+                    "Can't find the file you uploaded",
+                    &format!("Unsupported clause: {:?}", bad_clause),
+                ))
+            }
         };
         let (sql, params) = read_tuple;
         let rows: Vec<MediaRow> = try!(self.db_helper.query(sql, &params));
@@ -53,14 +56,22 @@ impl<T: db::PostgresHelper> repository::RepoCreate for MediaRepository<T> {
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let size = match item.resource.size() {
             Ok(s) => s as u32,
-            _ => return Err(db::CambioError::not_found_search("Could not get file size", "Metadata size() method failed"))
+            _ => {
+                return Err(db::CambioError::not_found_search(
+                    "Could not get file size",
+                    "Metadata size() method failed",
+                ))
+            }
         };
-        let rows = try!(self.db_helper.query_raw(INSERT, &[
-            &item.owner_id, 
-            &item.file_format,
-            &item.resource.reference(),
-            &size
-        ]));
+        let rows = try!(self.db_helper.query_raw(
+            INSERT,
+            &[
+                &item.owner_id,
+                &item.file_format,
+                &item.resource.reference(),
+                &size
+            ]
+        ));
         if rows.len() == 0 {
             Err(db::CambioError::db_update_failed("StoredMedia"))
         } else {
@@ -68,10 +79,16 @@ impl<T: db::PostgresHelper> repository::RepoCreate for MediaRepository<T> {
             let id_match: Option<Id> = row.get(0);
             let mut item_vec = match id_match {
                 Some(id) => try!(self.read(&repository::UserClause::Id(id))),
-                None => return Err(db::CambioError::shouldnt_happen("Cannot find ID for stored item", 
-                    "Failed to get ID"))
+                None => {
+                    return Err(db::CambioError::shouldnt_happen(
+                        "Cannot find ID for stored item",
+                        "Failed to get ID",
+                    ))
+                }
             };
-            item_vec.pop().ok_or(db::CambioError::db_update_failed("StoredMedia"))
+            item_vec
+                .pop()
+                .ok_or(db::CambioError::db_update_failed("StoredMedia"))
         }
     }
 }
@@ -82,16 +99,28 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for MediaRepository<T> {
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let size = match item.resource.size() {
             Ok(s) => s as u32,
-            _ => return Err(db::CambioError::not_found_search("Could not get file size", "Metadata size() method failed"))
+            _ => {
+                return Err(db::CambioError::not_found_search(
+                    "Could not get file size",
+                    "Metadata size() method failed",
+                ))
+            }
         };
-        let mut updated: Vec<MediaRow> = try!(self.db_helper.query(UPDATE, &[
-            &item.id, 
-            &item.owner_id, 
-            &item.file_format,
-            &item.resource.reference(), 
-            &size]));
-        let updated_match: MediaRow = 
-            try!(updated.pop().ok_or(db::CambioError::db_update_failed("StoredMedia")));
+        let mut updated: Vec<MediaRow> = try!(self.db_helper.query(
+            UPDATE,
+            &[
+                &item.id,
+                &item.owner_id,
+                &item.file_format,
+                &item.resource.reference(),
+                &size
+            ]
+        ));
+        let updated_match: MediaRow = try!(
+            updated
+                .pop()
+                .ok_or(db::CambioError::db_update_failed("StoredMedia"))
+        );
         updated_match.into()
     }
 }
@@ -102,8 +131,11 @@ impl<T: db::PostgresHelper> repository::RepoDelete for MediaRepository<T> {
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let mut deleted: Vec<MediaRow> = try!(self.db_helper.query(DELETE, &[&item.id]));
 
-        let deleted_match: MediaRow = 
-            try!(deleted.pop().ok_or(db::CambioError::db_update_failed("StoredMedia")));
+        let deleted_match: MediaRow = try!(
+            deleted
+                .pop()
+                .ok_or(db::CambioError::db_update_failed("StoredMedia"))
+        );
         deleted_match.into()
     }
 }
@@ -112,12 +144,11 @@ impl<T: db::PostgresHelper> repository::RepoDelete for MediaRepository<T> {
 struct MediaRow {
     id: Id,
     owner_id: Option<Id>,
-    file_format: domain::MediaFileFormat, 
+    file_format: domain::MediaFileFormat,
     storage_location: domain::StorageLocation,
     reference: String,
-    file_size: i64
+    file_size: i64,
 }
-
 
 impl Into<Result<domain::StoredMedia, db::CambioError>> for MediaRow {
     fn into(self) -> Result<domain::StoredMedia, db::CambioError> {
@@ -129,17 +160,20 @@ impl Into<Result<domain::StoredMedia, db::CambioError>> for MediaRow {
             Some(p) => {
                 clean_path.push(p);
                 domain::MediaResource::File(clean_path)
-            },
-            None => return Err(db::CambioError::shouldnt_happen(
-                "Could not find the file.",
-                "File path is invalid"))
+            }
+            None => {
+                return Err(db::CambioError::shouldnt_happen(
+                    "Could not find the file.",
+                    "File path is invalid",
+                ))
+            }
         };
         Ok(domain::StoredMedia {
             id: Some(self.id),
             owner_id: self.owner_id,
             file_format: self.file_format,
             file_size: self.file_size as u64,
-            resource: resource
+            resource: resource,
         })
     }
 }
@@ -162,6 +196,6 @@ const UPDATE: &'static str = "UPDATE media
     WHERE id = $1
     RETURNING *";
 
-const DELETE : &'static str = "DELETE media
+const DELETE: &'static str = "DELETE media
     WHERE id = $1
     RETURNING *";

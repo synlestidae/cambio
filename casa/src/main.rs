@@ -1,45 +1,45 @@
 #![feature(custom_attribute)]
 
 extern crate bcrypt;
-extern crate iron;
-extern crate params;
-extern crate hyper;
-#[macro_use]
-extern crate postgres;
 extern crate bodyparser;
-extern crate serde;
-extern crate serde_json;
-extern crate router;
-extern crate chrono;
-extern crate time;
 extern crate checkmail;
-extern crate uuid;
+extern crate chrono;
+extern crate env_logger;
+extern crate hyper;
+extern crate iron;
 #[macro_use]
 extern crate log;
-extern crate env_logger;
+extern crate params;
+#[macro_use]
+extern crate postgres;
 #[macro_use]
 extern crate postgres_derive;
+extern crate router;
+extern crate serde;
+extern crate serde_json;
+extern crate time;
+extern crate uuid;
 
 #[macro_use]
-extern crate try_from_row; 
+extern crate try_from_row;
 
 #[macro_use]
 extern crate serde_derive;
 
+extern crate iron_cors;
+extern crate persistent;
 extern crate r2d2;
 extern crate r2d2_postgres;
-extern crate persistent;
-extern crate iron_cors;
 
-extern crate openssl;
-extern crate crypto;
-extern crate rand;
 extern crate base64;
+extern crate byteorder;
+extern crate crypto;
 extern crate hex;
-extern crate web3;
+extern crate openssl;
+extern crate rand;
 extern crate rlp;
 extern crate secp256k1;
-extern crate byteorder;
+extern crate web3;
 
 mod db;
 mod domain;
@@ -52,17 +52,17 @@ mod cors_middleware;
 
 use cors_middleware::CorsMiddleware;
 use iron::prelude::*;
-use iron::{Iron, Request, Response, IronResult, AfterMiddleware};
+use iron::{AfterMiddleware, Iron, IronResult, Request, Response};
 use iron::status;
 use iron::headers::AccessControlAllowOrigin;
 use persistent::Read;
 use router::Router;
 use api::ApiInit;
-use bcrypt::{DEFAULT_COST, hash, verify};
+use bcrypt::{hash, verify, DEFAULT_COST};
 use postgres::{Connection, TlsMode};
-use domain::{User, Order, Session};
+use domain::{Order, Session, User};
 use api::ApiError;
-use db::{PostgresHelperImpl, PostgresHelper};
+use db::{PostgresHelper, PostgresHelperImpl};
 use std::error::Error;
 use time::PreciseTime;
 //use iron_cors::CorsMiddleware;

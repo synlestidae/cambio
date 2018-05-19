@@ -1,5 +1,5 @@
 use uuid::Uuid;
-use domain::{AssetType, Denom, PaymentMethod, PaymentVendor, Payment};
+use domain::{AssetType, Denom, Payment, PaymentMethod, PaymentVendor};
 use chrono::prelude::*;
 
 pub struct PaymentBuilder {
@@ -42,7 +42,7 @@ impl PaymentBuilder {
             vendor: self.vendor,
             unique_id: unique_id.to_owned(),
             datetime_payment_made: datetime_payment_made,
-            user_credit: credit
+            user_credit: credit,
         })
     }
 }

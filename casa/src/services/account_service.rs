@@ -1,6 +1,6 @@
-use db::{PostgresHelper, CambioError, ErrorKind, ErrorReccomendation};
+use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
 use std::error::Error;
-use domain::{Account, Id, AccountStatement, Transaction};
+use domain::{Account, AccountStatement, Id, Transaction};
 use repositories;
 use repository;
 use repository::*;
@@ -8,14 +8,14 @@ use repository::*;
 #[derive(Clone)]
 pub struct AccountService<T: PostgresHelper> {
     account_repo: repositories::AccountRepository<T>,
-    db_helper: T
+    db_helper: T,
 }
 
 impl<T: PostgresHelper> AccountService<T> {
     pub fn new(db_helper: T) -> AccountService<T> {
-        AccountService { 
+        AccountService {
             db_helper: db_helper.clone(),
-            account_repo: repositories::AccountRepository::new(db_helper)
+            account_repo: repositories::AccountRepository::new(db_helper),
         }
     }
 
@@ -23,12 +23,17 @@ impl<T: PostgresHelper> AccountService<T> {
         &mut self,
         account_id: Id,
     ) -> Result<AccountStatement, CambioError> {
-        let account_match = try!(self.account_repo.read(&repository::UserClause::Id(account_id))).pop();
-        let error = CambioError::not_found_search("Your account could not be found.", 
-            &format!("Account with ID {} not found", account_id));
+        let account_match = try!(
+            self.account_repo
+                .read(&repository::UserClause::Id(account_id))
+        ).pop();
+        let error = CambioError::not_found_search(
+            "Your account could not be found.",
+            &format!("Account with ID {} not found", account_id),
+        );
         let account = match account_match {
             Some(acc) => acc,
-            None => return Err(error)
+            None => return Err(error),
         };
 
         let mut transactions = try!(self.get_transactions_for_account(account_id));

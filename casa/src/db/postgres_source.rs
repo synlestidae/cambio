@@ -1,10 +1,10 @@
-use r2d2_postgres::{TlsMode, PostgresConnectionManager};
+use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 use r2d2;
-use r2d2::{Pool, PooledConnection, ManageConnection};
+use r2d2::{ManageConnection, Pool, PooledConnection};
 use std::io;
 use postgres::Connection;
 use std::ops::Deref;
-use db::{ConnectionSource, CambioError, PostgresPooledConn};
+use db::{CambioError, ConnectionSource, PostgresPooledConn};
 
 #[derive(Clone)]
 pub struct PostgresSource {

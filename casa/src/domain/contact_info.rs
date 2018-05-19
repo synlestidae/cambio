@@ -1,6 +1,6 @@
 use domain::Id;
 use postgres::rows::Row;
-use db::{TryFromRow, TryFromRowError, get_value, get_value_option};
+use db::{get_value, get_value_option, TryFromRow, TryFromRowError};
 use postgres;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TryFromRow)]
