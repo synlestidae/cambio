@@ -3,6 +3,8 @@
 pub enum SettlementStatus {
     #[postgres(name = "settling")]
     Settling,
+    #[postgres(name = "ready_eth_credentials")]
+    ReadyEthCredentials,
     #[postgres(name = "waiting_eth")]
     WaitingEth,
     #[postgres(name = "settled")]
