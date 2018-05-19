@@ -209,8 +209,11 @@ BEGIN
         RAISE EXCEPTION 'Settlements with those orders already exist';
     END IF;
 
+    UPDATE asset_order SET status = 'settling' WHERE id in (selling_order.id, buying_order.id); 
+
     INSERT INTO order_settlement(starting_user, buying_crypto_id, buying_fiat_id, transaction_id) 
         VALUES (starting_user, buying_crypto_order_id, buying_currency_order_id, NULL);
+
 END;
 $$ LANGUAGE plpgsql;
 

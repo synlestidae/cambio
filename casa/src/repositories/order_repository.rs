@@ -162,7 +162,7 @@ const SELECT_ALL_ACTIVE: &'static str = "
          asset_type sell_asset_type,
          account_owner owner 
     WHERE 
-        orders.status = 'active' AND
+        (orders.status = 'active' OR orders.status = 'settling') AND
         orders.buy_asset_type_id = buy_asset_type.id AND
         orders.sell_asset_type_id = sell_asset_type.id AND
         orders.owner_id = owner.id AND
