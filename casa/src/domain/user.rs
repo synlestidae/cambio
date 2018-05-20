@@ -5,6 +5,7 @@ use std;
 use domain::Id;
 use postgres::rows::Row;
 use checkmail;
+use domain::OwnerId;
 
 const BCRYPT_COST: u32 = 8;
 
@@ -77,3 +78,4 @@ impl TryFromRow for User {
         }
     }
 }
+

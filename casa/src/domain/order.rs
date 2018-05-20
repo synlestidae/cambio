@@ -1,13 +1,15 @@
 use domain;
-use domain::{AssetType, Denom, Id, OrderStatus};
+use domain::{AssetType, Denom, Id, OrderStatus, User};
 use chrono::Duration;
 use chrono::prelude::*;
-use db::{TryFromRow, TryFromRowError};
+use db::{TryFromRow, TryFromRowError, PostgresHelper, CambioError};
 use chrono::{DateTime, Utc};
 use std;
 use postgres::rows::Row;
 use postgres;
 use rand;
+use repository::Retrievable;
+use repositories::UserRepository;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Order {
@@ -101,6 +103,25 @@ impl Order {
 
     pub fn is_active(&self) -> bool {
         !self.is_expired() && self.status == domain::OrderStatus::Active
+    }
+}
+
+impl Retrievable<User> for Order {
+    fn get<H: PostgresHelper>(&self, db: H) -> Result<User, CambioError> {
+        match self.get_option(db) {
+            Ok(Some(user)) => Ok(user),
+            Ok(None) => Err(CambioError::not_found_search("No user found for that order", 
+                "Owner ID does not correspond to a user")),
+            err => err
+        }
+    }
+
+    fn get_option<H: PostgresHelper>(&self, db: H)  -> Result<Option<User>, CambioError> {
+        let mut repo = UserRepository::new(db);
+        match repo.get_owner(self.owner_id) {
+            Ok(owner) => Ok(Some(owner)),
+            Err(err) => err
+        }
     }
 }
 
