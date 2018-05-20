@@ -1,5 +1,5 @@
 use domain;
-use domain::{AssetType, Denom, Id, OrderStatus, User};
+use domain::{AssetType, Denom, Id, OrderId, OrderStatus, User};
 use chrono::Duration;
 use chrono::prelude::*;
 use db::{TryFromRow, TryFromRowError, PostgresHelper, CambioError};
@@ -14,7 +14,7 @@ use repositories::UserRepository;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Order {
     #[column_id(order_id)]
-    pub id: Option<Id>,
+    pub id: Option<OrderId>,
     pub owner_id: Id,
     pub unique_id: String,
     #[column_id(sell_asset_code)]
@@ -106,7 +106,7 @@ impl Order {
     }
 }
 
-impl Retrievable<User> for Order {
+/*impl Retrievable<User> for Order {
     fn get<H: PostgresHelper>(&self, db: H) -> Result<User, CambioError> {
         match self.get_option(db) {
             Ok(Some(user)) => Ok(user),
@@ -123,7 +123,7 @@ impl Retrievable<User> for Order {
             Err(err) => err
         }
     }
-}
+}*/
 
 fn random_string() -> String {
     let mut token = String::new();

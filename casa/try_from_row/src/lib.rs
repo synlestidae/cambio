@@ -5,7 +5,7 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-use proc_macro::{TokenStream, Term, TokenNode};
+use proc_macro::{TokenStream};
 use syn::DeriveInput;
 use quote::{ToTokens};
 use std::str::FromStr;

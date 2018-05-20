@@ -6,14 +6,14 @@ use chrono::NaiveDateTime;
 use std;
 use postgres::rows::Row;
 use postgres;
-use domain::{Id, SessionState};
+use domain::{Id, SessionState, SessionToken};
 use rand;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Session {
     pub id: Option<Id>,
     pub user_id: Id,
-    pub session_token: String,
+    pub session_token: SessionToken,
     pub started_at: DateTime<Utc>,
     pub ttl_milliseconds: i64,
     pub email_address: Option<String>,
@@ -38,12 +38,12 @@ impl Session {
     }
 }
 
-fn random_token_string() -> String {
+fn random_token_string() -> SessionToken {
     let mut token = String::new();
     for _ in (0..10) {
         token.push(rand::random::<u8>() as char);
     }
-    token
+    SessionToken(token)
 }
 
 const SESSION_TIME_MILLISECONDS: i64 = 1000 * 60 * 15;

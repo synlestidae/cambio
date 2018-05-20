@@ -113,7 +113,8 @@ impl<T: db::PostgresHelper> repository::RepoDelete for OrderRepository<T> {
     type Item = domain::Order;
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
         let mut order_match = if let Some(id) = item.id {
-            try!(self.read(&repository::UserClause::Id(id))).pop()
+            let order_id = domain::OrderId(id.0);
+            try!(self.read(&repository::UserClause::Id(order_id.into()))).pop()
         } else {
             return Err(db::CambioError::format_obj(
                 "Cannot cancel order with no ID",
