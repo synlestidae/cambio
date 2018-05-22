@@ -9,5 +9,3 @@ pub enum UserClause {
     SessionToken(String),
     UniqueId(String),
 }
-
-impl repository::Clause for UserClause {}

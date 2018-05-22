@@ -1,17 +1,17 @@
-use postgres::rows::Rows;
-use postgres::Connection;
-use postgres::types::ToSql;
-use postgres;
 use db::try_from_row::TryFromRow;
 use db::{CambioError, ConnectionSource, PostgresSource};
-use std::error;
+use postgres::Connection;
+use postgres::rows::Rows;
+use postgres::types::ToSql;
+use postgres;
+use std::convert::From;
 use std::error::Error;
+use std::error;
 use std::fmt;
 use std::marker::{Send, Sync};
-use std::convert::From;
 use web3;
 
-pub trait PostgresHelper: Clone + Send + Sync {
+pub trait PostgresHelper: Send + Sync + Clone {
     fn query<T: TryFromRow>(
         &mut self,
         query: &str,

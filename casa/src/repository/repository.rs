@@ -1,4 +1,3 @@
-use repository::clause::Clause;
 use db::CambioError;
 
 pub type ItemResult<T> = Result<T, CambioError>;
@@ -6,7 +5,7 @@ pub type VecResult<T> = Result<Vec<T>, CambioError>;
 
 pub trait RepoRead {
     type Item;
-    type Clause: Clause;
+    type Clause;
     fn read(&mut self, clause: &Self::Clause) -> VecResult<Self::Item>;
 }
 

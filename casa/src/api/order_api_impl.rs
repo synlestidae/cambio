@@ -10,6 +10,7 @@ use repository::RepoRead;
 use repository;
 use serde_json;
 use services;
+use repository::Retrievable;
 
 pub struct OrderApiImpl<C: PostgresHelper> {
     order_repo: repositories::OrderRepository<C>,
@@ -17,6 +18,7 @@ pub struct OrderApiImpl<C: PostgresHelper> {
     settlement_service: services::SettlementService<C>,
     session_repo: repositories::SessionRepository<C>,
     user_repo: repositories::UserRepository<C>,
+    db_helper: C
 }
 
 impl<C: PostgresHelper> OrderApiImpl<C> {
@@ -28,17 +30,17 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
             order_service: services::OrderService::new(db_helper.clone()),
             settlement_service: settlement_service,
             session_repo: repositories::SessionRepository::new(db_helper.clone()),
-            user_repo: repositories::UserRepository::new(db_helper),
+            user_repo: repositories::UserRepository::new(db_helper.clone()),
+            db_helper: db_helper.clone()
         }
     }
 
     fn check_owner(
         &mut self,
         owner_id: domain::Id,
-        session_token: &str,
+        session_token: &domain::SessionToken,
     ) -> Result<(), api::ApiError> {
-        let clause = repository::UserClause::SessionToken(session_token.to_owned());
-        let session = self.session_repo.read(&clause).unwrap().pop().unwrap();
+        let session = try!(session_token.get(self.db_helper.clone()));
         if !session.is_valid() {
             return Err(api::ApiError::new(
                 "You are not logged in.".to_owned(),
