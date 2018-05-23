@@ -1,7 +1,7 @@
-use chrono::NaiveDate;
-use chrono::prelude::*;
-use domain;
 use api::OrderRequest;
+use chrono::prelude::*;
+use chrono::NaiveDate;
+use domain;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OrderBuy {

@@ -1,12 +1,12 @@
-use domain;
-use std::io::Read;
-use repositories;
-use repository::*;
-use repository;
-use tests::get_db_helper;
 use chrono::prelude::*;
 use db;
+use domain;
+use repositories;
+use repository;
+use repository::*;
 use services;
+use std::io::Read;
+use tests::get_db_helper;
 use uuid;
 use web3;
 
@@ -43,8 +43,8 @@ pub fn quick_order(
         .register_user(seller, "dohnut123".to_owned())
         .unwrap();
 
-    let mut order1 = domain::Order::buy_szabo(user1.id.unwrap(), buy_szabo, sell_money, 10);
-    let mut order2 = domain::Order::sell_szabo(user2.id.unwrap(), buy_money, sell_szabo, 10);
+    let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
+    let mut order2 = domain::Order::sell_szabo(user2.owner_id.unwrap(), buy_money, sell_szabo, 10);
 
     order1 = order_repo.create(&order1).unwrap();
     order2 = order_repo.create(&order2).unwrap();
@@ -75,8 +75,8 @@ pub fn just_order(
         .pop()
         .unwrap();
 
-    let mut order1 = domain::Order::buy_szabo(user1.id.unwrap(), buy_szabo, sell_money, 10);
-    let mut order2 = domain::Order::sell_szabo(user1.id.unwrap(), buy_money, sell_szabo, 10);
+    let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
+    let mut order2 = domain::Order::sell_szabo(user1.owner_id.unwrap(), buy_money, sell_szabo, 10);
 
     order1 = order_repo.create(&order1).unwrap();
     order2 = order_repo.create(&order2).unwrap();

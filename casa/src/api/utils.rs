@@ -1,11 +1,11 @@
-use iron::request::Request;
-use iron::headers::{Authorization, Bearer, Cookie};
-use iron;
-use serde::Serialize;
-use hyper::mime::Mime;
-use serde_json;
 use api::ApiError;
 use db::CambioError;
+use hyper::mime::Mime;
+use iron;
+use iron::headers::{Authorization, Bearer, Cookie};
+use iron::request::Request;
+use serde::Serialize;
+use serde_json;
 
 pub fn get_session_token(r: &Request) -> Option<String> {
     let authorization: Option<&Authorization<Bearer>> = r.headers.get();

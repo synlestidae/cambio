@@ -1,17 +1,22 @@
-use std::fmt;
-use postgres::rows::Row;
 use db::{TryFromRow, TryFromRowError};
+use postgres::rows::Row;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize)]
 #[postgres(name = "business_ends_type")]
 pub enum BusinessEnds {
-    #[postgres(name = "wallet_deposit")] WalletDeposit,
-    #[postgres(name = "wallet_withdrawal")] WalletWithdrawal,
-    #[postgres(name = "system_fee_charge")] SystemFeeCharge,
+    #[postgres(name = "wallet_deposit")]
+    WalletDeposit,
+    #[postgres(name = "wallet_withdrawal")]
+    WalletWithdrawal,
+    #[postgres(name = "system_fee_charge")]
+    SystemFeeCharge,
     //#[postgres(name = "cryptocurrency_purchase")]
     //CryptocurrencyPurchase,
-    #[postgres(name = "order_placement")] OrderPlacement,
-    #[postgres(name = "order_settlement")] OrderSettlement,
+    #[postgres(name = "order_placement")]
+    OrderPlacement,
+    #[postgres(name = "order_settlement")]
+    OrderSettlement,
 }
 
 impl fmt::Display for BusinessEnds {

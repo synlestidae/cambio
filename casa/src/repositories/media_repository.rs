@@ -1,13 +1,13 @@
-use db::{TryFromRow, TryFromRowError};
 use db;
-use domain::Id;
+use db::{TryFromRow, TryFromRowError};
 use domain;
+use domain::Id;
 use postgres;
 use postgres::rows::Rows;
 use repository;
 use repository::*;
-use std::path::{Path, PathBuf};
 use std::convert::Into;
+use std::path::{Path, PathBuf};
 
 #[derive(Clone)]
 pub struct MediaRepository<T: db::PostgresHelper> {

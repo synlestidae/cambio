@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
-use domain::{Id, OrderSettlementId, Order, SettlementStatus};
 use db::{TryFromRow, TryFromRowError};
+use domain::{Order, OrderSettlementId, SettlementStatus, UserId};
 use postgres;
 
 #[derive(Serialize)]
@@ -9,14 +9,14 @@ pub struct OrderSettlement {
     pub id: Option<OrderSettlementId>,
     pub started_at: DateTime<Utc>,
     pub settled_at: Option<DateTime<Utc>>,
-    pub starting_user: Id,
+    pub starting_user: UserId,
     pub settlement_status: SettlementStatus,
     pub buying_order: Order,
     pub selling_order: Order,
 }
 
 impl OrderSettlement {
-    pub fn from(user_id: Id, buy_order: &Order, sell_order: &Order) -> Self {
+    pub fn from(user_id: UserId, buy_order: &Order, sell_order: &Order) -> Self {
         OrderSettlement {
             id: None,
             started_at: Utc::now(),

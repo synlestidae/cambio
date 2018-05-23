@@ -1,10 +1,10 @@
 use chrono::prelude::*;
-use db::{CambioError, TryFromRow, TryFromRowError};
 use db;
-use domain::{Id, OrderSettlement, OrderSettlementId};
+use db::{CambioError, TryFromRow, TryFromRowError};
 use domain;
-use postgres::types::ToSql;
+use domain::{Id, OrderId, OrderSettlement, OrderSettlementId, OwnerId, UserId};
 use postgres;
+use postgres::types::ToSql;
 use repositories::OrderRepository;
 use repository;
 use repository::{RepoCreate, RepoRead, RepoUpdate};
@@ -26,11 +26,11 @@ impl<T: db::PostgresHelper> SettlementRepository<T> {
     fn _add_orders(&mut self, row: SettlementRow) -> Result<OrderSettlement, CambioError> {
         let buying_order = try!(
             self.order_repository
-                .read(&repository::UserClause::Id(row.buying_crypto_id))
+                .read(&repository::UserClause::Id(row.buying_crypto_id.into()))
         ).pop();
         let selling_order = try!(
             self.order_repository
-                .read(&repository::UserClause::Id(row.buying_fiat_id))
+                .read(&repository::UserClause::Id(row.buying_fiat_id.into()))
         ).pop();
         match (buying_order, selling_order) {
             (Some(b), Some(s)) => Ok(OrderSettlement {
@@ -153,10 +153,10 @@ struct SettlementRow {
     pub id: Option<OrderSettlementId>,
     pub started_at: DateTime<Utc>,
     pub settled_at: Option<DateTime<Utc>>,
-    pub starting_user: Id,
+    pub starting_user: UserId,
     pub settlement_status: domain::SettlementStatus,
-    pub buying_crypto_id: Id,
-    pub buying_fiat_id: Id,
+    pub buying_crypto_id: OrderId,
+    pub buying_fiat_id: OrderId,
 }
 
 // TODO this will panic if row format is slightly off
@@ -165,10 +165,10 @@ impl TryFromRow for SettlementRow {
         let id: Option<OrderSettlementId> = row.get("id");
         let started_at: NaiveDateTime = row.get("started_at");
         let settled_at: Option<NaiveDateTime> = row.get("settled_at");
-        let starting_user: Id = row.get("starting_user");
+        let starting_user: UserId = row.get("starting_user");
         let settlement_status: domain::SettlementStatus = row.get("status");
-        let buying_crypto_id: Id = row.get("buying_crypto_id");
-        let buying_fiat_id: Id = row.get("buying_fiat_id");
+        let buying_crypto_id: OrderId = row.get("buying_crypto_id");
+        let buying_fiat_id: OrderId = row.get("buying_fiat_id");
 
         Ok(SettlementRow {
             id: id,

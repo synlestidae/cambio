@@ -1,7 +1,7 @@
-use repository;
+use checkmail;
 use db;
 use domain;
-use checkmail;
+use repository;
 use repository::*;
 
 #[derive(Clone)]
@@ -14,7 +14,7 @@ impl<T: db::PostgresHelper> UserRepository<T> {
         UserRepository { db_helper: db }
     }
 
-    pub fn get_owner(&mut self, owner_id: domain::Id) -> repository::ItemResult<domain::User> {
+    pub fn get_owner(&mut self, owner_id: domain::OwnerId) -> repository::ItemResult<domain::User> {
         let mut matches = try!(self.db_helper.query(SELECT_BY_OWNER, &[&owner_id]));
         match matches.pop() {
             Some(user) => Ok(user),

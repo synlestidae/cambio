@@ -1,8 +1,8 @@
-use domain::{Id, PhotoStatus};
-use db::{TryFromRow, TryFromRowError};
-use postgres::rows::Row;
 use db::{get_value, get_value_option};
+use db::{TryFromRow, TryFromRowError};
+use domain::{Id, PhotoStatus};
 use postgres;
+use postgres::rows::Row;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TryFromRow)]
 pub struct PersonalIdentity {

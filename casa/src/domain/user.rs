@@ -1,22 +1,21 @@
-use db::{CambioError, TryFromRow};
 use bcrypt::{hash, verify};
-use db::TryFromRowError;
-use std;
-use domain::Id;
-use postgres::rows::Row;
 use checkmail;
-use domain::OwnerId;
+use db::TryFromRowError;
+use db::{CambioError, TryFromRow};
+use domain::{OwnerId, UserId};
+use postgres::rows::Row;
+use std;
 
 const BCRYPT_COST: u32 = 8;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct User {
     #[column_id(user_id)]
-    pub id: Option<Id>,
+    pub id: Option<UserId>,
     pub email_address: String,
     pub password: Option<String>,
     pub password_hash: Option<String>,
-    pub owner_id: Option<Id>,
+    pub owner_id: Option<OwnerId>,
 }
 
 impl User {
@@ -60,8 +59,8 @@ impl TryFromRow for User {
     {
         let email_address_match: Option<String> = row.get("email_address");
         let password_hash_match: Option<String> = row.get("password_hash");
-        let id: Option<Id> = row.get("id");
-        let owner_id: Option<Id> = row.get("owner_id");
+        let id: Option<UserId> = row.get("id");
+        let owner_id: Option<OwnerId> = row.get("owner_id");
         match (email_address_match, password_hash_match, id, owner_id) {
             (Some(email_address), Some(password_hash), Some(id), Some(oi)) => {
                 return Ok(User {
@@ -78,4 +77,3 @@ impl TryFromRow for User {
         }
     }
 }
-

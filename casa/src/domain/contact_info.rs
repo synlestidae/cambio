@@ -1,7 +1,7 @@
-use domain::Id;
-use postgres::rows::Row;
 use db::{get_value, get_value_option, TryFromRow, TryFromRowError};
+use domain::Id;
 use postgres;
+use postgres::rows::Row;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TryFromRow)]
 pub struct ContactInfo {

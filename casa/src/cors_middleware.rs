@@ -1,9 +1,9 @@
+use iron::headers;
+use iron::method::Method;
 use iron::middleware::Handler;
 use iron::prelude::*;
-use iron::AroundMiddleware;
-use iron::method::Method;
 use iron::status::Status;
-use iron::headers;
+use iron::AroundMiddleware;
 
 pub struct CorsMiddleware {}
 
@@ -37,7 +37,8 @@ impl Handler for CorsHandler {
             .set(headers::AccessControlAllowOrigin::Value(
                 "http://localhost:8080".to_owned(),
             ));
-        let request_headers: Option<headers::AccessControlRequestHeaders> = req.headers
+        let request_headers: Option<headers::AccessControlRequestHeaders> = req
+            .headers
             .get()
             .map(|h: &headers::AccessControlRequestHeaders| h.clone());
         match request_headers {

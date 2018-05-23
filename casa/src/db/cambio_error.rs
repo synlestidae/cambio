@@ -1,14 +1,14 @@
+use api::ApiError;
+use bcrypt;
 use db;
 use db::{ErrorKind, ErrorReccomendation};
+use iron;
+use postgres;
+use r2d2;
 use std::error;
 use std::error::Error;
 use std::fmt;
 use web3;
-use postgres;
-use bcrypt;
-use r2d2;
-use iron;
-use api::ApiError;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct CambioError {

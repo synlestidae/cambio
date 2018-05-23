@@ -1,6 +1,6 @@
 use std::error;
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct TryFromRowError {

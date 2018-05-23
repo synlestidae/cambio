@@ -1,7 +1,7 @@
-use repository;
+use chrono::prelude::*;
 use db;
 use domain;
-use chrono::prelude::*;
+use repository;
 use repository::*;
 
 #[derive(Clone)]
@@ -89,7 +89,7 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for SessionRepository<T> {
         if rows < 1 {
             return Err(update_error);
         }
-        let session_result = try!(self.read(&repository::UserClause::Id(id))).pop();
+        let session_result = try!(self.read(&repository::UserClause::Id(id.into()))).pop();
         session_result.ok_or(update_error)
     }
 }

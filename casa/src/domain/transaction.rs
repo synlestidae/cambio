@@ -1,9 +1,9 @@
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
-use domain::{AssetType, BusinessEnds, Denom, Id};
-use postgres::rows::Row;
 use db::TryFromRow;
 use db::TryFromRowError;
+use domain::{AssetType, BusinessEnds, Denom, Id};
+use postgres::rows::Row;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Transaction {

@@ -1,6 +1,6 @@
-use domain::{Id, OrderSettlementId, Order, OrderSettlement, SettlementStatus};
 use chrono::prelude::*;
 use db::{TryFromRow, TryFromRowError};
+use domain::{Id, Order, OrderSettlement, OrderSettlementId, OwnerId, SettlementStatus, UserId};
 use postgres::rows::Row;
 
 pub struct OrderSettlementBuilder {
@@ -27,7 +27,7 @@ impl OrderSettlementBuilder {
 
     pub fn build(
         self,
-        starting_user: Id,
+        starting_user: UserId,
         buying_order: Order,
         selling_order: Order,
     ) -> OrderSettlement {

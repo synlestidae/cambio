@@ -1,21 +1,21 @@
-use domain;
-use domain::{AssetType, Denom, Id, OrderId, OrderStatus, User};
-use chrono::Duration;
 use chrono::prelude::*;
-use db::{TryFromRow, TryFromRowError, PostgresHelper, CambioError};
+use chrono::Duration;
 use chrono::{DateTime, Utc};
-use std;
-use postgres::rows::Row;
+use db::{CambioError, PostgresHelper, TryFromRow, TryFromRowError};
+use domain;
+use domain::{AssetType, Denom, Id, OrderId, OrderStatus, OwnerId, User};
 use postgres;
+use postgres::rows::Row;
 use rand;
-use repository::Retrievable;
 use repositories::UserRepository;
+use repository::Retrievable;
+use std;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Order {
     #[column_id(order_id)]
     pub id: Option<OrderId>,
-    pub owner_id: Id,
+    pub owner_id: OwnerId,
     pub unique_id: String,
     #[column_id(sell_asset_code)]
     pub sell_asset_type: AssetType,
@@ -30,7 +30,7 @@ pub struct Order {
 }
 
 impl Order {
-    pub fn buy_szabo(owner: Id, buy: u64, nzd_cents: u32, ttl_minutes: u32) -> Self {
+    pub fn buy_szabo(owner: OwnerId, buy: u64, nzd_cents: u32, ttl_minutes: u32) -> Self {
         let now = Utc::now();
         let expiry = now + Duration::minutes(ttl_minutes as i64);
 
@@ -49,7 +49,7 @@ impl Order {
         }
     }
 
-    pub fn sell_szabo(owner: Id, buy_cents: u32, szabo: u64, ttl_minutes: u32) -> Self {
+    pub fn sell_szabo(owner: OwnerId, buy_cents: u32, szabo: u64, ttl_minutes: u32) -> Self {
         let now = Utc::now();
         let expiry = now + Duration::minutes(ttl_minutes as i64);
 

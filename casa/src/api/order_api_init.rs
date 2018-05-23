@@ -1,8 +1,8 @@
 use api::{ApiInit, OrderApiImpl, OrderApiTrait};
 use db;
+use iron;
 use iron::headers::{Authorization, Bearer, Cookie};
 use iron::request::Request;
-use iron;
 use router::Router;
 use serde_json;
 use std::borrow::Borrow;

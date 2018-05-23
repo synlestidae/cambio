@@ -1,18 +1,18 @@
 use chrono::prelude::{DateTime, Utc};
-use time::Duration;
+use chrono::NaiveDateTime;
 use db::TryFromRow;
 use db::TryFromRowError;
-use chrono::NaiveDateTime;
-use std;
-use postgres::rows::Row;
+use domain::{SessionState, SessionToken, UserId};
 use postgres;
-use domain::{Id, SessionState, SessionToken};
+use postgres::rows::Row;
 use rand;
+use std;
+use time::Duration;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Session {
-    pub id: Option<Id>,
-    pub user_id: Id,
+    pub id: Option<UserId>,
+    pub user_id: UserId,
     pub session_token: SessionToken,
     pub started_at: DateTime<Utc>,
     pub ttl_milliseconds: i64,
@@ -21,7 +21,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new(email_address: &str, user_id: Id, ttl_milliseconds: i32) -> Self {
+    pub fn new(email_address: &str, user_id: UserId, ttl_milliseconds: i32) -> Self {
         Self {
             id: None,
             user_id: user_id,

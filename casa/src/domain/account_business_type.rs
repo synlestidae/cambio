@@ -1,14 +1,18 @@
-use std::fmt;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize, Deserialize)]
 #[postgres(name = "account_business_type")]
 pub enum AccountBusinessType {
-    #[postgres(name = "user_cash_wallet")] UserCashWallet,
-    #[postgres(name = "order_payment_hold")] OrderPaymentHold,
-    #[postgres(name = "system_fees_paid")] SystemFeesPaid,
-    #[postgres(name = "accounting_concept")] AccountingConcept,
+    #[postgres(name = "user_cash_wallet")]
+    UserCashWallet,
+    #[postgres(name = "order_payment_hold")]
+    OrderPaymentHold,
+    #[postgres(name = "system_fees_paid")]
+    SystemFeesPaid,
+    #[postgres(name = "accounting_concept")]
+    AccountingConcept,
 }
 
 impl fmt::Display for AccountBusinessType {

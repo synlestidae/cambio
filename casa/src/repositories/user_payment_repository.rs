@@ -1,11 +1,11 @@
-use repository::*;
-use repositories;
-use repository;
 use db;
 use domain;
-use services;
 use domain::Id;
 use postgres::types::ToSql;
+use repositories;
+use repository;
+use repository::*;
+use services;
 
 #[derive(Clone)]
 pub struct UserPaymentRepository<T: db::PostgresHelper> {
@@ -37,7 +37,7 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
         );
         let user_match = try!(self.user_repository.read(&q)).pop();
         let user = try!(user_match.ok_or(user_not_found));
-        let user_id: Id = user.id.unwrap();
+        let user_id: domain::UserId = user.id.unwrap();
         let q = repository::UserClause::EmailAddress(user.email_address.clone());
         let account_list = try!(self.account_repo.read(&q));
         let message = format!("Credit to wallet using {}", payment.vendor);
@@ -78,7 +78,8 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
             &payment.user_credit,
             &message,
         ];
-        let procedure_result = self.db_helper
+        let procedure_result = self
+            .db_helper
             .execute(CALL_CREDIT_ACCOUNT_PROCEDURE, params);
 
         try!(procedure_result);

@@ -1,21 +1,21 @@
-use api::Registration;
 use api::api_init::ApiInit;
-use std::borrow::Borrow;
-use std::sync::Arc;
+use api::Registration;
 use api::{ApiError, UserApi, UserApiTrait};
 use bodyparser;
 use db::{ConnectionSource, PostgresHelper, PostgresHelperImpl, PostgresSource};
+use hyper;
 use hyper::header::{ContentType, Headers};
 use hyper::mime::{Attr, Mime, SubLevel, TopLevel, Value};
-use hyper;
+use iron;
 use iron::request::Request;
 use iron::Handler;
-use iron;
 use router::Router;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json;
 use std;
+use std::borrow::Borrow;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct UserApiInit<T: PostgresHelper> {

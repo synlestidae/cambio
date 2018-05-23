@@ -1,19 +1,19 @@
+use api::utils::{get_session_token, to_response};
 use api::{AccountApiTrait, ApiError, ApiResult, ErrorType};
 use db::{CambioError, ConnectionSource, PostgresHelper};
-use domain::{Account, AccountStatement, Id, Session, Transaction};
+use domain::{Account, AccountStatement, Id, OwnerId, Session, Transaction};
 use hyper::mime::Mime;
-use iron::headers::{Authorization, Bearer, Cookie};
-use api::utils::{get_session_token, to_response};
-use iron::request::Request;
 use iron;
+use iron::headers::{Authorization, Bearer, Cookie};
 use iron::prelude::*;
-use repositories::{AccountRepository, SessionRepository, UserRepository};
-use repository::RepoRead;
-use repository;
-use serde_json;
-use serde::Serialize;
-use services::AccountService;
+use iron::request::Request;
 use params::{Params, Value};
+use repositories::{AccountRepository, SessionRepository, UserRepository};
+use repository;
+use repository::RepoRead;
+use serde::Serialize;
+use serde_json;
+use services::AccountService;
 
 #[derive(Clone)]
 pub struct AccountApiImpl<C: PostgresHelper> {
@@ -46,7 +46,7 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
         }
     }
 
-    fn check_owner(&mut self, owner_id: Id, session_token: &str) -> Result<(), ApiError> {
+    fn check_owner(&mut self, owner_id: OwnerId, session_token: &str) -> Result<(), ApiError> {
         let clause = repository::UserClause::SessionToken(session_token.to_owned());
         let session = self.session_repo.read(&clause).unwrap().pop().unwrap();
         if !session.is_valid() {
@@ -85,7 +85,8 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
         let session_token = get_session_token(request).unwrap();
         let session_clause = repository::UserClause::SessionToken(session_token);
         let mut accounts = self.account_repo.read(&clause).unwrap();
-        let session = self.session_repo
+        let session = self
+            .session_repo
             .read(&session_clause)
             .unwrap()
             .pop()
@@ -93,7 +94,7 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
         let account = accounts.pop();
         if let &Some(ref a) = &account {
             let owner_user_id = a.owner_user_id.unwrap();
-            let user_clause = repository::UserClause::Id(owner_user_id);
+            let user_clause = repository::UserClause::Id(owner_user_id.into());
             let account_user = self.user_repo.read(&user_clause).unwrap().pop().unwrap();
             if session.email_address != Some(account_user.email_address) {
                 return None;

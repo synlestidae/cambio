@@ -1,9 +1,9 @@
 use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
-use std::error::Error;
 use domain::{Account, AccountStatement, Id, Transaction};
 use repositories;
 use repository;
 use repository::*;
+use std::error::Error;
 
 #[derive(Clone)]
 pub struct AccountService<T: PostgresHelper> {

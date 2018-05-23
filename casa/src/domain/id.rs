@@ -1,11 +1,11 @@
 use db::CambioError;
+use postgres;
 use postgres::types::IsNull;
 use postgres::types::{FromSql, ToSql, Type};
-use postgres;
+use std;
 use std::fmt::Display;
 use std::io::Cursor;
 use std::io::Write;
-use std;
 
 type ToSqlResult = Result<IsNull, Box<std::error::Error + 'static + Send + Sync>>;
 

@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use std;
+use std::path::PathBuf;
 
 pub enum MediaResource {
     File(PathBuf),

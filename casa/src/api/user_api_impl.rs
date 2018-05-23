@@ -1,12 +1,14 @@
-use api::{get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration, UserApiTrait};
-use iron::{Request, Response};
-use iron::headers::SetCookie;
+use api::{
+    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration, UserApiTrait,
+};
 use db::{ConnectionSource, PostgresHelper};
-use services::UserService;
 use domain::{Session, User};
 use hyper::mime::Mime;
-use serde_json;
 use iron;
+use iron::headers::SetCookie;
+use iron::{Request, Response};
+use serde_json;
+use services::UserService;
 
 #[derive(Clone)]
 pub struct UserApi<C: PostgresHelper> {
@@ -36,7 +38,8 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
 
         debug!("Calling register_user function");
 
-        let register_result = self.user_service
+        let register_result = self
+            .user_service
             .register_user(&registration.email_address, registration.password);
 
         const GENERIC_FAIL_MSG: &str = "Failed to register user";
@@ -63,7 +66,8 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
             Ok(obj) => obj,
             Err(response) => return response,
         };
-        let log_in_result = self.user_service
+        let log_in_result = self
+            .user_service
             .log_user_in(&log_in.email_address, log_in.password);
 
         match log_in_result {
@@ -72,9 +76,10 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
                 let content_type = "application/json".parse::<Mime>().unwrap();
                 let mut response =
                     iron::Response::with((iron::status::Ok, response_json, content_type));
-                response.headers.set(SetCookie(vec![
-                    format!("session_token={}; Domain=localhost", result.session_token),
-                ]));
+                response.headers.set(SetCookie(vec![format!(
+                    "session_token={}; Domain=localhost",
+                    result.session_token
+                )]));
                 response
             }
             Err(cambio_err) => {

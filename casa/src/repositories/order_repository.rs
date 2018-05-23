@@ -1,7 +1,7 @@
-use repository;
 use db;
 use domain;
 use postgres::types::ToSql;
+use repository;
 use repository::*;
 
 #[derive(Clone)]

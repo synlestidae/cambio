@@ -1,5 +1,5 @@
-use chrono::NaiveDate;
 use chrono::prelude::*;
+use chrono::NaiveDate;
 use domain;
 use std::convert::Into;
 

@@ -1,7 +1,7 @@
-use domain::{AssetType, Denom, Id, PaymentMethod, PaymentVendor, UniqueId};
 use chrono::prelude::*;
-use postgres;
 use db::{TryFromRow, TryFromRowError};
+use domain::{AssetType, Denom, Id, PaymentMethod, PaymentVendor, UniqueId};
+use postgres;
 
 #[derive(Clone, Debug, TryFromRow, Deserialize, Serialize)]
 pub struct Payment {

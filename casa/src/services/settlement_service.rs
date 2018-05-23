@@ -1,9 +1,9 @@
 use db;
-use domain::Id;
 use domain;
+use domain::{Id, OrderSettlementId};
 use repositories;
-use repository::*;
 use repository;
+use repository::*;
 use services;
 use web3::types::U256;
 
@@ -28,7 +28,7 @@ impl<T: db::PostgresHelper> SettlementService<T> {
 
     pub fn create_settlement(
         &mut self,
-        user_id: domain::Id,
+        user_id: domain::UserId,
         buying_order: &domain::Order,
         selling_order: &domain::Order,
     ) -> SettleResult {
@@ -38,14 +38,14 @@ impl<T: db::PostgresHelper> SettlementService<T> {
 
     pub fn begin_eth_transfer(
         &mut self,
-        settlement_id: Id,
+        settlement_id: OrderSettlementId,
         unique_id: &str,
         starting_user_password: String,
         max_cost_wei: u64,
     ) -> Result<domain::EthereumOutboundTransaction, db::CambioError> {
         let mut settlement = match try!(
             self.settlement_repo
-                .read(&repository::UserClause::Id(settlement_id))
+                .read(&repository::UserClause::Id(settlement_id.into()))
         ).pop()
         {
             Some(s) => s,
@@ -94,7 +94,7 @@ impl<T: db::PostgresHelper> SettlementService<T> {
         order: &domain::Order,
     ) -> Result<domain::EthAccount, db::CambioError> {
         let owner_id = order.owner_id;
-        let clause = repository::UserClause::Id(owner_id);
+        let clause = repository::UserClause::Id(owner_id.into());
         let user = try!(self.user_repo.get_owner(owner_id));
         let email_address = user.email_address.to_owned();
         let eth_clause = repository::UserClause::EmailAddress(email_address);

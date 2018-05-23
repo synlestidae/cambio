@@ -1,16 +1,16 @@
-use api::utils;
 use api;
-use db::PostgresHelper;
+use api::utils;
 use db;
+use db::PostgresHelper;
 use domain;
 use hyper::mime::Mime;
 use iron;
 use repositories;
-use repository::RepoRead;
 use repository;
+use repository::RepoRead;
+use repository::Retrievable;
 use serde_json;
 use services;
-use repository::Retrievable;
 
 pub struct OrderApiImpl<C: PostgresHelper> {
     order_repo: repositories::OrderRepository<C>,
@@ -18,7 +18,7 @@ pub struct OrderApiImpl<C: PostgresHelper> {
     settlement_service: services::SettlementService<C>,
     session_repo: repositories::SessionRepository<C>,
     user_repo: repositories::UserRepository<C>,
-    db_helper: C
+    db_helper: C,
 }
 
 impl<C: PostgresHelper> OrderApiImpl<C> {
@@ -31,13 +31,13 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
             settlement_service: settlement_service,
             session_repo: repositories::SessionRepository::new(db_helper.clone()),
             user_repo: repositories::UserRepository::new(db_helper.clone()),
-            db_helper: db_helper.clone()
+            db_helper: db_helper.clone(),
         }
     }
 
     fn check_owner(
         &mut self,
-        owner_id: domain::Id,
+        owner_id: domain::OwnerId,
         session_token: &domain::SessionToken,
     ) -> Result<(), api::ApiError> {
         let session = try!(session_token.get(&mut self.db_helper));

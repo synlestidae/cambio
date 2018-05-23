@@ -1,14 +1,14 @@
-use repository;
-use db;
-use domain;
+use base64;
 use checkmail;
+use db;
+use db::{TryFromRow, TryFromRowError};
+use domain;
+use domain::{Id, OwnerId};
+use postgres;
+use repository;
 use repository::*;
 use std;
 use web3;
-use postgres;
-use base64;
-use domain::Id;
-use db::{TryFromRow, TryFromRowError};
 
 #[derive(Clone)]
 pub struct EthAccountRepository<T: db::PostgresHelper> {
@@ -82,7 +82,7 @@ struct EthRow {
     pub id: Option<domain::Id>,
     pub address: String,
     pub password_hash_bcrypt: String,
-    pub owner_id: Id,
+    pub owner_id: OwnerId,
 }
 
 impl std::convert::Into<domain::EthAccount> for EthRow {

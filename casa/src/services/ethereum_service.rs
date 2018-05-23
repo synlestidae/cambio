@@ -1,16 +1,17 @@
 use chrono::prelude::*;
-use services::UserService;
 use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
-use domain::{EthAccount, EthTransferRequest, EthereumOutboundTransaction, Id, Order,
-             OrderSettlement};
+use domain::{
+    EthAccount, EthTransferRequest, EthereumOutboundTransaction, Id, Order, OrderSettlement,
+};
 use hex;
 use repositories;
-use repository::*;
 use repository;
+use repository::*;
+use services::UserService;
 use std::str::FromStr;
+use web3;
 use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
-use web3;
 
 #[derive(Clone)]
 pub struct EthereumService<T: PostgresHelper> {

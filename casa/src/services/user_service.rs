@@ -3,8 +3,8 @@ use checkmail;
 use db::{CambioError, PostgresHelper};
 use domain::{Id, Session, SessionState, User};
 use repositories;
-use repository::*;
 use repository;
+use repository::*;
 use services;
 use std::error::Error;
 

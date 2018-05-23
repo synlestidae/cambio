@@ -1,8 +1,8 @@
-use repository;
-use repository::*;
-use repositories::UserRepository;
 use db;
 use domain;
+use repositories::UserRepository;
+use repository;
+use repository::*;
 
 #[derive(Clone)]
 pub struct AccountRepository<T: db::PostgresHelper> {

@@ -1,13 +1,16 @@
-use std::fmt;
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize)]
 #[postgres(name = "account_status_type")]
 pub enum AccountStatus {
-    #[postgres(name = "active")] Active,
-    #[postgres(name = "frozen")] Frozen,
-    #[postgres(name = "closed")] Closed,
+    #[postgres(name = "active")]
+    Active,
+    #[postgres(name = "frozen")]
+    Frozen,
+    #[postgres(name = "closed")]
+    Closed,
 }
 
 impl fmt::Display for AccountStatus {

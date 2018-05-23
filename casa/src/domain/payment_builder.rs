@@ -1,6 +1,6 @@
-use uuid::Uuid;
-use domain::{AssetType, Denom, Payment, PaymentMethod, PaymentVendor};
 use chrono::prelude::*;
+use domain::{AssetType, Denom, Payment, PaymentMethod, PaymentVendor};
+use uuid::Uuid;
 
 pub struct PaymentBuilder {
     asset_type: AssetType,

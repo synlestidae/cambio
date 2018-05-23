@@ -1,14 +1,16 @@
-use domain::{AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, Denom, Id};
 use db::{TryFromRow, TryFromRowError};
-use postgres::rows::Row;
+use domain::{
+    AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, Denom, Id, OwnerId,
+};
 use postgres;
+use postgres::rows::Row;
 
 #[derive(Debug, Clone, PartialEq, Eq, TryFromRow, Serialize)]
 pub struct Account {
     #[column_id(account_id)]
     pub id: Option<Id>,
     #[column_id(owner_id)]
-    pub owner_user_id: Option<Id>,
+    pub owner_user_id: Option<OwnerId>,
     #[column_id(account_asset_type)]
     pub asset_type: AssetType,
     #[column_id(denom)]

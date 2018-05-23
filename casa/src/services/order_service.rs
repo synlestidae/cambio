@@ -1,10 +1,10 @@
 use chrono::prelude::*;
 use db::{CambioError, PostgresHelper};
-use domain::{Currency, Id, Order, OrderStatus};
 use domain;
+use domain::{Currency, Id, Order, OrderStatus};
 use repositories;
-use repository::*;
 use repository;
+use repository::*;
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {

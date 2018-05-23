@@ -1,12 +1,12 @@
 use db::try_from_row::TryFromRow;
 use db::{CambioError, ConnectionSource, PostgresSource};
-use postgres::Connection;
+use postgres;
 use postgres::rows::Rows;
 use postgres::types::ToSql;
-use postgres;
+use postgres::Connection;
 use std::convert::From;
-use std::error::Error;
 use std::error;
+use std::error::Error;
 use std::fmt;
 use std::marker::{Send, Sync};
 use web3;

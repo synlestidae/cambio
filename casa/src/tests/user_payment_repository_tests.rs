@@ -1,13 +1,13 @@
+use chrono::prelude::*;
+use db;
 use domain;
 use repositories::AccountRepository;
-use repositories::UserRepository;
 use repositories::UserPaymentRepository;
-use repository::*;
+use repositories::UserRepository;
 use repository;
-use tests::get_db_helper;
-use chrono::prelude::*;
+use repository::*;
 use services;
-use db;
+use tests::get_db_helper;
 
 #[test]
 fn credits_account() {

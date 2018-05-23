@@ -1,7 +1,7 @@
-use postgres::rows::Row;
-use postgres::types::FromSql;
 use db::TryFromRowError;
 use postgres;
+use postgres::rows::Row;
+use postgres::types::FromSql;
 
 pub fn get_value<'a, T>(entity: &str, field: &str, row: &Row<'a>) -> Result<T, TryFromRowError>
 where

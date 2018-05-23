@@ -1,16 +1,16 @@
+use api;
 use api::api_init::ApiInit;
 use api::get_api_obj;
-use api;
-use repository;
-use repository::{RepoCreate, RepoRead};
+use api::utils::to_response;
 use db::PostgresHelper;
 use domain::{Payment, UserPayment};
 use iron::{Request, Response};
 use repositories::{SessionRepository, UserPaymentRepository};
+use repository;
+use repository::{RepoCreate, RepoRead};
 use router::Router;
 use std::borrow::Borrow;
 use std::sync::Arc;
-use api::utils::to_response;
 
 pub struct PaymentApiInit<T: PostgresHelper> {
     helper: T,

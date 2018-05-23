@@ -1,7 +1,7 @@
 use domain;
 use repositories::UserRepository;
-use repository::*;
 use repository;
+use repository::*;
 use tests::get_db_helper;
 
 #[test]

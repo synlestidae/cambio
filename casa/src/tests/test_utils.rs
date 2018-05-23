@@ -1,8 +1,8 @@
 use db::{PostgresHelperImpl, PostgresSource};
 use postgres::{Connection, TlsMode};
-use std::process::Command;
-use std::panic::catch_unwind;
 use std;
+use std::panic::catch_unwind;
+use std::process::Command;
 
 #[allow(dead_code)]
 pub fn setup() {

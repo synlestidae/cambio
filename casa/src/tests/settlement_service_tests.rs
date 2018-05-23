@@ -1,13 +1,13 @@
-use domain;
-use repositories;
-use repository::*;
-use repository;
-use tests::get_db_helper;
 use chrono::prelude::*;
 use db;
+use domain;
+use repositories;
+use repository;
+use repository::*;
 use services;
-use uuid;
+use tests::get_db_helper;
 use tests::order_utils::*;
+use uuid;
 
 #[test]
 fn refuses_settlement_no_eth_balance() {
