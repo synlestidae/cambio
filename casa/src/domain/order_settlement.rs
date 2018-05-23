@@ -1,12 +1,12 @@
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
-use domain::{Id, Order, SettlementStatus};
+use domain::{Id, OrderSettlementId, Order, SettlementStatus};
 use db::{TryFromRow, TryFromRowError};
 use postgres;
 
 #[derive(Serialize)]
 pub struct OrderSettlement {
-    pub id: Option<Id>,
+    pub id: Option<OrderSettlementId>,
     pub started_at: DateTime<Utc>,
     pub settled_at: Option<DateTime<Utc>>,
     pub starting_user: Id,

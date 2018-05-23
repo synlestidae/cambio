@@ -1,20 +1,20 @@
+mod cambio_error;
 mod connection_source;
 mod db_helper;
+mod error_kind;
+mod error_reccomendation;
 mod postgres_source;
 mod row_convert_err;
-mod cambio_error;
 mod try_from_row;
 mod try_from_row_error;
 mod try_from_row_utils;
-mod error_kind;
-mod error_reccomendation;
 
+pub use self::cambio_error::CambioError;
 pub use self::connection_source::*;
-pub use self::postgres_source::*;
 pub use self::db_helper::{PostgresHelper, PostgresHelperImpl};
+pub use self::error_kind::ErrorKind;
+pub use self::error_reccomendation::*;
+pub use self::postgres_source::*;
 pub use self::try_from_row::TryFromRow;
 pub use self::try_from_row_error::TryFromRowError;
 pub use self::try_from_row_utils::{get_value, get_value_option};
-pub use self::cambio_error::CambioError;
-pub use self::error_kind::ErrorKind;
-pub use self::error_reccomendation::*;

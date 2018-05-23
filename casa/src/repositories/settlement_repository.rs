@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use db::{CambioError, TryFromRow, TryFromRowError};
 use db;
-use domain::{Id, OrderSettlement};
+use domain::{Id, OrderSettlement, OrderSettlementId};
 use domain;
 use postgres::types::ToSql;
 use postgres;
@@ -120,7 +120,8 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for SettlementRepository<T> {
         };
         self.db_helper
             .execute(UPDATE_SETTLEMENT, &[&id, &item.settlement_status]);
-        let updated_settlement = try!(self.read(&repository::UserClause::Id(id))).pop();
+        let clause = repository::UserClause::Id(id.into());
+        let updated_settlement = try!(self.read(&clause)).pop();
         match updated_settlement {
             Some(s) => Ok(s),
             _ => Err(db::CambioError::db_update_failed("OrderSettlement")),
@@ -149,7 +150,7 @@ impl<T: db::PostgresHelper> repository::RepoDelete for SettlementRepository<T> {
 }
 
 struct SettlementRow {
-    pub id: Option<Id>,
+    pub id: Option<OrderSettlementId>,
     pub started_at: DateTime<Utc>,
     pub settled_at: Option<DateTime<Utc>>,
     pub starting_user: Id,
@@ -161,7 +162,7 @@ struct SettlementRow {
 // TODO this will panic if row format is slightly off
 impl TryFromRow for SettlementRow {
     fn try_from_row<'a>(row: &postgres::rows::Row<'a>) -> Result<Self, db::TryFromRowError> {
-        let id: Option<Id> = row.get("id");
+        let id: Option<OrderSettlementId> = row.get("id");
         let started_at: NaiveDateTime = row.get("started_at");
         let settled_at: Option<NaiveDateTime> = row.get("settled_at");
         let starting_user: Id = row.get("starting_user");

@@ -40,7 +40,7 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
         owner_id: domain::Id,
         session_token: &domain::SessionToken,
     ) -> Result<(), api::ApiError> {
-        let session = try!(session_token.get(self.db_helper.clone()));
+        let session = try!(session_token.get(&mut self.db_helper));
         if !session.is_valid() {
             return Err(api::ApiError::new(
                 "You are not logged in.".to_owned(),
