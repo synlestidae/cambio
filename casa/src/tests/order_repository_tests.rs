@@ -14,7 +14,7 @@ fn test_creates_ethereum_order() {
     let mut original_order = domain::Order::buy_szabo(user.owner_id.unwrap(), 250000, 31929, 10);
     let mut order = order_repo.create(&original_order).unwrap();
     order = order_repo
-        .read(&repository::UserClause::Id(order.id.unwrap()))
+        .read(&repository::UserClause::Id(order.id.unwrap().into()))
         .unwrap()
         .pop()
         .unwrap();
@@ -40,7 +40,7 @@ fn test_creates_monetary_order() {
     let mut original_order = domain::Order::sell_szabo(user.owner_id.unwrap(), 31929, 250000, 10);
     let mut order = order_repo.create(&original_order).unwrap();
     order = order_repo
-        .read(&repository::UserClause::Id(order.id.unwrap()))
+        .read(&repository::UserClause::Id(order.id.unwrap().into()))
         .unwrap()
         .pop()
         .unwrap();

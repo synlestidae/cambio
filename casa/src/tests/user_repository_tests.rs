@@ -15,7 +15,7 @@ fn creates_one_user() {
 
     assert_eq!(created_user, found_user);
 
-    let id_clause = repository::UserClause::Id(found_user.id.unwrap());
+    let id_clause = repository::UserClause::Id(found_user.id.unwrap().into());
     users = repo.read(&id_clause).unwrap();
     let id_user = users.pop().unwrap();
 
