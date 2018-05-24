@@ -22,7 +22,8 @@ extern crate uuid;
 
 #[macro_use]
 extern crate try_from_row;
-
+#[macro_use]
+extern crate sql_id;
 #[macro_use]
 extern crate serde_derive;
 

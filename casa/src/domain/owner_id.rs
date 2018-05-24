@@ -1,7 +1,9 @@
 use domain::Id;
+use postgres::types::{FromSql, ToSql, Type};
+use postgres::types::IsNull;
+use std;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, ToSql,
-         FromSql)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, SqlId)]
 pub struct OwnerId(pub i32);
 
 impl Into<Id> for OwnerId {
@@ -9,3 +11,5 @@ impl Into<Id> for OwnerId {
         Id(self.0)
     }
 }
+
+

@@ -9,6 +9,7 @@ clean_up () {
     echo "DROP DATABASE test_database_only" | psql
 }
 
+cargo build
 
 source run_eth.sh &
 

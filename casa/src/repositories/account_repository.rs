@@ -51,7 +51,7 @@ impl<T: db::PostgresHelper> repository::RepoRead for AccountRepository<T> {
 
     fn read(&mut self, clause: &Self::Clause) -> repository::VecResult<Self::Item> {
         match clause {
-            &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[id]),
+            &repository::UserClause::Id(ref id) => self.db_helper.query(SELECT_BY_ID, &[&id.0]),
             &repository::UserClause::EmailAddress(ref email_address) => {
                 let c = repository::UserClause::EmailAddress(email_address.to_owned());
                 let users = try!(self.user_repository.read(&c));
