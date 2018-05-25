@@ -12,6 +12,7 @@ CREATE TYPE order_status AS ENUM (
 CREATE TYPE settlement_status AS ENUM (
     'settling',
     'waiting_eth',
+    'waiting_eth_credentials',
     'settled',
     'cancelled',
     'invalid',

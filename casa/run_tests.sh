@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
+clean_db () {
+    echo "DROP DATABASE test_database_only" | psql
+}
+
+clean_db
+
 set -e
 set -o pipefail
 
 clean_up () {
     echo "Killing geth"
     pkill geth
-    echo "DROP DATABASE test_database_only" | psql
+    clean_db
 }
 
 cargo build

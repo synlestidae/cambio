@@ -62,15 +62,9 @@ impl<T: PostgresHelper> UserService<T> {
             owner_id: None,
         };
 
-        info!("Creating user {}", user.email_address);
         user = try!(self.user_repository.create(&user));
-        info!("Creating ethereum account for {}", user.email_address);
         let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
         let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
-        info!(
-            "User {} has eth address ethereum account {}",
-            user.email_address, new_eth_account.address
-        );
         Ok(user)
     }
 

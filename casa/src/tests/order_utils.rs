@@ -39,6 +39,7 @@ pub fn quick_order(
     let user1 = user_service
         .register_user(buyer, "excellent123".to_owned())
         .unwrap();
+
     let user2 = user_service
         .register_user(seller, "dohnut123".to_owned())
         .unwrap();

@@ -137,12 +137,12 @@ impl<T: PostgresHelper> EthereumService<T> {
 
     fn get_web3_inst(&self) -> Result<Web3Pair, CambioError> {
         // TODO make this use some kind of connection pool if need be
-        let (_eloop, transport) = try!(web3::transports::ipc::Ipc::new(&self.web3_address));
+        let (_eloop, transport) = try!(web3::transports::http::Http::new(&self.web3_address));
         Ok((_eloop, web3::Web3::new(transport)))
     }
 }
 
 pub type Web3Pair = (
     web3::transports::EventLoopHandle,
-    web3::Web3<web3::transports::ipc::Ipc>,
+    web3::Web3<web3::transports::http::Http>,
 );
