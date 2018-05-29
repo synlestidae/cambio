@@ -80,7 +80,7 @@ fn main() {
     let helper =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let mut router = Router::new();
-    let mut api_init = api::TotalApiInit::new(helper, "../eth_test/data/geth.ipc");
+    let mut api_init = api::TotalApiInit::new(helper, "http://localhost:30303");
     api_init.init_api(&mut router);
     let mut chain = iron::Chain::new(router);
     debug!("Booting up HTTP server");

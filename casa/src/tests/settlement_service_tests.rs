@@ -13,7 +13,7 @@ use uuid;
 fn refuses_settlement_no_eth_balance() {
     let mut settlement_service = services::SettlementService::new(
         get_db_helper(),
-        "/Users/mate/work/cambio/eth_test/data/geth.ipc",
+        "http://localhost:30303",
     );
     let (order1, order2) = quick_order(
         "ricky@gervais.com",

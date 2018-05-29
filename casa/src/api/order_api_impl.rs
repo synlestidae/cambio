@@ -23,7 +23,7 @@ pub struct OrderApiImpl<C: PostgresHelper> {
 
 impl<C: PostgresHelper> OrderApiImpl<C> {
     pub fn new(db_helper: C) -> Self {
-        let eth_path = "/Users/mate/work/cambio/eth_test/data/geth.ipc";
+        let eth_path = "http://localhost:303030";
         let settlement_service = services::SettlementService::new(db_helper.clone(), eth_path);
         Self {
             order_repo: repositories::OrderRepository::new(db_helper.clone()),
