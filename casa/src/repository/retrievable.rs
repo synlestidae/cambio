@@ -2,6 +2,7 @@ use chrono::prelude::*;
 use db::CambioError;
 use db::PostgresHelper;
 use db::{TryFromRow, TryFromRowError};
+use query::Selectable;
 use domain;
 use postgres;
 use repositories;
@@ -14,11 +15,28 @@ use repository::UserClause;
 // then i implement retrievable where the Item is a User, the c
 
 pub trait Retrievable<Item> {
-    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<Item, CambioError>;
-    fn get_option<H: PostgresHelper>(&self, db: &mut H) -> Result<Option<Item>, CambioError>;
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<Item>, CambioError>;
+    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<Item, CambioError> {
+        match self.get_option(db) {
+            Ok(Some(order)) => Ok(order),
+            Ok(None) => Err(CambioError::not_found_search(
+                "Item could not be found.",
+                "No results for query.",
+            )),
+            Err(err) => Err(err),
+        }
+    }
+
+    fn get_option<H: PostgresHelper>(&self, db: &mut H) -> Result<Option<Item>, CambioError> {
+        Ok(try!(self.get_vec(db)).pop())
+    }
 }
 
 impl Retrievable<domain::User> for domain::UserId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
+        unimplemented!()
+    }
+
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::User, CambioError> {
         unimplemented!()
     }
@@ -32,6 +50,10 @@ impl Retrievable<domain::User> for domain::UserId {
 }
 
 impl Retrievable<domain::Order> for domain::OrderId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {
+        unimplemented!()
+    }
+
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::Order, CambioError> {
         match self.get_option(db) {
             Ok(Some(order)) => Ok(order),
@@ -54,6 +76,10 @@ impl Retrievable<domain::Order> for domain::OrderId {
 }
 
 impl Retrievable<domain::Session> for domain::SessionToken {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Session>, CambioError> {
+        unimplemented!()
+    }
+
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::Session, CambioError> {
         match self.get_option(db) {
             Ok(Some(session_token)) => Ok(session_token),
@@ -73,6 +99,10 @@ impl Retrievable<domain::Session> for domain::SessionToken {
 }
 
 impl Retrievable<domain::User> for domain::OwnerId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
+        unimplemented!()
+    }
+
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::User, CambioError> {
         match self.get_option(db) {
             Ok(Some(user)) => Ok(user),
@@ -93,6 +123,13 @@ impl Retrievable<domain::User> for domain::OwnerId {
     }
 }
 
+impl<E> Retrievable<E> for Selectable<E> where E: TryFromRow {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<E>, CambioError> {
+        let sql = self.get_specifier().get_sql_query();
+        db.query(&sql, &[])
+    }
+}
+
 #[derive(TryFromRow)]
 struct SettlementRow {
     pub id: Option<domain::OrderSettlementId>,
@@ -105,6 +142,10 @@ struct SettlementRow {
 }
 
 impl Retrievable<domain::OrderSettlement> for domain::OrderSettlementId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+        unimplemented!()
+    }
+
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::OrderSettlement, CambioError> {
         match self.get_option(db) {
             Ok(Some(order_settlement)) => Ok(order_settlement),
