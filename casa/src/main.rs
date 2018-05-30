@@ -43,6 +43,7 @@ extern crate secp256k1;
 extern crate web3;
 
 mod api;
+mod query;
 mod cors_middleware;
 mod db;
 mod domain;
