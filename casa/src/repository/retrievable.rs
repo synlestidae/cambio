@@ -32,7 +32,7 @@ pub trait Retrievable<Item> {
     }
 }
 
-impl Retrievable<domain::User> for domain::UserId {
+/*impl Retrievable<domain::User> for domain::UserId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
         unimplemented!()
     }
@@ -47,7 +47,7 @@ impl Retrievable<domain::User> for domain::UserId {
     ) -> Result<Option<domain::User>, CambioError> {
         unimplemented!()
     }
-}
+}*/
 
 impl Retrievable<domain::Order> for domain::OrderId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {

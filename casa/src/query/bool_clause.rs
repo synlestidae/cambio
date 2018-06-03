@@ -16,4 +16,9 @@ impl BoolClause {
             &BoolClause::Equals(ref field, ref value) => format!("{} = {}", field.name(), value.to_sql_value())
         }
     }
+
+    pub fn id_equals(val: i32) -> Self {
+        let id = Field::parse("id").unwrap();
+        BoolClause::Equals(id, Value::Signed32(val))
+    }
 }

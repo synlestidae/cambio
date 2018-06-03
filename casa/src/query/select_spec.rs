@@ -1,9 +1,9 @@
-use query::{TableName, BoolClause, Column};
+use query::{TableName, BoolClause, Column, Field};
 
 pub struct SelectSpec {
-    table: TableName,
-    columns: Vec<Column>,
-    clause: Option<BoolClause>
+    pub table: TableName,
+    pub columns: Vec<Column>,
+    pub clause: Option<BoolClause>
 }
 
 impl SelectSpec {
@@ -21,4 +21,18 @@ impl SelectSpec {
             .collect::<Vec<_>>()
             .join(", ")
     }
+
+    /*pub fn join_on(self, table: &TableName, this_field: &Field, other_field: &Field) -> SelectSpec {
+        unimplemented!()
+    }
+
+    pub fn select(self, column: Column) -> SelectSpec {
+        unimplemented!()
+    }*/
+
+    pub fn join_spec(self, spec: SelectSpec, on: Vec<(Field, Field)>) -> SelectSpec {
+        unimplemented!()
+        
+    }
+
 }

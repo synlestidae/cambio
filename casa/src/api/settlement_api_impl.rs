@@ -6,7 +6,9 @@ use db::PostgresHelper;
 use domain;
 use iron;
 use repositories;
+use db::TryFromRow;
 use repository::RepoUpdate;
+use query::Selectable;
 use repository::Retrievable;
 use services;
 
@@ -37,8 +39,7 @@ impl<C: PostgresHelper> SettlementApiTrait for SettlementApiImpl<C> {
             };
 
         // TODO retrieve the user
-        let user: domain::User = match session.user_id.get(&mut self.db) {
-            Ok(user) => user,
+        let user: domain::User = match unimplemented!() {
             _ => {
                 return db::CambioError::shouldnt_happen(
                     "Unable to find your account.",
