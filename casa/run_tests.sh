@@ -17,7 +17,7 @@ clean_up () {
 
 cargo build
 
-#source run_eth.sh &
+source run_eth.sh > /dev/null &
 
 trap clean_up EXIT
 

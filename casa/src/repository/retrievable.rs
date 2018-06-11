@@ -9,11 +9,9 @@ use repositories;
 use repository;
 use repository::RepoRead;
 use repository::UserClause;
-//use chrono::prelude::{DateTime, Utc};
 
 // suppose I just want an easy way to retrieve the owner id from the user
 // then i implement retrievable where the Item is a User, the c
-
 pub trait Retrievable<Item> {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<Item>, CambioError>;
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<Item, CambioError> {
@@ -32,94 +30,61 @@ pub trait Retrievable<Item> {
     }
 }
 
-/*impl Retrievable<domain::User> for domain::UserId {
+impl Retrievable<domain::User> for domain::UserId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
-        unimplemented!()
-    }
+        const SELECT_BY_ID: &'static str = "
+            SELECT *, users.id as user_id, account_owner.id as owner_id
+            FROM users 
+            JOIN account_owner ON account_owner.user_id = users.id 
+            WHERE users.id = $1";
 
-    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::User, CambioError> {
-        unimplemented!()
+        db.query(SELECT_BY_ID, &[self])
     }
-
-    fn get_option<H: PostgresHelper>(
-        &self,
-        db: &mut H,
-    ) -> Result<Option<domain::User>, CambioError> {
-        unimplemented!()
-    }
-}*/
+}
 
 impl Retrievable<domain::Order> for domain::OrderId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {
-        unimplemented!()
-    }
-
-    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::Order, CambioError> {
-        match self.get_option(db) {
-            Ok(Some(order)) => Ok(order),
-            Ok(None) => Err(CambioError::not_found_search(
-                "Order could not be found.",
-                "No results for that Order ID.",
-            )),
-            Err(err) => Err(err),
-        }
-    }
-
-    fn get_option<H: PostgresHelper>(
-        &self,
-        db: &mut H,
-    ) -> Result<Option<domain::Order>, CambioError> {
-        let clause = repository::UserClause::Id(self.clone().into());
-        let mut order_repo = repositories::OrderRepository::new(db.clone());
-        order_repo.read(&clause).map(|mut s| s.pop())
+        const SELECT_BY_ID: &'static str = "
+            SELECT 
+                *, 
+                orders.id AS order_id, 
+                sell_asset_type.asset_code AS sell_asset_code,  
+                sell_asset_type.denom AS sell_asset_denom,  
+                buy_asset_type.asset_code AS buy_asset_code,  
+                buy_asset_type.denom AS buy_asset_denom
+            FROM asset_order orders,
+                 account_owner owners, 
+                 asset_type buy_asset_type, 
+                 asset_type sell_asset_type
+            WHERE orders.owner_id = owners.id AND
+                  buy_asset_type.id = orders.buy_asset_type_id AND
+                  sell_asset_type.id = orders.sell_asset_type_id AND
+                  orders.id = $1";
+        db.query(SELECT_BY_ID, &[self])
     }
 }
 
 impl Retrievable<domain::Session> for domain::SessionToken {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Session>, CambioError> {
-        unimplemented!()
-    }
-
-    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::Session, CambioError> {
-        match self.get_option(db) {
-            Ok(Some(session_token)) => Ok(session_token),
-            Ok(None) => Err(CambioError::unauthorised()),
-            Err(err) => Err(err),
-        }
-    }
-
-    fn get_option<H: PostgresHelper>(
-        &self,
-        db: &mut H,
-    ) -> Result<Option<domain::Session>, CambioError> {
-        let clause = repository::UserClause::SessionToken(self.0.to_owned());
-        let mut session_repo = repositories::SessionRepository::new(db.clone());
-        session_repo.read(&clause).map(|mut s| s.pop())
+        const SELECT_BY_TOKEN: &'static str = "
+            SELECT user_session.id AS session_id, session_info.*, users.email_address, users.id as user_id
+            FROM user_session
+            JOIN session_info ON session_info.id = user_session.session_info_id
+            JOIN users ON user_session.user_id = users.id
+            WHERE session_info.session_token = $1 AND 
+                (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
+        db.query(SELECT_BY_TOKEN, &[self])
     }
 }
 
 impl Retrievable<domain::User> for domain::OwnerId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
-        unimplemented!()
-    }
-
-    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::User, CambioError> {
-        match self.get_option(db) {
-            Ok(Some(user)) => Ok(user),
-            Ok(None) => Err(CambioError::not_found_search(
-                "User could not be located.",
-                "User with owner ID not found",
-            )),
-            Err(err) => Err(err),
-        }
-    }
-
-    fn get_option<H: PostgresHelper>(
-        &self,
-        db: &mut H,
-    ) -> Result<Option<domain::User>, CambioError> {
-        let mut matches = try!(db.query(SELECT_BY_OWNER, &[&self.0]));
-        Ok(matches.pop())
+        const SELECT_BY_OWNER: &'static str = "
+            SELECT *, users.id as user_id, account_owner.id as owner_id
+            FROM users 
+            JOIN account_owner ON account_owner.user_id = users.id 
+            WHERE account_owner.id = $1";
+        db.query(SELECT_BY_OWNER, &[self])
     }
 }
 

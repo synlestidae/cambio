@@ -11,6 +11,7 @@ use repository::RepoUpdate;
 use query::Selectable;
 use repository::Retrievable;
 use services;
+use web3::types::U256;
 
 pub struct SettlementApiImpl<C: PostgresHelper> {
     db: C,
@@ -67,7 +68,7 @@ impl<C: PostgresHelper> SettlementApiTrait for SettlementApiImpl<C> {
 
         // now settlement is marked as waiting on ethereum - we MUST do it now
         // TODO test that the ethereum connection is okay first
-        let max_cost_wei = 854800000000000;
+        let max_cost_wei = U256([0, 0, 0, 854800000000000]);
         let eth_tx = settlement_service
             .begin_eth_transfer(
                 settlement.id.unwrap(),

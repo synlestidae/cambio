@@ -41,7 +41,7 @@ impl<T: db::PostgresHelper> SettlementService<T> {
         settlement_id: OrderSettlementId,
         unique_id: &str,
         starting_user_password: String,
-        max_cost_wei: u64,
+        max_cost_wei: U256,
     ) -> Result<domain::EthereumOutboundTransaction, db::CambioError> {
         let mut settlement = match try!(
             self.settlement_repo

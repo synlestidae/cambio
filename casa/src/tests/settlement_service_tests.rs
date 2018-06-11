@@ -8,6 +8,7 @@ use services;
 use tests::get_db_helper;
 use tests::order_utils::*;
 use uuid;
+use web3::types::U256;
 
 #[test]
 fn refuses_settlement_no_eth_balance() {
@@ -39,7 +40,7 @@ fn refuses_settlement_no_eth_balance() {
         settlement.id.unwrap(),
         "981upr983ucn982qr2349t9y34%tp9q83tup983q4",
         "dohnut123".to_owned(),
-        21000000000000,
+        U256([0, 0, 0, 21000000000000])
     );
 
     assert!(result.is_err());
@@ -76,7 +77,7 @@ fn completes_settlement_exact_balance() {
         settlement.id.unwrap(),
         "881upr983ucn982qr2349t9y34%tp9q83tup983q5",
         "dohnut123".to_owned(),
-        21000000000000,
+        U256([0, 0, 0, 21000000000000]),
     );
 
     result.unwrap();
