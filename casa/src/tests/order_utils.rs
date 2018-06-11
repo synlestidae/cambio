@@ -89,7 +89,6 @@ pub fn quick_credit(who: &str, how_much: u32) {
     let mut payment_repo = repositories::UserPaymentRepository::new(get_db_helper());
     let payment_builder = domain::PaymentBuilder::new(
         domain::AssetType::NZD,
-        domain::Denom::Cent,
         domain::PaymentMethod::NZBankDeposit,
         domain::PaymentVendor::Poli,
     );

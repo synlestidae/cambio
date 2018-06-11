@@ -2,20 +2,17 @@ use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, FromSql, ToSql)]
-#[postgres(name = "asset_code_type")]
+#[postgres(name = "asset_type")]
 pub enum AssetType {
-    #[postgres(name = "nzd")]
+    #[postgres(name = "nzd_cent")]
     NZD,
-    #[postgres(name = "btc")]
-    BTC,
-    #[postgres(name = "eth")]
+    #[postgres(name = "eth_wei")]
     ETH,
 }
 
 impl AssetType {
     pub fn is_crypto(&self) -> bool {
         match self {
-            &AssetType::BTC => true,
             &AssetType::ETH => true,
             _ => false,
         }
@@ -26,8 +23,7 @@ impl ToString for AssetType {
     fn to_string(&self) -> String {
         let asset_type_str = match self {
             &AssetType::NZD => "nzd",
-            &AssetType::BTC => "btc",
-            &AssetType::ETH => "eth",
+            &AssetType::ETH => "eth"
         };
         asset_type_str.to_owned()
     }

@@ -17,32 +17,6 @@ impl<T: db::PostgresHelper> AccountRepository<T> {
             db_helper: db,
         }
     }
-
-    fn _get_asset_id(
-        &mut self,
-        asset_type: &domain::AssetType,
-        asset_denom: &domain::Denom,
-    ) -> Result<domain::Id, db::CambioError> {
-        let asset_id_vec = try!(self.db_helper.query_raw(
-            "SELECT get_asset_id($1, $2) AS id",
-            &[asset_type, asset_denom]
-        ));
-        if asset_id_vec.len() == 0 {
-            return Err(db::CambioError::bad_input(
-                "Unknown asset and denom combination",
-                "Asset ID not found",
-            ));
-        }
-        let asset_id_match: Option<domain::Id> = asset_id_vec.get(0).get("id");
-        if asset_id_match.is_none() {
-            Err(db::CambioError::format_obj(
-                "Unknown asset type",
-                "Unknown asset type",
-            ))
-        } else {
-            Ok(asset_id_match.unwrap())
-        }
-    }
 }
 
 impl<T: db::PostgresHelper> repository::RepoRead for AccountRepository<T> {
@@ -79,12 +53,11 @@ impl<T: db::PostgresHelper> repository::RepoCreate for AccountRepository<T> {
             "Failed to locate asset account after creating it",
             "Error during asset account creation",
         );
-        let asset_id: domain::Id = try!(self._get_asset_id(&item.asset_type, &item.asset_denom));
         let rows = self.db_helper.query_raw(
             INSERT,
             &[
                 &item.owner_user_id,
-                &asset_id,
+                &item.asset_type,
                 &item.account_type,
                 &item.account_business_type,
                 &item.account_role,
@@ -132,20 +105,19 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for AccountRepository<T> {
                 ))
             }
         };
-        let asset_id = try!(self._get_asset_id(&item.asset_type, &item.asset_denom));
         try!(self.db_helper.execute(
             UPDATE_BY_ID,
             &[
                 &id,
                 &owner_id,
-                &asset_id,
+                &item.asset_type,
                 &item.account_type,
                 &item.account_business_type,
                 &item.account_role,
                 &item.account_status
             ]
         ));
-        let mut accounts = try!(self.read(&repository::UserClause::Id(asset_id)));
+        let mut accounts = try!(self.read(&repository::UserClause::Id(id)));
         match accounts.pop() {
             Some(account) => Ok(account),
             None => Err(db::CambioError::shouldnt_happen(
@@ -157,17 +129,15 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for AccountRepository<T> {
 }
 
 const SELECT_BY_ID: &'static str = "
-    SELECT *, account.id as account_id, asset_type.asset_code as account_asset_type, asset_type.denom as denom
+    SELECT *, account.id as account_id, account.asset_type as account_asset_type
     FROM account 
-    JOIN asset_type ON account.asset_type = asset_type.id
     WHERE account.id = $1";
 
 const SELECT_BY_EMAIL: &'static str = "
-    SELECT *, account.id as account_id, asset_type.asset_code as account_asset_type, asset_type.denom as denom
+    SELECT *, account.id as account_id, account.asset_type as account_asset_type
     FROM account 
     JOIN account_owner ON account.owner_id = account_owner.id 
     JOIN users ON account_owner.user_id = users.id
-    JOIN asset_type ON account.asset_type = asset_type.id
     WHERE
     users.email_address = $1";
 
@@ -177,5 +147,10 @@ const INSERT: &'static str = "INSERT INTO
     RETURNING id;";
 
 const UPDATE_BY_ID: &'static str = "UPDATE account SET 
-    owner_id = $2, asset_type = $3, account_type = $4, account_business_type = $5, account_role = $6, account_status = $7
+    owner_id = $2, 
+    asset_type = $3, 
+    account_type = $4, 
+    account_business_type = $5, 
+    account_role = $6, 
+    account_status = $7
     WHERE id = $1";

@@ -5,6 +5,7 @@ CREATE TYPE ACCOUNT_TYPE AS ENUM (
     'income',
     'expense'
 );
+
 CREATE TABLE accounting_period (
     id SERIAL PRIMARY KEY,
     from_date DATE,
@@ -43,9 +44,7 @@ CREATE OR REPLACE FUNCTION credit_account_from_payment(
     user_id_var INTEGER,
     email_address_var VARCHAR,
     credited_account_id INTEGER,
-
-    asset_type_var ASSET_CODE_TYPE,
-    asset_denom_var DENOM_TYPE,
+    asset_type_var ASSET_TYPE,
 
     -- stuff that comes 'over the wire' from the broker
     vendor_name payment_vendor,
@@ -57,7 +56,6 @@ CREATE OR REPLACE FUNCTION credit_account_from_payment(
 )
 RETURNS VOID AS $$
 DECLARE 
-asset_type_id INTEGER;
 authorship_id INTEGER;
 entry_id INTEGER;
 intake_account_var INTEGER;
@@ -71,11 +69,6 @@ debit_account_id INTEGER;
 credit_account_id INTEGER;
 
 BEGIN
-    SELECT asset_type.id INTO asset_type_id FROM asset_type WHERE asset_code = asset_type_var AND denom = asset_denom_var LIMIT 1;
-    IF asset_type_id IS NULL THEN
-        RAISE EXCEPTION 'Cannot complete credit payment with unknown asset type (% in %s)', asset_type, asset_denom; 
-    END IF;
-
     SELECT intake_account INTO intake_account_var
         FROM vendor 
         WHERE name = vendor_name;
@@ -97,7 +90,7 @@ BEGIN
 
     -- this payment will be linked to the actual transfer in the ledger
     INSERT INTO user_payment(vendor, payment_method, datetime_payment_made, asset_type, units, unique_id)
-        VALUES (vendor_id, payment_method_var, datetime_payment_made_var, asset_type_id, units, unique_id)
+        VALUES (vendor_id, payment_method_var, datetime_payment_made_var, asset_type_var, units, unique_id)
         RETURNING id into user_payment_id;
 
     INSERT INTO entry(user_payment) VALUES(user_payment_id) RETURNING id INTO entry_id;
@@ -126,7 +119,6 @@ BEGIN
 
     PERFORM transfer_asset(
         asset_code_var := asset_type_var, 
-        asset_denom_var := asset_denom_var, 
         account_period_start := accounting_period_start_var, 
         account_period_end := accounting_period_end_var, 
         debit_account := debit_account_id,
@@ -140,7 +132,7 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE account (
     id SERIAL NOT NULL PRIMARY KEY,
     owner_id SERIAL REFERENCES account_owner(id),
-    asset_type SERIAL REFERENCES asset_type(id),
+    asset_type ASSET_TYPE NOT NULL,
     account_type ACCOUNT_TYPE NOT NULL,
     account_business_type account_business_type NOT NULL,
     account_role account_role NOT NULL,
@@ -160,7 +152,7 @@ CREATE TABLE user_payment (
     payment_method payment_method NOT NULL,
     datetime_payment_made TIMESTAMP NOT NULL,
     datetime_recorded TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
-    asset_type SERIAL NOT NULL REFERENCES asset_type(id),
+    asset_type ASSET_TYPE NOT NULL,
     units INT8 NOT NULL,
     unique_id VARCHAR(256) NOT NULL,
     CONSTRAINT Unique_payment_each_vendor UNIQUE(vendor, unique_id)
@@ -192,7 +184,7 @@ CREATE TABLE journal (
     id SERIAL PRIMARY KEY,
     accounting_period SERIAL REFERENCES accounting_period(id),
     account_id SERIAL NOT NULL REFERENCES account(id),
-    asset_type SERIAL NOT NULL REFERENCES asset_type(id), 
+    asset_type ASSET_TYPE NOT NULL,  
     transaction_time TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     correspondence_id SERIAL NOT NULL,
     credit UINT,

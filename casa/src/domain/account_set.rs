@@ -47,14 +47,12 @@ impl AccountSet {
 
 fn is_nzd_wallet(a: &domain::Account) -> bool {
     a.asset_type == domain::AssetType::NZD
-        && a.asset_denom == domain::Denom::Cent
         && a.account_business_type == domain::AccountBusinessType::UserCashWallet
         && a.account_role == domain::AccountRole::Primary
 }
 
 fn is_nzd_hold(a: &domain::Account) -> bool {
     a.asset_type == domain::AssetType::NZD
-        && a.asset_denom == domain::Denom::Cent
         && a.account_business_type == domain::AccountBusinessType::OrderPaymentHold
         && a.account_role == domain::AccountRole::System
 }

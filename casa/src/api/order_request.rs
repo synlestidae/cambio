@@ -7,10 +7,8 @@ use std::convert::Into;
 pub struct OrderRequest {
     pub unique_id: String,
     pub sell_asset_type: domain::AssetType,
-    pub sell_asset_denom: domain::Denom,
-    pub sell_asset_units: u64,
+    pub sell_asset_units: i64,
     pub buy_asset_type: domain::AssetType,
-    pub buy_asset_denom: domain::Denom,
-    pub buy_asset_units: u64,
+    pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
 }

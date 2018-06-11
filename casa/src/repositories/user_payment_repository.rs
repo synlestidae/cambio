@@ -47,7 +47,6 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
             .into_iter()
             .filter(|account| {
                 account.asset_type == payment.asset_type
-                    && account.asset_denom == payment.asset_denom
                     && account.account_role == domain::AccountRole::Primary
             })
             .collect();
@@ -70,7 +69,6 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
             &user.email_address,
             &account_id,
             &account.asset_type,
-            &account.asset_denom,
             &payment.vendor,
             &payment.payment_method,
             &payment.datetime_payment_made.naive_utc(),
@@ -123,13 +121,11 @@ const SELECT_USER_PAYMENT: &'static str = "
         user_payment.id, 
         user_payment.unique_id,
         asset_type.asset_code as asset_type, 
-        asset_type.denom as asset_denom, 
         user_payment.datetime_payment_made, 
         user_payment.payment_method, 
         vendor.name as vendor, 
         user_payment.units as user_credit
     FROM user_payment 
-    JOIN asset_type ON user_payment.asset_type = asset_type.id
     JOIN vendor ON user_payment.vendor = vendor.id
     WHERE user_payment.unique_id = $1
 ";
@@ -139,7 +135,6 @@ const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str =
         email_address_var := $2, 
         credited_account_id := $3, 
         asset_type_var := $4, 
-        asset_denom_var := $5, 
         vendor_name := $6, 
         payment_method_var := $7, 
         datetime_payment_made_var := $8, 

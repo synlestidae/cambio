@@ -1,10 +1,9 @@
 use chrono::prelude::*;
-use domain::{AssetType, Denom, Payment, PaymentMethod, PaymentVendor};
+use domain::{AssetType, Payment, PaymentMethod, PaymentVendor};
 use uuid::Uuid;
 
 pub struct PaymentBuilder {
     asset_type: AssetType,
-    asset_denom: Denom,
     payment_method: PaymentMethod,
     vendor: PaymentVendor,
 }
@@ -12,13 +11,11 @@ pub struct PaymentBuilder {
 impl PaymentBuilder {
     pub fn new(
         asset_type: AssetType,
-        asset_denom: Denom,
         payment_method: PaymentMethod,
         vendor: PaymentVendor,
     ) -> PaymentBuilder {
         PaymentBuilder {
             asset_type: asset_type,
-            asset_denom: asset_denom,
             payment_method: payment_method,
             vendor: vendor,
         }
@@ -37,7 +34,6 @@ impl PaymentBuilder {
         Ok(Payment {
             id: None,
             asset_type: self.asset_type,
-            asset_denom: self.asset_denom,
             payment_method: self.payment_method,
             vendor: self.vendor,
             unique_id: unique_id.to_owned(),

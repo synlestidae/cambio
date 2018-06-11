@@ -2,7 +2,6 @@ use domain::{AssetType, Denom};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Currency {
-    pub denom: Denom,
     pub asset_type: AssetType,
 }
 

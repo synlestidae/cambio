@@ -1,0 +1,14 @@
+[package]
+name = "crud"
+version = "0.1.0"
+authors = ["Mate Antunovic <just.mate.antunovic@gmail.com>"]
+
+[dependencies]
+postgres = {version = "0.15.1", features = ["with-chrono"]}
+chrono =  { version = "0.4", features = ["serde"] }
+time = "*"
+syn = "0.12.10"
+quote = "*"
+
+[lib]
+proc-macro = true

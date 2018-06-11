@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
 use db::TryFromRow;
 use db::TryFromRowError;
-use domain::{AssetType, BusinessEnds, Denom, Id};
+use domain::{AssetType, BusinessEnds, Id};
 use postgres::rows::Row;
 
 #[derive(Debug, Clone, Serialize)]
@@ -11,7 +11,6 @@ pub struct Transaction {
     pub from_account: Id,
     pub to_account: Id,
     pub asset_type: AssetType,
-    pub asset_denom: Denom,
     pub value: i64,
     pub transaction_time: DateTime<Utc>,
     pub accounting_period_id: Id,
@@ -85,8 +84,6 @@ impl TryFromRow for Transaction {
         let message: String =
             try!(message_match.ok_or(TryFromRowError::missing_field("Transaction", "message",)));
 
-        let denom_match: Option<Denom> = row.get("denom"); //try!(Denom::try_from_row(row)); //row.get("denom");
-        let denom = try!(denom_match.ok_or(TryFromRowError::missing_field("Denom", "denom")));
         let business_ends_match: Option<BusinessEnds> = row.get("business_ends");
         let business_ends: BusinessEnds = try!(business_ends_match.ok_or(
             TryFromRowError::missing_field("Transaction", "business_ends",)
@@ -109,7 +106,6 @@ impl TryFromRow for Transaction {
             from_account: from_id,
             to_account: to_id,
             asset_type: asset_type,
-            asset_denom: denom,
             value: value,
             transaction_time: DateTime::from_utc(transaction_time, Utc),
             accounting_period_id: accounting_period,

@@ -1,6 +1,6 @@
 use db::{TryFromRow, TryFromRowError};
 use domain::{
-    AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, Denom, Id, OwnerId,
+    AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, Id, OwnerId,
 };
 use postgres;
 use postgres::rows::Row;
@@ -13,8 +13,6 @@ pub struct Account {
     pub owner_user_id: Option<OwnerId>,
     #[column_id(account_asset_type)]
     pub asset_type: AssetType,
-    #[column_id(denom)]
-    pub asset_denom: Denom,
     pub account_status: AccountStatus,
     pub account_type: AccountType,
     pub account_business_type: AccountBusinessType,

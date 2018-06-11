@@ -62,15 +62,13 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
         order: api::OrderRequest,
         email_address: &str,
     ) -> Result<domain::Order, iron::Response> {
-        let sell_currency = domain::Currency::new(order.sell_asset_type, order.sell_asset_denom);
-        let buy_currency = domain::Currency::new(order.buy_asset_type, order.buy_asset_denom);
         let order_result = self.order_service.place_order(
             email_address,
             &order.unique_id,
-            order.sell_asset_units,
-            sell_currency,
-            order.buy_asset_units,
-            buy_currency,
+            order.sell_asset_units as u64,
+            order.sell_asset_type,
+            order.buy_asset_units as u64,
+            order.buy_asset_type,
         );
 
         match order_result {
@@ -193,19 +191,11 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
             return api::ApiError::from(err).into();
         }
         let request_copy = order.order_request.clone();
-        let buy_currency =
-            domain::Currency::new(request_copy.buy_asset_type, request_copy.buy_asset_denom);
-        let sell_currency =
-            domain::Currency::new(request_copy.sell_asset_type, request_copy.sell_asset_denom);
-        if !target_order.is_fair(
-            &buy_currency,
-            &sell_currency,
-            request_copy.buy_asset_units,
-            request_copy.sell_asset_units,
-        ) {
-            return api::ApiError::from(unfair_err).into();
-        }
-        if !target_order.can_exchange(&buy_currency, &sell_currency) {
+
+        if !(target_order.sell_asset_type == request_copy.buy_asset_type && 
+           target_order.buy_asset_type == request_copy.sell_asset_type && 
+           target_order.sell_asset_units == request_copy.buy_asset_units && 
+           target_order.buy_asset_units == request_copy.sell_asset_units) {
             return api::ApiError::from(unfair_err).into();
         }
 

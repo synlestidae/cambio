@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use db::{CambioError, PostgresHelper};
 use domain;
-use domain::{Currency, Id, Order, OrderStatus};
+use domain::{Id, Order, OrderStatus, AssetType};
 use repositories;
 use repository;
 use repository::*;
@@ -29,9 +29,9 @@ impl<T: PostgresHelper> OrderService<T> {
         email: &str,
         unique_id: &str,
         sell_units: u64,
-        sell_currency: Currency,
+        sell_currency: AssetType,
         buy_units: u64,
-        buy_currency: Currency,
+        buy_currency: AssetType,
     ) -> Result<Order, CambioError> {
         let user_clause = repository::UserClause::EmailAddress(email.to_owned());
         let user = try!(self.user_repo.read(&user_clause)).pop();
@@ -50,10 +50,8 @@ impl<T: PostgresHelper> OrderService<T> {
             unique_id: unique_id.to_owned(),
             sell_asset_units: sell_units as i64,
             buy_asset_units: buy_units as i64,
-            sell_asset_type: sell_currency.asset_type,
-            sell_asset_denom: sell_currency.denom,
-            buy_asset_type: buy_currency.asset_type,
-            buy_asset_denom: buy_currency.denom,
+            sell_asset_type: sell_currency,
+            buy_asset_type: buy_currency,
             expires_at: self.get_order_expiry(),
             status: OrderStatus::Active,
         };
@@ -117,9 +115,7 @@ const SELECT_ORDER_UNIQUE_ID_SQL: &'static str = "SELECT
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
         buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
     FROM asset_order orders,
          account_owner owners, 
          asset_type buy_asset_type, 
@@ -131,20 +127,10 @@ const SELECT_ORDER_UNIQUE_ID_SQL: &'static str = "SELECT
           orders.unique_id = $2";
 
 const SELECT_ORDER_BY_ID_SQL: &'static str = "
-    SELECT 
-        *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+    SELECT *, orders.id AS order_id, 
     FROM asset_order orders,
-         account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
+         account_owner owners
     WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND
           orders.id = $1";
 
 const UPDATE_ORDERS_EXPIRED_SQL: &'static str = "UPDATE asset_orders SET status = 'expires' 
@@ -154,9 +140,7 @@ const SELECT_ALL_ACTIVE_ORDERS_SQL: &'static str = "SELECT
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          account_owner owners, 
          asset_type buy_asset_type, 
@@ -167,9 +151,7 @@ const SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL: &'static str = "SELECT
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          account_owner owners, 
          users users, 
@@ -186,9 +168,7 @@ const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT
         orders.id AS order_id, 
         settlements.id as settlement_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          asset_order cp_order,
          account_owner owners, 

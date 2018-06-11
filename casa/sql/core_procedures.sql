@@ -96,14 +96,11 @@ BEGIN
     -- give them a way to own accounts
     INSERT INTO account_owner(user_id) VALUES(user_id) RETURNING id into owner_id;
 
-    SELECT * INTO nzd_asset_type_id FROM get_asset_id('nzd', 'cent');
-    SELECT * INTO bitcoin_asset_type_id FROM get_asset_id('btc', 'satoshi');
-
     -- create an account for nzd 
     INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)
-        VALUES(owner_id, nzd_asset_type_id, 'liability', 'user_cash_wallet', 'primary', 'active');
+        VALUES(owner_id, 'eth_wei', 'liability', 'user_cash_wallet', 'primary', 'active');
 
     INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)
-        VALUES(owner_id, nzd_asset_type_id, 'liability', 'order_payment_hold', 'system', 'active');
+        VALUES(owner_id, 'nzd_cent', 'liability', 'order_payment_hold', 'system', 'active');
 END;
 $$ LANGUAGE plpgsql;

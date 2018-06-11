@@ -3,7 +3,7 @@ use chrono::Duration;
 use chrono::{DateTime, Utc};
 use db::{CambioError, PostgresHelper, TryFromRow, TryFromRowError};
 use domain;
-use domain::{AssetType, Denom, Id, OrderId, OrderStatus, OwnerId, User};
+use domain::{AssetType, Id, OrderId, OrderStatus, OwnerId, User};
 use postgres;
 use postgres::rows::Row;
 use rand;
@@ -19,11 +19,9 @@ pub struct Order {
     pub unique_id: String,
     #[column_id(sell_asset_code)]
     pub sell_asset_type: AssetType,
-    pub sell_asset_denom: Denom,
     pub sell_asset_units: i64,
     #[column_id(buy_asset_code)]
     pub buy_asset_type: AssetType,
-    pub buy_asset_denom: Denom,
     pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
     pub status: OrderStatus,
@@ -41,9 +39,7 @@ impl Order {
             sell_asset_units: nzd_cents as i64,
             buy_asset_units: buy as i64,
             sell_asset_type: domain::AssetType::NZD,
-            sell_asset_denom: domain::Denom::Cent,
             buy_asset_type: domain::AssetType::ETH,
-            buy_asset_denom: domain::Denom::Szabo,
             expires_at: expiry,
             status: domain::OrderStatus::Active,
         }
@@ -60,41 +56,18 @@ impl Order {
             sell_asset_units: szabo as i64,
             buy_asset_units: buy_cents as i64,
             sell_asset_type: domain::AssetType::ETH,
-            sell_asset_denom: domain::Denom::Szabo,
             buy_asset_type: domain::AssetType::NZD,
-            buy_asset_denom: domain::Denom::Cent,
             expires_at: expiry,
             status: domain::OrderStatus::Active,
         }
     }
 
-    pub fn can_exchange(
-        &self,
-        buy_currency: &domain::Currency,
-        sell_currency: &domain::Currency,
-    ) -> bool {
-        let are_compatible = (self.buy_asset_type == sell_currency.asset_type
-            && self.buy_asset_denom == sell_currency.denom
-            && self.sell_asset_type == buy_currency.asset_type
-            && self.sell_asset_denom == buy_currency.denom);
-        let one_is_crypto = self.buy_asset_type.is_crypto() || buy_currency.asset_type.is_crypto();
-        return are_compatible && one_is_crypto;
-    }
-
-    pub fn is_fair(
-        &self,
-        buy_currency: &domain::Currency,
-        sell_currency: &domain::Currency,
-        buy_units: u64,
-        sell_units: u64,
-    ) -> bool {
-        let units_match =
-            self.sell_asset_units as u64 == buy_units && self.buy_asset_units as u64 == sell_units;
-        let asset_types_match = self.sell_asset_type == buy_currency.asset_type
-            && self.buy_asset_type == sell_currency.asset_type;
-        let denoms_match = self.sell_asset_denom == buy_currency.denom
-            && self.buy_asset_denom == sell_currency.denom;
-        return units_match && asset_types_match && denoms_match;
+    pub fn is_fair(&self, other: &Order) -> bool {
+        return 
+            self.sell_asset_type == other.buy_asset_type && 
+            self.buy_asset_type == other.sell_asset_type && 
+            self.sell_asset_units == other.buy_asset_units && 
+            self.buy_asset_units == other.sell_asset_units;
     }
 
     pub fn is_expired(&self) -> bool {

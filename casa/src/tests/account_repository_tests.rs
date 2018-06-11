@@ -11,8 +11,10 @@ fn creates_all_accounts_for_user() {
     let user = domain::User::new_register("jerry@waller.fm", "jerryjacksonfilms".to_owned());
     let mut user_repo = UserRepository::new(get_db_helper());
     let mut account_repo = AccountRepository::new(get_db_helper());
+    println!("Wake and bake!");
     user_repo.create(&user).unwrap();
 
+    println!("Read and weep!");
     // get the account collection
     let accounts = account_repo
         .read(&repository::UserClause::EmailAddress(
@@ -20,18 +22,21 @@ fn creates_all_accounts_for_user() {
         ))
         .unwrap();
     let accounts = domain::AccountSet::from(accounts).unwrap();
+    println!("Pop a squat!");
     let wallet = account_repo
         .read(&repository::UserClause::Id(accounts.nzd_wallet()))
         .unwrap()
         .pop()
         .unwrap();
 
+    println!("Wallet and grommit!");
     let wallet = account_repo
         .read(&repository::UserClause::Id(accounts.nzd_wallet()))
         .unwrap()
         .pop()
         .unwrap();
 
+    println!("HODL!");
     let hold = account_repo
         .read(&repository::UserClause::Id(accounts.nzd_hold()))
         .unwrap()
@@ -39,7 +44,6 @@ fn creates_all_accounts_for_user() {
         .unwrap();
 
     assert_eq!(wallet.asset_type, domain::AssetType::NZD);
-    assert_eq!(wallet.asset_denom, domain::Denom::Cent);
     assert_eq!(wallet.account_type, domain::AccountType::Liability);
     assert_eq!(
         wallet.account_business_type,
@@ -47,7 +51,6 @@ fn creates_all_accounts_for_user() {
     );
 
     assert_eq!(hold.asset_type, domain::AssetType::NZD);
-    assert_eq!(hold.asset_denom, domain::Denom::Cent);
     assert_eq!(hold.account_type, domain::AccountType::Liability);
     assert_eq!(
         hold.account_business_type,
@@ -91,7 +94,6 @@ fn fails_create_duplicate_account() {
         id: None,
         owner_user_id: user.owner_id,
         asset_type: domain::AssetType::NZD,
-        asset_denom: domain::Denom::Cent,
         account_status: domain::AccountStatus::Active,
         account_business_type: domain::AccountBusinessType::UserCashWallet,
         account_type: domain::AccountType::Liability,

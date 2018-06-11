@@ -53,9 +53,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for OrderRepository<T> {
         }
         let params: &[&ToSql] = &[
             &item.buy_asset_type,
-            &item.buy_asset_denom,
             &item.sell_asset_type,
-            &item.sell_asset_denom,
             &item.unique_id,
             &item.owner_id,
             &item.sell_asset_units,
@@ -146,9 +144,7 @@ const SELECT_ALL: &'static str = "
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          asset_type buy_asset_type, 
          asset_type sell_asset_type,
@@ -163,9 +159,7 @@ const SELECT_ALL_ACTIVE: &'static str = "
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          asset_type buy_asset_type, 
          asset_type sell_asset_type,
@@ -182,9 +176,7 @@ const SELECT_BY_ID: &'static str = "
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          account_owner owners, 
          asset_type buy_asset_type, 
@@ -210,9 +202,7 @@ const SELECT_BY_UID: &'static str = "SELECT
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
         buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
     FROM asset_order orders,
          account_owner owners, 
          asset_type buy_asset_type, 
@@ -228,9 +218,7 @@ const SELECT_BY_EMAIL: &'static str = "SELECT
         *, 
         orders.id AS order_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          account_owner owners, 
          users users, 
@@ -247,9 +235,7 @@ const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT
         orders.id AS order_id, 
         settlements.id as settlement_id, 
         sell_asset_type.asset_code AS sell_asset_code,  
-        sell_asset_type.denom AS sell_asset_denom,  
-        buy_asset_type.asset_code AS buy_asset_code,  
-        buy_asset_type.denom AS buy_asset_denom
+        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          asset_order cp_order,
          account_owner owners, 

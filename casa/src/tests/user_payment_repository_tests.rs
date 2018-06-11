@@ -20,7 +20,6 @@ fn credits_account() {
     let mut payment_repo = UserPaymentRepository::new(get_db_helper());
     let payment_builder = domain::PaymentBuilder::new(
         domain::AssetType::NZD,
-        domain::Denom::Cent,
         domain::PaymentMethod::NZBankDeposit,
         domain::PaymentVendor::Poli,
     );

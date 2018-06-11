@@ -24,9 +24,7 @@ fn test_creates_ethereum_order() {
     assert_eq!(original_order.sell_asset_units, order.sell_asset_units);
     assert_eq!(original_order.buy_asset_units, order.buy_asset_units);
     assert_eq!(original_order.sell_asset_type, order.sell_asset_type);
-    assert_eq!(original_order.sell_asset_denom, order.sell_asset_denom);
     assert_eq!(original_order.buy_asset_type, order.buy_asset_type);
-    assert_eq!(original_order.buy_asset_denom, order.buy_asset_denom);
     assert_eq!(original_order.status, order.status);
 }
 
@@ -50,9 +48,7 @@ fn test_creates_monetary_order() {
     assert_eq!(original_order.sell_asset_units, order.sell_asset_units);
     assert_eq!(original_order.buy_asset_units, order.buy_asset_units);
     assert_eq!(original_order.sell_asset_type, order.sell_asset_type);
-    assert_eq!(original_order.sell_asset_denom, order.sell_asset_denom);
     assert_eq!(original_order.buy_asset_type, order.buy_asset_type);
-    assert_eq!(original_order.buy_asset_denom, order.buy_asset_denom);
     assert_eq!(original_order.status, order.status);
 }
 

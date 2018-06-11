@@ -1,6 +1,6 @@
 use db;
 use domain;
-use domain::{Id, OrderSettlementId};
+use domain::{Id, OrderSettlementId, AssetType};
 use repositories;
 use repository;
 use repository::*;
@@ -66,19 +66,13 @@ impl<T: db::PostgresHelper> SettlementService<T> {
         let source_account = try!(self.get_eth_account(&settlement.selling_order));
         let dest_account = try!(self.get_eth_account(&settlement.buying_order));
         let selling_order = settlement.selling_order;
-        let szabo = match (
-            selling_order.sell_asset_type,
-            selling_order.sell_asset_denom,
-        ) {
-            (domain::AssetType::ETH, domain::Denom::Szabo) => selling_order.sell_asset_units,
-            _ => {
-                return Err(db::CambioError::format_obj(
-                    "Buying order must be for Szabo",
-                    "Error with settlement: unsupported selling type.",
-                ))
-            }
-        };
-        let wei = U256::from((szabo as u64) * 1000000000000);
+        if selling_order.sell_asset_type != AssetType::ETH {
+            return Err(db::CambioError::format_obj(
+                "Buying order must be for Szabo",
+                "Error with settlement: unsupported selling type.",
+            ))
+        }
+        let wei = U256::from(selling_order.sell_asset_units * 1000000000000);
         self.eth_service.register_transaction(
             &source_account,
             starting_user_password,

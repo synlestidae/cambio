@@ -1,8 +1,7 @@
 CREATE SEQUENCE correspondence_id_seq;
 
 CREATE OR REPLACE FUNCTION transfer_asset(
-    asset_code_var ASSET_CODE_TYPE,
-    asset_denom_var DENOM_TYPE,
+    asset_type_var ASSET_TYPE,
     account_period_start DATE,
     account_period_end DATE,
     debit_account INTEGER,
@@ -20,16 +19,10 @@ last_credit_account_balance INT8;
 last_debit_transaction_id INTEGER;
 last_credit_transaction_id INTEGER;
 BEGIN
-    SELECT asset_type.id INTO asset_type_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var LIMIT 1;
-    IF asset_type_id IS NULL THEN
-        RAISE EXCEPTION 'Cannot move asset with unknown asset type (% in %s)', asset_code_var, asset_denom_var; 
-    END IF;
-
     SELECT id INTO account_period_id FROM accounting_period WHERE account_period_start = from_date AND account_period_end = to_date LIMIT 1;
     IF account_period_id IS NULL THEN
         RAISE EXCEPTION 'Not match for accounting period';
     END IF;
-
 
     SELECT MAX(journal.id) INTO last_debit_transaction_id 
         FROM JOURNAL 
@@ -75,19 +68,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_asset_id(
-    asset_code_var ASSET_CODE_TYPE,
-    asset_denom_var DENOM_TYPE
-)
-RETURNS INTEGER AS $$
-DECLARE 
-asset_id INTEGER;
-BEGIN
-    SELECT id INTO asset_id FROM asset_type WHERE asset_code = asset_code_var AND denom = asset_denom_var;
-    return asset_id;
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION make_order(
     -- identify the user
     email_address_var VARCHAR(128),
@@ -95,13 +75,11 @@ CREATE OR REPLACE FUNCTION make_order(
 
     -- what the user wants to sell
     sell_asset_type VARCHAR(4),
-    sell_asset_denom VARCHAR(6),
     min_sell_units UINT,
     max_sell_units UINT,
 
     -- what the user wants to buy
-    deposit_asset_type VARCHAR(4),
-    deposit_asset_denom VARCHAR(6),
+    deposit_asset_type ASSET_TYPE,
     min_buy_units UINT,
     max_buy_units UINT,
 
@@ -113,8 +91,6 @@ CREATE OR REPLACE FUNCTION make_order(
 RETURNS VOID AS $$
 DECLARE 
 user_id INTEGER;
-sell_asset_id INTEGER;
-buy_asset_id INTEGER;
 order_info_id INTEGER;
 authorship_id INTEGER;
 desired_ttl_milliseconds UINT;
@@ -122,9 +98,6 @@ BEGIN
     PERFORM check_user_session(email_address_var, user_session_id);
 
     -- get the asset ID - will check the asset types match up
-
-    SELECT * INTO sell_asset_id FROM get_asset_id(sell_asset_type, sell_asset_denom);
-    SELECT * INTO buy_asset_id FROM get_asset_id(buy_asset_type, buy_asset_denom);
 
     SELECT users.id INTO user_id FROM users 
         JOIN user_role ON users.id = user_role.user_id

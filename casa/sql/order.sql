@@ -27,12 +27,10 @@ CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
     unique_id VARCHAR(32) NOT NULL UNIQUE,
-
     sell_asset_units BIGUINT NOT NULL,
     buy_asset_units BIGUINT NOT NULL,
-    sell_asset_type_id SERIAL,
-    buy_asset_type_id SERIAL REFERENCES asset_type(id) NOT NULL,
-
+    sell_asset_type ASSET_TYPE NOT NULL,
+    buy_asset_type ASSET_TYPE NOT NULL,
     status order_status NOT NULL DEFAULT 'active',
     expires_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
@@ -54,10 +52,8 @@ CREATE TABLE order_settlement (
 ALTER TABLE order_settlement ALTER COLUMN transaction_id DROP NOT NULL;
 
 CREATE OR REPLACE FUNCTION place_order(
-    buy_asset_type_var ASSET_CODE_TYPE,
-    buy_asset_denom_var DENOM_TYPE, 
-    sell_asset_type_var ASSET_CODE_TYPE,
-    sell_asset_denom_var DENOM_TYPE,
+    buy_asset_type_var ASSET_TYPE,
+    sell_asset_type_var ASSET_TYPE,
     unique_id_var VARCHAR,
     owner_id_var INTEGER,
     sell_asset_units_var BIGINT,
@@ -65,28 +61,21 @@ CREATE OR REPLACE FUNCTION place_order(
     expires_at_var TIMESTAMP
 )
 RETURNS VOID AS $$
-DECLARE 
-  buy_asset_type_id_var INTEGER;
-  sell_asset_type_id_var INTEGER;
 BEGIN
-    SELECT * INTO buy_asset_type_id_var FROM get_asset_id(buy_asset_type_var, buy_asset_denom_var);
-    SELECT * INTO sell_asset_type_id_var FROM get_asset_id(sell_asset_type_var, sell_asset_denom_var);
-
-    IF buy_asset_type_id_var IS NULL THEN
-        RAISE EXCEPTION 'Buy asset ID not found';
-    END IF;
-
-    IF sell_asset_type_id_var IS NULL THEN
-        RAISE EXCEPTION 'Sell asset ID % not found for % %', 
-            sell_asset_type_id_var, 
-            sell_asset_type_var, 
-            sell_asset_denom_var;
-    END IF;
-
-    INSERT INTO asset_order(owner_id, unique_id, sell_asset_units, buy_asset_units, sell_asset_type_id,
-        buy_asset_type_id, expires_at) 
-     VALUES(owner_id_var, unique_id_var, sell_asset_units_var, buy_asset_units_var, sell_asset_type_id_var, buy_asset_type_id_var, expires_at_var);
-
+    INSERT INTO asset_order(owner_id, 
+        unique_id, 
+        sell_asset_units, 
+        buy_asset_units, 
+        sell_asset_type,
+        buy_asset_type, 
+        expires_at) 
+     VALUES(owner_id_var, 
+        unique_id_var, 
+        sell_asset_units_var,
+        buy_asset_units_var,
+        sell_asset_type_var,
+        buy_asset_type_var,
+        expires_at_var);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -99,7 +88,6 @@ RETURNS VOID AS $$
 DECLARE 
   buying_order RECORD;
   selling_order RECORD;
-  asset_type_id INTEGER;
   existing_settlements INTEGER;
 
   fiat_account INTEGER;
@@ -107,9 +95,6 @@ DECLARE
 
   accounting_period_start_var DATE;
   accounting_period_end_var DATE;
-
-  asset_denom_var denom_type;
-  asset_type_var asset_code_type;
 
   authoring_user_var INTEGER;
   authorship_id_var INTEGER;
@@ -179,9 +164,6 @@ BEGIN
     SELECT to_date INTO accounting_period_end_var FROM accounting_period
         WHERE id = (SELECT MAX(id) FROM accounting_period);
 
-    SELECT asset_code INTO asset_type_var FROM asset_type WHERE id = buying_order.buy_asset_type_id;
-    SELECT denom INTO asset_denom_var FROM asset_type WHERE id = buying_order.buy_asset_type_id;
-
     SELECT user_id INTO authoring_user_var FROM account_owner WHERE id = buying_order.owner_id;
 
     INSERT INTO authorship(business_ends, authoring_user, message, entry) 
@@ -191,7 +173,6 @@ BEGIN
     -- do the transfer here
     PERFORM transfer_asset(
         asset_code_var := asset_type_var, 
-        asset_denom_var := asset_denom_var, 
         account_period_start := accounting_period_start_var, 
         account_period_end := accounting_period_end_var, 
         debit_account := fiat_account,
