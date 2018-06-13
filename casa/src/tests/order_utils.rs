@@ -30,7 +30,7 @@ pub fn quick_order(
     // create the user first
     let mut user_service = services::UserService::new(
         get_db_helper(),
-        "http://localhost:30303",
+        "http://localhost:8081",
     );
 
     let mut account_repo = repositories::AccountRepository::new(get_db_helper());
@@ -118,7 +118,7 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
     let account = eth_account_repo.read(&clause).unwrap().pop().unwrap();
     let args = &[
         "../moneda/index.js",
-        "http://localhost:30303",
+        "http://localhost:8081",
         "0xA990F82d33Fd19C3872dc12c588A66224b9330A6",
         &format!("0x{:#x}", account.address),
         &format!("0x{:#x}", wei),
