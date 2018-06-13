@@ -98,7 +98,7 @@ BEGIN
 
     -- create an account for nzd 
     INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)
-        VALUES(owner_id, 'eth_wei', 'liability', 'user_cash_wallet', 'primary', 'active');
+        VALUES(owner_id, 'nzd_cent', 'liability', 'user_cash_wallet', 'primary', 'active');
 
     INSERT INTO account (owner_id, asset_type, account_type, account_business_type, account_role, account_status)
         VALUES(owner_id, 'nzd_cent', 'liability', 'order_payment_hold', 'system', 'active');

@@ -8,6 +8,7 @@ pub struct AccountSet {
 
 impl AccountSet {
     pub fn from(accounts: Vec<domain::Account>) -> Result<Self, db::CambioError> {
+        println!("The cunts {:?}", accounts);
         let w = accounts
             .clone()
             .into_iter()
@@ -28,6 +29,7 @@ impl AccountSet {
                 nzd_holding_account: hold,
             }),
             otherwise => {
+                println!("otherwise... {:?}", otherwise);
                 return Err(db::CambioError::not_found_search(
                     "Could not find all accounts for user",
                     "User is missing wallet and/or hold account",
