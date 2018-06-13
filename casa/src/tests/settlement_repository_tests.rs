@@ -29,8 +29,8 @@ fn settles_two_orders() {
         settlement.settlement_status,
         domain::SettlementStatus::Settling
     );
-    assert_eq!(settlement.buying_order, created_settlement.buying_order);
-    assert_eq!(settlement.selling_order, created_settlement.selling_order);
+    assert_eq!(settlement.buying_order.id, created_settlement.buying_order.id);
+    assert_eq!(settlement.selling_order.id, created_settlement.selling_order.id);
 }
 
 #[test]

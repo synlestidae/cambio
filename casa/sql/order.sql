@@ -111,11 +111,11 @@ BEGIN
         RAISE EXCEPTION 'Currency-buying order not found';
     END IF;
 
-    IF buying_order.sell_asset_type_id != selling_order.buy_asset_type_id THEN
+    IF buying_order.sell_asset_type != selling_order.buy_asset_type THEN
         RAISE EXCEPTION 'Order sell type does not match other order buy type.';
     END IF;
 
-    IF buying_order.buy_asset_type_id != selling_order.sell_asset_type_id THEN
+    IF buying_order.buy_asset_type != selling_order.sell_asset_type THEN
         RAISE EXCEPTION 'Order buy type does not match other order sell type.';
     END IF;
 
@@ -138,18 +138,18 @@ BEGIN
     SELECT id INTO hold_account FROM account
     WHERE 
         account.owner_id = buying_order.owner_id AND
-        account.asset_type = buying_order.sell_asset_type_id AND
+        account.asset_type = buying_order.sell_asset_type AND
         account.account_business_type  = 'order_payment_hold' AND
         account.account_role = 'system';
 
     IF hold_account IS NULL THEN
-        RAISE EXCEPTION 'Failed to find hold account with owner % and asset type %', buying_order.owner_id, buying_order.sell_asset_type_id;
+        RAISE EXCEPTION 'Failed to find hold account with owner % and asset type %', buying_order.owner_id, buying_order.sell_asset_type;
     END IF;
 
     SELECT id INTO fiat_account FROM account
     WHERE 
         account.owner_id = buying_order.owner_id AND
-        account.asset_type = buying_order.sell_asset_type_id AND
+        account.asset_type = buying_order.sell_asset_type AND
         account.account_business_type  = 'user_cash_wallet' AND
         account.account_role = 'primary'
     LIMIT 1;
@@ -172,7 +172,7 @@ BEGIN
 
     -- do the transfer here
     PERFORM transfer_asset(
-        asset_type_var := fiat_account.asset_type, 
+        asset_type_var := buying_order.sell_asset_type, 
         account_period_start := accounting_period_start_var, 
         account_period_end := accounting_period_end_var, 
         debit_account := fiat_account,
