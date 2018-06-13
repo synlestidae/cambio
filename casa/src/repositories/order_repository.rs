@@ -142,48 +142,30 @@ impl<T: db::PostgresHelper> repository::RepoDelete for OrderRepository<T> {
 const SELECT_ALL: &'static str = "
     SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        orders.id AS order_id
     FROM asset_order orders,
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type,
          account_owner owner 
     WHERE 
-        orders.buy_asset_type_id = buy_asset_type.id AND
-        orders.sell_asset_type_id = sell_asset_type.id AND
         orders.owner_id = owner.id";
 
 const SELECT_ALL_ACTIVE: &'static str = "
     SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        orders.id AS order_id
     FROM asset_order orders,
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type,
          account_owner owner 
     WHERE 
         (orders.status = 'active' OR orders.status = 'settling') AND
-        orders.buy_asset_type_id = buy_asset_type.id AND
-        orders.sell_asset_type_id = sell_asset_type.id AND
         orders.owner_id = owner.id AND
         now() at time zone 'utc' < orders.expires_at";
 
 const SELECT_BY_ID: &'static str = "
     SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        orders.id AS order_id
     FROM asset_order orders,
-         account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
+         account_owner owners
     WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND
           orders.id = $1";
 
 const UPDATE_BY_ID: &'static str = "
@@ -200,33 +182,21 @@ const UPDATE_BY_UID: &'static str = "
 
 const SELECT_BY_UID: &'static str = "SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code,  
+        orders.id AS order_id
     FROM asset_order orders,
-         account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
+         account_owner owners
     WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND
           orders.unique_id = $1";
 
-const PLACE_ORDER: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7, $8, $9);";
+const PLACE_ORDER: &'static str = "SELECT place_order($1, $2, $3, $4, $5, $6, $7);";
 
 const SELECT_BY_EMAIL: &'static str = "SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        orders.id AS order_id
     FROM asset_order orders,
          account_owner owners, 
          users users, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
     WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND 
           users.id = owners.user_id AND
           users.email_address = $1";
 
@@ -234,13 +204,9 @@ const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT
         *, 
         orders.id AS order_id, 
         settlements.id as settlement_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
     FROM asset_order orders,
          asset_order cp_order,
          account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type,
          order_settlement settlements
     WHERE 
         order_settlement.buying_crypto_id = orders.id OR 

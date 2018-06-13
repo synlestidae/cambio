@@ -53,9 +53,9 @@ impl TryFromRow for Transaction {
             "journal_entry_id",
         )));
 
-        let asset_type_match: Option<AssetType> = row.get("asset_code");
+        let asset_type_match: Option<AssetType> = row.get("asset_type");
         let asset_type: AssetType = try!(
-            asset_type_match.ok_or(TryFromRowError::missing_field("Transaction", "asset_code"))
+            asset_type_match.ok_or(TryFromRowError::missing_field("Transaction", "asset_type"))
         );
         let credit_match: Option<i64> = row.get("credit");
         let debit_match: Option<i64> = row.get("debit");

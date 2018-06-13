@@ -18,4 +18,6 @@ BEGIN
     VALUES(admin_owner, 'nzd_cent', 'asset', 'accounting_concept', 'system') RETURNING id INTO poli_account;
             
     INSERT INTO vendor(name, intake_account) VALUES('Poli', poli_account);
+
+    INSERT INTO accounting_period(from_date, to_date) VALUES ('2018-01-01', '2018-03-31');
 END $$

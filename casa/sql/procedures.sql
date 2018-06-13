@@ -12,7 +12,6 @@ CREATE OR REPLACE FUNCTION transfer_asset(
 RETURNS VOID AS $$
 DECLARE 
 correspondence_id INTEGER;
-asset_type_id INTEGER;
 account_period_id INTEGER;
 last_debit_account_balance INT8;
 last_credit_account_balance INT8;
@@ -62,8 +61,8 @@ BEGIN
     correspondence_id := nextval('correspondence_id_seq');
     INSERT INTO journal(accounting_period, account_id, asset_type, correspondence_id, debit, credit, balance, authorship_id)
     VALUES 
-    (account_period_id, debit_account, asset_type_id, correspondence_id, units, null, last_debit_account_balance - units, authorship_id), 
-    (account_period_id, credit_account, asset_type_id, correspondence_id, null, units, last_credit_account_balance + units, authorship_id);
+    (account_period_id, debit_account, asset_type_var, correspondence_id, units, null, last_debit_account_balance - units, authorship_id), 
+    (account_period_id, credit_account, asset_type_var, correspondence_id, null, units, last_credit_account_balance + units, authorship_id);
 
 END;
 $$ LANGUAGE plpgsql;

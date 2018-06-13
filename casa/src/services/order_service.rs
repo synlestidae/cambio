@@ -113,21 +113,15 @@ const INSERT_NEW_ORDER_SQL: &'static str =
 
 const SELECT_ORDER_UNIQUE_ID_SQL: &'static str = "SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code,  
+        orders.id AS order_id
     FROM asset_order orders,
-         account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
+         account_owner owners
     WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND
           owners.id = $1 AND
           orders.unique_id = $2";
 
 const SELECT_ORDER_BY_ID_SQL: &'static str = "
-    SELECT *, orders.id AS order_id, 
+    SELECT *, orders.id AS order_id
     FROM asset_order orders,
          account_owner owners
     WHERE orders.owner_id = owners.id AND
@@ -138,42 +132,28 @@ const UPDATE_ORDERS_EXPIRED_SQL: &'static str = "UPDATE asset_orders SET status 
 
 const SELECT_ALL_ACTIVE_ORDERS_SQL: &'static str = "SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        orders.id AS order_id
     FROM asset_order orders,
          account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
     WHERE orders.status = 'active' AND orders.expires_at >= (now() at time zone 'utc');";
 
 const SELECT_ALL_ACTIVE_ORDERS_BY_USER_SQL: &'static str = "SELECT 
         *, 
-        orders.id AS order_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        orders.id AS order_id
     FROM asset_order orders,
          account_owner owners, 
          users users, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type
     WHERE orders.owner_id = owners.id AND
-          buy_asset_type.id = orders.buy_asset_type_id AND
-          sell_asset_type.id = orders.sell_asset_type_id AND 
           users.id = owners.user_id AND
           users.email_address = $1";
 
 const SELECT_ORDERS_IN_SETTLEMENT_SQL: &'static str = "SELECT 
         *, 
         orders.id AS order_id, 
-        settlements.id as settlement_id, 
-        sell_asset_type.asset_code AS sell_asset_code,  
-        buy_asset_type.asset_code AS buy_asset_code
+        settlements.id as settlement_id
     FROM asset_order orders,
          asset_order cp_order,
          account_owner owners, 
-         asset_type buy_asset_type, 
-         asset_type sell_asset_type,
          order_settlement settlements
     WHERE 
         order_settlement.buying_crypto_id = orders.id OR 

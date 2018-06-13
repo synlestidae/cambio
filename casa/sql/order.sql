@@ -172,7 +172,7 @@ BEGIN
 
     -- do the transfer here
     PERFORM transfer_asset(
-        asset_code_var := asset_type_var, 
+        asset_type_var := fiat_account.asset_type, 
         account_period_start := accounting_period_start_var, 
         account_period_end := accounting_period_end_var, 
         debit_account := fiat_account,

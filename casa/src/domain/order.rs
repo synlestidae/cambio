@@ -17,10 +17,8 @@ pub struct Order {
     pub id: Option<OrderId>,
     pub owner_id: OwnerId,
     pub unique_id: String,
-    #[column_id(sell_asset_code)]
     pub sell_asset_type: AssetType,
     pub sell_asset_units: i64,
-    #[column_id(buy_asset_code)]
     pub buy_asset_type: AssetType,
     pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,

@@ -11,10 +11,8 @@ fn creates_all_accounts_for_user() {
     let user = domain::User::new_register("jerry@waller.fm", "jerryjacksonfilms".to_owned());
     let mut user_repo = UserRepository::new(get_db_helper());
     let mut account_repo = AccountRepository::new(get_db_helper());
-    println!("Wake and bake!");
     user_repo.create(&user).unwrap();
 
-    println!("Read and weep!");
     // get the account collection
     let accounts = account_repo
         .read(&repository::UserClause::EmailAddress(
@@ -22,21 +20,18 @@ fn creates_all_accounts_for_user() {
         ))
         .unwrap();
     let accounts = domain::AccountSet::from(accounts).unwrap();
-    println!("Pop a squat!");
     let wallet = account_repo
         .read(&repository::UserClause::Id(accounts.nzd_wallet()))
         .unwrap()
         .pop()
         .unwrap();
 
-    println!("Wallet and grommit!");
     let wallet = account_repo
         .read(&repository::UserClause::Id(accounts.nzd_wallet()))
         .unwrap()
         .pop()
         .unwrap();
 
-    println!("HODL!");
     let hold = account_repo
         .read(&repository::UserClause::Id(accounts.nzd_hold()))
         .unwrap()

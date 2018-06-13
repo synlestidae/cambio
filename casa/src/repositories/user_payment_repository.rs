@@ -120,9 +120,9 @@ const SELECT_USER_PAYMENT: &'static str = "
     SELECT 
         user_payment.id, 
         user_payment.unique_id,
-        asset_type.asset_code as asset_type, 
         user_payment.datetime_payment_made, 
         user_payment.payment_method, 
+        user_payment.asset_type,
         vendor.name as vendor, 
         user_payment.units as user_credit
     FROM user_payment 
@@ -131,13 +131,14 @@ const SELECT_USER_PAYMENT: &'static str = "
 ";
 
 const CALL_CREDIT_ACCOUNT_PROCEDURE: &'static str =
-    "SELECT credit_account_from_payment(user_id_var := $1, 
+    "SELECT credit_account_from_payment(
+        user_id_var := $1, 
         email_address_var := $2, 
         credited_account_id := $3, 
         asset_type_var := $4, 
-        vendor_name := $6, 
-        payment_method_var := $7, 
-        datetime_payment_made_var := $8, 
-        unique_id := $9, 
-        units := $10,
-        message_var := $11)";
+        vendor_name := $5, 
+        payment_method_var := $6, 
+        datetime_payment_made_var := $7, 
+        unique_id := $8, 
+        units := $9,
+        message_var := $10)";
