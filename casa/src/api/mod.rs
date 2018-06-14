@@ -16,6 +16,7 @@ mod profile;
 mod registration;
 mod session_token_source;
 mod settlement_api_impl;
+mod settlement_api_init;
 mod settlement_api_trait;
 mod settlement_eth_credentials;
 mod total_api_init;

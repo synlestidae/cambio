@@ -2,6 +2,7 @@ use api::account_api_init::AccountApiInit;
 use api::api_init::ApiInit;
 use api::order_api_init::OrderApiInit;
 use api::payment_api_init::PaymentApiInit;
+use api::settlement_api_init::SettlementApiInit;
 use api::user_api_init::UserApiInit;
 use db::PostgresHelper;
 use router::Router;

@@ -35,6 +35,7 @@ rlp = "0.2.1"
 secp256k1 = "0.8.1"
 byteorder = "1.2.1"
 threadpool = "1.7.1"
+tokio-postgres = "0.3.0"
 
 [dependencies.params]
 git = "https://github.com/iron/params.git"
