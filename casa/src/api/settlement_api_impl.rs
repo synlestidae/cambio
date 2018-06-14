@@ -9,7 +9,7 @@ use repositories;
 use db::TryFromRow;
 use repository::RepoUpdate;
 use query::Selectable;
-use repository::Retrievable;
+use repository::Readable;
 use services;
 use web3::types::U256;
 

@@ -5,7 +5,7 @@ use domain::OrderSettlement;
 use domain::OrderSettlementId;
 use domain;
 use jobs::JobRequest;
-use repository::Retrievable;
+use repository::Readable;
 use repository;
 use repositories::SettlementRepository;
 use services::EthereumService;

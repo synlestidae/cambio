@@ -8,7 +8,7 @@ use postgres;
 use postgres::rows::Row;
 use rand;
 use repositories::UserRepository;
-use repository::Retrievable;
+use repository::Readable;
 use std;
 use web3::types::U256;
 
@@ -110,7 +110,7 @@ impl TryFromRow for Order {
     }
 }
 
-/*impl Retrievable<User> for Order {
+/*impl Readable<User> for Order {
     fn get<H: PostgresHelper>(&self, db: H) -> Result<User, CambioError> {
         match self.get_option(db) {
             Ok(Some(user)) => Ok(user),

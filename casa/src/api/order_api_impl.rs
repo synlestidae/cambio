@@ -8,7 +8,7 @@ use iron;
 use repositories;
 use repository;
 use repository::RepoRead;
-use repository::Retrievable;
+use repository::Readable;
 use serde_json;
 use services;
 

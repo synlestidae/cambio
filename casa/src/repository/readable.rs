@@ -12,7 +12,7 @@ use repository::UserClause;
 
 // suppose I just want an easy way to retrieve the owner id from the user
 // then i implement retrievable where the Item is a User, the c
-pub trait Retrievable<Item> {
+pub trait Readable<Item> {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<Item>, CambioError>;
     fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<Item, CambioError> {
         match self.get_option(db) {
@@ -30,7 +30,7 @@ pub trait Retrievable<Item> {
     }
 }
 
-impl Retrievable<domain::User> for domain::UserId {
+impl Readable<domain::User> for domain::UserId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
         const SELECT_BY_ID: &'static str = "
             SELECT *, users.id as user_id, account_owner.id as owner_id
@@ -42,7 +42,7 @@ impl Retrievable<domain::User> for domain::UserId {
     }
 }
 
-impl Retrievable<domain::Order> for domain::OrderId {
+impl Readable<domain::Order> for domain::OrderId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {
         const SELECT_BY_ID: &'static str = "
             SELECT 
@@ -64,7 +64,7 @@ impl Retrievable<domain::Order> for domain::OrderId {
     }
 }
 
-impl Retrievable<domain::Session> for domain::SessionToken {
+impl Readable<domain::Session> for domain::SessionToken {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Session>, CambioError> {
         const SELECT_BY_TOKEN: &'static str = "
             SELECT user_session.id AS session_id, session_info.*, users.email_address, users.id as user_id
@@ -77,7 +77,7 @@ impl Retrievable<domain::Session> for domain::SessionToken {
     }
 }
 
-impl Retrievable<domain::User> for domain::OwnerId {
+impl Readable<domain::User> for domain::OwnerId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::User>, CambioError> {
         const SELECT_BY_OWNER: &'static str = "
             SELECT *, users.id as user_id, account_owner.id as owner_id
@@ -88,7 +88,7 @@ impl Retrievable<domain::User> for domain::OwnerId {
     }
 }
 
-impl Retrievable<domain::EthAccount> for domain::OwnerId {
+impl Readable<domain::EthAccount> for domain::OwnerId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::EthAccount>, CambioError> {
         const SELECT_BY_OWNER: &'static str = "
             SELECT *
@@ -98,7 +98,7 @@ impl Retrievable<domain::EthAccount> for domain::OwnerId {
     }
 }
 
-impl<E> Retrievable<E> for Selectable<E> where E: TryFromRow {
+impl<E> Readable<E> for Selectable<E> where E: TryFromRow {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<E>, CambioError> {
         let sql = self.get_specifier().get_sql_query();
         db.query(&sql, &[])
@@ -116,7 +116,7 @@ struct SettlementRow {
     pub selling_crypto_id: domain::OrderId,
 }
 
-impl Retrievable<domain::OrderSettlement> for domain::OrderSettlementId {
+impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::OrderSettlement>, CambioError> {
         unimplemented!()
     }
