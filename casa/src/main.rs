@@ -69,7 +69,6 @@ use postgres::{Connection, TlsMode};
 use router::Router;
 use std::error::Error;
 use time::PreciseTime;
-//use iron_cors::CorsMiddleware;
 
 fn main() {
     use std::collections::HashSet;
@@ -79,7 +78,7 @@ fn main() {
     allowed.insert("http://localhost".to_owned());
     allowed.insert("http://127.0.0.1".to_owned());
     allowed.insert("http://127.0.0.1:8080".to_owned());
-    let middleware = CorsMiddleware {}; //CorsMiddleware::with_whitelist(allowed);
+    let middleware = CorsMiddleware {};
     let helper =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let mut router = Router::new();

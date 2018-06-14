@@ -12,10 +12,13 @@ use query::Selectable;
 use repository::Readable;
 use services;
 use web3::types::U256;
+use std::sync::mpsc::Sender;
+use jobs::JobRequest;
 
 pub struct SettlementApiImpl<C: PostgresHelper> {
     db: C,
     eth_address: String,
+    job_tx: Sender<JobRequest>
 }
 
 impl<C: PostgresHelper> SettlementApiTrait for SettlementApiImpl<C> {
@@ -59,32 +62,7 @@ impl<C: PostgresHelper> SettlementApiTrait for SettlementApiImpl<C> {
             return api::ApiError::not_found("Settlement").into();
         }
 
-        // now user is authorised to bring this settlement to the next stage
-        let mut settlement_service =
-            services::SettlementService::new(self.db.clone(), &self.eth_address);
-        let mut settlement_repo = repositories::SettlementRepository::new(self.db.clone());
-        settlement.settlement_status = domain::SettlementStatus::WaitingEth;
-        settlement_repo.update(&settlement);
-
-        // now settlement is marked as waiting on ethereum - we MUST do it now
-        // TODO test that the ethereum connection is okay first
-        let max_cost_wei = U256([0, 0, 0, 854800000000000]);
-        let eth_tx = settlement_service
-            .begin_eth_transfer(
-                settlement.id.unwrap(),
-                &credentials.unique_id,
-                credentials.password,
-                max_cost_wei,
-            )
-            .unwrap();
-
-        // sweet! update that settlement now
-        settlement.settlement_status = domain::SettlementStatus::Settled;
-        settlement_repo.update(&settlement);
-
-        //let settlement = self.settlement_repo
-        // check order owner is user
-        api::utils::to_response(Ok(settlement))
+        iron::response::Response::with((iron::status::Status::Ok, format!("")))
     }
 
     fn get_settlement_status(&mut self, request: &mut iron::Request) -> iron::Response {

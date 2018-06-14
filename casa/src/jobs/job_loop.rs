@@ -5,7 +5,7 @@ use domain::OrderSettlement;
 use domain::OrderSettlementId;
 use domain;
 use jobs::JobRequest;
-use repository::Readable;
+use repository::{Readable, Updateable};
 use repository;
 use repositories::SettlementRepository;
 use services::EthereumService;
@@ -49,7 +49,10 @@ impl<H: PostgresHelper> JobLoop<H> {
     fn handle_job_req(&mut self, job_req: JobRequest) {
         match job_req {
             JobRequest::BeginSettlement(settlement, password) => {
-                self.begin_settlement(settlement, password).unwrap();
+                match self.begin_settlement(settlement, password) {
+                    Ok(_) => info!("Successful settlement!"),
+                    Err(err) => warn!("Bad settlement! {:?}", err),
+                }
             }
         }
     }
@@ -64,6 +67,7 @@ impl<H: PostgresHelper> JobLoop<H> {
             ));
         }
         settlement.settlement_status = domain::SettlementStatus::WaitingEth;
+        try!(settlement.update(&mut self.db_helper));
         let src_account: domain::EthAccount = 
             try!(settlement.selling_order.owner_id.get(&mut self.db_helper));
         let dst_account: domain::EthAccount = 
@@ -116,6 +120,8 @@ impl<H: PostgresHelper> JobLoop<H> {
                 settlement.settlement_status = domain::SettlementStatus::EthFailed;
             }
         }
+
+        try!(settlement.update(&mut self.db_helper));
 
         /*let source_account = try!(self.get_eth_account(&settlement.selling_order));
         let dest_account = try!(self.get_eth_account(&settlement.buying_order));
