@@ -33,6 +33,7 @@ CREATE TABLE asset_order (
     buy_asset_type ASSET_TYPE NOT NULL,
     status order_status NOT NULL DEFAULT 'active',
     expires_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
+    max_wei_cost BYTEA,
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
 );
 

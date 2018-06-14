@@ -12,6 +12,7 @@ use rand::{OsRng, Rng};
 use std;
 use std::iter;
 use web3::types::{H160, Transaction, U256};
+use postgres::rows::Row;
 
 const BCRYPT_COST: u32 = 8;
 
@@ -21,6 +22,28 @@ pub struct EthAccount {
     pub address: H160,
     pub password_hash_bcrypt: String,
     pub owner_id: OwnerId,
+}
+
+#[derive(TryFromRow)]
+pub struct EthAccountRow {
+    pub id: Option<Id>,
+    pub address: Vec<u8>,
+    pub password_hash_bcrypt: String,
+    pub owner_id: OwnerId,
+}
+
+impl TryFromRow for EthAccount {
+    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        let eth: EthAccountRow = try!(EthAccountRow::try_from_row(row));
+        let mut bytes: [u8; 20] = [0; 20];
+        bytes.copy_from_slice(&eth.address);
+        Ok(EthAccount {
+            id: eth.id,
+            address: H160(bytes),
+            password_hash_bcrypt: eth.password_hash_bcrypt,
+            owner_id: eth.owner_id
+        })
+    }
 }
 
 impl EthAccount {

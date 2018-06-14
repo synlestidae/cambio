@@ -5,6 +5,7 @@ use domain::{Id, Order, OrderStatus, AssetType};
 use repositories;
 use repository;
 use repository::*;
+use web3::types::U256;
 
 #[derive(Clone)]
 pub struct OrderService<T: PostgresHelper> {
@@ -32,6 +33,7 @@ impl<T: PostgresHelper> OrderService<T> {
         sell_currency: AssetType,
         buy_units: u64,
         buy_currency: AssetType,
+        wei_cost: Option<U256>
     ) -> Result<Order, CambioError> {
         let user_clause = repository::UserClause::EmailAddress(email.to_owned());
         let user = try!(self.user_repo.read(&user_clause)).pop();
@@ -54,6 +56,7 @@ impl<T: PostgresHelper> OrderService<T> {
             buy_asset_type: buy_currency,
             expires_at: self.get_order_expiry(),
             status: OrderStatus::Active,
+            max_wei: unimplemented!()
         };
         self.order_repo.create(&order)
     }

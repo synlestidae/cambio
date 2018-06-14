@@ -41,12 +41,14 @@ extern crate rand;
 extern crate rlp;
 extern crate secp256k1;
 extern crate web3;
+extern crate threadpool;
 
 mod api;
-mod query;
 mod cors_middleware;
 mod db;
 mod domain;
+mod jobs;
+mod query;
 mod repositories;
 mod repository;
 mod services;

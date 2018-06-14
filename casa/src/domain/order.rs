@@ -10,8 +10,9 @@ use rand;
 use repositories::UserRepository;
 use repository::Retrievable;
 use std;
+use web3::types::U256;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, TryFromRow)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Order {
     #[column_id(order_id)]
     pub id: Option<OrderId>,
@@ -23,6 +24,7 @@ pub struct Order {
     pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
     pub status: OrderStatus,
+    pub max_wei: Option<U256>
 }
 
 impl Order {
@@ -40,6 +42,7 @@ impl Order {
             buy_asset_type: domain::AssetType::ETH,
             expires_at: expiry,
             status: domain::OrderStatus::Active,
+            max_wei: None
         }
     }
 
@@ -57,6 +60,7 @@ impl Order {
             buy_asset_type: domain::AssetType::NZD,
             expires_at: expiry,
             status: domain::OrderStatus::Active,
+            max_wei: None
         }
     }
 
@@ -74,6 +78,35 @@ impl Order {
 
     pub fn is_active(&self) -> bool {
         !self.is_expired() && self.status == domain::OrderStatus::Active
+    }
+}
+
+
+#[derive(TryFromRow)]
+struct OrderRow {
+    #[column_id(order_id)]
+    pub id: Option<OrderId>,
+    pub owner_id: OwnerId,
+    pub unique_id: String,
+    pub sell_asset_type: AssetType,
+    pub sell_asset_units: i64,
+    pub buy_asset_type: AssetType,
+    pub buy_asset_units: i64,
+    pub expires_at: DateTime<Utc>,
+    pub status: OrderStatus,
+    pub max_wei: Option<Vec<u8>>
+}
+
+impl TryFromRow for Order {
+    fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
+        let order_row: OrderRow = try!(OrderRow::try_from_row(row));
+        let wei: Option<U256> = order_row.max_wei
+            .map(|w| {
+                let mut array: [u8; 32] = [0; 32];
+                array.copy_from_slice(&w);
+                U256::from(array)
+            });    
+        unimplemented!()
     }
 }
 

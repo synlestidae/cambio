@@ -88,6 +88,16 @@ impl Retrievable<domain::User> for domain::OwnerId {
     }
 }
 
+impl Retrievable<domain::EthAccount> for domain::OwnerId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::EthAccount>, CambioError> {
+        const SELECT_BY_OWNER: &'static str = "
+            SELECT *
+            FROM ethereum_account_details
+            WHERE owner_id = $1";
+        db.query(SELECT_BY_OWNER, &[self])
+    }
+}
+
 impl<E> Retrievable<E> for Selectable<E> where E: TryFromRow {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<E>, CambioError> {
         let sql = self.get_specifier().get_sql_query();

@@ -69,6 +69,7 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
             order.sell_asset_type,
             order.buy_asset_units as u64,
             order.buy_asset_type,
+            order.max_wei
         );
 
         match order_result {
@@ -156,6 +157,10 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
             Ok(None) => return unauth_resp.into(),
             Err(err) => return err.into(),
         };
+        if order.sell_asset_type.is_crypto() && order.max_wei.is_none() {
+            const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
+            return api::ApiError::missing_field_or_param(WEI_MSG).into();
+        }
         match self.create_order(order, &email_address) {
             Ok(order) => utils::to_response(Ok(order)),
             Err(err_resp) => return err_resp,

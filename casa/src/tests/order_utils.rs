@@ -134,5 +134,4 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
         let error = String::from_utf8(output.stderr).unwrap();
         panic!("Failed to credit account. Program error.\n{}", error); //: '{}'\nError below: \n {}", stdout_str, stderr_str);// output: {}\n", err_str);
     }
-    panic!("I don't feel like doing this anymore");
 }
