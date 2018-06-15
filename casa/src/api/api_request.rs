@@ -31,6 +31,13 @@ impl ApiRequest {
             ApiRequest::Settlement(..)=> Method::Post,
         }
     }
+
+    pub fn requires_auth(&self) -> bool {
+        match self {
+            ApiRequest::User(_) => false,
+            _ => true
+        }
+    }
 }
 
 impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
