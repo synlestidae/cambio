@@ -24,25 +24,31 @@ pub enum ApiRequest {
     GetActiveOrders,
     GetUserOrders, 
     PostNewOrder(api::OrderRequest),
-    PostBuyOrder(api::OrderBuy)
+    PostBuyOrder(api::OrderBuy),
+    // Settlement
+    PostSettlementEthAuth(api::SettlementEthCredentials),
+    GetSettlementStatus
+
 }
 
 impl ApiRequest {
     fn get_method(&self) -> Method {
         match self {
             // Users
-            ApiRequest::Register(_) => Method::Post, 
-            ApiRequest::LogIn(_) => Method::Post, 
+            ApiRequest::Register(..) => Method::Post, 
+            ApiRequest::LogIn(..) => Method::Post, 
             // Accounts
             ApiRequest::GetAccounts => Method::Get,
-            ApiRequest::GetAccount(_) => Method::Get,
-            ApiRequest::GetAccountTransactions(_) => Method::Get,
+            ApiRequest::GetAccount(..) => Method::Get,
+            ApiRequest::GetAccountTransactions(..) => Method::Get,
             ApiRequest::GetAccountTransaction(..) => Method::Get,
             // Orders
             ApiRequest::GetActiveOrders => Method::Get,
             ApiRequest::GetUserOrders => Method::Get, 
-            ApiRequest::PostNewOrder(_) => Method::Post,
-            ApiRequest::PostBuyOrder(_) => Method::Post
+            ApiRequest::PostNewOrder(..) => Method::Post,
+            ApiRequest::PostBuyOrder(..) => Method::Post,
+            ApiRequest::PostSettlementEthAuth(..) => Method::Post,
+            ApiRequest::GetSettlementStatus => Method::Post
         }
     }
 }

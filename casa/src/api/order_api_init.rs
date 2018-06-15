@@ -24,7 +24,7 @@ where
     T: 'static,
 {
     fn init_api(&mut self, router: &mut Router) {
-        let active_orders_helper: Arc<T> = Arc::new(self.helper.clone());
+        /*let active_orders_helper: Arc<T> = Arc::new(self.helper.clone());
         let my_orders_helper: Arc<T> = Arc::new(self.helper.clone());
         let new_order_helper: Arc<T> = Arc::new(self.helper.clone());
         let buy_order_helper: Arc<T> = Arc::new(self.helper.clone());
@@ -67,6 +67,6 @@ where
                 Ok(api.post_buy_order(r))
             },
             "post_buy_order",
-        );
+        );*/
     }
 }

@@ -59,7 +59,7 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
 
     fn create_order(
         &mut self,
-        order: api::OrderRequest,
+        order: &api::OrderRequest,
         email_address: &str,
     ) -> Result<domain::Order, iron::Response> {
         let order_result = self.order_service.place_order(
@@ -102,21 +102,7 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
 }
 
 impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
-    fn get_active_orders(&mut self, request: &iron::Request) -> iron::Response {
-        let unauth_response = api::ApiError::unauthorised().into();
-        let session_token = utils::get_session_token(request).unwrap();
-        let session_clause = repository::UserClause::SessionToken(session_token);
-        let session_result = self.session_repo.read(&session_clause);
-
-        let session = match session_result.map(|mut s| s.pop()) {
-            Ok(Some(session)) => session,
-            Ok(None) => return unauth_response,
-            Err(err) => return api::ApiError::from(err).into(),
-        };
-
-        if !session.is_valid() {
-            return unauth_response;
-        }
+    fn get_active_orders(&mut self) -> iron::Response {
         let order_clause = repository::UserClause::All(false);
         let order_result = self.order_repo.read(&order_clause);
         match order_result {
@@ -125,55 +111,28 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
         }
     }
 
-    fn get_user_orders(&mut self, request: &iron::Request) -> iron::Response {
-        let session_token = match utils::get_session_token(request) {
-            Some(s) => s,
-            None => {
-                let unauth_err = Err(db::CambioError::unauthorised());
-                return utils::to_response::<domain::Order>(unauth_err);
-            }
-        };
-        let clause = repository::UserClause::SessionToken(session_token.to_owned());
-        let email_address = match self.session_repo.read(&clause).map(|mut s| s.pop()) {
-            Ok(Some(s)) => s.email_address.unwrap(),
-            Ok(None) => return api::ApiError::unauthorised().into(),
-            Err(err) => return api::ApiError::from(err).into(),
-        };
-        let order_clause = repository::UserClause::EmailAddress(email_address);
+    fn get_user_orders(&mut self, user: &domain::User) -> iron::Response {
+        let order_clause = repository::UserClause::EmailAddress(user.email_address.clone());
         match self.order_repo.read(&order_clause) {
             Ok(orders) => utils::to_response(Ok(orders)),
             Err(err) => api::ApiError::from(err).into(),
         }
     }
 
-    fn post_new_order(&mut self, request: &mut iron::Request) -> iron::Response {
+    fn post_new_order(&mut self, user: &domain::User, order: &api::OrderRequest) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
-        let order: api::OrderRequest = match api::get_api_obj(request) {
-            Ok(obj) => obj,
-            Err(response) => return response,
-        };
-        let email_address = match self.get_session(request).map(|s| s.email_address) {
-            Ok(Some(e)) => e,
-            Ok(None) => return unauth_resp.into(),
-            Err(err) => return err.into(),
-        };
         if order.sell_asset_type.is_crypto() && order.max_wei.is_none() {
             const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
             return api::ApiError::missing_field_or_param(WEI_MSG).into();
         }
-        match self.create_order(order, &email_address) {
+        match self.create_order(&order, &user.email_address) {
             Ok(order) => utils::to_response(Ok(order)),
             Err(err_resp) => return err_resp,
         }
     }
 
-    fn post_buy_order(&mut self, request: &mut iron::Request) -> iron::Response {
-        let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
-        let order: api::OrderBuy = match api::get_api_obj(request) {
-            Ok(obj) => obj,
-            Err(response) => return response,
-        };
-
+    fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
+        let email_address = &user.email_address;
         // locate the target order
         let order_clause = repository::UserClause::Id(order.order_id);
         let read_result = self.order_repo.read(&order_clause);
@@ -204,13 +163,7 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
             return api::ApiError::from(unfair_err).into();
         }
 
-        // create and save a corresponding order
-        let session = match self.get_session(request) {
-            Ok(s) => s,
-            Err(err) => return err.into(),
-        };
-        let email_address = session.email_address.unwrap();
-        let our_order = match self.create_order(order.order_request, &email_address) {
+        let our_order = match self.create_order(&order.order_request, &email_address) {
             Ok(o) => o,
             Err(resp) => return resp,
         };
@@ -219,10 +172,10 @@ impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
         let settlement_result = if target_order.buy_asset_type.is_crypto() {
             // target_order is the buying order
             self.settlement_service
-                .create_settlement(session.user_id, &target_order, &our_order)
+                .create_settlement(user.id.unwrap(), &target_order, &our_order)
         } else {
             self.settlement_service
-                .create_settlement(session.user_id, &our_order, &target_order)
+                .create_settlement(user.id.unwrap(), &our_order, &target_order)
         };
 
         // generate the receipt

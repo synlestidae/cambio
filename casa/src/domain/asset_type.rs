@@ -1,7 +1,7 @@
 use db::{TryFromRow, TryFromRowError};
 use postgres::rows::Row;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, FromSql, ToSql)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq, FromSql, ToSql)]
 #[postgres(name = "asset_type")]
 pub enum AssetType {
     #[postgres(name = "nzd_cent")]
