@@ -15,7 +15,6 @@ extern crate params;
 extern crate postgres;
 #[macro_use]
 extern crate postgres_derive;
-extern crate router;
 extern crate serde;
 extern crate serde_json;
 extern crate time;
@@ -56,7 +55,6 @@ mod services;
 mod tests;
 
 use api::ApiError;
-use api::ApiInit;
 use bcrypt::{hash, verify, DEFAULT_COST};
 use cors_middleware::CorsMiddleware;
 use db::{PostgresHelper, PostgresHelperImpl};
@@ -67,7 +65,6 @@ use iron::status;
 use iron::{AfterMiddleware, Iron, IronResult, Request, Response};
 use persistent::Read;
 use postgres::{Connection, TlsMode};
-use router::Router;
 use std::error::Error;
 use time::PreciseTime;
 
@@ -80,13 +77,10 @@ fn main() {
     allowed.insert("http://127.0.0.1".to_owned());
     allowed.insert("http://127.0.0.1:8080".to_owned());
     let middleware = CorsMiddleware {};
-    let helper =
+    let db =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
-    let mut router = Router::new();
-    let mut api_init = api::TotalApiInit::new(helper, "http://localhost:8081");
-    api_init.init_api(&mut router);
-    let mut chain = iron::Chain::new(router);
-    debug!("Booting up HTTP server");
+    let api_handler = api::ApiHandler::new(db);
+    let mut chain = iron::Chain::new(api_handler);
     chain.link_around(middleware);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
 }
