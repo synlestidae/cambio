@@ -9,6 +9,8 @@ use iron::headers::SetCookie;
 use iron::{Request, Response};
 use serde_json;
 use services::UserService;
+use domain;
+use api;
 
 #[derive(Clone)]
 pub struct UserApi<C: PostgresHelper> {
@@ -24,13 +26,8 @@ impl<C: PostgresHelper> UserApi<C> {
 }
 
 impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
-    fn put_register(&mut self, request: &mut Request) -> Response {
+    fn put_register(&mut self, registration: &api::Registration) -> Response {
         debug!("Parsing request body");
-        let registration: Registration = match get_api_obj(request) {
-            Ok(obj) => obj,
-            Err(response) => return response,
-        };
-
         // test password requirements
         if registration.password.len() < 8 {
             return ApiError::bad_format("Password needs to be at least 8 characters").into();
@@ -40,7 +37,7 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
 
         let register_result = self
             .user_service
-            .register_user(&registration.email_address, registration.password);
+            .register_user(&registration.email_address, registration.password.clone());
 
         const GENERIC_FAIL_MSG: &str = "Failed to register user";
 
@@ -61,14 +58,10 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
         }
     }
 
-    fn post_log_in(&mut self, request: &mut Request) -> Response {
-        let log_in: LogIn = match get_api_obj(request) {
-            Ok(obj) => obj,
-            Err(response) => return response,
-        };
+    fn post_log_in(&mut self, login: &api::LogIn) -> Response {
         let log_in_result = self
             .user_service
-            .log_user_in(&log_in.email_address, log_in.password);
+            .log_user_in(&login.email_address, login.password.clone());
 
         match log_in_result {
             Ok(result) => {
@@ -93,12 +86,7 @@ impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
         }
     }
 
-    fn get_profile(&mut self, request: &mut Request) -> Response {
-        let user: User = match get_api_obj(request) {
-            Ok(obj) => obj,
-            Err(response) => return response,
-        };
-
+    fn get_profile(&mut self, user: &User) -> Response {
         unimplemented!()
     }
 }

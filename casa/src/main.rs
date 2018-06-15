@@ -71,6 +71,7 @@ use time::PreciseTime;
 fn main() {
     use std::collections::HashSet;
     use web3::futures::Future;
+    const WEB3_ADDRESS: &'static str = "http://localhost:8081";
     env_logger::init().expect("Could not start logger");
     let mut allowed = HashSet::new();
     allowed.insert("http://localhost".to_owned());
@@ -79,7 +80,7 @@ fn main() {
     let middleware = CorsMiddleware {};
     let db =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
-    let api_handler = api::ApiHandler::new(db);
+    let api_handler = api::ApiHandler::new(db, WEB3_ADDRESS);
     let mut chain = iron::Chain::new(api_handler);
     chain.link_around(middleware);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
