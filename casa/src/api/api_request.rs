@@ -53,19 +53,19 @@ impl ApiRequest {
     }
 }
 
-impl<'a, 'b> TryFrom<Request<'a, 'b>> for ApiRequest {
+impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
     type Error = api::ApiError;
-    fn try_from(mut request: Request<'a, 'b>) -> Result<Self, Self::Error> {
+    fn try_from(request: &mut Request<'a, 'b>) -> Result<Self, Self::Error> {
         let url = request.url.clone();
         let path = url.path();
         let request_obj = match path.as_slice() {
-            &["users", "register"] => ApiRequest::Register(try!(get_api_obj(&mut request))),
-            &["users", "log_in"] => ApiRequest::LogIn(try!(get_api_obj(&mut request))),
+            &["users", "register"] => ApiRequest::Register(try!(get_api_obj(request))),
+            &["users", "log_in"] => ApiRequest::LogIn(try!(get_api_obj(request))),
             &["orders", "active"] => ApiRequest::GetActiveOrders,
             &["orders", "me"] => ApiRequest::GetUserOrders,
-            &["orders", "new"] => ApiRequest::PostNewOrder(try!(get_api_obj(&mut request))),
-            &["orders", "buy"] => ApiRequest::PostBuyOrder(try!(get_api_obj(&mut request))),
-            _ => unimplemented!()
+            &["orders", "new"] => ApiRequest::PostNewOrder(try!(get_api_obj(request))),
+            &["orders", "buy"] => ApiRequest::PostBuyOrder(try!(get_api_obj(request))),
+            _ => return Err(api::ApiError::not_found_path(&path.into_iter().collect::<Vec<_>>().join("/")))
         };
         let expected_method = request_obj.get_method();
         if  expected_method == request.method {

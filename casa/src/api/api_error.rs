@@ -87,6 +87,10 @@ impl ApiError {
         Self::new(format!("{} not found.", object_name), ErrorType::NotFound)
     }
 
+    pub fn not_found_path(path: &str) -> Self {
+        Self::new(format!("The API path '{}' does not exist.", path), ErrorType::NotFound)
+    }
+
     pub fn unauthorised() -> Self {
         Self::new(
             format!("Please log in to access this."),
