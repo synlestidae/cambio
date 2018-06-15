@@ -1,6 +1,10 @@
 mod account_api_impl;
 mod account_api_trait;
 mod api_error;
+mod user_request;
+mod account_request;
+mod order_api_request;
+mod settlement_request;
 mod api_handler;
 mod api_request;
 mod api_result;
@@ -21,6 +25,10 @@ mod user_api_trait;
 mod utils;
 
 pub use self::api_request::ApiRequest;
+pub use self::user_request::UserRequest;
+pub use self::account_request::AccountRequest;
+pub use self::order_api_request::OrderApiRequest;
+pub use self::settlement_request::SettlementRequest;
 pub use self::account_api_impl::*;
 pub use self::account_api_trait::*;
 pub use self::api_error::*;
