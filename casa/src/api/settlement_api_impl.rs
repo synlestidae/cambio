@@ -17,8 +17,17 @@ use jobs::JobRequest;
 
 pub struct SettlementApiImpl<C: PostgresHelper> {
     db: C,
-    eth_address: String,
     job_tx: Sender<JobRequest>
+}
+
+impl<H: PostgresHelper> SettlementApiImpl<H> {
+    pub fn new(db: H, job_tx: Sender<JobRequest>) -> Self {
+        Self {
+            db: db,
+            job_tx: job_tx
+        }
+    }
+
 }
 
 impl<C: PostgresHelper> SettlementApiTrait for SettlementApiImpl<C> {
