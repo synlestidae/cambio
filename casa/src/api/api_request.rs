@@ -10,45 +10,25 @@ use serde_json;
 use iron::prelude::*;
 use std::error::Error;
 use hyper::method::Method;
+use api::{UserRequest, OrderApiRequest, AccountRequest, SettlementRequest};
 
 pub enum ApiRequest {
-    // Users
-    Register(api::Registration), 
-    LogIn(api::LogIn), 
-    // Accounts
-    GetAccounts,
-    GetAccount(domain::AccountId),
-    GetAccountTransactions(domain::AccountId),
-    GetAccountTransaction(domain::AccountId, domain::TransactionId),
-    // Orders
-    GetActiveOrders,
-    GetUserOrders, 
-    PostNewOrder(api::OrderRequest),
-    PostBuyOrder(api::OrderBuy),
-    // Settlement
-    PostSettlementEthAuth(api::SettlementEthCredentials),
-    GetSettlementStatus
-
+    User(UserRequest),
+    Order(OrderApiRequest),
+    Account(AccountRequest),
+    Settlement(SettlementRequest),
 }
 
 impl ApiRequest {
     fn get_method(&self) -> Method {
         match self {
-            // Users
-            ApiRequest::Register(..) => Method::Post, 
-            ApiRequest::LogIn(..) => Method::Post, 
-            // Accounts
-            ApiRequest::GetAccounts => Method::Get,
-            ApiRequest::GetAccount(..) => Method::Get,
-            ApiRequest::GetAccountTransactions(..) => Method::Get,
-            ApiRequest::GetAccountTransaction(..) => Method::Get,
-            // Orders
-            ApiRequest::GetActiveOrders => Method::Get,
-            ApiRequest::GetUserOrders => Method::Get, 
-            ApiRequest::PostNewOrder(..) => Method::Post,
-            ApiRequest::PostBuyOrder(..) => Method::Post,
-            ApiRequest::PostSettlementEthAuth(..) => Method::Post,
-            ApiRequest::GetSettlementStatus => Method::Post
+            ApiRequest::User(..) => Method::Post,
+            ApiRequest::Account(..) => Method::Get,
+            ApiRequest::Order(OrderApiRequest::GetActiveOrders) => Method::Get,
+            ApiRequest::Order(OrderApiRequest::GetUserOrders) => Method::Get, 
+            ApiRequest::Order(OrderApiRequest::PostNewOrder(..)) => Method::Post,
+            ApiRequest::Order(OrderApiRequest::PostBuyOrder(..)) => Method::Post,
+            ApiRequest::Settlement(..)=> Method::Post,
         }
     }
 }
@@ -59,12 +39,12 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
         let url = request.url.clone();
         let path = url.path();
         let request_obj = match path.as_slice() {
-            &["users", "register"] => ApiRequest::Register(try!(get_api_obj(request))),
-            &["users", "log_in"] => ApiRequest::LogIn(try!(get_api_obj(request))),
-            &["orders", "active"] => ApiRequest::GetActiveOrders,
-            &["orders", "me"] => ApiRequest::GetUserOrders,
-            &["orders", "new"] => ApiRequest::PostNewOrder(try!(get_api_obj(request))),
-            &["orders", "buy"] => ApiRequest::PostBuyOrder(try!(get_api_obj(request))),
+            &["users", "register"] => ApiRequest::User(UserRequest::Register(try!(get_api_obj(request)))),
+            &["users", "log_in"] => ApiRequest::User(UserRequest::LogIn(try!(get_api_obj(request)))),
+            &["orders", "active"] => ApiRequest::Order(OrderApiRequest::GetActiveOrders),
+            &["orders", "me"] => ApiRequest::Order(OrderApiRequest::GetUserOrders),
+            &["orders", "new"] => ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request)))),
+            &["orders", "buy"] => ApiRequest::Order(OrderApiRequest::PostBuyOrder(try!(get_api_obj(request)))),
             _ => return Err(api::ApiError::not_found_path(&path.into_iter().collect::<Vec<_>>().join("/")))
         };
         let expected_method = request_obj.get_method();

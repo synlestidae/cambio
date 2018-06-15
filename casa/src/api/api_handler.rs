@@ -25,7 +25,7 @@ impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
             Err(err) => return Ok(err.into())
         };
 
-        match api_request {
+        /*match api_request {
             // Users
             ApiRequest::Register(..) => unimplemented!(),
             ApiRequest::LogIn(..) => unimplemented!(),
@@ -41,6 +41,7 @@ impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
             ApiRequest::PostBuyOrder(..) => unimplemented!(),
             ApiRequest::PostSettlementEthAuth(..) => unimplemented!(),
             ApiRequest::GetSettlementStatus => unimplemented!(),
-        }
+        }*/
+        unimplemented!()
     }
 }
