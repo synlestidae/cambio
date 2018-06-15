@@ -8,6 +8,7 @@ use serde_json;
 use std::convert::{From, Into};
 use std::error::Error;
 use std::fmt;
+use hyper::method::Method;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiError {
@@ -60,6 +61,12 @@ impl ApiError {
         Self::new(description.to_owned(), ErrorType::BadFormat)
     }
 
+    pub fn bad_method(supported_method: Method) -> Self {
+        let msg = format!("Incorrect HTTP method for this resource. Supported method is {}", 
+            supported_method);
+        Self::new(msg, ErrorType::BadMethod)
+    }
+
     pub fn missing_field_or_param(description: &str) -> Self {
         Self::new(description.to_owned(), ErrorType::MissingFieldOrParam)
     }
@@ -109,32 +116,34 @@ impl Into<Response> for ApiError {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum ErrorType {
-    DatabaseDriver,
-    NotLoggedIn,
-    InvalidLogin,
-    Unauthorised,
-    NotFound,
     BadFormat,
-    MissingFieldOrParam,
-    QueryResultFormat,
+    BadMethod,
+    DatabaseDriver,
     InternalError,
+    InvalidLogin,
+    MissingFieldOrParam,
+    NotFound,
+    NotLoggedIn,
+    QueryResultFormat,
+    Unauthorised,
     Unknown,
 }
 
 impl Into<Status> for ErrorType {
     fn into(self) -> Status {
         match self {
-            ErrorType::DatabaseDriver => Status::InternalServerError,
-            ErrorType::NotLoggedIn => Status::Unauthorized,
-            ErrorType::InvalidLogin => Status::Unauthorized,
             ErrorType::BadFormat => Status::BadRequest,
-            ErrorType::MissingFieldOrParam => Status::BadRequest,
-            ErrorType::QueryResultFormat => Status::InternalServerError,
+            ErrorType::BadMethod=> Status::MethodNotAllowed,
+            ErrorType::DatabaseDriver => Status::InternalServerError,
             ErrorType::InternalError => Status::InternalServerError,
-            ErrorType::Unknown => Status::InternalServerError,
-            ErrorType::Unauthorised => Status::Unauthorized,
-            ErrorType::NotLoggedIn => Status::Unauthorized,
+            ErrorType::InvalidLogin => Status::Unauthorized,
+            ErrorType::MissingFieldOrParam => Status::BadRequest,
             ErrorType::NotFound => Status::NotFound,
+            ErrorType::NotLoggedIn => Status::Unauthorized,
+            ErrorType::NotLoggedIn => Status::Unauthorized,
+            ErrorType::QueryResultFormat => Status::InternalServerError,
+            ErrorType::Unauthorised => Status::Unauthorized,
+            ErrorType::Unknown => Status::InternalServerError,
         }
     }
 }

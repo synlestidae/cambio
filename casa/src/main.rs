@@ -1,4 +1,5 @@
 #![feature(custom_attribute)]
+#![feature(try_from)]
 
 extern crate bcrypt;
 extern crate bodyparser;

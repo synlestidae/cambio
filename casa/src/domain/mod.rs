@@ -1,4 +1,5 @@
 mod account;
+mod account_id;
 mod account_business_type;
 mod account_role;
 mod account_set;
@@ -37,11 +38,13 @@ mod settlement_status;
 mod storage_location;
 mod stored_media;
 mod transaction;
+mod transaction_id;
 mod unique_id;
 mod user;
 mod user_id;
 mod user_payment;
 
+pub use self::account_id::AccountId;
 pub use self::account::Account;
 pub use self::account_business_type::AccountBusinessType;
 pub use self::account_role::AccountRole;
@@ -81,6 +84,7 @@ pub use self::settlement_status::*;
 pub use self::storage_location::StorageLocation;
 pub use self::stored_media::StoredMedia;
 pub use self::transaction::Transaction;
+pub use self::transaction_id::TransactionId;
 pub use self::unique_id::UniqueId;
 pub use self::user::User;
 pub use self::user_id::UserId;

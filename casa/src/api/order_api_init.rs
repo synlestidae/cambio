@@ -50,7 +50,7 @@ where
         );
 
         router.post(
-            "/orders/new_order",
+            "/orders/new",
             move |r: &mut Request| {
                 let this_helper_ref: &T = new_order_helper.borrow();
                 let mut api: OrderApiImpl<T> = OrderApiImpl::new(this_helper_ref.clone());

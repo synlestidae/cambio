@@ -3,6 +3,7 @@ mod account_api_init;
 mod account_api_trait;
 mod api_error;
 mod api_init;
+mod api_request;
 mod api_result;
 mod api_utils;
 mod log_in;
@@ -25,6 +26,7 @@ mod user_api_init;
 mod user_api_trait;
 mod utils;
 
+pub use self::api_request::ApiRequest;
 pub use self::account_api_impl::*;
 pub use self::account_api_init::*;
 pub use self::account_api_trait::*;
