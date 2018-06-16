@@ -6,15 +6,20 @@ use domain::{OwnerId, UserId};
 use postgres::rows::Row;
 use std;
 
+use serde::ser::{Serialize, Serializer, SerializeMap};
+
 const BCRYPT_COST: u32 = 8;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct User {
     #[column_id(user_id)]
     pub id: Option<UserId>,
     pub email_address: String,
+    #[serde(default)]
     pub password: Option<String>,
+    #[serde(default)]
     pub password_hash: Option<String>,
+    #[serde(default)]
     pub owner_id: Option<OwnerId>,
 }
 
@@ -77,3 +82,18 @@ impl TryFromRow for User {
         }
     }
 }
+
+// This is what #[derive(Serialize)] would generate.
+impl Serialize for User {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        let mut s = serializer.serialize_map(Some(2))?;
+        s.serialize_key("email_address")?;
+        s.serialize_value(&self.email_address)?;
+        s.serialize_key("id")?;
+        s.serialize_value(&self.id);
+        s.end()
+    }
+}
+
