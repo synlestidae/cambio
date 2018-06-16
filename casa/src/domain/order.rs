@@ -106,7 +106,18 @@ impl TryFromRow for Order {
                 array.copy_from_slice(&w);
                 U256::from(array)
             });    
-        unimplemented!()
+        Ok(Order {
+            id: order_row.id,
+            owner_id: order_row.owner_id,
+            unique_id: order_row.unique_id,
+            sell_asset_type: order_row.sell_asset_type,
+            sell_asset_units: order_row.sell_asset_units,
+            buy_asset_type: order_row.buy_asset_type,
+            buy_asset_units: order_row.buy_asset_units,
+            expires_at: order_row.expires_at,
+            status: order_row.status,
+            max_wei: wei
+        })
     }
 }
 

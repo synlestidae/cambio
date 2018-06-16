@@ -8,6 +8,7 @@ extern crate chrono;
 extern crate env_logger;
 extern crate hyper;
 extern crate iron;
+extern crate iron_test;
 #[macro_use]
 extern crate log;
 extern crate params;
