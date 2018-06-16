@@ -6,7 +6,7 @@ use iron::middleware::Handler;
 use iron::IronResult;
 use api::ApiRequest;
 use std::convert::TryFrom;
-use api::{ UserApiTrait, UserApi, SessionTokenSource, UserRequest, OrderApiRequest, OrderApiImpl, OrderApiTrait};
+use api::{UserApiTrait, UserApi, SessionTokenSource, UserRequest, OrderApiRequest, OrderApiImpl, OrderApiTrait, AccountRequest, AccountApiImpl};
 use repository::Readable;
 
 pub struct ApiHandler<T: db::PostgresHelper> {
@@ -26,27 +26,29 @@ impl<T: db::PostgresHelper + 'static> ApiHandler<T> {
 impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
     fn handle<'a, 'b>(&self, request: &mut Request<'a, 'b>) -> IronResult<Response> {
         let mut db = self.db.clone();
+        let fake_user = domain::User { 
+            id: None, 
+            email_address: "".to_owned(),
+            password: None,
+            password_hash: None,
+            owner_id: None
+        };
         let user: domain::User = match request.get_session_token() {
             Some(token) => {
-                match token.get(&mut db) {
-                    Ok(user) => {
+                match token.get_option(&mut db) {
+                    Ok(Some(user)) => {
                         match user.user_id.get(&mut db) {
                             Ok(user) => user,
                             Err(err) => return Ok(err.into())
                         }
                     },
+                    Ok(None) => fake_user,
                     Err(err) => return Ok(err.into())
                 }
             },
             None => {
+                fake_user
                 // just make a fake user that will never get used
-                domain::User { 
-                    id: None, 
-                    email_address: "".to_owned(),
-                    password: None,
-                    password_hash: None,
-                    owner_id: None
-                }
             }
         };
         let api_request_result: Result<ApiRequest, _> = TryFrom::try_from(request);
@@ -54,7 +56,6 @@ impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
             Ok(r) => r,
             Err(err) => return Ok(err.into())
         };
-
         if api_request.requires_auth() && user.id.is_none() {
             return Ok(api::ApiError::unauthorised().into())
         }
@@ -67,7 +68,7 @@ impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
                 }
             },
             ApiRequest::Order(order_request) => {
-                let mut order_api = OrderApiImpl::new(db.clone()); 
+                let mut order_api = OrderApiImpl::new(db); 
                 match order_request {
                     OrderApiRequest::GetActiveOrders => order_api.get_active_orders(),
                     OrderApiRequest::GetUserOrders => order_api.get_user_orders(&user), 
@@ -75,7 +76,15 @@ impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
                     OrderApiRequest::PostBuyOrder(order_buy) => order_api.post_buy_order(&user, &order_buy),
                 }
             },
-            ApiRequest::Account(..) => unimplemented!(),
+            ApiRequest::Account(account_request) => {
+                let mut account_api = AccountApiImpl::new(db); 
+                match account_request {
+                    AccountRequest::GetAccounts => unimplemented!(),
+                    AccountRequest::GetAccount(account_id)=> unimplemented!(),
+                    AccountRequest::GetAccountTransactions(account_id)=> unimplemented!(),
+                    AccountRequest::GetAccountTransaction(account_id, transaction_id)=> unimplemented!(),
+                }
+            },
             ApiRequest::Settlement(..) => unimplemented!(),
         };
 

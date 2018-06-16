@@ -1,6 +1,6 @@
 use domain::{OrderId, OrderSettlementId};
 
-#[derive(Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct SettlementEthCredentials {
     pub password: String,
     pub settlement_id: OrderSettlementId,

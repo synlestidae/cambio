@@ -1,5 +1,6 @@
 use domain;
 
+#[derive(Debug)]
 pub enum AccountRequest {
     GetAccounts,
     GetAccount(domain::AccountId),

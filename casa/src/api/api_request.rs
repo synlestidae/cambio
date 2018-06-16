@@ -12,6 +12,7 @@ use std::error::Error;
 use hyper::method::Method;
 use api::{UserRequest, OrderApiRequest, AccountRequest, SettlementRequest};
 
+#[derive(Debug)]
 pub enum ApiRequest {
     User(UserRequest),
     Order(OrderApiRequest),
@@ -44,7 +45,11 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
     type Error = api::ApiError;
     fn try_from(request: &mut Request<'a, 'b>) -> Result<Self, Self::Error> {
         let url = request.url.clone();
-        let path = url.path();
+        let mut path = url.path();
+        if path.len() > 0 && path[path.len() - 1] == "" {
+            drop(path.pop());
+        }
+        println!("PAF {:?}", path);
         let request_obj = match path.as_slice() {
             &["users", "register"] => ApiRequest::User(UserRequest::Register(try!(get_api_obj(request)))),
             &["users", "log_in"] => ApiRequest::User(UserRequest::LogIn(try!(get_api_obj(request)))),
@@ -52,6 +57,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["orders", "me"] => ApiRequest::Order(OrderApiRequest::GetUserOrders),
             &["orders", "new"] => ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request)))),
             &["orders", "buy"] => ApiRequest::Order(OrderApiRequest::PostBuyOrder(try!(get_api_obj(request)))),
+            &["accounts"] => ApiRequest::Account(AccountRequest::GetAccounts),
             _ => return Err(api::ApiError::not_found_path(&path.into_iter().collect::<Vec<_>>().join("/")))
         };
         let expected_method = request_obj.get_method();
