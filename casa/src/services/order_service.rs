@@ -8,7 +8,7 @@ use repository::*;
 use web3::types::U256;
 
 #[derive(Clone)]
-pub struct OrderService<T: PostgresHelper> {
+pub struct OrderService<T: PostgresHelper + Clone> {
     user_repo: repositories::UserRepository<T>,
     order_repo: repositories::OrderRepository<T>,
     account_repo: repositories::AccountRepository<T>,
@@ -16,7 +16,7 @@ pub struct OrderService<T: PostgresHelper> {
 
 const ORDER_TIME_MINUTES: i64 = 10;
 
-impl<T: PostgresHelper> OrderService<T> {
+impl<T: PostgresHelper + Clone> OrderService<T> {
     pub fn new(db_helper: T) -> Self {
         Self {
             user_repo: repositories::UserRepository::new(db_helper.clone()),

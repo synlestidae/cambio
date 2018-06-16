@@ -8,8 +8,7 @@ use repository::*;
 use services;
 use std::error::Error;
 
-#[derive(Clone)]
-pub struct UserService<T: PostgresHelper> {
+pub struct UserService<T: PostgresHelper + Clone> {
     user_repository: repositories::UserRepository<T>,
     session_repository: repositories::SessionRepository<T>,
     eth_service: services::EthereumService<T>,
@@ -18,7 +17,7 @@ pub struct UserService<T: PostgresHelper> {
 
 const BCRYPT_COST: u32 = 8;
 
-impl<T: PostgresHelper> UserService<T> {
+impl<T: PostgresHelper + Clone> UserService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
         let users = repositories::UserRepository::new(db_helper.clone());
         let sessions = repositories::SessionRepository::new(db_helper.clone());

@@ -10,12 +10,12 @@ use repository;
 use repository::{RepoCreate, RepoRead, RepoUpdate};
 
 #[derive(Clone)]
-pub struct SettlementRepository<T: db::PostgresHelper> {
+pub struct SettlementRepository<T: db::PostgresHelper + Clone> {
     order_repository: OrderRepository<T>,
     db_helper: T,
 }
 
-impl<T: db::PostgresHelper> SettlementRepository<T> {
+impl<T: db::PostgresHelper + Clone> SettlementRepository<T> {
     pub fn new(db: T) -> Self {
         Self {
             order_repository: OrderRepository::new(db.clone()),
@@ -50,7 +50,7 @@ impl<T: db::PostgresHelper> SettlementRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoRead for SettlementRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoRead for SettlementRepository<T> {
     type Item = domain::OrderSettlement;
     type Clause = repository::UserClause;
 
@@ -78,7 +78,7 @@ impl<T: db::PostgresHelper> repository::RepoRead for SettlementRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoCreate for SettlementRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoCreate for SettlementRepository<T> {
     type Item = domain::OrderSettlement;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
@@ -105,7 +105,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for SettlementRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoUpdate for SettlementRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoUpdate for SettlementRepository<T> {
     type Item = domain::OrderSettlement;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
@@ -129,7 +129,7 @@ impl<T: db::PostgresHelper> repository::RepoUpdate for SettlementRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoDelete for SettlementRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoDelete for SettlementRepository<T> {
     type Item = domain::OrderSettlement;
 
     fn delete(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {

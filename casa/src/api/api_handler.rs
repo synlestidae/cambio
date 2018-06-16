@@ -23,7 +23,7 @@ impl<T: db::PostgresHelper + 'static> ApiHandler<T> {
     }
 }
 
-impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
+impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandler<T> {
     fn handle<'a, 'b>(&self, request: &mut Request<'a, 'b>) -> IronResult<Response> {
         let mut db = self.db.clone();
         let fake_user = domain::User { 

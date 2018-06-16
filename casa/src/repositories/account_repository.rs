@@ -5,12 +5,12 @@ use repository;
 use repository::*;
 
 #[derive(Clone)]
-pub struct AccountRepository<T: db::PostgresHelper> {
+pub struct AccountRepository<T: db::PostgresHelper + Clone> {
     user_repository: UserRepository<T>,
     db_helper: T,
 }
 
-impl<T: db::PostgresHelper> AccountRepository<T> {
+impl<T: db::PostgresHelper + Clone> AccountRepository<T> {
     pub fn new(db: T) -> Self {
         AccountRepository {
             user_repository: UserRepository::new(db.clone()),
@@ -19,7 +19,7 @@ impl<T: db::PostgresHelper> AccountRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoRead for AccountRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoRead for AccountRepository<T> {
     type Item = domain::Account;
     type Clause = repository::UserClause;
 
@@ -45,7 +45,7 @@ impl<T: db::PostgresHelper> repository::RepoRead for AccountRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoCreate for AccountRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoCreate for AccountRepository<T> {
     type Item = domain::Account;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {
@@ -92,7 +92,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for AccountRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> repository::RepoUpdate for AccountRepository<T> {
+impl<T: db::PostgresHelper + Clone> repository::RepoUpdate for AccountRepository<T> {
     type Item = domain::Account;
 
     fn update(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {

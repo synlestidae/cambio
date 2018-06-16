@@ -6,12 +6,12 @@ use repository::*;
 use std::error::Error;
 
 #[derive(Clone)]
-pub struct AccountService<T: PostgresHelper> {
+pub struct AccountService<T: PostgresHelper + Clone> {
     account_repo: repositories::AccountRepository<T>,
     db_helper: T,
 }
 
-impl<T: PostgresHelper> AccountService<T> {
+impl<T: PostgresHelper + Clone> AccountService<T> {
     pub fn new(db_helper: T) -> AccountService<T> {
         AccountService {
             db_helper: db_helper.clone(),

@@ -12,7 +12,7 @@ use repository::Readable;
 use serde_json;
 use services;
 
-pub struct OrderApiImpl<C: PostgresHelper> {
+pub struct OrderApiImpl<C: PostgresHelper + Clone> {
     order_repo: repositories::OrderRepository<C>,
     order_service: services::OrderService<C>,
     settlement_service: services::SettlementService<C>,
@@ -21,7 +21,7 @@ pub struct OrderApiImpl<C: PostgresHelper> {
     db_helper: C,
 }
 
-impl<C: PostgresHelper> OrderApiImpl<C> {
+impl<C: PostgresHelper + Clone> OrderApiImpl<C> {
     pub fn new(db_helper: C) -> Self {
         let eth_path = "http://localhost:303030";
         let settlement_service = services::SettlementService::new(db_helper.clone(), eth_path);
@@ -101,7 +101,7 @@ impl<C: PostgresHelper> OrderApiImpl<C> {
     }
 }
 
-impl<C: PostgresHelper> api::OrderApiTrait for api::OrderApiImpl<C> {
+impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
     fn get_active_orders(&mut self) -> iron::Response {
         let order_clause = repository::UserClause::All(false);
         let order_result = self.order_repo.read(&order_clause);

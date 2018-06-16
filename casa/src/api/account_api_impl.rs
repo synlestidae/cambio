@@ -17,7 +17,7 @@ use services::AccountService;
 use repository::Readable;
 
 #[derive(Clone)]
-pub struct AccountApiImpl<C: PostgresHelper> {
+pub struct AccountApiImpl<C: PostgresHelper + Clone> {
     account_repo: AccountRepository<C>,
     account_service: AccountService<C>,
     session_repo: SessionRepository<C>,
@@ -25,7 +25,7 @@ pub struct AccountApiImpl<C: PostgresHelper> {
     db: C,
 }
 
-impl<C: PostgresHelper> AccountApiImpl<C> {
+impl<C: PostgresHelper + Clone> AccountApiImpl<C> {
     pub fn new(helper: C) -> Self {
         Self {
             account_repo: AccountRepository::new(helper.clone()),
@@ -108,7 +108,7 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
     }
 }
 
-impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
+impl<C: PostgresHelper + Clone> AccountApiTrait for AccountApiImpl<C> {
     fn get_accounts(&mut self, user: &User) -> iron::Response {
         let email_clause = repository::UserClause::EmailAddress(user.email_address.clone());
         let accounts = match self.account_repo.read(&email_clause) {

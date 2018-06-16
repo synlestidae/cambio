@@ -7,7 +7,7 @@ use repository::*;
 use services;
 use web3::types::U256;
 
-pub struct SettlementService<T: db::PostgresHelper> {
+pub struct SettlementService<T: db::PostgresHelper + Clone> {
     settlement_repo: repositories::SettlementRepository<T>,
     eth_service: services::EthereumService<T>,
     user_repo: repositories::UserRepository<T>,
@@ -16,7 +16,7 @@ pub struct SettlementService<T: db::PostgresHelper> {
 
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
 
-impl<T: db::PostgresHelper> SettlementService<T> {
+impl<T: db::PostgresHelper + Clone> SettlementService<T> {
     pub fn new(db_helper: T, eth_address: &str) -> Self {
         Self {
             settlement_repo: repositories::SettlementRepository::new(db_helper.clone()),

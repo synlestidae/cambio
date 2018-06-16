@@ -15,7 +15,7 @@ use std::sync::mpsc::{Sender, Receiver};
 use threadpool::ThreadPool;
 use web3::types::U256;
 
-pub struct JobLoop<H: PostgresHelper> {
+pub struct JobLoop<H: PostgresHelper + Clone> {
     db_helper: H,
     eth_service: EthereumService<H>,
     threads: ThreadPool,
@@ -24,7 +24,7 @@ pub struct JobLoop<H: PostgresHelper> {
 
 const NUM_JOBS: usize = 10;
 
-impl<H: PostgresHelper> JobLoop<H> {
+impl<H: PostgresHelper + Clone> JobLoop<H> {
     pub fn new(db: H, web3_address: &str) -> (Self, Sender<JobRequest>) {
         let (tx, rx) = channel();
         let threadpool = ThreadPool::new(NUM_JOBS);

@@ -1,5 +1,5 @@
 use db::try_from_row::TryFromRow;
-use db::{CambioError, ConnectionSource, PostgresSource};
+use db::{CambioError, ConnectionSource, PostgresHelper, PostgresSource, PostgresTransactionHelper, Transaction, TransactionSource};
 use postgres;
 use postgres::rows::Rows;
 use postgres::types::ToSql;
@@ -11,20 +11,13 @@ use std::fmt;
 use std::marker::{Send, Sync};
 use web3;
 
-pub trait PostgresHelper: Send + Sync + Clone {
-    fn query<T: TryFromRow>(
-        &mut self,
-        query: &str,
-        params: &[&ToSql],
-    ) -> Result<Vec<T>, CambioError>;
-    fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, CambioError>;
-    fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, CambioError>;
-}
-
 #[derive(Clone)]
 pub struct PostgresHelperImpl {
     conn_source: PostgresSource,
 }
+
+unsafe impl Send for PostgresHelperImpl {}
+unsafe impl Sync for PostgresHelperImpl {}
 
 impl PostgresHelperImpl {
     pub fn new(conn_source: PostgresSource) -> Self {
@@ -66,5 +59,13 @@ impl PostgresHelper for PostgresHelperImpl {
         let conn = try!(self.conn_source.get());
         let result = try!(conn.execute(query, params));
         Ok(result)
+    }
+}
+
+impl<'a> TransactionSource<'a, PostgresTransactionHelper<'a>> for PostgresHelperImpl {
+    fn begin_transaction(&'a mut self) -> Result<PostgresTransactionHelper<'a>, CambioError> {
+        let connection = try!(self.conn_source.get());
+        let tx = try!(connection.transaction());
+        Ok(PostgresTransactionHelper::new(tx))
     }
 }

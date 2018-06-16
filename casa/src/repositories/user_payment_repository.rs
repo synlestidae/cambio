@@ -8,14 +8,14 @@ use repository::*;
 use services;
 
 #[derive(Clone)]
-pub struct UserPaymentRepository<T: db::PostgresHelper> {
+pub struct UserPaymentRepository<T: db::PostgresHelper + Clone> {
     user_repository: repositories::UserRepository<T>,
     account_service: services::AccountService<T>,
     account_repo: repositories::AccountRepository<T>,
     db_helper: T,
 }
 
-impl<T: db::PostgresHelper> UserPaymentRepository<T> {
+impl<T: db::PostgresHelper + Clone> UserPaymentRepository<T> {
     pub fn new(db: T) -> Self {
         UserPaymentRepository {
             user_repository: repositories::UserRepository::new(db.clone()),
@@ -96,7 +96,7 @@ impl<T: db::PostgresHelper> UserPaymentRepository<T> {
     }
 }
 
-impl<T: db::PostgresHelper> RepoCreate for UserPaymentRepository<T> {
+impl<T: db::PostgresHelper + Clone> RepoCreate for UserPaymentRepository<T> {
     type Item = domain::UserPayment;
 
     fn create(&mut self, item: &Self::Item) -> repository::ItemResult<Self::Item> {

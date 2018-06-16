@@ -14,12 +14,12 @@ use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
 
 #[derive(Clone)]
-pub struct EthereumService<T: PostgresHelper> {
+pub struct EthereumService<T: PostgresHelper + Clone> {
     db_helper: T,
     user_repo: repositories::UserRepository<T>,
     web3_address: String,
 }
-impl<T: PostgresHelper> EthereumService<T> {
+impl<T: PostgresHelper + Clone> EthereumService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
         let user_repo = repositories::UserRepository::new(db_helper.clone());
         Self {

@@ -12,12 +12,11 @@ use services::UserService;
 use domain;
 use api;
 
-#[derive(Clone)]
-pub struct UserApi<C: PostgresHelper> {
+pub struct UserApi<C: PostgresHelper + Clone> {
     user_service: UserService<C>,
 }
 
-impl<C: PostgresHelper> UserApi<C> {
+impl<C: PostgresHelper + Clone> UserApi<C> {
     pub fn new(helper: C, web3_address: &str) -> Self {
         Self {
             user_service: UserService::new(helper, web3_address),
@@ -25,7 +24,7 @@ impl<C: PostgresHelper> UserApi<C> {
     }
 }
 
-impl<C: PostgresHelper> UserApiTrait for UserApi<C> {
+impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
     fn put_register(&mut self, registration: &api::Registration) -> Response {
         // test password requirements
         if registration.password.len() < 8 {
