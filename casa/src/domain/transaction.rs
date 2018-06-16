@@ -2,12 +2,12 @@ use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
 use db::TryFromRow;
 use db::TryFromRowError;
-use domain::{AssetType, BusinessEnds, Id};
+use domain::{AssetType, BusinessEnds, Id, TransactionId};
 use postgres::rows::Row;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Transaction {
-    pub id: Id,
+    pub id: TransactionId,
     pub from_account: Id,
     pub to_account: Id,
     pub asset_type: AssetType,
@@ -47,8 +47,8 @@ impl Transaction {
 
 impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
-        let transaction_id_match: Option<Id> = row.get("journal_entry_id");
-        let transaction_id: Id = try!(transaction_id_match.ok_or(TryFromRowError::missing_field(
+        let transaction_id_match: Option<TransactionId> = row.get("journal_entry_id");
+        let transaction_id: TransactionId = try!(transaction_id_match.ok_or(TryFromRowError::missing_field(
             "Transaction",
             "journal_entry_id",
         )));

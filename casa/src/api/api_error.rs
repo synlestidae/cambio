@@ -9,6 +9,7 @@ use std::convert::{From, Into};
 use std::error::Error;
 use std::fmt;
 use hyper::method::Method;
+use serde_json::Error as SerdeError;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiError {
@@ -155,5 +156,11 @@ impl Into<Status> for ErrorType {
 impl From<CambioError> for ApiError {
     fn from(err: CambioError) -> Self {
         ApiError::cambio_error("An error occurred.".to_owned(), ErrorType::Unknown, err)
+    }
+}
+
+impl From<SerdeError> for ApiError {
+    fn from(err: SerdeError) -> Self {
+        ApiError::bad_format(err.description())
     }
 }

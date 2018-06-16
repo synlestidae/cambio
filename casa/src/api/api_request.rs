@@ -49,7 +49,6 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
         if path.len() > 0 && path[path.len() - 1] == "" {
             drop(path.pop());
         }
-        println!("PAF {:?}", path);
         let request_obj = match path.as_slice() {
             &["users", "register"] => ApiRequest::User(UserRequest::Register(try!(get_api_obj(request)))),
             &["users", "log_in"] => ApiRequest::User(UserRequest::LogIn(try!(get_api_obj(request)))),
@@ -58,6 +57,11 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["orders", "new"] => ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request)))),
             &["orders", "buy"] => ApiRequest::Order(OrderApiRequest::PostBuyOrder(try!(get_api_obj(request)))),
             &["accounts"] => ApiRequest::Account(AccountRequest::GetAccounts),
+            &["account", id] => ApiRequest::Account(AccountRequest::GetAccount(try!(serde_json::from_str(id)))),
+            &["accounts", id, "transactions"] => {
+                let tx_req = AccountRequest::GetAccountTransactions(try!(serde_json::from_str(id)));
+                ApiRequest::Account(tx_req)
+            }
             _ => return Err(api::ApiError::not_found_path(&path.into_iter().collect::<Vec<_>>().join("/")))
         };
         let expected_method = request_obj.get_method();

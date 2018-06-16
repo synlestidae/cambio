@@ -11,7 +11,6 @@ pub struct Account {
     pub id: Option<Id>,
     #[column_id(owner_id)]
     pub owner_user_id: Option<OwnerId>,
-    #[column_id(account_asset_type)]
     pub asset_type: AssetType,
     pub account_status: AccountStatus,
     pub account_type: AccountType,

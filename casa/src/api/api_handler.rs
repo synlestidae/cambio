@@ -6,7 +6,7 @@ use iron::middleware::Handler;
 use iron::IronResult;
 use api::ApiRequest;
 use std::convert::TryFrom;
-use api::{UserApiTrait, UserApi, SessionTokenSource, UserRequest, OrderApiRequest, OrderApiImpl, OrderApiTrait, AccountRequest, AccountApiImpl};
+use api::{UserApiTrait, UserApi, SessionTokenSource, UserRequest, OrderApiRequest, OrderApiImpl, OrderApiTrait, AccountRequest, AccountApiImpl, AccountApiTrait};
 use repository::Readable;
 
 pub struct ApiHandler<T: db::PostgresHelper> {
@@ -79,10 +79,14 @@ impl<T: db::PostgresHelper + 'static> Handler for ApiHandler<T> {
             ApiRequest::Account(account_request) => {
                 let mut account_api = AccountApiImpl::new(db); 
                 match account_request {
-                    AccountRequest::GetAccounts => unimplemented!(),
-                    AccountRequest::GetAccount(account_id)=> unimplemented!(),
-                    AccountRequest::GetAccountTransactions(account_id)=> unimplemented!(),
-                    AccountRequest::GetAccountTransaction(account_id, transaction_id)=> unimplemented!(),
+                    AccountRequest::GetAccounts => account_api.get_accounts(&user),
+                    AccountRequest::GetAccount(account_id) => account_api.get_account(&user, account_id),
+                    AccountRequest::GetAccountTransactions(account_id) => {
+                        account_api.get_transactions(&user, account_id)
+                    },
+                    AccountRequest::GetAccountTransaction(account_id, transaction_id) => {
+                        account_api.get_transaction(&user, account_id, transaction_id)
+                    },
                 }
             },
             ApiRequest::Settlement(..) => unimplemented!(),

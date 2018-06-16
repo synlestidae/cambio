@@ -1,7 +1,7 @@
 use api::utils::{get_session_token, to_response};
 use api::{AccountApiTrait, ApiError, ApiResult, ErrorType};
 use db::{CambioError, ConnectionSource, PostgresHelper};
-use domain::{Account, AccountStatement, Id, OwnerId, Session, Transaction};
+use domain::{Account, AccountStatement, Id, OwnerId, Session, Transaction, User, AccountId, TransactionId};
 use hyper::mime::Mime;
 use iron;
 use iron::headers::{Authorization, Bearer, Cookie};
@@ -14,6 +14,7 @@ use repository::RepoRead;
 use serde::Serialize;
 use serde_json;
 use services::AccountService;
+use repository::Readable;
 
 #[derive(Clone)]
 pub struct AccountApiImpl<C: PostgresHelper> {
@@ -21,6 +22,7 @@ pub struct AccountApiImpl<C: PostgresHelper> {
     account_service: AccountService<C>,
     session_repo: SessionRepository<C>,
     user_repo: UserRepository<C>,
+    db: C,
 }
 
 impl<C: PostgresHelper> AccountApiImpl<C> {
@@ -29,18 +31,20 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
             account_repo: AccountRepository::new(helper.clone()),
             account_service: AccountService::new(helper.clone()),
             session_repo: SessionRepository::new(helper.clone()),
-            user_repo: UserRepository::new(helper),
+            user_repo: UserRepository::new(helper.clone()),
+            db: helper
         }
     }
 
-    fn get_statement(&mut self, request: &Request) -> Result<AccountStatement, iron::Response> {
-        let account_id = get_param(request, 1).unwrap();
-        let session_token = get_session_token(request).unwrap();
-        let account = self._get_account(request).unwrap();
-        if let Err(err) = self.check_owner(account.owner_user_id.unwrap(), &session_token) {
-            return Err(err.into());
+    fn get_statement(&mut self, user: &User, account_id: AccountId) -> Result<AccountStatement, iron::Response> {
+        let account = match account_id.get(&mut self.db) {
+            Ok(a) => a,
+            Err(err) => return Err(err.into())
+        };
+        if user.owner_id != account.owner_user_id {
+            return Err(ApiError::not_found("Account").into());
         }
-        match self.account_service.get_latest_statement(account_id) {
+        match self.account_service.get_latest_statement(Id(account_id.0)) {
             Ok(s) => Ok(s),
             err => Err(to_response(err)),
         }
@@ -105,12 +109,8 @@ impl<C: PostgresHelper> AccountApiImpl<C> {
 }
 
 impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
-    fn get_accounts(&mut self, request: &Request) -> iron::Response {
-        let session = match self.get_session(request) {
-            Ok(s) => s,
-            Err(_) => return ApiError::unauthorised().into(),
-        };
-        let email_clause = repository::UserClause::EmailAddress(session.email_address.unwrap());
+    fn get_accounts(&mut self, user: &User) -> iron::Response {
+        let email_clause = repository::UserClause::EmailAddress(user.email_address.clone());
         let accounts = match self.account_repo.read(&email_clause) {
             Ok(a) => a,
             Err(err) => {
@@ -125,42 +125,32 @@ impl<C: PostgresHelper> AccountApiTrait for AccountApiImpl<C> {
         to_response::<Vec<Account>>(Ok(visible_accounts))
     }
 
-    fn get_account(&mut self, request: &Request) -> iron::Response {
-        let account = self._get_account(request);
-        match account {
-            Some(account) => to_response(Ok(account)),
-            None => ApiError::not_found("Account").into(),
+    fn get_account(&mut self, user: &User, account_id: AccountId) -> iron::Response {
+        match account_id.get(&mut self.db) {
+            Ok(account) => to_response(Ok(account)),
+            Err(err) => err.into(),
         }
     }
 
-    fn get_transactions(&mut self, request: &Request) -> iron::Response {
-        match self.get_statement(request) {
+    fn get_transactions(&mut self, user: &User, account_id: AccountId) -> iron::Response {
+        match self.get_statement(user, account_id) {
             Ok(statement) => to_response(Ok(statement.transactions)),
             Err(err) => err,
         }
     }
 
-    fn get_transaction(&mut self, request: &Request) -> iron::Response {
-        let statement = match self.get_statement(request) {
+    fn get_transaction(&mut self, user: &User, account_id: AccountId, tx_id: TransactionId) -> iron::Response {
+        let statement = match self.get_statement(user, account_id) {
             Ok(s) => s,
             Err(err) => return err,
         };
-        let id = match get_param(request, 1) {
-            Some(id) => id,
-            None => {
-                return to_response::<Transaction>(Err(CambioError::format_obj(
-                    "Cannot parse ID from URL",
-                    "Could not get param at index 1",
-                )))
-            }
-        };
         for tx in statement.transactions.into_iter() {
-            if tx.id == id {
+            if tx.id == tx_id {
                 return to_response(Ok(tx));
             }
         }
         to_response::<Transaction>(Err(CambioError::not_found_search(
-            &format!("Transaction with ID {} not found in latest statement", id),
+            &format!("Transaction with ID {:?} not found in latest statement", tx_id),
             "Could not find that transaction",
         )))
     }

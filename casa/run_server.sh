@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+
+echo "DROP DATABASE cambio_test" | psql
+
 set -e
 set -o pipefail
 
@@ -10,7 +13,7 @@ clean_up () {
 }
 
 
-#source run_eth.sh &
+source run_eth.sh &
 
 trap clean_up EXIT
 
