@@ -22,6 +22,7 @@ mod settlement_eth_credentials;
 mod user_api_impl;
 mod user_api_trait;
 mod utils;
+mod payment_request;
 
 pub use self::api_request::ApiRequest;
 pub use self::user_request::UserRequest;
@@ -46,3 +47,4 @@ pub use self::settlement_eth_credentials::*;
 pub use self::user_api_impl::*;
 pub use self::user_api_trait::*;
 pub use self::api_handler::ApiHandler;
+pub use self::payment_request::PaymentRequest;

@@ -10,7 +10,7 @@ use serde_json;
 use iron::prelude::*;
 use std::error::Error;
 use hyper::method::Method;
-use api::{UserRequest, OrderApiRequest, AccountRequest, SettlementRequest};
+use api::{UserRequest, OrderApiRequest, AccountRequest, SettlementRequest, PaymentRequest};
 
 #[derive(Debug)]
 pub enum ApiRequest {
@@ -18,6 +18,7 @@ pub enum ApiRequest {
     Order(OrderApiRequest),
     Account(AccountRequest),
     Settlement(SettlementRequest),
+    Payment(PaymentRequest),
 }
 
 impl ApiRequest {
@@ -30,6 +31,7 @@ impl ApiRequest {
             ApiRequest::Order(OrderApiRequest::PostNewOrder(..)) => Method::Post,
             ApiRequest::Order(OrderApiRequest::PostBuyOrder(..)) => Method::Post,
             ApiRequest::Settlement(..)=> Method::Post,
+            ApiRequest::Payment(..)=> Method::Post,
         }
     }
 

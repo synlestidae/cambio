@@ -102,6 +102,11 @@ impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandl
                     _ => unimplemented!()
                 }
             },
+            ApiRequest::Payment(payment_req) => {
+                match payment_req {
+                    PaymentRequest::CreditCardPayment(payment) => unimplemented!()
+                }
+            }
         };
 
         Ok(response)
