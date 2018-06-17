@@ -98,6 +98,16 @@ impl Readable<domain::EthAccount> for domain::OwnerId {
     }
 }
 
+impl Readable<domain::Account> for domain::OwnerId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Account>, CambioError> {
+        const SELECT_BY_ID: &'static str = "
+            SELECT *, account.id as account_id, account.asset_type as account_asset_type
+            FROM account 
+            WHERE account.owner_id = $1";
+        db.query(SELECT_BY_ID, &[self])
+    }
+}
+
 impl Readable<domain::Account> for domain::AccountId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Account>, CambioError> {
         const SELECT_BY_ID: &'static str = "
