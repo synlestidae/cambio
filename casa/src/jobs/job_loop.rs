@@ -47,6 +47,7 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
     }
 
     fn handle_job_req(&mut self, job_req: JobRequest) {
+        info!("Handling job {:?}", job_req);
         match job_req {
             JobRequest::BeginSettlement(settlement, password) => {
                 match self.begin_settlement(settlement, password) {
@@ -58,9 +59,11 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
     }
 
     fn begin_settlement(&mut self, sid: OrderSettlementId, password: String) -> 
-        Result<domain::EthAccount, db::CambioError> {
+        Result<(), db::CambioError> {
         let mut settlement = try!(sid.get(&mut self.db_helper));
+        info!("Handling settlement ID {:?}", settlement.id);
         if settlement.settlement_status != domain::SettlementStatus::Settling {
+            info!("Expected WaitingEth status, got {:?}", settlement.settlement_status);
             return Err(db::CambioError::unfair_operation(
                 "Can only tranfer ETH when settlement is active.",
                 &format!("Settlement status was {:?}", settlement.settlement_status),
@@ -86,9 +89,12 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
         if let domain::AssetType::ETHSzabo = settlement.selling_order.sell_asset_type {
             value_wei = match value_wei.checked_mul(szabo_unit) {
                 Some(w) => w,
-                None => return Err(db::CambioError::not_permitted(
-                    "We cannot sell that much Ethereum.", 
+                None => {
+                    warn!("A settlement with lots of Ether was detected. {} Szabo", value_wei);
+                    return Err(db::CambioError::not_permitted(
+                    "We cannot process that much Ethereum.", 
                     "Overflow occurred during conversion to Wei"))
+                }
             }
         }
 
@@ -99,8 +105,11 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
             settlement.selling_order.sell_asset_units,
             settlement.selling_order.sell_asset_type);
 
+        info!("Settlement has unique ID: {}", unique_id);
+
         // now check the password
        let result = if let Ok(true) = verify(&password, &src_account.password_hash_bcrypt) {
+            info!("Password correct, creating transaction from account {:?}", src_account);
             self.eth_service.register_transaction(
                 &src_account,
                 password,
@@ -109,32 +118,25 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
                 U256::from(max_wei),
                 &unique_id)
         } else {
-            unimplemented!()
+            error!("Received a settlement job with the wrong password!");
+            return Err(db::CambioError::shouldnt_happen(
+                "The password for the Eth account was wrong.",
+                "Password provided by Job was incorrect."
+            ));
         };
 
         match result {
             Ok(transaction) => {
+                info!("Settlement was successful!");
                 settlement.settlement_status = domain::SettlementStatus::Settled;
             },
             Err(err) => {
+                error!("Failed to communicate with Ethereum: {:?}", err);
                 settlement.settlement_status = domain::SettlementStatus::EthFailed;
             }
         }
 
-        try!(settlement.update(&mut self.db_helper));
-
-        /*let source_account = try!(self.get_eth_account(&settlement.selling_order));
-        let dest_account = try!(self.get_eth_account(&settlement.buying_order));
-        let selling_order = settlement.selling_order;
-        if selling_order.sell_asset_type != AssetType::ETH {
-            return Err(db::CambioError::format_obj(
-                "Buying order must be for Szabo",
-                "Error with settlement: unsupported selling type.",
-            ))
-        }
-        let wei = U256::from(selling_order.sell_asset_units * 1000000000000);
-        */
-        unimplemented!()    
+        settlement.update(&mut self.db_helper).map(|_| ())
     }
 
     /*fn get_eth_account<H: PostgresHelper>(&mut self, order: &domain::Order, db: &mut H) 
