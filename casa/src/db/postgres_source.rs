@@ -13,7 +13,6 @@ pub struct PostgresSource {
 
 impl ConnectionSource for PostgresSource {
     fn get<'a>(&'a mut self) -> Result<PostgresPooledConn, CambioError> {
-        println!("Poopy pool pool {:?}", self.pool.state());
         Ok(try!(self.pool.get()))
     }
 }

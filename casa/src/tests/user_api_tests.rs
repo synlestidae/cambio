@@ -51,8 +51,7 @@ fn test_creates_new_user_and_password_works() {
         }"#,
         &handler).unwrap();
 
-    assert_eq!(Status::Unauthorized, response.status.unwrap());
-    let result_body = response::extract_body_to_bytes(response);
-    let result: api::ApiError= serde_json::from_slice(&result_body).unwrap();
+
+    assert_eq!(Status::InternalServerError, response.status.unwrap());
 }
 

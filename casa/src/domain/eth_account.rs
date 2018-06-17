@@ -3,7 +3,7 @@ use bcrypt::hash;
 use crypto;
 use crypto::digest::Digest;
 use db::{TryFromRow, TryFromRowError};
-use domain::{DecryptError, Id, OwnerId};
+use domain::{DecryptError, Id, EthAccountId, OwnerId};
 use openssl::aes;
 use openssl::symm;
 use postgres;
@@ -18,7 +18,7 @@ const BCRYPT_COST: u32 = 8;
 
 #[derive(Debug, Clone)]
 pub struct EthAccount {
-    pub id: Option<Id>,
+    pub id: Option<EthAccountId>,
     pub address: H160,
     pub password_hash_bcrypt: String,
     pub owner_id: OwnerId,
@@ -26,7 +26,7 @@ pub struct EthAccount {
 
 #[derive(TryFromRow)]
 pub struct EthAccountRow {
-    pub id: Option<Id>,
+    pub id: Option<EthAccountId>,
     pub address: Vec<u8>,
     pub password_hash_bcrypt: String,
     pub owner_id: OwnerId,

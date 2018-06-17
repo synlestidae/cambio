@@ -1,10 +1,12 @@
 use postgres::transaction::Transaction as PTransaction;
 use db::Transaction;
 use db::PostgresHelper;
+use db::PostgresPooledConn;
 use db::TryFromRow;
 use db::CambioError;
 use postgres::rows::Rows;
 use postgres::types::ToSql;
+use postgres::Connection;
 
 pub struct PostgresTransactionHelper<'a> {
     transaction: PTransaction<'a>
@@ -20,8 +22,7 @@ impl<'a> PostgresTransactionHelper<'a> {
 
 impl<'a> PostgresHelper for PostgresTransactionHelper<'a> {
     fn query<T: TryFromRow>(&mut self, query: &str, params: &[&ToSql]) -> Result<Vec<T>, CambioError> {
-        let connection = &mut self.transaction;
-        let rows = try!(connection.query(query, params));
+        let rows = try!(self.transaction.query(query, params));
 
         let mut result_objs = Vec::new();
         for row in rows.iter() {
@@ -32,14 +33,12 @@ impl<'a> PostgresHelper for PostgresTransactionHelper<'a> {
     }
 
     fn query_raw(&mut self, query: &str, params: &[&ToSql]) -> Result<Rows, CambioError> {
-        let conn = self.transaction;
-        let result = try!(conn.query(query, params));
+        let result = try!(self.transaction.query(query, params));
         Ok(result)
     }
 
     fn execute(&mut self, query: &str, params: &[&ToSql]) -> Result<u64, CambioError> {
-        let conn = self.transaction;
-        let result = try!(conn.execute(query, params));
+        let result = try!(self.transaction.execute(query, params));
         Ok(result)
     }
 }

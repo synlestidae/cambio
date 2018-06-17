@@ -46,12 +46,7 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
                 iron::Response::with((iron::status::Ok, response_json, content_type))
             }
             Err(cambio_err) => {
-                let err = ApiError::cambio_error(
-                    "Failed to register user.".to_owned(),
-                    ErrorType::Unknown,
-                    cambio_err,
-                );
-                err.into()
+                cambio_err.into()
             }
         }
     }
@@ -74,12 +69,7 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
                 response
             }
             Err(cambio_err) => {
-                let err = ApiError::cambio_error(
-                    "Failed to log you in.".to_owned(),
-                    ErrorType::Unknown,
-                    cambio_err,
-                );
-                err.into()
+                cambio_err.into()
             }
         }
     }

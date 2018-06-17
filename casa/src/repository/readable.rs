@@ -108,6 +108,13 @@ impl Readable<domain::Account> for domain::AccountId {
     }
 }
 
+impl Readable<domain::EthAccount> for domain::EthAccountId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::EthAccount>, CambioError> {
+        const SELECT_BY_ID: &'static str = "SELECT * FROM ethereum_account_details WHERE id = $1";
+        db.query(SELECT_BY_ID, &[self])
+    }
+}
+
 impl<E> Readable<E> for Selectable<E> where E: TryFromRow {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<E>, CambioError> {
         let sql = self.get_specifier().get_sql_query();

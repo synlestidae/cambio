@@ -1,5 +1,6 @@
 use db::try_from_row::TryFromRow;
 use db::{CambioError, ConnectionSource, PostgresHelper, PostgresSource, PostgresTransactionHelper, Transaction, TransactionSource};
+use db::{PostgresPooledConn};
 use postgres;
 use postgres::rows::Rows;
 use postgres::types::ToSql;
@@ -62,10 +63,8 @@ impl PostgresHelper for PostgresHelperImpl {
     }
 }
 
-impl<'a> TransactionSource<'a, PostgresTransactionHelper<'a>> for PostgresHelperImpl {
-    fn begin_transaction(&'a mut self) -> Result<PostgresTransactionHelper<'a>, CambioError> {
-        let connection = try!(self.conn_source.get());
-        let tx = try!(connection.transaction());
-        Ok(PostgresTransactionHelper::new(tx))
+impl ConnectionSource for PostgresHelperImpl {
+    fn get<'a>(&'a mut self) -> Result<PostgresPooledConn, CambioError> {
+        Ok(try!(self.conn_source.get()))
     }
 }

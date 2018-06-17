@@ -79,7 +79,7 @@ impl<T: db::PostgresHelper> repository::RepoCreate for EthAccountRepository<T> {
 
 #[derive(TryFromRow)]
 struct EthRow {
-    pub id: Option<domain::Id>,
+    pub id: Option<domain::EthAccountId>,
     pub address: String,
     pub password_hash_bcrypt: String,
     pub owner_id: OwnerId,
