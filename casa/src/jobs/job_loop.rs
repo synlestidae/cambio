@@ -11,7 +11,7 @@ use repositories::SettlementRepository;
 use services::EthereumService;
 use std::str::FromStr;
 use std::sync::mpsc::channel;
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc::{Receiver};
 use threadpool::ThreadPool;
 use web3::types::U256;
 
@@ -25,8 +25,7 @@ pub struct JobLoop<H: PostgresHelper + Clone> {
 const NUM_JOBS: usize = 10;
 
 impl<H: PostgresHelper + Clone> JobLoop<H> {
-    pub fn new(db: H, web3_address: &str) -> (Self, Sender<JobRequest>) {
-        let (tx, rx) = channel();
+    pub fn new(db: H, web3_address: &str, rx: Receiver<JobRequest>) -> Self {
         let threadpool = ThreadPool::new(NUM_JOBS);
         let job_loop = Self { 
             threads: threadpool,
@@ -34,16 +33,20 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
             eth_service: EthereumService::new(db.clone(), web3_address),
             db_helper: db, 
         };
-        (job_loop, tx)
+        job_loop
     }
 
     pub fn run(&mut self) {
-        match self.rcv.recv() {
-            Ok(job_req) => self.handle_job_req(job_req),
-            Err(err) => {
-                // TODO Handle this! 
-            },
+        info!("Job loop started.");
+        loop {
+            match self.rcv.recv() {
+                Ok(job_req) => self.handle_job_req(job_req),
+                Err(err) => {
+                    // TODO Handle this! 
+                },
+            }
         }
+        info!("Job loop finished.");
     }
 
     fn handle_job_req(&mut self, job_req: JobRequest) {

@@ -71,6 +71,7 @@ use time::PreciseTime;
 use std::sync::mpsc::channel;
 use std::collections::HashSet;
 use jobs::JobLoop;
+use std::thread;
 
 fn main() {
     const WEB3_ADDRESS: &'static str = "http://localhost:8081";
@@ -79,7 +80,10 @@ fn main() {
     let db =
         PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let (tx, rx) = channel();
-    let job_loop = JobLoop::new(db.clone(), WEB3_ADDRESS);
+    let mut job_loop = JobLoop::new(db.clone(), WEB3_ADDRESS, rx);
+    thread::spawn(move || {
+        job_loop.run();
+    });
     let api_handler = api::ApiHandler::new(db, WEB3_ADDRESS, tx);
     let mut chain = iron::Chain::new(api_handler);
     chain.link_around(middleware);

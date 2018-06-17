@@ -56,7 +56,7 @@ impl<T: PostgresHelper + Clone> OrderService<T> {
             buy_asset_type: buy_currency,
             expires_at: self.get_order_expiry(),
             status: OrderStatus::Active,
-            max_wei: unimplemented!()
+            max_wei: wei_cost
         };
         self.order_repo.create(&order)
     }
