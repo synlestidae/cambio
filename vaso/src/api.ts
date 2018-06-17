@@ -71,7 +71,7 @@ export class Api {
             buy_asset_units: order.buy_asset_units,
             expires_at: order.expiry.toISOString()
         };
-        let orderResult = await this.makeRequest('/orders/new_order', 'POST', orderJSON); 
+        let orderResult = await this.makeRequest('/orders/new', 'POST', orderJSON); 
         let resultJSON = await orderResult.json();
         return parseUserOrder(resultJSON);
     }
@@ -96,7 +96,7 @@ export class Api {
                 expires_at: date
             }
         };
-        let result = await this.makeRequest(`/orders/buy/${id}`, 'POST', orderJSON);
+        let result = await this.makeRequest(`/orders/buy`, 'POST', orderJSON);
         console.log('asyncBuyOrder', result);
     }
 
