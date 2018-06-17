@@ -23,6 +23,7 @@ mod user_api_impl;
 mod user_api_trait;
 mod utils;
 mod payment_request;
+mod payment_api;
 
 pub use self::api_request::ApiRequest;
 pub use self::user_request::UserRequest;
@@ -48,3 +49,4 @@ pub use self::user_api_impl::*;
 pub use self::user_api_trait::*;
 pub use self::api_handler::ApiHandler;
 pub use self::payment_request::PaymentRequest;
+pub use self::payment_api::PaymentApi;
