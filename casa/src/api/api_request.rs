@@ -61,7 +61,13 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["accounts", id, "transactions"] => {
                 let tx_req = AccountRequest::GetAccountTransactions(try!(serde_json::from_str(id)));
                 ApiRequest::Account(tx_req)
-            }
+            },
+            &["order", id, "settlement", "auth"] => {
+                let order_id = try!(serde_json::from_str(id));
+                let cred = try!(get_api_obj(request));
+                let s_req = SettlementRequest::PostSettlementEthAuth(order_id, cred);
+                ApiRequest::Settlement(s_req)
+            },
             _ => return Err(api::ApiError::not_found_path(&path.into_iter().collect::<Vec<_>>().join("/")))
         };
         let expected_method = request_obj.get_method();

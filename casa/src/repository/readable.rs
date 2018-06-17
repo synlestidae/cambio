@@ -122,6 +122,28 @@ impl<E> Readable<E> for Selectable<E> where E: TryFromRow {
     }
 }
 
+impl Readable<domain::OrderSettlement> for domain::OrderId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+        let not_found = Err(CambioError::not_found_search(
+            "Item could not be found.",
+            "No results for query.",
+        ));
+        const SQL: &'static str = "SELECT id 
+            FROM order_settlement 
+            WHERE buying_crypto_id = $1 OR buying_fiat_id = $1"; 
+        let rows = try!(db.query_raw(SQL, &[&self]));
+        if rows.is_empty() {
+            return not_found;
+        };
+        let row = rows.get(0);
+        let id: Option<domain::OrderSettlementId> = row.get("id");
+        match id {
+            Some(s_id) => s_id.get_vec(db),
+            None => Err(CambioError::format_obj("Failed to load settlement from DB", "Settlement query has no ID field"))
+        }
+    }
+}
+
 #[derive(TryFromRow)]
 struct SettlementRow {
     pub id: Option<domain::OrderSettlementId>,
@@ -135,10 +157,25 @@ struct SettlementRow {
 
 impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::OrderSettlement>, CambioError> {
-        unimplemented!()
+        let orders: Vec<SettlementRow> = try!(db.query("SELECT * FROM order_settlement WHERE id = $1", &[&self]));
+        let mut settlements = Vec::new();
+        for o in orders.into_iter() {
+            let buy = try!(o.buying_crypto_id.get(db));
+            let sell = try!(o.selling_crypto_id.get(db));
+            settlements.push(domain::OrderSettlement {
+                id: o.id,
+                started_at: o.started_at,
+                settled_at: o.settled_at,
+                starting_user: o.starting_user,
+                settlement_status: o.settlement_status,
+                buying_order: buy,
+                selling_order: sell,
+            });
+        }
+        Ok(settlements)
     }
 
-    fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::OrderSettlement, CambioError> {
+    /*fn get<H: PostgresHelper>(&self, db: &mut H) -> Result<domain::OrderSettlement, CambioError> {
         match self.get_option(db) {
             Ok(Some(order_settlement)) => Ok(order_settlement),
             Ok(None) => Err(CambioError::not_found_search(
@@ -171,7 +208,7 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
             }
             None => Ok(None),
         }
-    }
+    }*/
 }
 
 const SELECT_BY_OWNER: &'static str = "

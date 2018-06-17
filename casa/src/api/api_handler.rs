@@ -6,19 +6,24 @@ use iron::middleware::Handler;
 use iron::IronResult;
 use api::ApiRequest;
 use std::convert::TryFrom;
-use api::{UserApiTrait, UserApi, SessionTokenSource, UserRequest, OrderApiRequest, OrderApiImpl, OrderApiTrait, AccountRequest, AccountApiImpl, AccountApiTrait};
+use api::*;
 use repository::Readable;
+use jobs::JobRequest;
+use std::sync::mpsc::Sender;
+use std::sync::Mutex;
 
 pub struct ApiHandler<T: db::PostgresHelper> {
     db: T,
-    web3_address: String
+    web3_address: String,
+    job_tx: Mutex<Sender<JobRequest>>
 }
 
 impl<T: db::PostgresHelper + 'static> ApiHandler<T> {
-    pub fn new(db: T, web3_address: &str) -> Self {
+    pub fn new(db: T, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
         Self {
             db: db,
-            web3_address: web3_address.to_owned()
+            web3_address: web3_address.to_owned(),
+            job_tx: Mutex::new(job_tx)
         }
     }
 }
@@ -89,7 +94,14 @@ impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandl
                     },
                 }
             },
-            ApiRequest::Settlement(..) => unimplemented!(),
+            ApiRequest::Settlement(settlement_request) => {
+                match settlement_request {
+                    SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
+                        unimplemented!()
+                    },
+                    _ => unimplemented!()
+                }
+            },
         };
 
         Ok(response)
