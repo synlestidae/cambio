@@ -64,12 +64,22 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
             Ok(s) => s,
             Err(err) => return err.into()
         };
-        if settlement.settlement_status == domain::SettlementStatus::WaitingEthCredentials {
-            let req = JobRequest::BeginSettlement(settlement.id.unwrap(), credentials.password.to_owned());
-            self.job_tx.send(req).unwrap();
-            tx_helper.commit();
+        if settlement.settlement_status != domain::SettlementStatus::WaitingEthCredentials {
+            return db::CambioError::not_permitted(
+                "Settlement is not waiting for credentials", 
+                "Settlement status is not WaitingEthCredentials").into()
         }
-
+        let eth_account: domain::EthAccount = match self.owner_id.get(&mut tx_helper) {
+            Ok(e) => e,
+            Err(err) => return err.into()
+        };
+        let pwd_result = verify(&credentials.password, eth_account.password_hash_crypt);
+        if let Ok(true) != pwd_result {
+            return CambioError::invalid_password().into()
+        }
+        let req = JobRequest::BeginSettlement(settlement.id.unwrap(), credentials.password.to_owned());
+        self.job_tx.send(req).unwrap();
+        tx_helper.commit();
         iron::response::Response::with((iron::status::Status::Ok, format!("")))
     }
 
