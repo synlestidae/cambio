@@ -21,7 +21,6 @@ impl<H: PostgresHelper + 'static> PaymentApi<H> {
         const CREDIT_FUNC: &'static str = "
             SELECT credit_account_from_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
         ";
-        // TODO this is distinctly wrong
         let accounts: Vec<Account> = match user.owner_id.unwrap().get_vec(&mut self.db) {
             Ok(accounts) => accounts,
             Err(err) => return err.into()
@@ -38,6 +37,8 @@ impl<H: PostgresHelper + 'static> PaymentApi<H> {
             &payment.asset_type,
             &payment.vendor,
             &payment.payment_method,
+            &payment.datetime_payment_made.naive_utc(),
+            &payment.unique_id,
             &payment.user_credit,
             &"Test credit of {} from user."
         ]) {

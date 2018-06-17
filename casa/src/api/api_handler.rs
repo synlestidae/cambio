@@ -105,7 +105,7 @@ impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandl
             ApiRequest::Payment(payment_req) => {
                 let mut payment_api = api::PaymentApi::new(self.db.clone());
                 match payment_req {
-                    PaymentRequest::CreditCardPayment(payment) => unimplemented!()
+                    PaymentRequest::CreditCardPayment(payment) => payment_api.post_payment(&user, &payment)
                 }
             }
         };
