@@ -70,6 +70,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
                 let s_req = SettlementRequest::PostSettlementEthAuth(order_id, cred);
                 ApiRequest::Settlement(s_req)
             },
+            &["payment"] => ApiRequest::Payment(PaymentRequest::CreditCardPayment(try!(get_api_obj(request)))),
             _ => return Err(api::ApiError::not_found_path(&path.into_iter().collect::<Vec<_>>().join("/")))
         };
         let expected_method = request_obj.get_method();
