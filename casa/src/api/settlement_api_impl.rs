@@ -15,6 +15,7 @@ use std::sync::mpsc::Sender;
 use jobs::JobRequest;
 use db::ConnectionSource;
 use db::Transaction;
+use bcrypt::{verify};
 
 pub struct SettlementApiImpl<C: PostgresHelper + ConnectionSource> {
     db: C,
@@ -33,22 +34,7 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
         user: &domain::User, 
         order_id: domain::OrderId, 
         credentials: &api::SettlementEthCredentials) -> iron::Response {
-        let conn = match self.db.get() {
-            Ok(c) => c,
-            Err(err) => { 
-                let err: db::CambioError = err.into();
-                return err.into()
-            }
-        };
-        let tx = match conn.transaction() {
-            Ok(tx) => tx,
-            Err(err) => {
-                let err: db::CambioError = err.into();
-                return err.into()
-            }
-        };
-        let mut tx_helper = db::PostgresTransactionHelper::new(tx);
-        let order: domain::Order = match order_id.get(&mut tx_helper) {
+        let order: domain::Order = match order_id.get(&mut self.db) {
             Ok(o) => o,
             Err(err) => return err.into()
         };
@@ -60,7 +46,7 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
         }
 
         // retrieve the settlement
-        let mut settlement: domain::OrderSettlement = match order_id.get(&mut tx_helper) {
+        let mut settlement: domain::OrderSettlement = match order_id.get(&mut self.db) {
             Ok(s) => s,
             Err(err) => return err.into()
         };
@@ -69,18 +55,28 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
                 "Settlement is not waiting for credentials", 
                 "Settlement status is not WaitingEthCredentials").into()
         }
-        let eth_account: domain::EthAccount = match self.owner_id.get(&mut tx_helper) {
+        // TODO make this unwrap unnecessary
+        let eth_account: domain::EthAccount = match user.owner_id.unwrap().get(&mut self.db) {
             Ok(e) => e,
             Err(err) => return err.into()
         };
-        let pwd_result = verify(&credentials.password, eth_account.password_hash_crypt);
-        if let Ok(true) != pwd_result {
-            return CambioError::invalid_password().into()
+        let pwd_result = verify(&credentials.password, &eth_account.password_hash_bcrypt);
+        if let Ok(true) = pwd_result {
+            let req = JobRequest::BeginSettlement(settlement.id.unwrap(), credentials.password.to_owned());
+            match self.job_tx.send(req) {
+                Ok(s) => {
+                    iron::response::Response::with((iron::status::Status::Ok, format!("")))
+                }, 
+                Err(_) => {
+                    let send_err = db::CambioError::shouldnt_happen(
+                        "Could not get your settlement on the blockchain.", 
+                        "Channel to job loop is disconnected.");
+                    send_err.into()
+                }
+            }
+        } else {
+            db::CambioError::invalid_password().into()
         }
-        let req = JobRequest::BeginSettlement(settlement.id.unwrap(), credentials.password.to_owned());
-        self.job_tx.send(req).unwrap();
-        tx_helper.commit();
-        iron::response::Response::with((iron::status::Status::Ok, format!("")))
     }
 
     pub fn get_settlement_status(&mut self, request: &mut iron::Request) -> iron::Response {
