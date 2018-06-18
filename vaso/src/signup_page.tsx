@@ -2,6 +2,8 @@ import * as React from "react";
 import {LoginPage} from './flux/state/login_page';
 import {Action} from './flux/action';
 import {ActionCreators} from './flux/action_creators';
+import {SignupState} from './flux/state/signup_state';
+import {SignupForm} from './signup_form';
 
 interface LoginPageProps {
     page: LoginPage,
@@ -9,6 +11,11 @@ interface LoginPageProps {
 }
 
 export function SignupPage(props: LoginPageProps) {
+    if (props.page.isSignup) {
+        return <div className="signup-form">
+            <SignupForm actions={props.actions}></SignupForm>;
+        </div>;
+    }
     return <div className="signup-form">
         <form className="form-signin">
             <div className="form-row">
