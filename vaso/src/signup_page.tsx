@@ -105,7 +105,10 @@ function LoginOptions(props: LoginOptionsProps) {
         </div>;
     } else {
         return <div className="form-row">
-          Don't have an account? <a href="javascript: void" onClick={() => props.actions.signupMode()}>Create one</a>.
+          <span>Don't have an account?</span>
+          <span>
+            <a href="javascript: void" onClick={() => props.actions.signupMode()}>Create one</a>
+          </span>
         </div>;
     }
 }
