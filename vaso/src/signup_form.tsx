@@ -52,14 +52,14 @@ export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Ele
             {
                 label: 'Password', 
                 field: 'password', 
-                validate: nonEmpty('Enter a password of at least 8 characters.'), 
+                validate: (val: string) => val.length >= 8? null : 'Enter a password of at least 8 characters.', 
                 formType: 'password',
                 name: 'password'
             },
             {
                 label: 'Confirm password', 
-                field: 'password_confirm', 
-                validate: nonEmpty('Enter the password you typed above.'), 
+                field: 'passwordConfirm', 
+                validate: () => props.loginInfo.password === props.loginInfo.passwordConfirm? null : 'Passwords must match.',
                 formType: 'password',
                 name: 'password'
             }
@@ -119,24 +119,46 @@ export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Ele
 
 function makeForm(elems: FormElem[], actions: ActionCreators, props: SignupState): JSX.Element[] {
     let jsxElements = [];
-    console.log('makeForm', elems);
+    let value: any;
+    if (props.form_state === 'LoginInfo') {
+        value = props.loginInfo; 
+    } else if (props.form_state === 'PersonalInfo') {
+        value = props.info;
+    } else if (props.form_state === 'Identification') {
+        value = props.identification;
+    } else {
+        throw new Error(`Form state ${props.form_state} yet implemented`);
+    }
     let i = 0;
     for (let e of elems) {
-        jsxElements.push(getFormElement(e, actions, props));
+        jsxElements.push(getFormElement(e, actions, props.dirtyFields.has(e.field), value));
         i++;
     }
-    console.log('bakeForm', jsxElements);
     return jsxElements;
 }
 
-function getFormElement(elem: FormElem, actions: ActionCreators, value: any): JSX.Element {
+function getFormElement(elem: FormElem, actions: ActionCreators, isDirty: boolean, value: any): JSX.Element {
+    let inputValue = value[elem.field];
+    const handleBlur = function() {
+        actions.clearDirtyValue(elem.field);
+        if (elem.validate(value[elem.field]) !== null) {
+            actions.addDirtyValue(elem.field);
+            console.log('Blur!', elem, inputValue);
+        }
+    };
+    const handleFocus = function() {
+        console.log('Folks!', elem.field);
+        actions.clearDirtyValue(elem.field);
+    };
+    console.log('Dirty?', elem.field, inputValue, isDirty);
+    let validation: string|null = isDirty && elem.validate(inputValue);
     if (elem.formType === 'option') {
         return (<div className="form-row">
               <label className="sr-only">{elem.label}</label>
               <input type="option" 
                 id={'input_' + elem.field} 
                 className="form-control" 
-                value={value[elem.field]} 
+                value={inputValue} 
                 placeholder={elem.label}
                 onChange={(e: any) => actions.setSignupFormValue(elem.field, e.target.value)}>
               </input>
@@ -151,8 +173,19 @@ function getFormElement(elem: FormElem, actions: ActionCreators, value: any): JS
                 placeholder={elem.label}
                 autoComplete={elem.name? 'on' : 'off'}
                 name={elem.name || elem.field}
+                onBlur={handleBlur}
+                onFocus={handleFocus}
                 onChange={(e: any) => actions.setSignupFormValue(elem.field, e.target.value)}>
               </input>
+              <ValidationMessage msg={validation}></ValidationMessage>
             </div>);
     }
+}
+
+function ValidationMessage(props: {msg: string|null}) {
+    return <div className="error-text">
+        <em className="smaller-font">
+            {props.msg}
+        </em>
+    </div>;
 }

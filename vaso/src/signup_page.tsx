@@ -14,7 +14,7 @@ export function SignupPage(props: LoginPageProps) {
     if (props.page.isSignup) {
         let signup = SignupForm(Object.assign({}, props.page.signupState, {actions: props.actions}));
         return <div className="signup-form">
-            <form className="form-signin">
+            <form className="form-signin" onClick={(e: any) => e.preventDefault()}>
                 <div className="form-row">
                   <div>Enter your login details.</div>
                 </div>
@@ -83,9 +83,20 @@ function SignupButton(props: SignupState & {actions: ActionCreators}) {
         prev = 'Back to personal details';
     }
 
+    const nextFn = function(e: any) { 
+        console.log('next fn', e);
+        e.preventDefault();
+        props.actions.nextSignupForm();
+    };
+
+    const prevFn = function(e: any) { 
+        e.preventDefault();
+        props.actions.prevSignupForm();
+    };
+
     return <div className="form-row">
-        <a href="javascript: void" onClick={(e: any) => {e.preventDefault();  props.actions.prevSignupForm()}}>{prev}</a> 
-        <button onClick={(e: any) => {e.preventDefault(); props.actions.nextSignupForm()}} className="btn btn-primary btn-block width-initial" type="submit">
+        <a href="javascript: void" onClick={prevFn}>{prev}</a> 
+        <button onClick={nextFn} className="btn btn-primary btn-block width-initial">
           {next}
         </button>
     </div>;

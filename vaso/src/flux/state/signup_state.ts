@@ -19,12 +19,15 @@ export class IdentificationInfo {
 export class SignupInfo {
     email_address: string = '';
     password: string = '';
+    passwordConfirm: string = '';
 }
 
 export type LoginPage = 'LoginInfo' | 'PersonalInfo' | 'ConfirmEmail' | 'Identification';
 
 export class SignupState {
+    form_state: LoginPage = 'LoginInfo';
+    loginInfo = new SignupInfo();
     info: PersonalInfo = new PersonalInfo();
     identification: IdentificationInfo = new IdentificationInfo();
-    form_state: LoginPage = 'LoginInfo';
+    dirtyFields: Set<string> = new Set();
 }

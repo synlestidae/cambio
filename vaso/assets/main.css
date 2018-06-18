@@ -221,8 +221,8 @@ button:hover {
 }
 
 .form-row {
-    display: flex;
-    justify-content: space-between;
+    /*display: flex;
+    justify-content: space-between;*/
 }
 
 .form-label {
@@ -281,4 +281,8 @@ table.table-component tr.empty-row td {
 
 .width-initial {
     width: initial;
+}
+
+.smaller-font {
+    font-size: smaller;
 }

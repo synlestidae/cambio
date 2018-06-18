@@ -19,6 +19,7 @@ export function reduce(state: AppState, action: Action): AppState {
 function reduceLogin(state: AppState, action: Action): AppState {
     if (state.page instanceof LoginPage) {
         let page = state.page as LoginPage;
+        let signupState = page.signupState; 
         switch (action.name) {
             case 'SIGNUP_MODE': 
                 state.page.isSignup = action.value === 'SIGNUP';
@@ -49,6 +50,24 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 break;
             case 'PREV_SIGNUP_FORM':
                 (page.signupState as any).form_state = prevPage(page.signupState.form_state);
+                break;
+            case 'SET_SIGNUP_FORM_VALUE':
+                let formState = signupState.form_state;
+                if (formState === 'LoginInfo') {
+                    (signupState.loginInfo as any)[action.value] = action.payload; 
+                } else if (formState === 'Identification') {
+                    (signupState.identification as any)[action.value] = action.payload; 
+                } else if (formState === 'PersonalInfo') {
+                    (signupState.info as any)[action.value] = action.payload;
+                } else {
+                    throw new Error(`Unknown page state: ${page.signupState}`);
+                }
+                break;
+            case 'CLEAR_DIRTY_SIGNUP_VALUE':
+                signupState.dirtyFields.delete(action.value);
+                break;
+            case 'ADD_DIRTY_SIGNUP_VALUE':
+                signupState.dirtyFields.add(action.value);
                 break;
         }
     }

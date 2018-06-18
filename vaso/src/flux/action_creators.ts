@@ -109,6 +109,14 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_SIGNUP_FORM_VALUE', field, value));
     }
 
+    public clearDirtyValue(field: string) {
+        this.dispatch(new BasicAction('CLEAR_DIRTY_SIGNUP_VALUE', field));
+    }
+
+    public addDirtyValue(field: string) {
+        this.dispatch(new BasicAction('ADD_DIRTY_SIGNUP_VALUE', field));
+    }
+
     public nextSignupForm() {
         this.dispatch(new BasicAction('NEXT_SIGNUP_FORM'));
     }
