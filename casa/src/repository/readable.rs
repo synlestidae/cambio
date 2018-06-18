@@ -72,7 +72,8 @@ impl Readable<domain::Session> for domain::SessionToken {
             JOIN session_info ON session_info.id = user_session.session_info_id
             JOIN users ON user_session.user_id = users.id
             WHERE session_info.session_token = $1 AND 
-                (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))";
+                (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))
+            ORDER BY session_info.started_at";
         db.query(SELECT_BY_TOKEN, &[self])
     }
 }
