@@ -12,8 +12,16 @@ interface LoginPageProps {
 
 export function SignupPage(props: LoginPageProps) {
     if (props.page.isSignup) {
+        let signup = SignupForm(Object.assign({}, props.page.signupState, {actions: props.actions}));
         return <div className="signup-form">
-            <SignupForm actions={props.actions}></SignupForm>;
+            <form className="form-signin">
+                <div className="form-row">
+                  <div>Enter your login details.</div>
+                </div>
+                {signup}
+                <LoginMessage page={props.page}></LoginMessage>
+                <LoginOptions isSignup={props.page.isSignup} actions={props.actions}></LoginOptions>
+            </form>
         </div>;
     }
     return <div className="signup-form">
@@ -40,7 +48,7 @@ export function SignupPage(props: LoginPageProps) {
             <LoginMessage page={props.page}></LoginMessage>
             <LoginOptions isSignup={props.page.isSignup} actions={props.actions}></LoginOptions>
           </form>
-      </div>;
+      </div>
 }
 
 interface LoginButtonProps {

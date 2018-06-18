@@ -35,7 +35,7 @@ class OptionElem implements FormElem {
     }
 }
 
-export function SignupForm(props: SignupState & PartialSignupFormProps) {
+export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Element[] {
     let elems: FormElem[] = [];
     const nonEmpty = function(msg: string) {
         return (val: string) => Boolean(val)? null : msg;
@@ -62,16 +62,18 @@ export function SignupForm(props: SignupState & PartialSignupFormProps) {
             {label: 'ID Number', field: 'id_number', validate: nonEmpty('Enter the ID number')}
         ];
     }
-    return <form className="form-signin">
-        {makeForm(elems, props.actions, props)};
-    </form>;
+    return makeForm(elems, props.actions, props);
 }
 
 function makeForm(elems: FormElem[], actions: ActionCreators, props: SignupState): JSX.Element[] {
     let jsxElements = [];
+    console.log('makeForm', elems);
+    let i = 0;
     for (let e of elems) {
-        jsxElements.push(<div className="form-row">{getFormElement(e, actions, props)}</div>);
+        jsxElements.push(getFormElement(e, actions, props));
+        i++;
     }
+    console.log('bakeForm', jsxElements);
     return jsxElements;
 }
 
@@ -88,5 +90,15 @@ function getFormElement(elem: FormElem, actions: ActionCreators, value: any): JS
               </input>
             </div>);
     } else {
+        return (<div className="form-row">
+              <label className="sr-only">{elem.label}</label>
+              <input type="text" 
+                id={'input_' + elem.field} 
+                className="form-control" 
+                value={value[elem.field]} 
+                placeholder={elem.label}
+                onChange={(e: any) => actions.setSignupFormValue(elem.field, e.target.value)}>
+              </input>
+            </div>);
     }
 }
