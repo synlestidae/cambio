@@ -21,7 +21,7 @@ export class SignupInfo {
     password: string = '';
 }
 
-export type LoginPage = 'LoginInfo' | 'PersonalInfo' | 'Identification';
+export type LoginPage = 'LoginInfo' | 'PersonalInfo' | 'ConfirmEmail' | 'Identification';
 
 export class SignupState {
     info: PersonalInfo = new PersonalInfo();

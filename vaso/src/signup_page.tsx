@@ -19,8 +19,8 @@ export function SignupPage(props: LoginPageProps) {
                   <div>Enter your login details.</div>
                 </div>
                 {signup}
-                <LoginMessage page={props.page}></LoginMessage>
-                <LoginOptions isSignup={props.page.isSignup} actions={props.actions}></LoginOptions>
+                <SignupButton {...props.page.signupState} actions={props.actions}>
+                </SignupButton>    
             </form>
         </div>;
     }
@@ -57,6 +57,40 @@ interface LoginButtonProps {
     password: string,
     actions: ActionCreators
 }
+
+function SignupButton(props: SignupState & {actions: ActionCreators}) {
+    let next = ''
+    let prev = '';
+    let nextPage = '';
+
+    if (props.form_state === 'LoginInfo') {
+        next = 'Add personal details';
+        prev = 'I have an account.';
+    }
+
+    if (props.form_state === 'PersonalInfo') {
+        next = 'Identify yourself (optional)';
+        prev = 'Edit personal details';
+    }
+
+    if (props.form_state === 'ConfirmEmail') {
+        next = 'Prove your ID';
+        prev = 'Back to personal details';
+    }
+
+    if (props.form_state === 'Identification') {
+        next = 'Finish';
+        prev = 'Back to personal details';
+    }
+
+    return <div className="form-row">
+        <a href="javascript: void" onClick={(e: any) => {e.preventDefault();  props.actions.prevSignupForm()}}>{prev}</a> 
+        <button onClick={(e: any) => {e.preventDefault(); props.actions.nextSignupForm()}} className="btn btn-primary btn-block width-initial" type="submit">
+          {next}
+        </button>
+    </div>;
+}
+
 
 function LoginButton(props: LoginButtonProps) {
     let text: string;

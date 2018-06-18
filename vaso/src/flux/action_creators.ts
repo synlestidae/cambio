@@ -109,6 +109,14 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_SIGNUP_FORM_VALUE', field, value));
     }
 
+    public nextSignupForm() {
+        this.dispatch(new BasicAction('NEXT_SIGNUP_FORM'));
+    }
+
+    public prevSignupForm() {
+        this.dispatch(new BasicAction('PREV_SIGNUP_FORM'));
+    }
+
     public editNewOrder() {
         this.dispatch(new BasicAction('EDIT_NEW_ORDER'));
     }

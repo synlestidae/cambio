@@ -18,6 +18,7 @@ export function reduce(state: AppState, action: Action): AppState {
 
 function reduceLogin(state: AppState, action: Action): AppState {
     if (state.page instanceof LoginPage) {
+        let page = state.page as LoginPage;
         switch (action.name) {
             case 'SIGNUP_MODE': 
                 state.page.isSignup = action.value === 'SIGNUP';
@@ -43,9 +44,25 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 state.page.password = action.value;
                 state.page.loadingState.name = 'Ready';
                 break;
+            case 'NEXT_SIGNUP_FORM':
+                (page.signupState as any).form_state = nextPage(page.signupState.form_state);
+                break;
+            case 'PREV_SIGNUP_FORM':
+                (page.signupState as any).form_state = prevPage(page.signupState.form_state);
+                break;
         }
     }
     return state;
+}
+
+const PAGES = ['LoginInfo', 'PersonalInfo', 'ConfirmEmail', 'Identification', 'Done'];
+
+function nextPage(name: string) {
+    return PAGES[PAGES.indexOf(name) + 1]; 
+}
+
+function prevPage(name: string) {
+    return PAGES[PAGES.indexOf(name) - 1]; 
 }
 
 function reduceAccounts(state: AppState, action: Action): AppState {

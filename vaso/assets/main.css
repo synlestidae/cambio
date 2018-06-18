@@ -279,3 +279,6 @@ table.table-component tr.empty-row td {
     text-align: center;
 }
 
+.width-initial {
+    width: initial;
+}
