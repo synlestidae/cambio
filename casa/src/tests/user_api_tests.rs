@@ -6,6 +6,7 @@ use iron_test::{request, response};
 use tests::test_utils::get_db_helper;
 use serde_json;
 use domain;
+use std::sync::mpsc::channel;
 
 #[test]
 fn test_creates_new_user() {
@@ -15,7 +16,8 @@ fn test_creates_new_user() {
     }"#;
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
-    let handler = api::ApiHandler::new(get_db_helper(), "http://localhost:8081");
+    let (tx, rx) = channel();
+    let handler = api::ApiHandler::new(get_db_helper(), "http://localhost:8081", tx);
     let response = request::post("http://localhost:3000/users/register", 
         headers, 
         new_user,
@@ -37,21 +39,30 @@ fn test_creates_new_user_and_password_works() {
     }"#;
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
-    let handler = api::ApiHandler::new(get_db_helper(), "http://localhost:8081");
+    let (tx, rx) = channel();
+    let handler = api::ApiHandler::new(get_db_helper(), "http://localhost:8081", tx);
     request::post("http://localhost:3000/users/register", 
         headers.clone(), 
         new_user,
         &handler).unwrap();
 
-    let response = request::post("http://localhost:3000/users/log_in", 
-        headers, 
+    let bad_response = request::post("http://localhost:3000/users/log_in", 
+        headers.clone(), 
         r#"{
             "email_address": "cat@coolcat.com",
             "password": "supersecret123"
         }"#,
         &handler).unwrap();
 
+    let good_response = request::post("http://localhost:3000/users/log_in", 
+        headers, 
+        r#"{
+            "email_address": "cat@coolcat.com",
+            "password": "supersecret1234"
+        }"#,
+        &handler).unwrap();
 
-    assert_eq!(Status::InternalServerError, response.status.unwrap());
+    assert_eq!(Status::InternalServerError, bad_response.status.unwrap());
+    assert_eq!(Status::Ok, good_response.status.unwrap());
 }
 
