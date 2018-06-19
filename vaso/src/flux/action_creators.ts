@@ -8,6 +8,7 @@ import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
 import {UserOrder} from '../domain/user_order';
+import {SignupInfo, PersonalInfo} from './state/signup_state';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -123,6 +124,14 @@ export class ActionCreators {
 
     public prevSignupForm() {
         this.dispatch(new BasicAction('PREV_SIGNUP_FORM'));
+    }
+
+    public sendRegistration(login: SignupInfo, info: PersonalInfo) {
+        throw new Error('Registration not implemented!');
+    }
+
+    public confirmRegistration(identification: string, confirmationCode: string) {
+        throw new Error('Registration confirmation not implemented!');
     }
 
     public editNewOrder() {
