@@ -7,6 +7,7 @@ import {Account} from '../domain/Account';
 import {UserOrder} from '../domain/user_order';
 import {Transaction} from '../domain/transaction';
 import {NewOrder, OrderState} from './state/new_order';
+import {RegistrationInfo} from '../domain/registration_info';
 
 export function reduce(state: AppState, action: Action): AppState {
     state = reducePage(state, action);
@@ -68,6 +69,17 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 break;
             case 'ADD_DIRTY_SIGNUP_VALUE':
                 signupState.dirtyFields.add(action.value);
+                break;
+            case 'SET_REGISTRATION_INFO':
+                signupState.registrationInfo = <RegistrationInfo>action.payload;
+                break;
+            case 'SET_CONFIRMATION_CODE':
+                let matches = /\d{1,5}/.exec(action.value);
+                if (matches) {
+                    signupState.confirmationCode = matches[1];
+                } else {
+                    signupState.confirmationCode = '';
+                }
                 break;
         }
     }

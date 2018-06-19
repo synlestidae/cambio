@@ -160,12 +160,20 @@ function LoginOptions(props: LoginOptionsProps) {
 }
 
 function ConfirmEmail(props: LoginPageProps): JSX.Element {
+    let actions = props.actions; 
+
     return (<form className="form-signin"> 
         <div className="form-row">
           <div>Enter the 5-digit confirmation code that was emailed to {props.page.signupState.loginInfo.email_address}.</div>
         </div>
         <div className="form-row">
-          <input type="text" maxLength={5} className="pin-input form-control">
+          <input 
+              type="text" 
+              maxLength={5} 
+              className="pin-input form-control" 
+              onChange={(e: any) => actions.setConfirmationCode(e.target.value as string)}
+              value={props.page.signupState.confirmationCode}
+              >
           </input>
         </div>
         <div className="form-row side-by-side">

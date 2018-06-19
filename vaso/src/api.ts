@@ -6,6 +6,7 @@ import {UserOrder} from './domain/user_order';
 import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
+import {RegistrationInfo} from './domain/registration_info';
 
 export class Api {
     baseUrl = "http://localhost:3000";
@@ -33,13 +34,21 @@ export class Api {
             });
     }
 
-    public asyncRegisterUser(email_address: string, password: string): Promise<void> {
-        let that = this;
-
+    public asyncRegisterUser(email_address: string, password: string): Promise<RegistrationInfo> {
         return this.makeRequest('/users/register/', 'POST', {
             email_address: email_address,
             password: password
-        }).then(() => that.asyncLogInUser(email_address, password));
+        }).then((result: any) => RegistrationInfo.parse(result));
+    }
+
+    public asyncConfirmRegistration(emailAddress: string, 
+        confirmationCode: string,
+        identifierCode: string): Promise<void> {
+        return this.makeRequest('/users/confirm/', 'POST', {
+            email_address: emailAddress,
+            confirmation_code: confirmationCode,
+            identifier_code: identifierCode
+        }).then(() => {});
     }
 
     public asyncGetAccounts(): Promise<Account[]> {

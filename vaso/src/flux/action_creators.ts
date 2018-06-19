@@ -59,6 +59,10 @@ export class ActionCreators {
             .catch((r: any) => this.handleLoginReject(r));
     }
 
+    public setConfirmationCode(code: string) {
+        this.dispatch(new BasicAction('SET_CONFIRMATION_CODE', code));
+    }
+
     public changeURL(hash: string) {
         if (hash.startsWith('#accounts')) {
             window.location.hash = '#accounts';
@@ -126,11 +130,12 @@ export class ActionCreators {
         this.dispatch(new BasicAction('PREV_SIGNUP_FORM'));
     }
 
-    public sendRegistration(login: SignupInfo, info: PersonalInfo) {
-        throw new Error('Registration not implemented!');
+    public async sendRegistration(login: SignupInfo, info: PersonalInfo) {
+        let registration = await this.api.asyncRegisterUser(login.email_address, login.password);
+        this.dispatch(new BasicAction('SET_REGISTRATION_INFO', null, registration));
     }
 
-    public confirmRegistration(identification: string, confirmationCode: string) {
+    public async confirmRegistration(identification: string, confirmationCode: string) {
         throw new Error('Registration confirmation not implemented!');
     }
 

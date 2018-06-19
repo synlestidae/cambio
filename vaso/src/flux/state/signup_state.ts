@@ -1,4 +1,5 @@
 import {CalendarDate} from '../../domain/calendar_date';
+import {RegistrationInfo} from '../../domain/registration_info';
 
 export class PersonalInfo {
     first_names: string = '';
@@ -30,4 +31,6 @@ export class SignupState {
     info: PersonalInfo = new PersonalInfo();
     identification: IdentificationInfo = new IdentificationInfo();
     dirtyFields: Set<string> = new Set();
+    registrationInfo: RegistrationInfo|null = null;
+    confirmationCode: string = '';
 }
