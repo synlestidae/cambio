@@ -11,14 +11,17 @@ use serde_json;
 use services::UserService;
 use domain;
 use api;
+use repository::{Creatable, Readable};
 
 pub struct UserApi<C: PostgresHelper + Clone> {
-    user_service: UserService<C>,
+    db: C,
+    user_service: UserService<C>
 }
 
 impl<C: PostgresHelper + Clone> UserApi<C> {
     pub fn new(helper: C, web3_address: &str) -> Self {
         Self {
+            db: helper.clone(),
             user_service: UserService::new(helper, web3_address),
         }
     }
@@ -34,24 +37,19 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
         let pending_registration = 
             PendingRegistration::new(&registration.email_address, &registration.password);
 
-        info!("Calling register user function for {}", registration.email_address);
+        /*info!("Calling register user function for {}", registration.email_address);*/
 
-        let register_result = self
+        /*let register_result = self
             .user_service
-            .register_user(&registration.email_address, registration.password.clone());
+            .register_user(&registration.email_address, registration.password.clone());*/
+        let created_reg = match pending_registration.create(&mut self.db) {
+            Ok(r) => r,
+            Err(err) => return err.into()
+        };
 
-        const GENERIC_FAIL_MSG: &str = "Failed to register user";
 
-        match register_result {
-            Ok(result) => {
-                let response_json = serde_json::to_string(&result).unwrap();
-                let content_type = "application/json".parse::<Mime>().unwrap();
-                iron::Response::with((iron::status::Ok, response_json, content_type))
-            }
-            Err(cambio_err) => {
-                cambio_err.into()
-            }
-        }
+        let content_type = "application/json".parse::<Mime>().unwrap();
+        iron::Response::with((iron::status::Ok, "null", content_type))
     }
 
     fn post_log_in(&mut self, login: &api::LogIn) -> Response {
