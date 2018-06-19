@@ -1,6 +1,10 @@
 use domain::Id;
+use postgres;
+use postgres::rows::Row;
+use db::TryFromRow;
+use db::TryFromRowError;
 
-#[Derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
+#[derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Address {
     #[column_id(address_id)]
     id: Option<Id>,

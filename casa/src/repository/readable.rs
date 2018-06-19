@@ -222,6 +222,15 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
     }*/
 }
 
+impl Readable<domain::Registration> for domain::RegistrationId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Registration>, CambioError> {
+        const SELECT_ID: &'static str = "
+            SELECT * FROM registration WHERE id = $1
+        ";
+        db.query(SELECT_ID, &[&self])
+    }
+}
+
 const SELECT_BY_OWNER: &'static str = "
     SELECT *, users.id as user_id, account_owner.id as owner_id
     FROM users 

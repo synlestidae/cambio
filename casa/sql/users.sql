@@ -31,6 +31,23 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL
 );
 
+CREATE TABLE registration (
+    id SERIAL PRIMARY KEY,
+    email_address VARCHAR(256) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    confirmation_code VARCHAR(5) NOT NULL,
+    identifier_code VARCHAR(20) NOT NULL,
+    requested_at TIMESTAMP NOT NULL,
+    confirmed_at TIMESTAMP,
+    CONSTRAINT Confirmation_code_is_5_chars CHECK char_length(confirmation_code) = 5
+);
+
+CREATE TABLE registration_confirm_email (
+    id SERIAL PRIMARY KEY,
+    registration_id SERIAL FOREIGN KEY REFERENCES registration(id),
+    sent_at TIMESTAMP
+)
+
 CREATE TABLE user_role (
     user_id SERIAL REFERENCES users(id),
     role user_role_type NOT NULL,

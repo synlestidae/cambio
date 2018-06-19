@@ -47,3 +47,23 @@ impl Creatable for domain::EthAccount {
         ])))
     }
 }
+
+impl Creatable for domain::Registration {
+    type Id = domain::RegistrationId;
+
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const QUERY: &'static str = "
+            INSERT INTO registration(email_address, password_hash, confirmation_code, identifier_code, requested_id, confirmed_at)
+            VALUES($1, $2, $3, $4, $5, $6)
+            RETURNING id
+        ";
+        Ok(try!(db.query_raw(QUERY, &[
+            &self.email_address, 
+            &self.password_hash, 
+            &self.confirmation_code, 
+            &self.identifier_code, 
+            &self.requested_at, 
+            &self.confirmed_at, 
+        ])))
+    }
+}

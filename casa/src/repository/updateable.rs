@@ -19,3 +19,32 @@ impl Updateable for domain::OrderSettlement {
         }
     }
 }
+
+impl Updateable for domain::Registration {
+    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
+        let id = match self.id {
+            Some(id) => id,
+            None => return Err(CambioError::db_update_failed("Registration"))
+        };
+        const QUERY: &'static str = "
+            UPDATE registration 
+                SET email_address = $1,
+                SET password_hash = $2,
+                SET confirmation_code = $2,
+                SET identifier_code = $3,
+                SET requested_at = $4,
+                SET confirmed_at = $5,
+            WHERE id = $6
+        ";
+        try!(db.execute(QUERY, &[
+            &self.email_address, 
+            &self.password_hash, 
+            &self.confirmation_code, 
+            &self.identifier_code, 
+            &self.requested_at, 
+            &self.confirmed_at, 
+            &id])
+        );
+        Ok(try!(id.get(db)))
+    }
+}
