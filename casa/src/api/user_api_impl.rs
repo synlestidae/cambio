@@ -37,19 +37,19 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
         let pending_registration = 
             PendingRegistration::new(&registration.email_address, &registration.password);
 
-        /*info!("Calling register user function for {}", registration.email_address);*/
-
-        /*let register_result = self
-            .user_service
-            .register_user(&registration.email_address, registration.password.clone());*/
         let created_reg = match pending_registration.create(&mut self.db) {
             Ok(r) => r,
             Err(err) => return err.into()
         };
 
+        let result = api::RegistrationInfo {
+            email_address: created_reg.email_address,
+            identifier_code: created_reg.identifier_code
+        };
 
         let content_type = "application/json".parse::<Mime>().unwrap();
-        iron::Response::with((iron::status::Ok, "null", content_type))
+        let content = serde_json::to_string(&result).unwrap();
+        iron::Response::with((iron::status::Ok, content, content_type))
     }
 
     fn post_log_in(&mut self, login: &api::LogIn) -> Response {
