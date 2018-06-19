@@ -12,6 +12,12 @@ interface LoginPageProps {
 
 export function SignupPage(props: LoginPageProps) {
     if (props.page.isSignup) {
+        if (props.page.signupState.form_state === 'ConfirmEmail') {
+            return <form className="form-signin">
+                <ConfirmEmail {...props}>
+                </ConfirmEmail>
+            </form>;
+        }
         let signup = SignupForm(Object.assign({}, props.page.signupState, {actions: props.actions}));
         return <div className="signup-form">
             <form className="form-signin" onClick={(e: any) => e.preventDefault()}>
@@ -60,31 +66,26 @@ interface LoginButtonProps {
 
 function SignupButton(props: SignupState & {actions: ActionCreators}) {
     let next = ''
-    let prev = '';
+    let prev = 'Back';
     let nextPage = '';
 
     if (props.form_state === 'LoginInfo') {
         next = 'Add personal details';
-        prev = 'I have an account.';
     }
 
     if (props.form_state === 'PersonalInfo') {
         next = 'Identify yourself (optional)';
-        prev = 'Edit personal details';
     }
 
     if (props.form_state === 'ConfirmEmail') {
         next = 'Prove your ID';
-        prev = 'Back to personal details';
     }
 
     if (props.form_state === 'Identification') {
         next = 'Finish';
-        prev = 'Back to personal details';
     }
 
     const nextFn = function(e: any) { 
-        console.log('next fn', e);
         e.preventDefault();
         props.actions.nextSignupForm();
     };
@@ -95,10 +96,10 @@ function SignupButton(props: SignupState & {actions: ActionCreators}) {
     };
 
     return <div className="form-row">
-        <a href="javascript: void" onClick={prevFn}>{prev}</a> 
         <button onClick={nextFn} className="btn btn-primary btn-block width-initial">
           {next}
         </button>
+        <a href="javascript: void" onClick={prevFn}>{prev}</a> 
     </div>;
 }
 
@@ -156,4 +157,27 @@ function LoginOptions(props: LoginOptionsProps) {
           </span>
         </div>;
     }
+}
+
+function ConfirmEmail(props: LoginPageProps): JSX.Element {
+    return (<form className="form-signin"> 
+        <div className="form-row">
+          <div>Enter the 5-digit confirmation code that was emailed to {props.page.signupState.loginInfo.email_address}.</div>
+        </div>
+        <div className="form-row">
+          <input type="text" maxLength={5} className="pin-input form-control">
+          </input>
+        </div>
+        <div className="form-row side-by-side">
+            <button className="btn width-initial" onClick={() => null}>
+                Resend email
+            </button>
+            <button className="btn btn-primary btn-block width-initial" onClick={() => null}>
+                Confirm
+            </button>
+        </div>
+        <div className="form-row">
+            <a href="javascript: void(0)">Back</a>
+        </div>
+    </form>);
 }

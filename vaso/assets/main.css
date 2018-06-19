@@ -286,3 +286,11 @@ table.table-component tr.empty-row td {
 .smaller-font {
     font-size: smaller;
 }
+
+.pin-input {
+    text-align: center;
+}
+
+.form-row.side-by-side {
+    display: flex;
+}

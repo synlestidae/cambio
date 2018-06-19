@@ -104,7 +104,7 @@ export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Ele
             },
             {
                 label: 'Country',
-                field: 'city',
+                field: 'country',
                 validate: () => null
             },
         ];
