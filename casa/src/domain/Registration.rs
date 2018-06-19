@@ -17,8 +17,8 @@ pub struct Registration {
     pub password_hash: String,
     pub confirmation_code: String, 
     pub identifier_code: String, 
-    pub requested_at: DateTime<Utc>,
-    pub confirmed_at: Option<DateTime<Utc>>
+    pub requested_at: NaiveDateTime,
+    pub confirmed_at: Option<NaiveDateTime>
 }
 
 impl Registration {
@@ -31,7 +31,7 @@ impl Registration {
             password_hash: password_hash,
             confirmation_code: random_5_digit_code(),
             identifier_code: random_identifier_code(),
-            requested_at: Utc::now(),
+            requested_at: Utc::now().naive_utc(),
             confirmed_at: None
         }
     }

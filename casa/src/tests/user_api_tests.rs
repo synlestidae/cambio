@@ -9,7 +9,7 @@ use domain;
 use std::sync::mpsc::channel;
 
 #[test]
-fn test_creates_new_user() {
+fn test_registration_successful() {
     let new_user = r#"{
         "email_address": "mate@coolcat.com",
         "password": "supersecret123"
@@ -22,13 +22,11 @@ fn test_creates_new_user() {
         headers, 
         new_user,
         &handler).unwrap();
-    let result_body = response::extract_body_to_bytes(response);
-    let user: domain::User = serde_json::from_slice(&result_body).unwrap();
-    assert!(!user.id.is_none());
-    assert_eq!("mate@coolcat.com", user.email_address);
-    assert_eq!(None, user.password);
-    assert_eq!(None, user.password_hash);
-    assert_eq!(None, user.owner_id);
+    let result_body = response::extract_body_to_string(response);
+    println!("Reg {:?}", result_body);
+    let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
+    assert_eq!("mate@coolcat.com", reg_result.email_address);
+    assert_eq!(20, reg_result.identifier_code.len());
 }
 
 #[test]
@@ -46,7 +44,7 @@ fn test_creates_new_user_and_password_works() {
         new_user,
         &handler).unwrap();
 
-    let bad_response = request::post("http://localhost:3000/users/log_in", 
+    let response = request::post("http://localhost:3000/users/log_in", 
         headers.clone(), 
         r#"{
             "email_address": "cat@coolcat.com",
@@ -54,15 +52,6 @@ fn test_creates_new_user_and_password_works() {
         }"#,
         &handler).unwrap();
 
-    let good_response = request::post("http://localhost:3000/users/log_in", 
-        headers, 
-        r#"{
-            "email_address": "cat@coolcat.com",
-            "password": "supersecret1234"
-        }"#,
-        &handler).unwrap();
-
-    assert_eq!(Status::InternalServerError, bad_response.status.unwrap());
-    assert_eq!(Status::Ok, good_response.status.unwrap());
+    assert_eq!(Status::InternalServerError, response.status.unwrap());
 }
 
