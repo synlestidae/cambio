@@ -52,8 +52,11 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
 
     pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
         -> Response {
-        
-        unimplemented!()
+            let registration = match registration_confirm.identifier_code.get(&mut self.db) {
+                Ok(r) => r,
+                Err(err) => return err.into()
+            };
+            unimplemented!()
     }
 
     pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {
