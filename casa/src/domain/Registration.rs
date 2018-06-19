@@ -35,6 +35,10 @@ impl Registration {
             confirmed_at: None
         }
     }
+
+    pub fn confirm(&mut self) {
+        self.confirmed_at = Some(Utc::now().naive_utc());
+    }
 }
 
 fn random_identifier_code() -> IdentifierCode {

@@ -1,7 +1,7 @@
 use api::{
     get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration
 };
-use db::{ConnectionSource, PostgresHelper};
+use db::{ConnectionSource, PostgresHelper, CambioError};
 use domain::{Session, User, Registration as PendingRegistration};
 use hyper::mime::Mime;
 use iron;
@@ -56,7 +56,20 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
                 Ok(r) => r,
                 Err(err) => return err.into()
             };
-            unimplemented!()
+            if registration_confirm.can_confirm(&registration) {
+                let register_result = self.user_service.register_user(&registration.email_address, 
+                    &registration.password_hash);
+                match register_result {
+                    Ok(user) => {
+                        let content_type = "application/json".parse::<Mime>().unwrap();
+                        let content = serde_json::to_string(&user).unwrap();
+                        iron::Response::with((iron::status::Ok, content, content_type))
+                    },
+                    Err(err) => err.into()
+                }
+            } else {
+                CambioError::unauthorised().into()
+            }
     }
 
     pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {

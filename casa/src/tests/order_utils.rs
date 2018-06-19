@@ -37,11 +37,11 @@ pub fn quick_order(
     let mut order_repo = repositories::OrderRepository::new(get_db_helper());
 
     let user1 = user_service
-        .register_user(buyer, "excellent123".to_owned())
+        .register_user(buyer, "excellent123")
         .unwrap();
 
     let user2 = user_service
-        .register_user(seller, "dohnut123".to_owned())
+        .register_user(seller, "dohnut123")
         .unwrap();
 
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);

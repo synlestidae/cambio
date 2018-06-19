@@ -26,7 +26,7 @@ fn test_registration_successful() {
     println!("Reg {:?}", result_body);
     let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
     assert_eq!("mate@coolcat.com", reg_result.email_address);
-    assert_eq!(20, reg_result.identifier_code.len());
+    assert_eq!(20, reg_result.identifier_code.0.len());
 }
 
 #[test]

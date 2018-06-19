@@ -32,7 +32,7 @@ impl<T: PostgresHelper + Clone> EthereumService<T> {
     pub fn new_account(
         &mut self,
         user_email: &str,
-        account_password: String,
+        account_password: &str,
     ) -> Result<EthAccount, CambioError> {
         let (_eloop, web3) = try!(self.get_web3_inst());
         let query = repository::UserClause::EmailAddress(user_email.to_owned());
@@ -43,9 +43,9 @@ impl<T: PostgresHelper + Clone> EthereumService<T> {
         let user_match = try!(self.user_repo.read(&query)).pop();
         let user = try!(user_match.ok_or(err));
         let owner_id = user.owner_id.unwrap();
-        let account_result = web3.personal().new_account(&account_password).wait();
+        let account_result = web3.personal().new_account(account_password).wait();
         let address = try!(account_result);
-        Ok(EthAccount::new(&address, account_password, owner_id))
+        Ok(EthAccount::new(&address, account_password.to_owned(), owner_id))
     }
 
     fn get_request(

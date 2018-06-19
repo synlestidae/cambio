@@ -1,7 +1,7 @@
 use bcrypt::hash;
 use checkmail;
 use db::{CambioError, PostgresHelper};
-use domain::{Id, Session, SessionState, User};
+use domain::{Id, Session, SessionState, User, Registration};
 use repositories;
 use repository;
 use repository::*;
@@ -9,6 +9,7 @@ use services;
 use std::error::Error;
 
 pub struct UserService<T: PostgresHelper + Clone> {
+    db: T,
     user_repository: repositories::UserRepository<T>,
     session_repository: repositories::SessionRepository<T>,
     eth_service: services::EthereumService<T>,
@@ -23,6 +24,7 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         let sessions = repositories::SessionRepository::new(db_helper.clone());
         let eth_account_repo = repositories::EthAccountRepository::new(db_helper.clone());
         Self {
+            db: db_helper.clone(),
             user_repository: users,
             session_repository: sessions,
             eth_service: services::EthereumService::new(db_helper.clone(), web3_address),
@@ -30,12 +32,34 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         }
     }
 
+    pub fn confirm_registration(&mut self, registration: &Registration) -> Result<User, CambioError> {
+        // TODO transaction needed here
+        
+        // Mark the registration as confirmed
+        let mut confirmed_registration = registration.clone();
+        confirmed_registration.confirm();
+        try!(confirmed_registration.update(&mut self.db));
+
+        // Create and store the user, ready to log in
+        self.create_user(&confirmed_registration.email_address, 
+            &confirmed_registration.password_hash)
+    }
+
     pub fn register_user(
         &mut self,
         email_address: &str,
-        password: String,
+        password: &str,
     ) -> Result<User, CambioError> {
-        let eth_password = password.clone(); // TODO Eth password should come from somewhere else
+        // get the BCrypt hash
+        let password_hash = try!(hash(password, BCRYPT_COST));
+        self.create_user(email_address, &password_hash)
+    }
+
+    pub fn create_user(
+        &mut self,
+        email_address: &str,
+        password_hash: &str,
+    ) -> Result<User, CambioError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input(
                 "Please check that the email entered is valid",
@@ -49,21 +73,17 @@ impl<T: PostgresHelper + Clone> UserService<T> {
             return Err(CambioError::user_exists());
         }
 
-        // get the BCrypt hash
-        let password_hash = try!(hash(&password, BCRYPT_COST));
-        drop(password);
-
         let mut user = User {
             id: None,
             email_address: email_address.to_owned(),
             password: None,
-            password_hash: Some(password_hash),
+            password_hash: Some(password_hash.to_owned()),
             owner_id: None,
         };
 
         user = try!(self.user_repository.create(&user));
-        let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
-        let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
+        //let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
+        //let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
         Ok(user)
     }
 
