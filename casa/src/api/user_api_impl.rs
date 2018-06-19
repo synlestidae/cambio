@@ -2,7 +2,7 @@ use api::{
     get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration, UserApiTrait,
 };
 use db::{ConnectionSource, PostgresHelper};
-use domain::{Session, User};
+use domain::{Session, User, Registration as PendingRegistration};
 use hyper::mime::Mime;
 use iron;
 use iron::headers::SetCookie;
@@ -30,6 +30,9 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
         if registration.password.len() < 8 {
             return ApiError::bad_format("Password needs to be at least 8 characters").into();
         }
+
+        let pending_registration = 
+            PendingRegistration::new(&registration.email_address, &registration.password);
 
         info!("Calling register user function for {}", registration.email_address);
 
