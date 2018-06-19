@@ -54,6 +54,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
         let request_obj = match path.as_slice() {
             &["users", "register"] => ApiRequest::User(UserRequest::Register(try!(get_api_obj(request)))),
             &["users", "log_in"] => ApiRequest::User(UserRequest::LogIn(try!(get_api_obj(request)))),
+            &["users", "confirm"] => ApiRequest::User(UserRequest::Confirm(try!(get_api_obj(request)))),
             &["orders", "active"] => ApiRequest::Order(OrderApiRequest::GetActiveOrders),
             &["orders", "me"] => ApiRequest::Order(OrderApiRequest::GetUserOrders),
             &["orders", "new"] => ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request)))),
