@@ -36,17 +36,16 @@ CREATE TABLE registration (
     email_address VARCHAR(256) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     confirmation_code VARCHAR(5) NOT NULL,
-    identifier_code VARCHAR(20) NOT NULL,
+    identifier_code VARCHAR(20) NOT NULL UNIQUE,
     requested_at TIMESTAMP NOT NULL,
-    confirmed_at TIMESTAMP,
-    CONSTRAINT Confirmation_code_is_5_chars CHECK char_length(confirmation_code) = 5
+    confirmed_at TIMESTAMP
 );
 
 CREATE TABLE registration_confirm_email (
     id SERIAL PRIMARY KEY,
-    registration_id SERIAL FOREIGN KEY REFERENCES registration(id),
+    registration_id SERIAL REFERENCES registration(id),
     sent_at TIMESTAMP
-)
+);
 
 CREATE TABLE user_role (
     user_id SERIAL REFERENCES users(id),

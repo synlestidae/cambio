@@ -1,5 +1,5 @@
 use api::{
-    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration, UserApiTrait,
+    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration
 };
 use db::{ConnectionSource, PostgresHelper};
 use domain::{Session, User, Registration as PendingRegistration};
@@ -25,10 +25,8 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
             user_service: UserService::new(helper, web3_address),
         }
     }
-}
 
-impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
-    fn put_register(&mut self, registration: &api::Registration) -> Response {
+    pub fn put_register(&mut self, registration: &api::Registration) -> Response {
         // test password requirements
         if registration.password.len() < 8 {
             return ApiError::bad_format("Password needs to be at least 8 characters").into();
@@ -52,7 +50,12 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
         iron::Response::with((iron::status::Ok, content, content_type))
     }
 
-    fn post_log_in(&mut self, login: &api::LogIn) -> Response {
+    pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
+        -> Response {
+        unimplemented!()
+    }
+
+    pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {
         let log_in_result = self
             .user_service
             .log_user_in(&login.email_address, login.password.clone());
@@ -75,7 +78,7 @@ impl<C: PostgresHelper + Clone> UserApiTrait for UserApi<C> {
         }
     }
 
-    fn get_profile(&mut self, user: &User) -> Response {
+    pub fn get_profile(&mut self, user: &User) -> Response {
         unimplemented!()
     }
 }
