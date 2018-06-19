@@ -1,4 +1,4 @@
-use domain::RegistrationId;
+use domain::{RegistrationId, IdentifierCode};
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
 use db::{TryFromRow, TryFromRowError};
@@ -16,7 +16,7 @@ pub struct Registration {
     pub email_address: String,
     pub password_hash: String,
     pub confirmation_code: String, 
-    pub identifier_code: String, 
+    pub identifier_code: IdentifierCode, 
     pub requested_at: NaiveDateTime,
     pub confirmed_at: Option<NaiveDateTime>
 }
@@ -37,7 +37,7 @@ impl Registration {
     }
 }
 
-fn random_identifier_code() -> String {
+fn random_identifier_code() -> IdentifierCode {
     let mut rng = rand::thread_rng();
     //let mut token = String::new();
     /*for _ in 0..20 {
@@ -48,10 +48,10 @@ fn random_identifier_code() -> String {
        }
     }*/
     //token
-    iter::repeat(())
+    IdentifierCode(iter::repeat(())
         .map(|()| rng.sample(Alphanumeric))
         .take(20)
-        .collect()
+        .collect())
 }
 
 fn random_5_digit_code() -> String {

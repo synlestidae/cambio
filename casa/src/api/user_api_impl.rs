@@ -52,6 +52,7 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
 
     pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
         -> Response {
+        
         unimplemented!()
     }
 
