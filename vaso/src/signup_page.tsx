@@ -86,8 +86,12 @@ function SignupButton(props: SignupState & {actions: ActionCreators}) {
     }
 
     const nextFn = function(e: any) { 
-        e.preventDefault();
-        props.actions.nextSignupForm();
+        if (props.form_state === 'PersonalInfo') {
+            props.actions.sendRegistration(props.loginInfo, props.info);
+        } else {
+            e.preventDefault();
+            props.actions.nextSignupForm();
+        }
     };
 
     const prevFn = function(e: any) { 
@@ -161,6 +165,7 @@ function LoginOptions(props: LoginOptionsProps) {
 
 function ConfirmEmail(props: LoginPageProps): JSX.Element {
     let actions = props.actions; 
+    let state = props.page.signupState;
 
     return (<form className="form-signin"> 
         <div className="form-row">
@@ -172,20 +177,20 @@ function ConfirmEmail(props: LoginPageProps): JSX.Element {
               maxLength={5} 
               className="pin-input form-control" 
               onChange={(e: any) => actions.setConfirmationCode(e.target.value as string)}
-              value={props.page.signupState.confirmationCode}
-              >
+              value={props.page.signupState.confirmationCode} >
           </input>
         </div>
         <div className="form-row side-by-side">
             <button className="btn width-initial" onClick={() => null}>
                 Resend email
             </button>
-            <button className="btn btn-primary btn-block width-initial" onClick={() => null}>
+            <button className="btn btn-primary btn-block width-initial" 
+                onClick={() => props.actions.confirmRegistration(state.confirmationCode, state.registrationInfo.identifierCode)}>
                 Confirm
             </button>
         </div>
         <div className="form-row">
-            <a href="javascript: void(0)">Back</a>
+            <a href="javascript: void(0)" onClick={() => actions.prevSignupForm()}>Back</a>
         </div>
     </form>);
 }

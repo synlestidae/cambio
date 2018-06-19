@@ -289,6 +289,7 @@ table.table-component tr.empty-row td {
 
 .pin-input {
     text-align: center;
+    letter-spacing: 1em;
 }
 
 .form-row.side-by-side {
