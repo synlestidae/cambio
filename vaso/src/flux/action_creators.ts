@@ -135,8 +135,8 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_REGISTRATION_INFO', null, registration));
     }
 
-    public async confirmRegistration(identification: string, confirmationCode: string) {
-        throw new Error('Registration confirmation not implemented!');
+    public async confirmRegistration(emailAddress: string, identification: string, confirmationCode: string) {
+        await this.api.asyncConfirmRegistration(emailAddress, identification, confirmationCode);
     }
 
     public editNewOrder() {

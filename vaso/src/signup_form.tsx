@@ -82,13 +82,13 @@ export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Ele
                 label: 'Address line 1',
                 field: 'address_line_1',
                 validate: nonEmpty('Enter the top line you would put on a letter.'),
-                name: 'address-line-1'
+                name: 'address-line1'
             },
             {
                 label: 'Address line 2',
                 field: 'address_line_2',
                 validate: () => null,
-                name: 'address-line-2'
+                name: 'address-line2'
             },
             {
                 label: 'Post code',

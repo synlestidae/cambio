@@ -38,7 +38,9 @@ export class Api {
         return this.makeRequest('/users/register/', 'POST', {
             email_address: email_address,
             password: password
-        }).then((result: any) => RegistrationInfo.parse(result));
+        })
+        .then((r: Response) => r.json())
+        .then((result: any) => RegistrationInfo.parse(result));
     }
 
     public asyncConfirmRegistration(emailAddress: string, 
@@ -48,7 +50,7 @@ export class Api {
             email_address: emailAddress,
             confirmation_code: confirmationCode,
             identifier_code: identifierCode
-        }).then(() => {});
+        }).then((r: Response) => r.json());
     }
 
     public asyncGetAccounts(): Promise<Account[]> {

@@ -13,10 +13,7 @@ interface LoginPageProps {
 export function SignupPage(props: LoginPageProps) {
     if (props.page.isSignup) {
         if (props.page.signupState.form_state === 'ConfirmEmail') {
-            return <form className="form-signin">
-                <ConfirmEmail {...props}>
-                </ConfirmEmail>
-            </form>;
+            return <ConfirmEmail {...props}></ConfirmEmail>;
         }
         let signup = SignupForm(Object.assign({}, props.page.signupState, {actions: props.actions}));
         return <div className="signup-form">
@@ -86,12 +83,10 @@ function SignupButton(props: SignupState & {actions: ActionCreators}) {
     }
 
     const nextFn = function(e: any) { 
-        if (props.form_state === 'PersonalInfo') {
+        if (props.form_state === 'LoginInfo') {
             props.actions.sendRegistration(props.loginInfo, props.info);
-        } else {
-            e.preventDefault();
-            props.actions.nextSignupForm();
         }
+        props.actions.nextSignupForm();
     };
 
     const prevFn = function(e: any) { 
@@ -167,7 +162,7 @@ function ConfirmEmail(props: LoginPageProps): JSX.Element {
     let actions = props.actions; 
     let state = props.page.signupState;
 
-    return (<form className="form-signin"> 
+    return (<div className="form-signin"> 
         <div className="form-row">
           <div>Enter the 5-digit confirmation code that was emailed to {props.page.signupState.loginInfo.email_address}.</div>
         </div>
@@ -184,13 +179,21 @@ function ConfirmEmail(props: LoginPageProps): JSX.Element {
             <button className="btn width-initial" onClick={() => null}>
                 Resend email
             </button>
-            <button className="btn btn-primary btn-block width-initial" 
-                onClick={() => props.actions.confirmRegistration(state.confirmationCode, state.registrationInfo.identifierCode)}>
-                Confirm
+            <button
+                className="btn btn-primary btn-block width-initial" 
+                onClick={(e: any) => function() {
+                    console.log('click piss', e);
+                    let email = state.loginInfo.email_address;
+                    let password = state.loginInfo.password;
+                    let confirmPromise = 
+                        props.actions.confirmRegistration(email, state.confirmationCode, state.registrationInfo.identifierCode)
+                    confirmPromise.then(() => props.actions.submitLogin(email, password));
+                }}>
+                Confirm email
             </button>
         </div>
         <div className="form-row">
             <a href="javascript: void(0)" onClick={() => actions.prevSignupForm()}>Back</a>
         </div>
-    </form>);
+    </div>);
 }
