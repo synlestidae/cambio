@@ -33,8 +33,8 @@ CREATE TABLE users (
 
 CREATE TABLE registration (
     id SERIAL PRIMARY KEY,
-    email_address VARCHAR(256) NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
+    email_address VARCHAR(256) NOT NULL,
+    password_hash VARCHAR(256) NOT NULL,
     confirmation_code VARCHAR(5) NOT NULL,
     identifier_code VARCHAR(20) NOT NULL UNIQUE,
     requested_at TIMESTAMP NOT NULL,

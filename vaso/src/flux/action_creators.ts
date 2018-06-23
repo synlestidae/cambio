@@ -136,7 +136,7 @@ export class ActionCreators {
     }
 
     public async confirmRegistration(emailAddress: string, identification: string, confirmationCode: string) {
-        await this.api.asyncConfirmRegistration(emailAddress, identification, confirmationCode);
+        await this.api.asyncConfirmRegistration(emailAddress, confirmationCode, identification);
     }
 
     public editNewOrder() {
