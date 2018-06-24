@@ -12,7 +12,7 @@ set -o pipefail
 clean_up () {
     echo "Killing geth"
     pkill geth
-    clean_db
+    #clean_db
 }
 
 cargo build

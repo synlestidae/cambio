@@ -64,7 +64,7 @@ fn test_creates_new_user_and_password_works() {
         headers.clone(), 
         r#"{
             "email_address": "cat@coolcat.com",
-            "password": "supersecret123"
+            "password": "supersecret1234"
         }"#,
         &handler).unwrap();
 

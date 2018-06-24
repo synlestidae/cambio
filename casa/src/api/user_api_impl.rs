@@ -57,7 +57,7 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
                 Err(err) => return err.into()
             };
             if registration_confirm.can_confirm(&registration) {
-                let register_result = self.user_service.register_user(&registration.email_address, 
+                let register_result = self.user_service.create_user(&registration.email_address, 
                     &registration.password_hash);
                 match register_result {
                     Ok(user) => {
