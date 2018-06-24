@@ -57,7 +57,6 @@ impl Creatable for domain::Registration {
             VALUES($1, $2, $3, $4, $5, $6)
             RETURNING id
         ";
-        println!("Happy query?");
         let result = try!(db.query_raw(QUERY, &[
             &self.email_address, 
             &self.password_hash, 
@@ -66,7 +65,6 @@ impl Creatable for domain::Registration {
             &self.requested_at, 
             &self.confirmed_at, 
         ]));
-        println!("Happy query!");
         Ok(result)
     }
 }
