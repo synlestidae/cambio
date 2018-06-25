@@ -8,7 +8,7 @@ import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
 import {UserOrder} from '../domain/user_order';
-import {SignupInfo, PersonalInfo} from './state/signup_state';
+import {SignupState, SignupInfo, PersonalInfo, IdentificationInfo} from './state/signup_state';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -135,8 +135,14 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_REGISTRATION_INFO', null, registration));
     }
 
-    public async confirmRegistration(emailAddress: string, identification: string, confirmationCode: string) {
-        await this.api.asyncConfirmRegistration(emailAddress, confirmationCode, identification);
+    public async confirmRegistration(signupState: SignupState) {
+        await this.api.asyncConfirmRegistration(
+            signupState.confirmationCode,
+            signupState.registrationInfo.identifierCode,
+            signupState.loginInfo, 
+            signupState.info, 
+            signupState.identification
+        );
     }
 
     public editNewOrder() {

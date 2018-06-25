@@ -7,6 +7,7 @@ import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
 import {RegistrationInfo} from './domain/registration_info';
+import {SignupInfo, PersonalInfo, IdentificationInfo} from './flux/state/signup_state';
 
 export class Api {
     baseUrl = "http://localhost:3000";
@@ -43,11 +44,13 @@ export class Api {
         .then((result: any) => RegistrationInfo.parse(result));
     }
 
-    public asyncConfirmRegistration(emailAddress: string, 
-        confirmationCode: string,
-        identifierCode: string): Promise<void> {
+    public asyncConfirmRegistration(confirmationCode: string,
+        identifierCode: string,
+        signupInfo: SignupInfo,
+        personalInfo: PersonalInfo,
+        identificationInfo: IdentificationInfo): Promise<void> {
         return this.makeRequest('/users/confirm/', 'POST', {
-            email_address: emailAddress,
+            email_address: signupInfo.email_address,
             confirmation_code: confirmationCode,
             identifier_code: identifierCode
         }).then((r: Response) => r.json());
