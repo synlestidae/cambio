@@ -1,3 +1,12 @@
+CREATE TABLE user_profile (
+    id SERIAL PRIMARY KEY,
+    user_id SERIAL REFERENCES users(id) NOT NULL,
+    personal_info SERIAL REFERENCES personal_info(id) NOT NULL,
+    address SERIAL REFERENCES address(id) NOT NULL, 
+    contact_info SERIAL REFERENCES contact_info,
+    identity SERIAL references personal_identity(id)
+);
+
 CREATE TABLE address (
     id SERIAL PRIMARY KEY,
     address_line_1 TEXT,
@@ -22,6 +31,7 @@ CREATE TYPE photo_status_type AS ENUM ('approved', 'denied', 'unclear', 'waiting
 
 CREATE TABLE personal_identity (
     id SERIAL PRIMARY KEY,
+    user_id SERIAL REFERENCES users(id),
 
     -- identity numbers
     nz_passport_number VARCHAR(64),
@@ -40,7 +50,8 @@ CREATE TABLE personal_identity (
 
 CREATE TABLE personal_info (
     id SERIAL,
-    complete_name TEXT NOT NULL,
+    given_names TEXT NOT NULL,
+    family_names TEXT NOT NULL,
     date_of_birth DATE NOT NULL,
     address_id SERIAL REFERENCES address(id),
     contact_info_id SERIAL REFERENCES contact_info(id),

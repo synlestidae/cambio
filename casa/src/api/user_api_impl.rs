@@ -40,6 +40,8 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
             Err(err) => return err.into()
         };
 
+        println!("Got registration {:?}", created_reg);
+
         let result = api::RegistrationInfo {
             email_address: created_reg.email_address,
             identifier_code: created_reg.identifier_code

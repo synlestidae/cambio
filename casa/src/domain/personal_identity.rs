@@ -1,6 +1,6 @@
 use db::{get_value, get_value_option};
 use db::{TryFromRow, TryFromRowError};
-use domain::{Id, PhotoStatus};
+use domain::{Id, UserId, PhotoStatus};
 use postgres;
 use postgres::rows::Row;
 
@@ -8,6 +8,7 @@ use postgres::rows::Row;
 pub struct PersonalIdentity {
     #[column_id(personal_identity_id)]
     id: Option<Id>,
+    user_id: UserId,
     nz_passport_number: Option<String>,
     nz_drivers_licence_number: Option<String>,
 
