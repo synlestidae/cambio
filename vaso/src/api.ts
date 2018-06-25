@@ -52,7 +52,19 @@ export class Api {
         return this.makeRequest('/users/confirm/', 'POST', {
             email_address: signupInfo.email_address,
             confirmation_code: confirmationCode,
-            identifier_code: identifierCode
+            identifier_code: identifierCode,
+            personal_details: {
+                first_names: personalInfo.first_names,
+                family_name: personalInfo.family_name,
+                address_line_1: personalInfo.address_line_1,
+                address_line_2: personalInfo.address_line_2,
+                post_code: personalInfo.post_code,
+                city: personalInfo.city,
+                dob: personalInfo.dob,
+                country: 'New Zealand',
+                id_type: identificationInfo.id_type,
+                id_number: identificationInfo.id_number
+            }
         }).then((r: Response) => r.json());
     }
 
