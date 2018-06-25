@@ -32,6 +32,8 @@ fn test_registration_successful() {
 
 #[test]
 fn test_creates_new_user_and_password_works() {
+    use chrono::prelude::*;
+
     let mut db = get_db_helper();
     let new_user = r#"{
         "email_address": "cat@coolcat.com",
@@ -49,10 +51,25 @@ fn test_creates_new_user_and_password_works() {
     let result_body = response::extract_body_to_string(register_response);
     let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
     let registration: domain::Registration = reg_result.identifier_code.get(&mut db).unwrap();
+
+    let dob = DateTime::<Utc>::from_utc(NaiveDate::from_ymd(1999, 10, 1).and_hms(0, 0, 0), Utc);
+
     let confirmation = api::RegistrationConfirm {
         email_address: "cat@coolcat.com".to_owned(),
         confirmation_code: registration.confirmation_code,    
-        identifier_code: registration.identifier_code
+        identifier_code: registration.identifier_code,
+        personal_details: api::PersonalDetails {
+            first_names: "John Bambam Windsor".to_owned(),
+            family_name: "Conovich".to_owned(),
+            address_line_1: "55 Cuddlebear lane".to_owned(),
+            address_line_2: None.to_owned(),
+            post_code: "4231".to_owned(),
+            city: "Wellington".to_owned(),
+            country: "New Zealand".to_owned(),
+            dob: dob,
+            id_type: "Password_NZ".to_owned(),
+            id_number: "LM123456".to_owned()
+        }
     };
 
     request::post("http://localhost:3000/users/confirm", 

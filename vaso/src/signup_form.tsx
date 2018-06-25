@@ -9,7 +9,7 @@ interface PartialSignupFormProps {
     actions: ActionCreators;
 }
 
-interface FormElem {
+export interface FormElem {
     label: string;
     field: string;
     validate(val: string): string|null;
@@ -17,7 +17,7 @@ interface FormElem {
     name?: string;
 }
 
-class OptionElem implements FormElem {
+export class OptionElem implements FormElem {
     public options: string[];
     public label: string;
     public field: string;
@@ -36,7 +36,7 @@ class OptionElem implements FormElem {
     }
 }
 
-export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Element[] {
+export function buildForm(props: SignupState & PartialSignupFormProps): FormElem[] {
     let elems: FormElem[] = [];
     const nonEmpty = function(msg: string) {
         return (val: string) => Boolean(val)? null : msg;
@@ -114,7 +114,11 @@ export function SignupForm(props: SignupState & PartialSignupFormProps): JSX.Ele
             {label: 'ID Number', field: 'id_number', validate: nonEmpty('Enter the ID number')}
         ];
     }
-    return makeForm(elems, props.actions, props);
+    return elems;
+}
+
+export function SignupForm(elems: FormElem[], actions: ActionCreators, props: SignupState): JSX.Element[] {
+    return makeForm(elems, actions, props);
 }
 
 function makeForm(elems: FormElem[], actions: ActionCreators, props: SignupState): JSX.Element[] {

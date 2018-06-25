@@ -3,7 +3,7 @@ import {LoginPage} from './flux/state/login_page';
 import {Action} from './flux/action';
 import {ActionCreators} from './flux/action_creators';
 import {SignupState} from './flux/state/signup_state';
-import {SignupForm} from './signup_form';
+import {buildForm, SignupForm, FormElem} from './signup_form';
 
 interface LoginPageProps {
     page: LoginPage,
@@ -15,14 +15,16 @@ export function SignupPage(props: LoginPageProps) {
         if (props.page.signupState.form_state === 'ConfirmEmail') {
             return <ConfirmEmail {...props}></ConfirmEmail>;
         }
-        let signup = SignupForm(Object.assign({}, props.page.signupState, {actions: props.actions}));
+        let formProps = Object.assign({}, props.page.signupState, {actions: props.actions});
+        let formElems = buildForm(formProps);
+        let signup = SignupForm(formElems, props.actions, props.page.signupState);
         return <div className="signup-form">
             <form className="form-signin" onClick={(e: any) => e.preventDefault()}>
                 <div className="form-row">
                   <div>Enter your login details.</div>
                 </div>
                 {signup}
-                <SignupButton {...props.page.signupState} actions={props.actions}>
+                <SignupButton {...props.page.signupState} actions={props.actions} formElems={formElems}>
                 </SignupButton>    
             </form>
         </div>;
@@ -61,7 +63,7 @@ interface LoginButtonProps {
     actions: ActionCreators
 }
 
-function SignupButton(props: SignupState & {actions: ActionCreators}) {
+function SignupButton(props: SignupState & {actions: ActionCreators} & {formElems: FormElem[]}) {
     let next = ''
     let prev = 'Back';
     let nextPage = '';
@@ -93,6 +95,8 @@ function SignupButton(props: SignupState & {actions: ActionCreators}) {
         e.preventDefault();
         props.actions.prevSignupForm();
     };
+
+    //let validationMessage = props.formElems.reduce((elem: FormElem, msg: string|null) => msg || elem.validate(elem.value), null);
 
     return <div className="form-row">
         <button onClick={nextFn} className="btn btn-primary btn-block width-initial">
@@ -181,7 +185,8 @@ function ConfirmEmail(props: LoginPageProps): JSX.Element {
             </button>
             <button
                 className="btn btn-primary btn-block width-initial" 
-                onClick={() => async function() {
+                onClick={async function() {
+                    console.log('confirming', state);
                     await props.actions.confirmRegistration(state);
                     props.actions.submitLogin(state.loginInfo.email_address, state.loginInfo.password);
                 }}>

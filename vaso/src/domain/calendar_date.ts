@@ -28,6 +28,10 @@ export class CalendarDate {
         this.year = newYear;
     }
 
+    public getDate(): Date {
+        return new Date(this.date);
+    }
+
     public getDateString(): string {
         return `${pad2(this.year)}/${pad2(this.month)}/${pad2(this.year)}`;
     }

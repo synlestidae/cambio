@@ -60,7 +60,7 @@ export class Api {
                 address_line_2: personalInfo.address_line_2,
                 post_code: personalInfo.post_code,
                 city: personalInfo.city,
-                dob: personalInfo.dob,
+                dob: personalInfo.dob.getDate(),
                 country: 'New Zealand',
                 id_type: identificationInfo.id_type,
                 id_number: identificationInfo.id_number
