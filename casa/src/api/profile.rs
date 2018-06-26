@@ -1,11 +1,14 @@
 use chrono::NaiveDate;
 use domain;
+use db::TryFromRow;
+use db::TryFromRowError;
+use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Profile {
     given_names: String,
     family_names: String,
     date_of_birth: NaiveDate,
     contact_details: domain::ContactInfo,
-    personal_identity: domain::PersonalIdentity,
+    personal_identity: Option<domain::PersonalIdentity>
 }

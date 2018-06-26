@@ -3,7 +3,7 @@ use domain::Id;
 use postgres;
 use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TryFromRow)]
+#[derive(Debug, Clone, TryFromRow)]
 pub struct ContactInfo {
     #[column_id(contact_info_id)]
     id: Option<Id>,
