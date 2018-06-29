@@ -250,12 +250,42 @@ impl Readable<domain::Profile> for domain::UserId {
             JOIN identity ON user_profile.identity = personal_identity.id
             WHERE personal_info.id = $1
         ";
+        let mut result = vec![];
         for row in try!(db.query_raw(SELECT_ID, &[self])).into_iter() {
-            let personal_identity: domain::PersonalIdentity = 
-                try!(domain::PersonalIdentity::try_from_row(&row));
-            unimplemented!()
+            let date_of_birth: NaiveDate = match row.get("date_of_birth") {
+                Some(d) => d,
+                None => return Err(CambioError::missing_field("Profile", "date_of_birth"))
+            };
+            let personal_identity_id: Option<domain::Id> = row.get("personal_identity_id");
+            let personal_identity: Option<domain::PersonalIdentity> = match personal_identity_id {
+                Some(_) => Some(try!(domain::PersonalIdentity::try_from_row(&row))),
+                None => None
+            };
+            let address: domain::Address= 
+                try!(domain::Address::try_from_row(&row));
+            let given_names: String = match row.get("given_names") {
+                Some(n) => n,
+                None => return Err(CambioError::missing_field("Profile", "given_names"))
+            };
+            let family_names: String = match row.get("family_names") {
+                Some(n) => n,
+                None => return Err(CambioError::missing_field("Profile", "family_names"))
+            };
+            let id: domain::Id = match row.get("id") {
+                Some(id) => id,
+                None => return Err(CambioError::missing_field("Profile", "id"))
+            };
+            result.push(domain::Profile {
+                id: id,
+                given_names: given_names,
+                family_names: family_names,
+                date_of_birth: date_of_birth,
+                //contact_details: contact_details,
+                address: address,
+                personal_identity: personal_identity
+            });
         }
-        unimplemented!()
+        Ok(result)
     }
 }
 
