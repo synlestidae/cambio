@@ -46,6 +46,15 @@ impl CambioError {
         }
     }
 
+    pub fn missing_field(entity: &str, field: &str) -> Self {
+        Self {
+            user_message: "An internal error occurred while handling data.".to_owned(),
+            system_message: format!("Could not access {} on object {}.", entity, field),
+            kind: ErrorKind::ConvertingObjInternal,
+            reccomendation: ErrorReccomendation::ContactProgrammer,
+        }
+    }
+
     pub fn invalid_password() -> Self {
         Self {
             user_message: "Wrong password.".to_owned(),

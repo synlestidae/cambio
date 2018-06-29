@@ -1,5 +1,5 @@
 use api::{
-    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Profile, Registration
+    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Registration
 };
 use db::{ConnectionSource, PostgresHelper, CambioError};
 use domain::{Session, User, Registration as PendingRegistration};

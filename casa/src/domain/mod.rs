@@ -1,4 +1,5 @@
 mod account;
+mod profile;
 mod identifier_code;
 mod account_id;
 mod account_business_type;
@@ -97,3 +98,4 @@ pub use self::eth_account_id::EthAccountId;
 pub use self::registration::Registration;
 pub use self::registration_id::RegistrationId;
 pub use self::identifier_code::IdentifierCode;
+pub use self::profile::Profile;

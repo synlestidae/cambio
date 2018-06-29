@@ -240,6 +240,25 @@ impl Readable<domain::Registration> for domain::IdentifierCode {
     }
 }
 
+impl Readable<domain::Profile> for domain::UserId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
+        const SELECT_ID: &'static str = "
+            SELECT * FROM personal_info  
+            JOIN personal_info ON user_profile.personal_info = personal_info.id
+            JOIN address ON user_profile.address = address.id
+            JOIN contact_info ON user_profile.contact_info = contact_info.id
+            JOIN identity ON user_profile.identity = personal_identity.id
+            WHERE personal_info.id = $1
+        ";
+        for row in try!(db.query_raw(SELECT_ID, &[self])).into_iter() {
+            let personal_identity: domain::PersonalIdentity = 
+                try!(domain::PersonalIdentity::try_from_row(&row));
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+}
+
 const SELECT_BY_OWNER: &'static str = "
     SELECT *, users.id as user_id, account_owner.id as owner_id
     FROM users 
