@@ -240,6 +240,21 @@ impl Readable<domain::Registration> for domain::IdentifierCode {
     }
 }
 
+
+impl Readable<domain::Profile> for domain::ProfileId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
+        const SELECT_PROF: &'static str = 
+            "SELECT user_id.id as user_id 
+            FROM profile JOIN profile.user_id = user_id.id 
+            WHERE profile.id = $1";
+        let id: Option<domain::UserId> = try!(db.query_raw(SELECT_PROF, &[&self])).get(0).get("user_id");
+        match id {
+            Some(id) => id.get_vec(db),
+            None => Err(CambioError::missing_field("Profile", "user_id"))
+        }
+    }
+}
+
 impl Readable<domain::Profile> for domain::UserId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
         const SELECT_ID: &'static str = "
@@ -271,12 +286,17 @@ impl Readable<domain::Profile> for domain::UserId {
                 Some(n) => n,
                 None => return Err(CambioError::missing_field("Profile", "family_names"))
             };
-            let id: domain::Id = match row.get("id") {
+            let id: domain::ProfileId = match row.get("id") {
                 Some(id) => id,
                 None => return Err(CambioError::missing_field("Profile", "id"))
             };
+            let user_id: domain::UserId = match row.get("user_id") {
+                Some(uid) => uid,
+                None => return Err(CambioError::missing_field("Profile", "user_id"))
+            };
             result.push(domain::Profile {
                 id: id,
+                user_id: user_id,
                 given_names: given_names,
                 family_names: family_names,
                 date_of_birth: date_of_birth,
@@ -286,6 +306,25 @@ impl Readable<domain::Profile> for domain::UserId {
             });
         }
         Ok(result)
+    }
+}
+
+
+impl Readable<domain::Address> for domain::Id {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Address>, CambioError> {
+        const SELECT_ADDRESS: &'static str = "
+            SELECT * FROM address where id = $1
+        ";
+        db.query(SELECT_ADDRESS, &[self])
+    }
+}
+
+impl Readable<domain::PersonalIdentity> for domain::Id {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::PersonalIdentity>, CambioError> {
+        const SELECT_ADDRESS: &'static str = "
+            SELECT * FROM personal_identity where id = $1
+        ";
+        db.query(SELECT_ADDRESS, &[self])
     }
 }
 

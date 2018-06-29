@@ -6,7 +6,8 @@ use postgres::rows::Row;
 
 #[derive(Debug, Clone)]
 pub struct Profile {
-    pub id: domain::Id,
+    pub id: domain::ProfileId,
+    pub user_id: domain::UserId,
     pub given_names: String,
     pub family_names: String,
     pub date_of_birth: NaiveDate,

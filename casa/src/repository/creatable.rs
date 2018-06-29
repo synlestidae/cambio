@@ -68,3 +68,84 @@ impl Creatable for domain::Registration {
         Ok(result)
     }
 }
+
+impl Creatable for domain::PersonalIdentity {
+    type Id = domain::Id;
+
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const INSERT_IDENTITY: &'static str = "
+            INSERT INTO personal_identity(
+                user_id,
+                nz_passport_number,
+                nz_drivers_licence_number,
+            ) 
+            VALUES($1, $2, $3) RETURNING id; 
+        ";
+        let result = try!(db.query_raw(INSERT_IDENTITY, &[
+            &self.user_id,
+            &self.nz_passport_number,
+            &self.nz_drivers_licence_number
+        ]));
+        Ok(result)
+    }
+}
+
+impl Creatable for domain::Address {
+    type Id = domain::Id;
+
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const INSERT_ADDRESS: &'static str = "
+            INSERT INTO address(
+               address_line_1, 
+               address_line_2, 
+               address_line_3, 
+               address_line_4, 
+               address_line_5, 
+               address_line_6, 
+               address_line_7, 
+               country) 
+            VALUES ($1,$2, $3,$4,$5, $6, $7, $8) RETURNING id";
+        let result = try!(db.query_raw(INSERT_ADDRESS, &[
+            &self.address_line_1, 
+            &self.address_line_2, 
+            &self.address_line_3, 
+            &self.address_line_4, 
+            &self.address_line_5, 
+            &self.address_line_6, 
+            &self.address_line_7, 
+            &self.country_name
+        ]));
+        Ok(result)
+    }
+}
+
+impl Creatable for domain::Profile {
+    type Id = domain::ProfileId;
+
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        let address = try!(self.address.create(db));
+        let personal_identity_id = match self.personal_identity {
+            Some(ref personal_identity) => try!(personal_identity.create(db)).id,
+            None => None
+        };
+        const INSERT_PROFILE: &'static str = "
+            INSERT INTO personal_info(
+                user_id,
+                given_names,
+                family_names,
+                date_of_birth,
+                address_id,
+                personal_identity_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ";
+        let result = try!(db.query_raw(INSERT_PROFILE, &[
+            &self.user_id,
+            &self.given_names,
+            &self.family_names,
+            &self.date_of_birth,
+            &address.id,
+            &personal_identity_id,
+        ]));
+        Ok(result)
+    }
+}

@@ -7,19 +7,19 @@ use postgres::rows::Row;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TryFromRow)]
 pub struct PersonalIdentity {
     #[column_id(personal_identity_id)]
-    id: Option<Id>,
-    user_id: UserId,
-    nz_passport_number: Option<String>,
-    nz_drivers_licence_number: Option<String>,
+    pub id: Option<Id>,
+    pub user_id: UserId,
+    pub nz_passport_number: Option<String>,
+    pub nz_drivers_licence_number: Option<String>,
 
-    face_with_document_photo: Option<Id>,
-    face_photo: Option<Id>,
-    document_scan_photo: Option<Id>,
+    pub face_with_document_photo: Option<Id>,
+    pub face_photo: Option<Id>,
+    pub document_scan_photo: Option<Id>,
 
     // status of each photo
-    face_with_document_status: Option<PhotoStatus>,
-    face_status: Option<PhotoStatus>,
-    document_scan_status: Option<PhotoStatus>,
+    pub face_with_document_status: Option<PhotoStatus>,
+    pub face_status: Option<PhotoStatus>,
+    pub document_scan_status: Option<PhotoStatus>,
 }
 
 /*impl TryFromRow for PersonalIdentity {
