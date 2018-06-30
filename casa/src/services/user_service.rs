@@ -1,7 +1,8 @@
 use bcrypt::hash;
+use api::{RegistrationConfirm, PersonalDetails};
 use checkmail;
 use db::{CambioError, PostgresHelper};
-use domain::{Id, Session, SessionState, User, Registration};
+use domain::{Id, Session, SessionState, User, Registration, Profile, Address, PersonalIdentity};
 use repositories;
 use repository;
 use repository::*;
@@ -32,7 +33,9 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         }
     }
 
-    pub fn confirm_registration(&mut self, registration: &Registration) -> Result<User, CambioError> {
+    pub fn confirm_registration(&mut self, 
+        registration: &Registration,
+        personal_details: &PersonalDetails) -> Result<User, CambioError> {
         // TODO transaction needed here
         
         // Mark the registration as confirmed
@@ -42,24 +45,25 @@ impl<T: PostgresHelper + Clone> UserService<T> {
 
         // Create and store the user, ready to log in
         self.create_user(&confirmed_registration.email_address, 
-            &confirmed_registration.password_hash)
+            &confirmed_registration.password_hash,
+            &personal_details)
     }
 
     pub fn register_user(
         &mut self,
         email_address: &str,
         password: &str,
-    ) -> Result<User, CambioError> {
+        personal_details: &PersonalDetails) -> Result<User, CambioError> {
         // get the BCrypt hash
         let password_hash = try!(hash(password, BCRYPT_COST));
-        self.create_user(email_address, &password_hash)
+        self.create_user(email_address, &password_hash, personal_details)
     }
 
     pub fn create_user(
         &mut self,
         email_address: &str,
         password_hash: &str,
-    ) -> Result<User, CambioError> {
+        registration_confirm: &PersonalDetails) -> Result<User, CambioError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input(
                 "Please check that the email entered is valid",
@@ -82,8 +86,7 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         };
 
         user = try!(self.user_repository.create(&user));
-        //let eth_account = try!(self.eth_service.new_account(email_address, eth_password));
-        //let new_eth_account = try!(self.eth_account_repo.create(&eth_account));
+
         Ok(user)
     }
 

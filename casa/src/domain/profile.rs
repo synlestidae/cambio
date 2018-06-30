@@ -6,12 +6,11 @@ use postgres::rows::Row;
 
 #[derive(Debug, Clone)]
 pub struct Profile {
-    pub id: domain::ProfileId,
+    pub id: Option<domain::ProfileId>,
     pub user_id: domain::UserId,
     pub given_names: String,
     pub family_names: String,
     pub date_of_birth: NaiveDate,
-    //pub contact_details: domain::ContactInfo,
     pub address: domain::Address,
     pub personal_identity: Option<domain::PersonalIdentity>
 }

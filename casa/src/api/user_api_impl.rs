@@ -1,5 +1,5 @@
 use api::{
-    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Registration
+    get_api_obj, ApiError, ApiResult, ErrorType, LogIn, Registration, PersonalDetails
 };
 use db::{ConnectionSource, PostgresHelper, CambioError};
 use domain::{Session, User, Registration as PendingRegistration};
@@ -59,8 +59,10 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
                 Err(err) => return err.into()
             };
             if registration_confirm.can_confirm(&registration) {
-                let register_result = self.user_service.create_user(&registration.email_address, 
-                    &registration.password_hash);
+                let register_result = self.user_service.create_user(
+                    &registration.email_address, 
+                    &registration.password_hash,
+                    &registration_confirm.personal_details);
                 match register_result {
                     Ok(user) => {
                         let content_type = "application/json".parse::<Mime>().unwrap();

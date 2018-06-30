@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use api::PersonalDetails;
 use db;
 use domain;
 use repositories;
@@ -37,11 +38,11 @@ pub fn quick_order(
     let mut order_repo = repositories::OrderRepository::new(get_db_helper());
 
     let user1 = user_service
-        .register_user(buyer, "excellent123")
+        .register_user(buyer, "excellent123", &fake_details())
         .unwrap();
 
     let user2 = user_service
-        .register_user(seller, "dohnut123")
+        .register_user(seller, "dohnut123", &fake_details())
         .unwrap();
 
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
@@ -133,5 +134,20 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
     if !output.status.success() {
         let error = String::from_utf8(output.stderr).unwrap();
         panic!("Failed to credit account. Program error.\n{}", error); //: '{}'\nError below: \n {}", stdout_str, stderr_str);// output: {}\n", err_str);
+    }
+}
+
+pub fn fake_details() -> PersonalDetails {
+    PersonalDetails {
+        first_names: "Jerry John".to_owned(),
+        family_name: "Jackson".to_owned(),
+        address_line_1: "43 Fake St".to_owned(),
+        address_line_2: None,
+        post_code: "1123".to_owned(),
+        city: "Wellington".to_owned(),
+        country: "NEW ZEALAND".to_owned(),
+        dob: NaiveDate::from_ymd(1990, 11, 11), 
+        id_type: "NZ_Passport".to_owned(),
+        id_number: "LM123309".to_owned() 
     }
 }

@@ -295,7 +295,7 @@ impl Readable<domain::Profile> for domain::UserId {
                 None => return Err(CambioError::missing_field("Profile", "user_id"))
             };
             result.push(domain::Profile {
-                id: id,
+                id: Some(id),
                 user_id: user_id,
                 given_names: given_names,
                 family_names: family_names,

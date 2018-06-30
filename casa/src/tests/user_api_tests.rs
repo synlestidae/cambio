@@ -52,7 +52,7 @@ fn test_creates_new_user_and_password_works() {
     let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
     let registration: domain::Registration = reg_result.identifier_code.get(&mut db).unwrap();
 
-    let dob = DateTime::<Utc>::from_utc(NaiveDate::from_ymd(1999, 10, 1).and_hms(0, 0, 0), Utc);
+    let dob = NaiveDate::from_ymd(1999, 10, 1);
 
     let confirmation = api::RegistrationConfirm {
         email_address: "cat@coolcat.com".to_owned(),
