@@ -7,7 +7,7 @@ CREATE TABLE address (
     address_line_5 TEXT,
     address_line_6 TEXT,
     address_line_7 TEXT,
-    country_id SERIAL NOT NULL REFERENCES country(id)
+    country_name VARCHAR(80) NOT NULL REFERENCES country(name)
 );
 
 CREATE TABLE contact_info (
