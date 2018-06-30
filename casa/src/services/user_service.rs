@@ -63,7 +63,7 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         &mut self,
         email_address: &str,
         password_hash: &str,
-        registration_confirm: &PersonalDetails) -> Result<User, CambioError> {
+        personal_details: &PersonalDetails) -> Result<User, CambioError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input(
                 "Please check that the email entered is valid",
@@ -86,6 +86,8 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         };
 
         user = try!(self.user_repository.create(&user));
+        let profile = personal_details.clone().into_profile(user.id.unwrap());
+        profile.create(&mut self.db);
 
         Ok(user)
     }
