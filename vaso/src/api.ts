@@ -123,7 +123,6 @@ export class Api {
             }
         };
         let result = await this.makeRequest(`/orders/buy`, 'POST', orderJSON);
-        console.log('asyncBuyOrder', result);
     }
 
     public async asyncGetActiveOrders(): Promise<UserOrder[]> {

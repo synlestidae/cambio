@@ -74,7 +74,6 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 signupState.registrationInfo = <RegistrationInfo>action.payload;
                 break;
             case 'SET_CONFIRMATION_CODE':
-                console.log('aciton', action);
                 let matches = /(\d{0,5})/.exec(action.value);
                 if (matches) {
                     signupState.confirmationCode = matches[1];

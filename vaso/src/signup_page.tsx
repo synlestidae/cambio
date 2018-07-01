@@ -191,7 +191,6 @@ function ConfirmEmail(props: LoginPageProps): JSX.Element {
             <button
                 className="btn btn-primary btn-block width-initial" 
                 onClick={async function() {
-                    console.log('confirming', state);
                     await props.actions.confirmRegistration(state);
                     props.actions.submitLogin(state.loginInfo.email_address, state.loginInfo.password);
                 }}>

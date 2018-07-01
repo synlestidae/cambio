@@ -164,14 +164,11 @@ function getFormElement(elem: FormElem, actions: ActionCreators, isDirty: boolea
         actions.clearDirtyValue(elem.field);
         if (elem.validate(inputValue) !== null) {
             actions.addDirtyValue(elem.field);
-            console.log('Blur!', elem, inputValue);
         }
     };
     const handleFocus = function() {
-        console.log('Folks!', elem.field);
         actions.clearDirtyValue(elem.field);
     };
-    console.log('Dirty?', elem.field, inputValue, isDirty);
     let validation: string|null = isDirty && elem.validate(inputValue);
     if (elem.formType === 'option') {
         return (<div className="form-row">
