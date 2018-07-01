@@ -103,7 +103,7 @@ impl Creatable for domain::Address {
                address_line_5, 
                address_line_6, 
                address_line_7, 
-               country) 
+               country_name) 
             VALUES ($1,$2, $3,$4,$5, $6, $7, $8) RETURNING id";
         let result = try!(db.query_raw(INSERT_ADDRESS, &[
             &self.address_line_1, 
@@ -136,7 +136,8 @@ impl Creatable for domain::Profile {
                 date_of_birth,
                 address_id,
                 personal_identity_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id
         ";
         let result = try!(db.query_raw(INSERT_PROFILE, &[
             &self.user_id,

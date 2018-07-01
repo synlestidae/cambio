@@ -6,7 +6,6 @@ use db::TryFromRowError;
 
 #[derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Address {
-    #[column_id(address_id)]
     pub id: Option<Id>,
     pub address_line_1: Option<String>,
     pub address_line_2: Option<String>,

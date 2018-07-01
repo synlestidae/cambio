@@ -76,7 +76,6 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         if let Some(_) = try!(self.user_repository.read(&query)).pop() {
             return Err(CambioError::user_exists());
         }
-
         let mut user = User {
             id: None,
             email_address: email_address.to_owned(),
@@ -87,7 +86,7 @@ impl<T: PostgresHelper + Clone> UserService<T> {
 
         user = try!(self.user_repository.create(&user));
         let profile = personal_details.clone().into_profile(user.id.unwrap());
-        profile.create(&mut self.db);
+        let new_profile = try!(profile.create(&mut self.db));
 
         Ok(user)
     }

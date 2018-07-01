@@ -36,7 +36,7 @@ fn test_creates_new_user_and_password_works() {
 
     let mut db = get_db_helper();
     let new_user = r#"{
-        "email_address": "cat@coolcat.com",
+        "email_address": "pat@coolcat.com",
         "password": "supersecret1234"
     }"#;
     let mut headers = Headers::new();
@@ -55,7 +55,7 @@ fn test_creates_new_user_and_password_works() {
     let dob = NaiveDate::from_ymd(1999, 10, 1);
 
     let confirmation = api::RegistrationConfirm {
-        email_address: "cat@coolcat.com".to_owned(),
+        email_address: "pat@coolcat.com".to_owned(),
         confirmation_code: registration.confirmation_code,    
         identifier_code: registration.identifier_code,
         personal_details: api::PersonalDetails {
@@ -65,7 +65,7 @@ fn test_creates_new_user_and_password_works() {
             address_line_2: None.to_owned(),
             post_code: "4231".to_owned(),
             city: "Wellington".to_owned(),
-            country: "New Zealand".to_owned(),
+            country: "NEW ZEALAND".to_owned(),
             dob: dob,
             id_type: "Password_NZ".to_owned(),
             id_number: "LM123456".to_owned()
@@ -80,7 +80,7 @@ fn test_creates_new_user_and_password_works() {
     let login_response = request::post("http://localhost:3000/users/log_in", 
         headers.clone(), 
         r#"{
-            "email_address": "cat@coolcat.com",
+            "email_address": "pat@coolcat.com",
             "password": "supersecret1234"
         }"#,
         &handler).unwrap();

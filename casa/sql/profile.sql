@@ -46,6 +46,6 @@ CREATE TABLE personal_info (
     family_names TEXT NOT NULL,
     date_of_birth DATE NOT NULL,
     address_id SERIAL REFERENCES address(id),
-    contact_info_id SERIAL REFERENCES contact_info(id),
-    personal_identity_id SERIAL REFERENCES personal_identity(id)
+    contact_info_id INTEGER REFERENCES contact_info(id),
+    personal_identity_id INTEGER REFERENCES personal_identity(id) 
 );

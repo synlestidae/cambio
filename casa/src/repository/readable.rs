@@ -244,9 +244,10 @@ impl Readable<domain::Registration> for domain::IdentifierCode {
 impl Readable<domain::Profile> for domain::ProfileId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
         const SELECT_PROF: &'static str = 
-            "SELECT user_id.id as user_id 
-            FROM profile JOIN profile.user_id = user_id.id 
-            WHERE profile.id = $1";
+            "SELECT *, users.id as user_id 
+            FROM personal_info 
+            JOIN users ON personal_info.user_id = users.id 
+            WHERE personal_info.id = $1";
         let id: Option<domain::UserId> = try!(db.query_raw(SELECT_PROF, &[&self])).get(0).get("user_id");
         match id {
             Some(id) => id.get_vec(db),
@@ -258,13 +259,13 @@ impl Readable<domain::Profile> for domain::ProfileId {
 impl Readable<domain::Profile> for domain::UserId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
         const SELECT_ID: &'static str = "
-            SELECT * FROM personal_info  
-            JOIN personal_info ON user_profile.personal_info = personal_info.id
-            JOIN address ON user_profile.address = address.id
-            JOIN contact_info ON user_profile.contact_info = contact_info.id
-            JOIN identity ON user_profile.identity = personal_identity.id
-            WHERE personal_info.id = $1
-        ";
+            SELECT * 
+            FROM personal_info  
+            JOIN address ON personal_info.address_id = address.id
+            JOIN users ON personal_info.user_id = users.id
+            LEFT JOIN personal_identity ON personal_info.personal_identity_id = personal_identity.id
+            LEFT JOIN contact_info ON personal_info.contact_info_id = contact_info.id
+            WHERE users.id = $1";
         let mut result = vec![];
         for row in try!(db.query_raw(SELECT_ID, &[self])).into_iter() {
             let date_of_birth: NaiveDate = match row.get("date_of_birth") {
@@ -313,7 +314,7 @@ impl Readable<domain::Profile> for domain::UserId {
 impl Readable<domain::Address> for domain::Id {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Address>, CambioError> {
         const SELECT_ADDRESS: &'static str = "
-            SELECT * FROM address where id = $1
+            SELECT * FROM address WHERE id = $1
         ";
         db.query(SELECT_ADDRESS, &[self])
     }

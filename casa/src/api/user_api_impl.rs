@@ -40,8 +40,6 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
             Err(err) => return err.into()
         };
 
-        println!("Got registration {:?}", created_reg);
-
         let result = api::RegistrationInfo {
             email_address: created_reg.email_address,
             identifier_code: created_reg.identifier_code
@@ -69,7 +67,9 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
                         let content = serde_json::to_string(&user).unwrap();
                         iron::Response::with((iron::status::Ok, content, content_type))
                     },
-                    Err(err) => err.into()
+                    Err(err) => {
+                        err.into()
+                    }
                 }
             } else {
                 CambioError::unauthorised().into()
