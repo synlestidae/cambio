@@ -33,7 +33,7 @@ export class CalendarDate {
     }
 
     public getDateString(): string {
-        return `${pad2(this.year)}/${pad2(this.month)}/${pad2(this.year)}`;
+        return `${pad2(this.year)}-${pad2(this.month)}-${pad2(this.day)}`;
     }
 
     public parseDateString(dateStr: string) {
