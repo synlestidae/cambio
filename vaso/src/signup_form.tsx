@@ -83,7 +83,7 @@ export function buildForm(props: SignupState & PartialSignupFormProps): FormElem
             },
             {
                 label: 'Family name',
-                field: 'family_names',
+                field: 'family_name',
                 validate: nonEmpty('Enter your last or family name.'),
                 name: "family-name",
                 value: props.info.family_name
@@ -180,6 +180,7 @@ function getFormElement(elem: FormElem, actions: ActionCreators, isDirty: boolea
                 id={'input_' + elem.field} 
                 className="form-control" 
                 value={inputValue} 
+                disabled={elem.disabled}
                 placeholder={elem.label}
                 onChange={(e: any) => actions.setSignupFormValue(elem.field, e.target.value)}>
               </input>

@@ -63,10 +63,15 @@ interface LoginButtonProps {
     actions: ActionCreators
 }
 
+function formElemValid(b: boolean, e: FormElem) {
+    return b && e.validate(e.value) == null;
+}
+
 function SignupButton(props: SignupState & {actions: ActionCreators} & {formElems: FormElem[]}) {
     let next = ''
     let prev = 'Back';
     let nextPage = '';
+    let allValid = props.formElems.reduce(formElemValid, true)
 
     if (props.form_state === 'LoginInfo') {
         next = 'Add personal details';
@@ -99,7 +104,7 @@ function SignupButton(props: SignupState & {actions: ActionCreators} & {formElem
     //let validationMessage = props.formElems.reduce((elem: FormElem, msg: string|null) => msg || elem.validate(elem.value), null);
 
     return <div className="form-row">
-        <button onClick={nextFn} className="btn btn-primary btn-block width-initial">
+        <button onClick={nextFn} className="btn btn-primary btn-block width-initial" disabled={!allValid}>
           {next}
         </button>
         <a href="javascript: void" onClick={prevFn}>{prev}</a> 
