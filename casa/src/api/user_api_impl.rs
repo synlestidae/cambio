@@ -54,6 +54,12 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
         iron::Response::with((iron::status::Ok, content, content_type))
     }
 
+
+    pub fn post_resend_email(&mut self, 
+        registration_confirm: &api::ResendEmail) -> Response {
+        unimplemented!()
+    }
+
     pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
         -> Response {
             let registration = match registration_confirm.identifier_code.get(&mut self.db) {

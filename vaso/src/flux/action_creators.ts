@@ -59,6 +59,10 @@ export class ActionCreators {
             .catch((r: any) => this.handleLoginReject(r));
     }
 
+    public resendEmail(email: string, identifierCode: string) {
+        return this.api.asyncResendEmail(email, identifierCode);
+    }
+
     public setConfirmationCode(code: string) {
         this.dispatch(new BasicAction('SET_CONFIRMATION_CODE', code));
     }

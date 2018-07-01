@@ -69,6 +69,7 @@ impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandl
                 let mut user_api = UserApi::new(db.clone(), &self.web3_address);
                 match user_request {
                     UserRequest::Register(reg) => user_api.put_register(&reg),
+                    UserRequest::ResendEmail(email_resend) => user_api.post_resend_email(&email_resend),
                     UserRequest::Confirm(confirm) => user_api.post_confirm_register(&confirm),
                     UserRequest::LogIn(login) => user_api.post_log_in(&login)
                 }

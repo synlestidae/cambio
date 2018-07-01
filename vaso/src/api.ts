@@ -44,6 +44,17 @@ export class Api {
         .then((result: any) => RegistrationInfo.parse(result));
     }
 
+
+    public async asyncResendEmail(email: string, identifierCode: string) : Promise<RegistrationInfo> {
+        return this.makeRequest('/users/register/new_confirmation_email', 'POST', {
+            email_address: email,
+            identifierCode: identifierCode 
+        })
+        .then((r: Response) => r.json())
+        .then((result: any) => RegistrationInfo.parse(result));
+    }
+
+
     public asyncConfirmRegistration(confirmationCode: string,
         identifierCode: string,
         signupInfo: SignupInfo,

@@ -1,4 +1,5 @@
 mod account_api_impl;
+mod resend_email;
 mod personal_details;
 mod account_api_trait;
 mod api_error;
@@ -52,3 +53,4 @@ pub use self::payment_api::PaymentApi;
 pub use self::registration_info::RegistrationInfo;
 pub use self::registration_confirm::RegistrationConfirm;
 pub use self::personal_details::PersonalDetails;
+pub use self::resend_email::ResendEmail;

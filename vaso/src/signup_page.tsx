@@ -185,7 +185,9 @@ function ConfirmEmail(props: LoginPageProps): JSX.Element {
           </input>
         </div>
         <div className="form-row side-by-side">
-            <button className="btn width-initial" onClick={() => null}>
+            <button className="btn width-initial" onClick={() => 
+                actions.resendEmail(state.loginInfo.email_address, state.registrationInfo.identifierCode)
+            }>
                 Resend email
             </button>
             <button
