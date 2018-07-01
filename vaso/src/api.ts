@@ -61,7 +61,7 @@ export class Api {
                 post_code: personalInfo.post_code,
                 city: personalInfo.city,
                 dob: personalInfo.dob.getDateString(),
-                country: 'New Zealand',
+                country: 'NEW ZEALAND',
                 id_type: identificationInfo.id_type,
                 id_number: identificationInfo.id_number
             }
