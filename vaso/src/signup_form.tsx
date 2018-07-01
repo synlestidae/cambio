@@ -58,7 +58,7 @@ export function buildForm(props: SignupState & PartialSignupFormProps): FormElem
             {
                 label: 'Password', 
                 field: 'password', 
-                validate: (val: string) => val.length >= 8? null : 'Enter a password of at least 8 characters.', 
+                validate: (val: string) => val && val.length >= 8? null : 'Enter a password of at least 8 characters.', 
                 formType: 'password',
                 name: 'password',
                 value: props.loginInfo.password
