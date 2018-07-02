@@ -95,7 +95,6 @@ where
             Err(api::ApiError::bad_format("Body of HTTP request cannot be empty"))
         }
         Err(error) => {
-            println!("Error parsing! {:?}", error);
             Err(api::ApiError::bad_format(error.description()))
         }
     }

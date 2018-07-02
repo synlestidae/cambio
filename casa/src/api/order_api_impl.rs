@@ -156,11 +156,29 @@ impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
         }
         let request_copy = order.order_request.clone();
 
-        if !(target_order.sell_asset_type == request_copy.buy_asset_type && 
-           target_order.buy_asset_type == request_copy.sell_asset_type && 
-           target_order.sell_asset_units == request_copy.buy_asset_units && 
-           target_order.buy_asset_units == request_copy.sell_asset_units) {
-            return api::ApiError::from(unfair_err).into();
+        if target_order.sell_asset_type != request_copy.buy_asset_type {
+            return db::CambioError::unfair_operation(
+                "Request sell_asset_type does not match target buy_asset_type",
+                "Target order.is_fair() returned false"
+            ).into();
+        }
+        if target_order.buy_asset_type != request_copy.sell_asset_type {
+            return db::CambioError::unfair_operation(
+                "Request buy_asset_type does not match target sell_asset_type",
+                "Target order.is_fair() returned false"
+            ).into();
+        }
+        if target_order.sell_asset_units != request_copy.buy_asset_units {
+            return db::CambioError::unfair_operation(
+                "Request sell_asset_units does not match target buy_asset_units",
+                "Target order.is_fair() returned false"
+            ).into();
+        }
+        if target_order.buy_asset_units != request_copy.sell_asset_units {
+            return db::CambioError::unfair_operation(
+                "Request sell_asset_units does not match target buy_asset_units",
+                "Target order.is_fair() returned false"
+            ).into();
         }
 
         let our_order = match self.create_order(&order.order_request, &email_address) {
