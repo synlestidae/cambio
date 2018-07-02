@@ -73,6 +73,14 @@ pub fn log_in(username: &str, password: &str) -> String {
 }
 
 pub fn post<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>) -> String {
+    make_request(url, token, obj, false)
+}
+
+pub fn get<'a, E: Serialize>(url: &str, token: Option<&str>) -> String {
+    make_request(url, token, None as Option<()>, true)
+}
+
+fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, is_get: bool) -> String {
     let mut db = get_db_helper();
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
@@ -81,10 +89,16 @@ pub fn post<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>) ->
     }
     let (tx, rx) = channel();
     let handler = api::ApiHandler::new(db.clone(), "http://localhost:8081", tx);
-    let response = request::post(url, 
-        headers.clone(), 
-        &serde_json::to_string(&obj).unwrap(),
-        &handler).unwrap();
+    let response = if is_get {
+        request::get(url, 
+            headers.clone(), 
+            &handler).unwrap()
+    } else {
+        request::post(url, 
+            headers.clone(), 
+            &serde_json::to_string(&obj).unwrap(),
+            &handler).unwrap()
+    };
 
     let status = response.status.clone();
     let body = response::extract_body_to_string(response);
@@ -94,8 +108,4 @@ pub fn post<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>) ->
     }
 
     body
-}
-
-pub fn get<'a, E: Serialize, T: Deserialize<'a>>(url: &str) -> Option<T> {
-    unimplemented!()
 }
