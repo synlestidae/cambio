@@ -12,13 +12,13 @@ use jobs::JobRequest;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 
-pub struct ApiHandler<T: db::PostgresHelper> {
+pub struct ApiHandler<T: db::PostgresHelper + db::ConnectionSource> {
     db: T,
     web3_address: String,
     job_tx: Mutex<Sender<JobRequest>>
 }
 
-impl<T: db::PostgresHelper + 'static> ApiHandler<T> {
+impl<T: db::PostgresHelper + db::ConnectionSource + 'static> ApiHandler<T> {
     pub fn new(db: T, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
         Self {
             db: db,
@@ -28,7 +28,7 @@ impl<T: db::PostgresHelper + 'static> ApiHandler<T> {
     }
 }
 
-impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandler<T> {
+impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Sync> Handler for ApiHandler<T> {
     fn handle<'a, 'b>(&self, request: &mut Request<'a, 'b>) -> IronResult<Response> {
         let mut db = self.db.clone();
         let fake_user = domain::User { 
@@ -97,6 +97,8 @@ impl<T: db::PostgresHelper + 'static + Clone + Send + Sync> Handler for ApiHandl
                 }
             },
             ApiRequest::Settlement(settlement_request) => {
+                let tx = self.job_tx.lock().unwrap();
+                let mut settlement_api = SettlementApiImpl::new(db, tx.clone());
                 match settlement_request {
                     SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
                         unimplemented!()
