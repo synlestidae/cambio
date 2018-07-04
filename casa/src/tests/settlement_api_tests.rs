@@ -1,4 +1,5 @@
 use domain::*;
+use std::sync::mpsc::channel;
 use api::*;
 use tests::test_utils::*;
 use tests::order_utils::*;
@@ -42,16 +43,28 @@ fn test_settlement_gets_saved() {
         max_wei: Some(U256::from(1000000 as u64))
     }))).unwrap();
 
-    post("http://www.cambio.co.nz/orders/buy", Some(&joe), Some(OrderBuy {
-        order_id: order.id.unwrap().into(),
-        order_request: OrderRequest {
-            unique_id: "093215893th".to_string(),
-            buy_asset_type: order.sell_asset_type,
-            buy_asset_units: order.sell_asset_units,
-            sell_asset_type: order.buy_asset_type,
-            sell_asset_units: order.buy_asset_units,
-            expires_at: Utc::now() + Duration::minutes(15),
-            max_wei: None
-        }
-    }));
+    post(
+        "http://www.cambio.co.nz/orders/buy", 
+        Some(&joe), 
+        Some(OrderBuy {
+            order_id: order.id.unwrap().into(),
+            order_request: OrderRequest {
+                unique_id: "093215893th".to_string(),
+                buy_asset_type: order.sell_asset_type,
+                buy_asset_units: order.sell_asset_units,
+                sell_asset_type: order.buy_asset_type,
+                sell_asset_units: order.buy_asset_units,
+                expires_at: Utc::now() + Duration::minutes(15),
+                max_wei: None
+            }
+        })
+    );
+
+    let (tx, rx) = channel();
+
+    let settlement_url = format!("order/{}/settlement/auth", order.id.unwrap().0);
+    let obj = SettlementEthCredentials {
+        password: "grassword123".to_string(),
+        unique_id: "903248091jr032".to_string()
+    };
 }
