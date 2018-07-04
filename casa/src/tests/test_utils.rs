@@ -1,4 +1,6 @@
 use api;
+use jobs::JobRequest;
+use std::sync::mpsc::{Receiver, Sender};
 use chrono::NaiveDate;
 use iron::status::Status;
 use bcrypt::hash;
@@ -72,22 +74,27 @@ pub fn log_in(username: &str, password: &str) -> String {
     user_service.log_user_in(username, password.to_owned()).unwrap().session_token.0
 }
 
+pub fn post_channel<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, tx: Sender<JobRequest>) -> String {
+    make_request(url, token, obj, false, tx)
+}
+
 pub fn post<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>) -> String {
-    make_request(url, token, obj, false)
+    let (tx, rx) = channel();
+    make_request(url, token, obj, false, tx)
 }
 
 pub fn get<'a, E: Serialize>(url: &str, token: Option<&str>) -> String {
-    make_request(url, token, None as Option<()>, true)
+    let (tx, rx) = channel();
+    make_request(url, token, None as Option<()>, true, tx)
 }
 
-fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, is_get: bool) -> String {
+fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, is_get: bool, tx: Sender<JobRequest>) -> String {
     let mut db = get_db_helper();
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
-    let (tx, rx) = channel();
     let handler = api::ApiHandler::new(db.clone(), "http://localhost:8081", tx);
     let response = if is_get {
         request::get(url, 
