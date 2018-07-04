@@ -101,7 +101,7 @@ impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Syn
                 let mut settlement_api = SettlementApiImpl::new(db, tx.clone());
                 match settlement_request {
                     SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
-                        unimplemented!()
+                        settlement_api.post_settlement_eth_auth(&user, order_id, &cred)
                     },
                     _ => unimplemented!()
                 }

@@ -45,20 +45,10 @@ impl Readable<domain::User> for domain::UserId {
 impl Readable<domain::Order> for domain::OrderId {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {
         const SELECT_BY_ID: &'static str = "
-            SELECT 
-                *, 
-                orders.id AS order_id, 
-                sell_asset_type.asset_code AS sell_asset_code,  
-                sell_asset_type.denom AS sell_asset_denom,  
-                buy_asset_type.asset_code AS buy_asset_code,  
-                buy_asset_type.denom AS buy_asset_denom
+            SELECT *, orders.id AS order_id
             FROM asset_order orders,
-                 account_owner owners, 
-                 asset_type buy_asset_type, 
-                 asset_type sell_asset_type
+                 account_owner owners 
             WHERE orders.owner_id = owners.id AND
-                  buy_asset_type.id = orders.buy_asset_type_id AND
-                  sell_asset_type.id = orders.sell_asset_type_id AND
                   orders.id = $1";
         db.query(SELECT_BY_ID, &[self])
     }
