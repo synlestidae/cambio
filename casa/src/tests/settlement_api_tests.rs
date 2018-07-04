@@ -7,6 +7,7 @@ use chrono::prelude::*;
 use chrono::Duration;
 use web3::types::U256;
 use serde_json;
+use jobs::*;
 
 #[test]
 fn test_settlement_gets_saved() {
@@ -43,11 +44,13 @@ fn test_settlement_gets_saved() {
         max_wei: Some(U256::from(1000000 as u64))
     }))).unwrap();
 
+    let order_id = order.id.unwrap().into();
+
     post(
         "http://www.cambio.co.nz/orders/buy", 
         Some(&joe), 
         Some(OrderBuy {
-            order_id: order.id.unwrap().into(),
+            order_id: order_id,
             order_request: OrderRequest {
                 unique_id: "093215893th".to_string(),
                 buy_asset_type: order.sell_asset_type,
@@ -62,9 +65,15 @@ fn test_settlement_gets_saved() {
 
     let (tx, rx) = channel();
 
-    let settlement_url = format!("order/{}/settlement/auth", order.id.unwrap().0);
+    let settlement_url = format!("http://cambio.co.nz/order/{}/settlement/auth", order.id.unwrap().0);
     let obj = SettlementEthCredentials {
         password: "grassword123".to_string(),
         unique_id: "903248091jr032".to_string()
     };
+
+    post_channel(&settlement_url, Some(&joe), Some(obj), tx);
+
+    let job = rx.recv().unwrap();
+    let JobRequest::BeginSettlement(id, password) = job; 
+    assert_eq!(password, "grassword123");
 }
