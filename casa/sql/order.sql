@@ -10,7 +10,6 @@ CREATE TYPE order_status AS ENUM (
 );
 
 CREATE TYPE settlement_status AS ENUM (
-    'settling',
     'waiting_eth',
     'waiting_eth_credentials',
     'settled',
@@ -42,7 +41,7 @@ CREATE TABLE order_settlement (
     started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     settled_at TIMESTAMP,
     starting_user SERIAL REFERENCES users(id) NOT NULL,
-    status settlement_status NOT NULL DEFAULT 'settling',
+    status settlement_status NOT NULL DEFAULT 'waiting_eth_credentials',
     transaction_id SERIAL REFERENCES eth_transactions(id),
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),

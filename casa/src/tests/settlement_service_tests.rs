@@ -33,7 +33,7 @@ fn refuses_settlement_no_eth_balance() {
 
     assert_eq!(
         settlement.settlement_status,
-        domain::SettlementStatus::Settling
+        domain::SettlementStatus::WaitingEthCredentials
     );
 
     let result = settlement_service.begin_eth_transfer(

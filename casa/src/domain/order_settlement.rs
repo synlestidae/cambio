@@ -22,7 +22,7 @@ impl OrderSettlement {
             started_at: Utc::now(),
             settled_at: None,
             starting_user: user_id,
-            settlement_status: SettlementStatus::Settling,
+            settlement_status: SettlementStatus::WaitingEthCredentials,
             buying_order: buy_order.clone(),
             selling_order: sell_order.clone(),
         }

@@ -60,9 +60,12 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
         info!("Checking settlement status is correct");
 
         if settlement.settlement_status != domain::SettlementStatus::WaitingEthCredentials {
+            let sys_msg =
+                format!("Expected settlement status to be WaitingEthCredentials, got {:?}", 
+                    settlement.settlement_status);
             return db::CambioError::not_permitted(
                 "Settlement is not waiting for credentials", 
-                "Settlement status is not WaitingEthCredentials").into()
+                &sys_msg).into()
         }
 
         info!("Getting Ethereum account");

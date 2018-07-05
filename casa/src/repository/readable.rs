@@ -148,12 +148,12 @@ impl Readable<domain::OrderSettlement> for domain::OrderId {
 #[derive(TryFromRow)]
 struct SettlementRow {
     pub id: Option<domain::OrderSettlementId>,
-    pub started_at: DateTime<Utc>,
-    pub settled_at: Option<DateTime<Utc>>,
+    pub started_at: NaiveDateTime,
+    pub settled_at: Option<NaiveDateTime>,
     pub starting_user: domain::UserId,
-    pub settlement_status: domain::SettlementStatus,
+    pub status: domain::SettlementStatus,
     pub buying_crypto_id: domain::OrderId,
-    pub selling_crypto_id: domain::OrderId,
+    pub buying_fiat_id: domain::OrderId,
 }
 
 impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
@@ -162,13 +162,13 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
         let mut settlements = Vec::new();
         for o in orders.into_iter() {
             let buy = try!(o.buying_crypto_id.get(db));
-            let sell = try!(o.selling_crypto_id.get(db));
+            let sell = try!(o.buying_fiat_id.get(db));
             settlements.push(domain::OrderSettlement {
                 id: o.id,
-                started_at: o.started_at,
-                settled_at: o.settled_at,
+                started_at: DateTime::from_utc(o.started_at, Utc),
+                settled_at: o.settled_at.map(|d| DateTime::from_utc(o.started_at, Utc)),
                 starting_user: o.starting_user,
-                settlement_status: o.settlement_status,
+                settlement_status: o.status,
                 buying_order: buy,
                 selling_order: sell,
             });

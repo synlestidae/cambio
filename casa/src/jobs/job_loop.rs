@@ -65,7 +65,7 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
         Result<(), db::CambioError> {
         let mut settlement = try!(sid.get(&mut self.db_helper));
         info!("Handling settlement ID {:?}", settlement.id);
-        if settlement.settlement_status != domain::SettlementStatus::Settling {
+        if settlement.settlement_status != domain::SettlementStatus::WaitingEthCredentials {
             info!("Expected WaitingEth status, got {:?}", settlement.settlement_status);
             return Err(db::CambioError::unfair_operation(
                 "Can only tranfer ETH when settlement is active.",

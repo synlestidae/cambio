@@ -56,7 +56,7 @@ impl<T: db::PostgresHelper + Clone> SettlementService<T> {
                 ))
             }
         };
-        if settlement.settlement_status != domain::SettlementStatus::Settling {
+        if settlement.settlement_status != domain::SettlementStatus::WaitingEth {
             return Err(db::CambioError::unfair_operation(
                 "Can only tranfer ETH when settlement is active.",
                 &format!("Settlement status was {:?}", settlement.settlement_status),

@@ -1,8 +1,6 @@
 #[derive(Debug, Clone, PartialEq, Eq, ToSql, FromSql, Serialize)]
 #[postgres(name = "settlement_status")]
 pub enum SettlementStatus {
-    #[postgres(name = "settling")]
-    Settling,
     #[postgres(name = "waiting_eth_credentials")]
     WaitingEthCredentials,
     #[postgres(name = "waiting_eth")]
@@ -15,4 +13,14 @@ pub enum SettlementStatus {
     Invalid,
     #[postgres(name = "eth_failed")]
     EthFailed,
+}
+
+impl SettlementStatus {
+    pub fn is_settling(&self) -> bool {
+        match self {
+            SettlementStatus::WaitingEthCredentials => true,
+            SettlementStatus::WaitingEth => true,
+            _ => false
+        }
+    }
 }

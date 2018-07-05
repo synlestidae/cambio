@@ -27,7 +27,7 @@ fn settles_two_orders() {
     created_settlement.id = None;
     assert_eq!(
         settlement.settlement_status,
-        domain::SettlementStatus::Settling
+        domain::SettlementStatus::WaitingEthCredentials,
     );
     assert_eq!(settlement.buying_order.id, created_settlement.buying_order.id);
     assert_eq!(settlement.selling_order.id, created_settlement.selling_order.id);
