@@ -7,7 +7,8 @@ pub struct RegistrationConfirm {
     pub email_address: String,
     pub confirmation_code: String, 
     pub identifier_code: IdentifierCode,
-    pub personal_details: PersonalDetails
+    pub personal_details: PersonalDetails,
+    pub eth_account_password: String
 }
 
 impl RegistrationConfirm {

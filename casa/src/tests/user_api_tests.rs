@@ -67,9 +67,10 @@ fn test_creates_new_user_and_password_works() {
             city: "Wellington".to_owned(),
             country: "NEW ZEALAND".to_owned(),
             dob: dob,
-            id_type: "Password_NZ".to_owned(),
+            id_type: "Passport_NZ".to_owned(),
             id_number: "LM123456".to_owned()
-        }
+        },
+        eth_account_password: "ethpassword123".to_owned()
     };
 
     request::post("http://localhost:3000/users/confirm", 
