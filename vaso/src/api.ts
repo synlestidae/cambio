@@ -62,6 +62,7 @@ export class Api {
         identificationInfo: IdentificationInfo): Promise<void> {
         return this.makeRequest('/users/confirm/', 'POST', {
             email_address: signupInfo.email_address,
+            eth_account_password: signupInfo.password,
             confirmation_code: confirmationCode,
             identifier_code: identifierCode,
             personal_details: {

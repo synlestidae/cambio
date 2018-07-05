@@ -42,7 +42,6 @@ export class OptionElem implements FormElem {
 
 export function buildForm(props: SignupState & PartialSignupFormProps): FormElem[] {
     let elems: FormElem[] = [];
-
     const nonEmpty = function(msg: string) {
         return (val: string) => Boolean(val)? null : msg;
     };
