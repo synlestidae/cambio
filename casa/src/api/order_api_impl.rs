@@ -132,22 +132,27 @@ impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
     }
 
     fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
+        info!("User {} is completing order {:?}", user.email_address, order.order_id);
         let email_address = &user.email_address;
         // locate the target order
         let order_clause = repository::UserClause::Id(order.order_id);
         let read_result = self.order_repo.read(&order_clause);
         let target_order = match read_result.map(|mut o| o.pop()) {
             Ok(Some(o)) => o,
-            Ok(None) => return api::ApiError::not_found("Order").into(),
+            Ok(None) => {
+                info!("Order {:?} not found", order.order_id);
+                return api::ApiError::not_found("Order").into()
+            },
             Err(err) => return api::ApiError::from(err).into(),
         };
-
+        info!("Found order {:?}", order.order_id);
         // check the orders are valid and compatible with each other
         let unfair_err = db::CambioError::unfair_operation(
             "The order you chose is either incompatible or no longer active",
             "Target order.is_fair() returned false",
         );
         if !target_order.is_active() {
+            info!("Order {:?} has expired, can't complete settlement", target_order.id);
             let err = db::CambioError::not_permitted(
                 "The order you chose is expired or no longer active",
                 "Target order is expired or is not active",
@@ -155,13 +160,19 @@ impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
             return api::ApiError::from(err).into();
         }
         let request_copy = order.order_request.clone();
-
         if target_order.sell_asset_type != request_copy.buy_asset_type {
+            info!(
+                "Target order {:?} has sell type {:?}, but request buy type is {:?}", 
+                target_order.id,
+                target_order.sell_asset_type,
+                request_copy.buy_asset_type
+            );
             return db::CambioError::unfair_operation(
                 "Request sell_asset_type does not match target buy_asset_type",
                 "Target order.is_fair() returned false"
             ).into();
         }
+        info!("Checking that the buy and sell asset types match");
         if target_order.buy_asset_type != request_copy.sell_asset_type {
             return db::CambioError::unfair_operation(
                 "Request buy_asset_type does not match target sell_asset_type",
@@ -181,11 +192,13 @@ impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
             ).into();
         }
 
+        info!("Creating order from request for order {:?}", order.order_id);
         let our_order = match self.create_order(&order.order_request, &email_address) {
             Ok(o) => o,
             Err(resp) => return resp,
         };
 
+        info!("Creating a settlement between orders {:?} and {:?}", order.order_id, our_order.id);
         // save the settlement
         let settlement_result = if target_order.buy_asset_type.is_crypto() {
             // target_order is the buying order
@@ -196,6 +209,7 @@ impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
                 .create_settlement(user.id.unwrap(), &our_order, &target_order)
         };
 
+        info!("Settlement creation was successful");
         // generate the receipt
         match settlement_result {
             Ok(settlement) => {
