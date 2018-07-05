@@ -2,7 +2,7 @@ use bcrypt::hash;
 use api::{RegistrationConfirm, PersonalDetails};
 use checkmail;
 use db::{CambioError, PostgresHelper};
-use domain::{Id, Session, SessionState, User, Registration, Profile, Address, PersonalIdentity};
+use domain::{Id, Session, SessionState, User, Registration, Profile, Address, PersonalIdentity, EthAccount};
 use repositories;
 use repository;
 use repository::*;
@@ -13,8 +13,7 @@ pub struct UserService<T: PostgresHelper + Clone> {
     db: T,
     user_repository: repositories::UserRepository<T>,
     session_repository: repositories::SessionRepository<T>,
-    eth_service: services::EthereumService<T>,
-    eth_account_repo: repositories::EthAccountRepository<T>,
+    web3_address: String
 }
 
 const BCRYPT_COST: u32 = 8;
@@ -23,13 +22,11 @@ impl<T: PostgresHelper + Clone> UserService<T> {
     pub fn new(db_helper: T, web3_address: &str) -> Self {
         let users = repositories::UserRepository::new(db_helper.clone());
         let sessions = repositories::SessionRepository::new(db_helper.clone());
-        let eth_account_repo = repositories::EthAccountRepository::new(db_helper.clone());
         Self {
             db: db_helper.clone(),
             user_repository: users,
             session_repository: sessions,
-            eth_service: services::EthereumService::new(db_helper.clone(), web3_address),
-            eth_account_repo: eth_account_repo,
+            web3_address: web3_address.to_string()
         }
     }
 
@@ -89,6 +86,16 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         let new_profile = try!(profile.create(&mut self.db));
 
         Ok(user)
+    }
+
+    fn create_eth_accounts(&mut self, 
+        email_address: &str, 
+        password: &str
+    ) -> Result<EthAccount, CambioError> {
+        let mut eth_service = services::EthereumService::new(self.db.clone(), &self.web3_address);
+        let account = try!(eth_service.new_account(email_address, password));
+        let account_result = try!(account.create(&mut self.db));
+        Ok(account_result)
     }
 
     pub fn log_user_in(
