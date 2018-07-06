@@ -1,7 +1,10 @@
 use api;
+use db::PostgresTransactionHelper;
+use db::Transaction;
 use api::utils;
 use db;
 use db::PostgresHelper;
+use db::ConnectionSource;
 use domain;
 use hyper::mime::Mime;
 use iron;
@@ -9,10 +12,11 @@ use repositories;
 use repository;
 use repository::RepoRead;
 use repository::Readable;
+use repository::Creatable;
 use serde_json;
 use services;
 
-pub struct OrderApiImpl<C: PostgresHelper + Clone> {
+pub struct OrderApiImpl<C: PostgresHelper + ConnectionSource + Clone> {
     order_repo: repositories::OrderRepository<C>,
     order_service: services::OrderService<C>,
     settlement_service: services::SettlementService<C>,
@@ -21,7 +25,7 @@ pub struct OrderApiImpl<C: PostgresHelper + Clone> {
     db_helper: C,
 }
 
-impl<C: PostgresHelper + Clone> OrderApiImpl<C> {
+impl<C: PostgresHelper + ConnectionSource + Clone> OrderApiImpl<C> {
     pub fn new(db_helper: C) -> Self {
         let eth_path = "http://localhost:303030";
         let settlement_service = services::SettlementService::new(db_helper.clone(), eth_path);
@@ -101,7 +105,7 @@ impl<C: PostgresHelper + Clone> OrderApiImpl<C> {
     }
 }
 
-impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
+impl<C: PostgresHelper + ConnectionSource + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
     fn get_active_orders(&mut self) -> iron::Response {
         let order_clause = repository::UserClause::All(false);
         let order_result = self.order_repo.read(&order_clause);
@@ -134,90 +138,96 @@ impl<C: PostgresHelper + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
     fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
         info!("User {} is completing order {:?}", user.email_address, order.order_id);
         let email_address = &user.email_address;
-        // locate the target order
-        let order_clause = repository::UserClause::Id(order.order_id);
-        let read_result = self.order_repo.read(&order_clause);
-        let target_order = match read_result.map(|mut o| o.pop()) {
-            Ok(Some(o)) => o,
-            Ok(None) => {
-                info!("Order {:?} not found", order.order_id);
-                return api::ApiError::not_found("Order").into()
-            },
-            Err(err) => return api::ApiError::from(err).into(),
-        };
-        info!("Found order {:?}", order.order_id);
-        // check the orders are valid and compatible with each other
-        let unfair_err = db::CambioError::unfair_operation(
-            "The order you chose is either incompatible or no longer active",
-            "Target order.is_fair() returned false",
-        );
-        if !target_order.is_active() {
-            info!("Order {:?} has expired, can't complete settlement", target_order.id);
-            let err = db::CambioError::not_permitted(
-                "The order you chose is expired or no longer active",
-                "Target order is expired or is not active",
+        let conn = self.db_helper.get().unwrap();
+        {
+            let tx = conn.transaction().unwrap();
+            let mut db_tx = PostgresTransactionHelper::new(tx);
+            // locate the target order
+            let order_clause = repository::UserClause::Id(order.order_id);
+            let read_result = self.order_repo.read(&order_clause);
+            let target_order = match read_result.map(|mut o| o.pop()) {
+                Ok(Some(o)) => o,
+                Ok(None) => {
+                    info!("Order {:?} not found", order.order_id);
+                    return api::ApiError::not_found("Order").into()
+                },
+                Err(err) => return api::ApiError::from(err).into(),
+            };
+            info!("Found order {:?}", order.order_id);
+            // check the orders are valid and compatible with each other
+            let unfair_err = db::CambioError::unfair_operation(
+                "The order you chose is either incompatible or no longer active",
+                "Target order.is_fair() returned false",
             );
-            return api::ApiError::from(err).into();
-        }
-        let request_copy = order.order_request.clone();
-        if target_order.sell_asset_type != request_copy.buy_asset_type {
-            info!(
-                "Target order {:?} has sell type {:?}, but request buy type is {:?}", 
-                target_order.id,
-                target_order.sell_asset_type,
-                request_copy.buy_asset_type
-            );
-            return db::CambioError::unfair_operation(
-                "Request sell_asset_type does not match target buy_asset_type",
-                "Target order.is_fair() returned false"
-            ).into();
-        }
-        info!("Checking that the buy and sell asset types match");
-        if target_order.buy_asset_type != request_copy.sell_asset_type {
-            return db::CambioError::unfair_operation(
-                "Request buy_asset_type does not match target sell_asset_type",
-                "Target order.is_fair() returned false"
-            ).into();
-        }
-        if target_order.sell_asset_units != request_copy.buy_asset_units {
-            return db::CambioError::unfair_operation(
-                "Request sell_asset_units does not match target buy_asset_units",
-                "Target order.is_fair() returned false"
-            ).into();
-        }
-        if target_order.buy_asset_units != request_copy.sell_asset_units {
-            return db::CambioError::unfair_operation(
-                "Request sell_asset_units does not match target buy_asset_units",
-                "Target order.is_fair() returned false"
-            ).into();
-        }
-
-        info!("Creating order from request for order {:?}", order.order_id);
-        let our_order = match self.create_order(&order.order_request, &email_address) {
-            Ok(o) => o,
-            Err(resp) => return resp,
-        };
-
-        info!("Creating a settlement between orders {:?} and {:?}", order.order_id, our_order.id);
-        // save the settlement
-        let settlement_result = if target_order.buy_asset_type.is_crypto() {
-            // target_order is the buying order
-            self.settlement_service
-                .create_settlement(user.id.unwrap(), &target_order, &our_order)
-        } else {
-            self.settlement_service
-                .create_settlement(user.id.unwrap(), &our_order, &target_order)
-        };
-
-        info!("Settlement creation was successful");
-        // generate the receipt
-        match settlement_result {
-            Ok(settlement) => {
-                let response_json = serde_json::to_string(&settlement).unwrap();
-                let content_type = "application/json".parse::<Mime>().unwrap();
-                iron::Response::with((iron::status::Ok, response_json, content_type))
+            if !target_order.is_active() {
+                info!("Order {:?} has expired, can't complete settlement", target_order.id);
+                let err = db::CambioError::not_permitted(
+                    "The order you chose is expired or no longer active",
+                    "Target order is expired or is not active",
+                );
+                return api::ApiError::from(err).into();
             }
-            Err(err) => api::ApiError::from(err).into(),
+            let request_copy = order.order_request.clone();
+            if target_order.sell_asset_type != request_copy.buy_asset_type {
+                info!(
+                    "Target order {:?} has sell type {:?}, but request buy type is {:?}", 
+                    target_order.id,
+                    target_order.sell_asset_type,
+                    request_copy.buy_asset_type
+                );
+                return db::CambioError::unfair_operation(
+                    "Request sell_asset_type does not match target buy_asset_type",
+                    "Target order.is_fair() returned false"
+                ).into();
+            }
+            info!("Checking that the buy and sell asset types match");
+            if target_order.buy_asset_type != request_copy.sell_asset_type {
+                return db::CambioError::unfair_operation(
+                    "Request buy_asset_type does not match target sell_asset_type",
+                    "Target order.is_fair() returned false"
+                ).into();
+            }
+            if target_order.sell_asset_units != request_copy.buy_asset_units {
+                return db::CambioError::unfair_operation(
+                    "Request sell_asset_units does not match target buy_asset_units",
+                    "Target order.is_fair() returned false"
+                ).into();
+            }
+            if target_order.buy_asset_units != request_copy.sell_asset_units {
+                return db::CambioError::unfair_operation(
+                    "Request sell_asset_units does not match target buy_asset_units",
+                    "Target order.is_fair() returned false"
+                ).into();
+            }
+
+            info!("Creating order from request for order {:?}", order.order_id);
+            let our_order = match self.create_order(&order.order_request, &email_address) {
+                Ok(o) => o,
+                Err(resp) => return resp,
+            };
+
+            info!("Creating a settlement between orders {:?} and {:?}", order.order_id, our_order.id);
+            // save the settlement
+            let settlement = if target_order.buy_asset_type.is_crypto() {
+                // target_order is the buying order
+                domain::OrderSettlement::from(user.id.unwrap(), &target_order, &our_order)
+            } else {
+                domain::OrderSettlement::from(user.id.unwrap(), &our_order, &target_order)
+            };
+
+            let settlement_result = settlement.create(&mut db_tx);
+
+            info!("Settlement creation was successful");
+            // generate the receipt
+            match settlement_result {
+                Ok(settlement) => {
+                    db_tx.commit();
+                    let response_json = serde_json::to_string(&settlement).unwrap();
+                    let content_type = "application/json".parse::<Mime>().unwrap();
+                    iron::Response::with((iron::status::Ok, response_json, content_type))
+                }
+                Err(err) => api::ApiError::from(err).into(),
+            }
         }
     }
 }

@@ -156,3 +156,22 @@ impl Creatable for domain::Profile {
         Ok(result)
     }
 }
+
+impl Creatable for domain::OrderSettlement {
+    type Id = domain::OrderSettlementId;
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const SQL: &'static str = "INSERT INTO order_settlement(
+                started_at,
+                buying_crypto_id,
+                buying_fiat_id
+            ) VALUES ($1, $2, $3)
+            RETURNING id
+        ";
+
+        db.query_raw(SQL, &[
+            &self.starting_user,
+            &self.buying_order.id,
+            &self.selling_order.id,
+        ])
+    }
+}
