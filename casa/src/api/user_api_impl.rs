@@ -62,12 +62,15 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
                 Ok(r) => r,
                 Err(err) => return err.into()
             };
+            info!("Confirming registration");
             if registration_confirm.can_confirm(&registration) {
-                let register_result = self.user_service.create_user(
-                    &registration.email_address, 
-                    &registration.password_hash,
-                    &registration_confirm.personal_details);
-                match register_result {
+                info!("Registration with ID {} is confirmed", registration_confirm.identifier_code.0);
+                let registration_result = 
+                    self.user_service.confirm_registration(
+                        &registration, 
+                        &registration_confirm.personal_details,
+                        &registration_confirm.eth_account_password);
+                match registration_result {
                     Ok(user) => {
                         let content_type = "application/json".parse::<Mime>().unwrap();
                         let content = serde_json::to_string(&user).unwrap();
@@ -100,6 +103,7 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
                 response
             }
             Err(cambio_err) => {
+                info!("Log in error {:?}", cambio_err);
                 cambio_err.into()
             }
         }

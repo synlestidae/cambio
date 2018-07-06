@@ -30,21 +30,21 @@ impl Updateable for domain::Registration {
             UPDATE registration 
                 SET email_address = $1,
                 SET password_hash = $2,
-                SET confirmation_code = $2,
-                SET identifier_code = $3,
-                SET requested_at = $4,
-                SET confirmed_at = $5,
-            WHERE id = $6
+                SET confirmation_code = $3,
+                SET identifier_code = $4,
+                SET requested_at = $5,
+                SET confirmed_at = $6,
+            WHERE id = $7
         ";
-        try!(db.execute(QUERY, &[
+        let update_result = db.execute(QUERY, &[
             &self.email_address, 
             &self.password_hash, 
             &self.confirmation_code, 
             &self.identifier_code, 
             &self.requested_at, 
             &self.confirmed_at, 
-            &id])
-        );
+            &id
+        ]);
         Ok(try!(id.get(db)))
     }
 }

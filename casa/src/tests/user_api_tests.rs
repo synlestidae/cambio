@@ -85,9 +85,6 @@ fn test_creates_new_user_and_password_works() {
             "password": "supersecret1234"
         }"#,
         &handler).unwrap();
-
     assert_eq!(Status::Ok, login_response.status.unwrap());
-
-
 }
 

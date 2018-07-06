@@ -34,30 +34,30 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
         user: &domain::User, 
         order_id: domain::OrderId, 
         credentials: &api::SettlementEthCredentials) -> iron::Response {
-        println!("Processing credentials for order {:?}", order_id); 
+        info!("Processing credentials for order {:?}", order_id); 
         let order: domain::Order = match order_id.get(&mut self.db) {
             Ok(o) => o,
             Err(err) => {
-                println!("Order {:?} does not exist", order_id);
+                info!("Order {:?} does not exist", order_id);
                 return err.into();
             }
         };
 
         if Some(order.owner_id) != user.owner_id {
-            println!("Order {:?} has owner {:?}, but expected {:?}", order_id, order.owner_id, user.owner_id);
+            info!("Order {:?} has owner {:?}, but expected {:?}", order_id, order.owner_id, user.owner_id);
             let err = db::CambioError::not_found_search("That order does not exist", 
                 "User trying to access another's order");
             return err.into();
         }
 
         // retrieve the settlement
-        println!("Checking settlement exists");
+        info!("Checking settlement exists");
         let mut settlement: domain::OrderSettlement = match order_id.get(&mut self.db) {
             Ok(s) => s,
             Err(err) => return err.into()
         };
 
-        println!("Checking settlement status is correct");
+        info!("Checking settlement status is correct");
 
         if settlement.settlement_status != domain::SettlementStatus::WaitingEthCredentials {
             let sys_msg =
@@ -68,25 +68,25 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
                 &sys_msg).into()
         }
 
-        println!("Getting Ethereum account");
+        info!("Getting Ethereum account");
 
         // TODO make this unwrap unnecessary
         let eth_account: domain::EthAccount = match user.owner_id.unwrap().get(&mut self.db) {
             Ok(e) => e,
             Err(err) => return err.into()
         };
-        println!("Checking the password user used!");
+        info!("Checking the password user used!");
         let pwd_result = verify(&credentials.password, &eth_account.password_hash_bcrypt);
         if let Ok(true) = pwd_result {
-            println!("Sending settlement to the job queue");
+            info!("Sending settlement to the job queue");
             let req = JobRequest::BeginSettlement(settlement.id.unwrap(), credentials.password.to_owned());
             match self.job_tx.send(req) {
                 Ok(s) => {
-                    println!("Job was placed on queue");
+                    info!("Job was placed on queue");
                     iron::response::Response::with((iron::status::Status::Ok, format!("")))
                 }, 
                 Err(_) => {
-                    println!("Job queue was unavailable");
+                    info!("Job queue was unavailable");
                     let send_err = db::CambioError::shouldnt_happen(
                         "Could not get your settlement on the blockchain.", 
                         "Channel to job loop is disconnected.");

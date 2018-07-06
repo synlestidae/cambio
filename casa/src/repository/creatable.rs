@@ -39,7 +39,7 @@ impl Creatable for domain::EthAccount {
 
     fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const QUERY: &'static str = 
-            "INSERT INTO ethereum_account_details(address, password, owner_id) 
+            "INSERT INTO ethereum_account_details(address, password_hash_bcrypt, owner_id) 
              VALUES ($1, $2, $3) RETURNING id";
         let address = self.address.iter().map(|&x| x).collect::<Vec<u8>>();
         Ok(try!(db.query_raw(QUERY, &[
@@ -57,15 +57,21 @@ impl Creatable for domain::Registration {
             VALUES($1, $2, $3, $4, $5, $6)
             RETURNING id
         ";
-        let result = try!(db.query_raw(QUERY, &[
+        let result = db.query_raw(QUERY, &[
             &self.email_address, 
             &self.password_hash, 
             &self.confirmation_code, 
             &self.identifier_code, 
             &self.requested_at, 
             &self.confirmed_at, 
-        ]));
-        Ok(result)
+        ]);
+        match result {
+            Ok(r) => Ok(r),
+            Err(err) => {
+                panic!("Err {:?}", err);
+                return Err(err);
+            }
+        }
     }
 }
 

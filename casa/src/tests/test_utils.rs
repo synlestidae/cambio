@@ -70,7 +70,9 @@ pub fn log_in(username: &str, password: &str) -> String {
             dob: NaiveDate::from_ymd(1990, 1, 1),
             id_type: "NZ_Passport".to_string(),
             id_number: "LM008381".to_string()
-    });
+        },
+        password
+    );
     user_service.log_user_in(username, password.to_owned()).unwrap().session_token.0
 }
 

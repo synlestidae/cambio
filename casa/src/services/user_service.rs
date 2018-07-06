@@ -32,18 +32,26 @@ impl<T: PostgresHelper + Clone> UserService<T> {
 
     pub fn confirm_registration(&mut self, 
         registration: &Registration,
-        personal_details: &PersonalDetails) -> Result<User, CambioError> {
+        personal_details: &PersonalDetails,
+        eth_password: &str) -> Result<User, CambioError> {
         // TODO transaction needed here
+        info!("Confirming registration");
         
         // Mark the registration as confirmed
         let mut confirmed_registration = registration.clone();
         confirmed_registration.confirm();
         try!(confirmed_registration.update(&mut self.db));
+        info!("Creating registration...");
 
         // Create and store the user, ready to log in
-        self.create_user(&confirmed_registration.email_address, 
+        let user = try!(self.create_user(
+            &confirmed_registration.email_address, 
             &confirmed_registration.password_hash,
-            &personal_details)
+            &personal_details,
+            eth_password)
+        );
+
+        Ok(user)
     }
 
     pub fn register_user(
@@ -53,14 +61,15 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         personal_details: &PersonalDetails) -> Result<User, CambioError> {
         // get the BCrypt hash
         let password_hash = try!(hash(password, BCRYPT_COST));
-        self.create_user(email_address, &password_hash, personal_details)
+        self.create_user(email_address, &password_hash, personal_details, password)
     }
 
     pub fn create_user(
         &mut self,
         email_address: &str,
         password_hash: &str,
-        personal_details: &PersonalDetails) -> Result<User, CambioError> {
+        personal_details: &PersonalDetails,
+        eth_password: &str) -> Result<User, CambioError> {
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input(
                 "Please check that the email entered is valid",
@@ -81,9 +90,14 @@ impl<T: PostgresHelper + Clone> UserService<T> {
             owner_id: None,
         };
 
+        info!("Making a user");
         user = try!(self.user_repository.create(&user));
+        info!("Made user {:?}", user.id);
+        info!("Making eth account");
+        try!(self.create_eth_accounts(email_address, eth_password));
         let profile = personal_details.clone().into_profile(user.id.unwrap());
         let new_profile = try!(profile.create(&mut self.db));
+        info!("Making profile!");
 
         Ok(user)
     }
@@ -92,9 +106,12 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         email_address: &str, 
         password: &str
     ) -> Result<EthAccount, CambioError> {
+        info!("Creating ethereum account for {}", email_address);
         let mut eth_service = services::EthereumService::new(self.db.clone(), &self.web3_address);
         let account = try!(eth_service.new_account(email_address, password));
+        info!("Eth account created. Saving...");
         let account_result = try!(account.create(&mut self.db));
+        info!("Account with address {:?} created", account.address);
         Ok(account_result)
     }
 
@@ -105,10 +122,11 @@ impl<T: PostgresHelper + Clone> UserService<T> {
     ) -> Result<Session, CambioError> {
         let query = repository::UserClause::EmailAddress(email_address.to_owned());
         let user_option = try!(self.user_repository.read(&query)).pop();
+        info!("Logging in {}", email_address);
         if user_option.is_none() {
             info!("User {} does not exist", email_address);
             return Err(CambioError::not_found_search(
-                "Could not account for that email",
+                &format!("Could not find account for user {}", email_address),
                 "User repository returned None for User",
             ));
         }
