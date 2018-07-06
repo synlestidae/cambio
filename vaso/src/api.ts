@@ -151,7 +151,7 @@ export class Api {
         throw new Error(`Unexpected type for asyncGetActiveOrders ${body.constructor.name || typeof body}`);
     }
 
-    private makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
+    private async makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
         let urlObj = new URL(this.baseUrl);
         urlObj.pathname = url;
         url = urlObj.toString();
@@ -180,13 +180,17 @@ export class Api {
 
         (<any>params).credentials = 'include';
 
-        return fetch(url, params).then(function(response: Response) {
-            if (!(response.status >= 400)) {
-                return response;
-            } else {
-                throw response;
-            }
-        });
+        let response: Response;
+        try {
+            response = await fetch(url, params);
+        } catch (e) {
+            return Promise.reject(e);
+        }
+        if (!(response.status >= 400)) {
+            return response;
+        } else {
+            throw response;
+        }
     }
 }
 
