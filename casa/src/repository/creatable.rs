@@ -175,9 +175,10 @@ impl Creatable for domain::OrderSettlement {
             );
         }
         const SQL: &'static str = "INSERT INTO order_settlement(
+                transaction_id,
                 buying_crypto_id,
                 buying_fiat_id
-            ) VALUES ($1, $2)
+            ) VALUES (NULL, $1, $2)
             RETURNING id
         ";
 

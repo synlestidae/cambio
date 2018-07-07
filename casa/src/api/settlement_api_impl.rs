@@ -37,7 +37,6 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
         credentials: &api::SettlementEthCredentials) -> iron::Response {
 
         let tx = self.db.get().unwrap();
-        //.transaction();
         {
             let transaction = tx.transaction().unwrap();
             let db = db::PostgresTransactionHelper::new(transaction);

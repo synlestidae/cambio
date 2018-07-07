@@ -31,3 +31,9 @@ impl PostgresSource {
         }
     }
 }
+
+impl Drop for PostgresSource {
+    fn drop(&mut self) {
+        // meh
+    }
+}
