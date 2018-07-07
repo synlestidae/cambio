@@ -160,16 +160,28 @@ impl Creatable for domain::Profile {
 impl Creatable for domain::OrderSettlement {
     type Id = domain::OrderSettlementId;
     fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const SQL_SETTLEMENT: &'static str = 
+            "SELECT * 
+            FROM order_settlement 
+            WHERE buying_crypto_id in ($1, $2) OR buying_fiat_id in ($1, $2)";
+        let rows = try!(db.query_raw(SQL_SETTLEMENT, &[
+             &self.buying_order.id, 
+             &self.selling_order.id]
+        ));
+        if rows.len() > 0 {
+            return Err(CambioError::not_permitted(
+                "Orders can only be in one settlement at a time", 
+                "At least one settlement uses that order.")
+            );
+        }
         const SQL: &'static str = "INSERT INTO order_settlement(
-                started_at,
                 buying_crypto_id,
                 buying_fiat_id
-            ) VALUES ($1, $2, $3)
+            ) VALUES ($1, $2)
             RETURNING id
         ";
 
         db.query_raw(SQL, &[
-            &self.starting_user,
             &self.buying_order.id,
             &self.selling_order.id,
         ])

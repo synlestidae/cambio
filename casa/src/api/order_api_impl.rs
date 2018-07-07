@@ -217,10 +217,10 @@ impl<C: PostgresHelper + ConnectionSource + Clone> api::OrderApiTrait for api::O
 
             let settlement_result = settlement.create(&mut db_tx);
 
-            info!("Settlement creation was successful");
             // generate the receipt
             match settlement_result {
                 Ok(settlement) => {
+                    info!("Settlement creation was successful");
                     db_tx.commit();
                     let response_json = serde_json::to_string(&settlement).unwrap();
                     let content_type = "application/json".parse::<Mime>().unwrap();
