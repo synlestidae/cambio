@@ -17,6 +17,7 @@ fn test_subtraction() {
     run_sub_test("0.00", "0.00", "0.00");
     run_sub_test("0.00", "10.00", "-10.00");
     run_sub_test("5.00", "10.00", "-5.00");
+    run_sub_test("2.00", "0.01", "1.99");
 }
 
 fn run_add_test(lhs: &str, rhs: &str, expected: &str) {
