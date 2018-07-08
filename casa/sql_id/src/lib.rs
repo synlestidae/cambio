@@ -1,4 +1,4 @@
-#![recursion_limit="128"]
+#![recursion_limit="256"]
 extern crate proc_macro;
 extern crate syn;
 
@@ -18,6 +18,10 @@ pub fn sql_id_derive(input: TokenStream) -> TokenStream {
 fn impl_sql_traits(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
     quote! {
+        use serde;
+        use serde::ser::Serialize;
+        use serde::de::Deserialize;
+
         type ToSqlResult = Result<IsNull, Box<std::error::Error + 'static + Send + Sync>>;
 
         impl ToSql for #name {
@@ -61,6 +65,21 @@ fn impl_sql_traits(ast: &syn::DeriveInput) -> quote::Tokens {
             ) -> Result<Self, Box<std::error::Error + 'static + Send + Sync>> {
                 let id = try!(i32::from_sql_nullable(ty, raw));
                 Ok(#name(id))
+            }
+        }
+
+        use serde::Serializer;
+        impl Serialize for #name {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+                serializer.serialize_str(&self.0.to_string())
+            }
+        }
+
+        use serde::Deserializer;
+        impl<'de> Deserialize<'de> for #name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+                let int_val = i32::deserialize(deserializer).unwrap();
+                Ok(#name(int_val))
             }
         }
     }

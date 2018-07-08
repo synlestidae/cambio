@@ -7,7 +7,7 @@ use std::fmt::Display;
 use std::io::Cursor;
 use std::io::Write;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, SqlId)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, SqlId)]
 pub struct Id(pub i32);
 
 impl Display for Id {

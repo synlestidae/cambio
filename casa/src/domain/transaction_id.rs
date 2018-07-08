@@ -3,7 +3,7 @@ use postgres::types::{FromSql, ToSql, Type};
 use postgres::types::IsNull;
 use std;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize, SqlId)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, SqlId)]
 pub struct TransactionId(pub i32);
 
 impl Into<Id> for TransactionId {
