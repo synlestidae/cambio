@@ -78,6 +78,7 @@ fn impl_sql_traits(ast: &syn::DeriveInput) -> quote::Tokens {
         use serde::Deserializer;
         impl<'de> Deserialize<'de> for #name {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+                // TODO Unwrap is unnacceptable
                 let int_val = i32::deserialize(deserializer).unwrap();
                 Ok(#name(int_val))
             }
