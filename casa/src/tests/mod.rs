@@ -1,5 +1,6 @@
 mod account_repository_tests;
 mod order_repository_tests;
+mod decimal_tests;
 //mod payment_repositories_tests;
 mod order_utils;
 mod settlement_repository_tests;
