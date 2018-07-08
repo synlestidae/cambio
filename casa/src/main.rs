@@ -54,6 +54,7 @@ mod repositories;
 mod repository;
 mod services;
 mod tests;
+mod payment;
 
 use api::ApiError;
 use bcrypt::{hash, verify, DEFAULT_COST};
