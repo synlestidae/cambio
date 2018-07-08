@@ -48,3 +48,22 @@ impl Updateable for domain::Registration {
         Ok(try!(id.get(db)))
     }
 }
+
+impl Updateable for domain::Session {
+    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
+        /*let id = match self.user_id {
+            Some(id) => id,
+            None => return Err(CambioError::missing_field("Session", "id"))
+        };*/
+        const QUERY: &'static str = "
+            UPDATE user_session_info 
+            SET started_at = $2, session_state = $3
+            FROM user_session
+            WHERE 
+                user_session.session_info_id = user_session_info.id AND
+                user_session.id = $1
+        ";
+        try!(db.execute(QUERY, &[&self.id, &self.started_at, &self.session_state]));
+        self.session_token.get(db)
+    }
+}

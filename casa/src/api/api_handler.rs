@@ -8,6 +8,7 @@ use api::ApiRequest;
 use std::convert::TryFrom;
 use api::*;
 use repository::Readable;
+use repository::Updateable;
 use jobs::JobRequest;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
@@ -40,6 +41,14 @@ impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Syn
         };
         let user: domain::User = match request.get_session_token() {
             Some(token) => {
+                let session: Result<Option<domain::Session>, db::CambioError> = token.get_option(&mut db);
+                if let Ok(Some(mut s)) = session {
+                    s.renew();
+                    match s.update(&mut db) {
+                        Err(err) => println!("Failed to renew session: {:?}", err),
+                        _ => ()
+                    }
+                }
                 match token.get_option(&mut db) {
                     Ok(Some(user)) => {
                         match user.user_id.get(&mut db) {

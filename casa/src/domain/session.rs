@@ -32,9 +32,14 @@ impl Session {
             session_state: SessionState::Valid,
         }
     }
+
     pub fn is_valid(&self) -> bool {
         let duration = Duration::milliseconds(self.ttl_milliseconds as i64);
         Utc::now() < self.started_at + duration
+    }
+
+    pub fn renew(&mut self) {
+        self.started_at = Utc::now();
     }
 }
 
