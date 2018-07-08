@@ -12,6 +12,7 @@ set -o pipefail
 clean_up () {
     echo "Killing geth"
     pkill geth
+    fg
     #clean_db
 }
 

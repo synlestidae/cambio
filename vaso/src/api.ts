@@ -80,10 +80,22 @@ export class Api {
         }).then((r: Response) => r.json());
     }
 
-    public asyncGetAccounts(): Promise<Account[]> {
-        return this.makeRequest('/accounts/', 'GET')
-            .then((r: Response) => r.json())
-            .then((accounts: any) => (<Account[]>accounts));
+    public async asyncGetAccounts(): Promise<Account[]> {
+        let accountJSON = await this.makeRequest('/accounts/', 'GET')
+            .then((r: Response) => r.json());
+
+        let accounts: Account[] = [];
+
+        for (let a of accountJSON) {
+            let account: Account = Account.parse(a);
+            let txs = await this.asyncGetAccountTransactions(account.id);
+            if (txs.length === 0) {
+                account.balance = (txs.pop().balance / 100).toString();
+            }
+            accounts.push(account);
+        }
+
+        return accounts;
     }
 
     public asyncGetAccountTransactions(accountId: string): Promise<Transaction[]> {

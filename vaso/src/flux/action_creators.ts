@@ -237,6 +237,12 @@ export class ActionCreators {
     
     }
 
+    public creditAccount(accountId: string) {
+    }
+
+    public cashOutAccount(accountId: string) {
+    }
+
     private handleLoginResolve(response: any) {
         this.loginSuccess();
         this.changeURL('#accounts');

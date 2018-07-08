@@ -122,7 +122,7 @@ button.btn.active {
 
 .account-container {
     background-color: var(--sub-color);
-    margin-bottom: 15px;
+    padding: 15px;
 }
 
 .account-list-item {
@@ -292,6 +292,14 @@ table.table-component tr.empty-row td {
     letter-spacing: 1em;
 }
 
-.form-row.side-by-side {
+.side-by-side {
     display: flex;
+}
+
+.account-credit-operations {
+    margin-left: auto;
+}
+
+.non-touching-button + .non-touching-button {
+    margin-right: 15px;
 }
