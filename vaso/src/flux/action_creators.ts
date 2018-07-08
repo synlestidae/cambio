@@ -19,6 +19,25 @@ export class ActionCreators {
         this.dispatch = dispatch;
     }
 
+    public async initialise(hash: string) {
+        let sessionToken = localStorage.getItem('session_token');
+        console.log('Session is', sessionToken);
+        if (!sessionToken) {
+            console.log('No session');
+            return;
+        }
+        console.log('Trying to get accounts');
+        try {
+            await this.api.asyncGetAccounts();
+        } catch (e) {
+            console.log('Error getting accounts!', e);
+            this.api.sessionToken = null;
+            this.changeURL('');
+            return;
+        }
+        this.changeURL(hash);
+    }
+
     public loginError() {
         this.dispatch(Actions.LOGIN_ERROR);
     }
@@ -68,6 +87,9 @@ export class ActionCreators {
     }
 
     public changeURL(hash: string) {
+        if (hash === '') {
+            this.openLandingPage();
+        }
         if (hash.startsWith('#accounts')) {
             window.location.hash = '#accounts';
             this.openAccountPage();
@@ -86,6 +108,10 @@ export class ActionCreators {
             this.getAccountTransactions(a);
         }
         return accounts;
+    }
+
+    public openLandingPage() {
+        this.dispatch(new BasicAction('OPEN_PAGE', 'Login'));
     }
 
     public openBoardPage() {
