@@ -3,46 +3,32 @@ use std::str::FromStr;
 
 #[test]
 fn test_addition() {
-    assert_eq!(
-        Decimal::from_str("0.00").unwrap() + Decimal::from_str("0.00").unwrap(), 
-        Decimal::from_str("0.00").unwrap()
-    );
-
-    assert_eq!(
-        Decimal::from_str("6.40").unwrap() + Decimal::from_str("3.50").unwrap(), 
-        Decimal::from_str("9.90").unwrap()
-    );
-
-    assert_eq!(
-        Decimal::from_str("1.20").unwrap() + Decimal::from_str("3.50").unwrap(), 
-        Decimal::from_str("4.70").unwrap()
-    );
-
-    assert_eq!(
-        Decimal::from_str("2.00").unwrap() + Decimal::from_str("2.00").unwrap(), 
-        Decimal::from_str("4.00").unwrap()
-    );
-
-    assert_eq!(
-        Decimal::from_str("0.00").unwrap() + Decimal::from_str("2.00").unwrap(), 
-        Decimal::from_str("2.00").unwrap()
-    );
+    run_add_test("0.00", "0.00", "0.00");
+    run_add_test("6.40", "3.50", "9.90");
+    run_add_test("1.20", "3.50", "4.70");
+    run_add_test("0.00", "2.00", "2.00");
+    run_add_test("0.00", "1.99", "1.99");
+    run_add_test("0.01", "1.99", "2.00");
+    run_add_test("1.99", "0.01", "2.00");
 }
 
 #[test]
 fn test_subtraction() {
-    assert_eq!(
-        Decimal::from_str("0.00").unwrap() - Decimal::from_str("0.00").unwrap(), 
-        Decimal::from_str("0.00").unwrap()
-    );
+    run_sub_test("0.00", "0.00", "0.00");
+    run_sub_test("0.00", "10.00", "-10.00");
+    run_sub_test("5.00", "10.00", "-5.00");
+}
 
+fn run_add_test(lhs: &str, rhs: &str, expected: &str) {
     assert_eq!(
-        Decimal::from_str("0.00").unwrap() - Decimal::from_str("1.00").unwrap(), 
-        Decimal::from_str("-1.00").unwrap()
+        Decimal::from_str(lhs).unwrap() + Decimal::from_str(rhs).unwrap(), 
+        Decimal::from_str(expected).unwrap()
     );
+}
 
+fn run_sub_test(lhs: &str, rhs: &str, expected: &str) {
     assert_eq!(
-        Decimal::from_str("0.00").unwrap() - Decimal::from_str("10.00").unwrap(), 
-        Decimal::from_str("-10.00").unwrap()
+        Decimal::from_str(lhs).unwrap() - Decimal::from_str(rhs).unwrap(), 
+        Decimal::from_str(expected).unwrap()
     );
 }
