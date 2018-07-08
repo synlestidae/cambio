@@ -301,5 +301,15 @@ table.table-component tr.empty-row td {
 }
 
 .non-touching-button + .non-touching-button {
-    margin-right: 15px;
+    margin-left: 15px;
 }
+
+.account-line + .account-line {
+    margin-top: 15px;
+}
+
+.transaction-table {
+    color: var(--sub-color);
+    background-color: white;
+}
+

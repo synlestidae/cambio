@@ -8,6 +8,8 @@ import {AccountPage, AccountOption, CreditAccountOption, CreditCardDetails, Tran
 import {CreditCardInfo} from './credit_card_info';
 import {TransactionList} from './transaction_list';
 import {AccountHeader} from './account_header';
+import {AccountBalance} from './account_balance';
+import {LoadingState} from './flux/state/loading_state';
 
 export interface AccountLineProps {
     actions: ActionCreators,
@@ -37,19 +39,29 @@ export function AccountLine(props: AccountLineProps) {
             </CreditOrderInput>
         ];
         isCrediting = props.isOpen;
-    } else if (props.openOptions instanceof TransactionListOption) {
-        options = [
-            <TransactionList loadingState={props.openOptions.loadingState} transactions={props.openOptions.transactions}>
-            </TransactionList>
-        ];
-        transactionsOpen = props.isOpen;
     }
     const buttonClass = (b: boolean) => `btn ${isCrediting? 'active' : ''}`;
     let toggleCredit = (e: any) => props.actions.toggleCreditAccount(props.account);
     let toggleTransactions = (e: any) => props.actions.toggleTransactions(props.account);
+    let loadingState = new LoadingState();
+    loadingState.success();
     return (
-        <div className="account-container " style={{maxWidth: '500px'}}>
-          <AccountHeader actions={props.actions} accountId={"1"}></AccountHeader>
+        <div className="account-container">
+          <div className="account-line">
+              <AccountHeader actions={props.actions} accountId={"1"}></AccountHeader>
+          </div>
+          <div className="account-line">
+              <AccountBalance 
+                  balance={props.account.balance} 
+                  availableBalance={props.account.balance}>
+              </AccountBalance>
+          </div>
+          <div className="account-line">
+              <TransactionList 
+                  loadingState={loadingState} 
+                  transactions={props.account.transactions}>
+              </TransactionList>
+          </div>
         </div>
     );
 }

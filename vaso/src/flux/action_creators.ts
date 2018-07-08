@@ -78,16 +78,14 @@ export class ActionCreators {
         }
     }
 
-    public openAccountPage() {
+    public async openAccountPage() {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Accounts'));
-        this.api.asyncGetAccounts()
-            .then((accounts: Account[]) => {
-                this.dispatch(new BasicAction('ADD_ACCOUNTS', null, accounts));
-                for (let a of accounts) {
-                    this.getAccountTransactions(a);
-                }
-                return accounts;
-            });
+        let accounts = await this.api.asyncGetAccounts()
+        this.dispatch(new BasicAction('ADD_ACCOUNTS', null, accounts));
+        for (let a of accounts) {
+            this.getAccountTransactions(a);
+        }
+        return accounts;
     }
 
     public openBoardPage() {

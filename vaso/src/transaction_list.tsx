@@ -4,28 +4,27 @@ import {Transaction} from './domain/transaction';
 //import {ActionCreators} from './flux/action_creators';
 
 export interface TransactionListProps {
-    //actions: ActionCreat
     loadingState: LoadingState,
     transactions: Array<Transaction>|null;
 }
 
 export function TransactionList(props: TransactionListProps) {
     if (props.loadingState.name === 'Loading') {
-        return <div className="container">Loading this account's transactions...</div>
+        return <div>Loading this account's transactions...</div>
     }
     if (props.loadingState.name === 'Error') {
         let msg = props.loadingState.message;
         let text = `Error while loading transactions${msg? ': ' + msg : ''}.`;
-        return <div className="container error-text">
+        return <div className="error-text">
             {text}
             </div>
     }
     if (props.transactions === null || props.transactions.length === 0) {
-        return <div className="container">No transactions yet!</div>;
+        return <div>No transactions yet!</div>;
     }
     let txRows = getRows(props.transactions);
-    return <div className="container">
-        <table style={{width: '100%'}}>
+    return <div>
+        <table style={{width: '100%'}} className="transaction-table">
           <tr>
             <th>Time</th>
             <th>Type</th>

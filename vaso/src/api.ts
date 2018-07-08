@@ -90,8 +90,10 @@ export class Api {
             let account: Account = Account.parse(a);
             let txs = await this.asyncGetAccountTransactions(account.id);
             if (txs.length === 0) {
-                account.balance = (txs.pop().balance / 100).toString();
+                let lastTx = txs[txs.length - 1];
+                account.balance = (lastTx.balance / 100).toString();
             }
+            account.transactions = txs;
             accounts.push(account);
         }
 

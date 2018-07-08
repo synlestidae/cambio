@@ -10,6 +10,7 @@ export class Account {
     business_type: string; 
     role: string;
     balance: string;
+    transactions: Transaction[]|null;
 
     constructor(id: string,
         asset_type: string,
