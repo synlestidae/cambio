@@ -6,7 +6,7 @@ use payment::poli::{
 
 #[derive(Serialize, Deserialize)]
 pub struct InitiateTransactionResponse {
-    pub errors: Vec<InitiateTransactionError>,
-    pub transaction_status_code: TransactionStatusCode,
-    pub transaction: PoliTransactionResponse
+    pub errors: Option<Vec<InitiateTransactionError>>,
+    pub transaction_status_code: Option<TransactionStatusCode>,
+    pub transaction: Option<PoliTransactionResponse>
 }

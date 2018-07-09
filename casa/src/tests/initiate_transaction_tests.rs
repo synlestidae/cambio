@@ -1,10 +1,10 @@
-use payment::poli::InitiateTransaction;
+use payment::poli::{InitiateTransaction, InitiateTransactionResponse};
 use serde_xml_rs::deserialize;
 use domain::CurrencyCode;
 
 #[test]
-fn test_example_deserializes() {
-    let d: InitiateTransaction = deserialize(EXAMPLE.as_bytes()).unwrap();
+fn test_request_deserializes() {
+    let d: InitiateTransaction = deserialize(REQUEST_EXAMPLE.as_bytes()).unwrap();
     assert_eq!("MerchantPassword", d.authentication_code.0);
     assert_eq!("15.00", d.transaction.currency_amount.to_string());
     assert_eq!(CurrencyCode::NZD, d.transaction.currency_code);
@@ -21,7 +21,19 @@ fn test_example_deserializes() {
     assert_eq!("65.2.45.1", d.transaction.user_ip_address);
 }
 
-const EXAMPLE: &'static str = r#"
+#[test]
+fn test_response_deserializes() {
+    let d: InitiateTransactionResponse = 
+        deserialize(RESPONSE_EXAMPLE_SUCCESS.as_bytes()).unwrap();
+}
+
+#[test]
+fn test_response_error_deserializes() {
+    let d: InitiateTransactionResponse = 
+        deserialize(RESPONSE_EXAMPLE_ERROR.as_bytes()).unwrap();
+}
+
+const REQUEST_EXAMPLE: &'static str = r#"
 <?xml version="1.0" encoding="UTF-8"?>
 <InitiateTransactionRequest xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contract s" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
    <AuthenticationCode>MerchantPassword</AuthenticationCode>
@@ -42,4 +54,32 @@ const EXAMPLE: &'static str = r#"
       <dco:UserIPAddress>65.2.45.1</dco:UserIPAddress>
    </Transaction>
 </InitiateTransactionRequest>
+"#;
+
+const RESPONSE_EXAMPLE_SUCCESS: &'static str = r#"
+<?xml version="1.0" encoding="utf-8"?>
+<InitiateTransactionResponse xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+    <Errors xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
+    <TransactionStatusCode>Initiated</TransactionStatusCode>
+    <Transaction xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" >
+        <dco:NavigateURL>https://txn.apac.paywithpoli.com/?token=%2bXo3AxIuS8T%2fukpoUCZyXw%3d%3d</dco:NavigateURL>
+        <dco:TransactionRefNo>996100000001</dco:TransactionRefNo>
+        <dco:TransactionToken>+Xo3AxIuS8T/ukpoUCZyXw==</dco:TransactionToken> 
+    </Transaction>
+</InitiateTransactionResponse>
+"#;
+
+const RESPONSE_EXAMPLE_ERROR: &'static str = r#"
+<?xml version="1.0" encoding="utf-8"?>
+<InitiateTransactionResponse xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+  <Errors xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO">
+      <dco:Error>
+          <dco:Code>1003</dco:Code>
+          <dco:Field />
+          <dco:Message>POLi is unable to continue with this payment. Please contact the Merchant for assistance.</dco:Message> 
+      </dco:Error>
+  </Errors>
+  <TransactionStatusCode i:nil="true" />
+  <Transaction i:nil="true" xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
+</InitiateTransactionResponse>
 "#;
