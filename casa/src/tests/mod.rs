@@ -10,5 +10,6 @@ mod user_payment_repository_tests;
 mod user_repository_tests;
 mod user_api_tests;
 mod settlement_api_tests;
+mod initiate_transaction_tests;
 
 pub use self::test_utils::get_db_helper;
