@@ -64,7 +64,7 @@ impl fmt::Display for Decimal {
         } else {
             "-"
         };
-        write!(f, "{}{}.{}", sign, self.dollars, self.cents)
+        write!(f, "{}{}.{:02}", sign, self.dollars, self.cents)
     }
 }
 
