@@ -5,6 +5,7 @@ use db::{TryFromRow, TryFromRowError};
 use postgres;
 use postgres::rows::Row;
 use rand;
+
 use rand::Rng;
 use bcrypt::{hash};
 use rand::distributions::Alphanumeric;

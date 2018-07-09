@@ -1,3 +1,22 @@
+CREATE TYPE payment_method AS ENUM ('credit_card', 'nz_bank_deposit');
+CREATE TYPE payment_vendor AS ENUM ('Poli');
+
+CREATE TABLE vendor (
+    id SERIAL NOT NULL PRIMARY KEY,
+    name payment_vendor UNIQUE NOT NULL,
+    intake_account SERIAL NOT NULL REFERENCES account(id)
+);
+
+CREATE TYPE business_ends_type AS ENUM (
+    'wallet_deposit',
+    'wallet_withdrawal',
+    'system_fee_charge',
+    'order_placement',
+    'order_settlement'
+);
+
+
+
 CREATE TYPE payment_status_type AS ENUM(
     'started_by_user',
     'started_with_poli',
@@ -24,7 +43,35 @@ CREATE TABLE poli_payment_request (
     unique_code VARCHAR(12) NOT NULL,
     amount MONEY NOT NULL,
     user_id SERIAL REFERENCES users(id),
-    started_at DATETIME NOT NULL,
+    started_at TIMESTAMP NOT NULL,
     payment_status payment_status_type NOT NULL,
     transaction_ref_no VARCHAR(12) NOT NULL
+);
+
+CREATE TABLE entry (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_payment SERIAL NOT NULL REFERENCES user_payment(id)
+);
+
+CREATE TABLE authorship (
+    id SERIAL NOT NULL PRIMARY KEY,
+    business_ends business_ends_type NOT NULL,
+    authoring_user SERIAL REFERENCES users(id) NOT NULL, 
+    message TEXT,
+    entry SERIAL REFERENCES entry
+);
+
+ALTER TABLE authorship ALTER COLUMN entry DROP NOT NULL;
+CREATE TABLE journal (
+    id SERIAL PRIMARY KEY,
+    accounting_period SERIAL REFERENCES accounting_period(id),
+    account_id SERIAL NOT NULL REFERENCES account(id),
+    asset_type ASSET_TYPE NOT NULL,  
+    transaction_time TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
+    correspondence_id SERIAL NOT NULL,
+    credit UINT,
+    debit UINT,
+    balance INT8,
+    authorship_id SERIAL REFERENCES authorship(id),
+    CHECK((credit IS NOT NULL AND debit IS NULL) OR (credit IS NULL AND debit IS NOT NULL))
 );

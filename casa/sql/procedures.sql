@@ -140,3 +140,93 @@ BEGIN
         VALUES(sell_units, buy_units, sell_asset_id, buy_asset_id, debit_account_id, credit_account_id, order_info_id, author_info_id, desired_ttl_milliseconds, 'active');
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION credit_account_from_payment(
+    -- all these IDs belong together
+    user_id_var INTEGER,
+    email_address_var VARCHAR,
+    credited_account_id INTEGER,
+    asset_type_var ASSET_TYPE,
+
+    -- stuff that comes 'over the wire' from the broker
+    vendor_name payment_vendor,
+    payment_method_var payment_method,
+    datetime_payment_made_var TIMESTAMP,
+    unique_id VARCHAR,
+    units INT8,
+    message_var TEXT
+)
+RETURNS VOID AS $$
+DECLARE 
+authorship_id INTEGER;
+entry_id INTEGER;
+intake_account_var INTEGER;
+user_credited_account INTEGER;
+vendor_id INTEGER;
+user_payment_id INTEGER;
+accounting_period_start_var DATE;
+accounting_period_end_var DATE;
+
+debit_account_id INTEGER;
+credit_account_id INTEGER;
+
+BEGIN
+    SELECT intake_account INTO intake_account_var
+        FROM vendor 
+        WHERE name = vendor_name;
+
+    SELECT account.id INTO user_credited_account 
+        FROM account
+        JOIN account_owner ON account.owner_id = account_owner.id
+        JOIN users ON account_owner.user_id = users.id
+    WHERE 
+        users.id = user_id_var AND 
+        users.email_address = email_address_var AND 
+        account.id = credited_account_id;
+
+    IF user_credited_account IS NULL THEN
+        RAISE EXCEPTION 'Could not find the account to credit with payment';
+    END IF;
+
+    SELECT vendor.id INTO vendor_id FROM vendor WHERE name = vendor_name;
+
+    -- this payment will be linked to the actual transfer in the ledger
+    INSERT INTO user_payment(vendor, payment_method, datetime_payment_made, asset_type, units, unique_id)
+        VALUES (vendor_id, payment_method_var, datetime_payment_made_var, asset_type_var, units, unique_id)
+        RETURNING id into user_payment_id;
+
+    INSERT INTO entry(user_payment) VALUES(user_payment_id) RETURNING id INTO entry_id;
+
+    -- declare why the transfer of assets is made
+    INSERT INTO authorship(business_ends, authoring_user, message, entry)
+        VALUES ('wallet_deposit', user_id_var, message_var, entry_id)
+        RETURNING id INTO authorship_id;
+
+    SELECT from_date INTO accounting_period_start_var FROM accounting_period
+        WHERE id = (SELECT MAX(id) FROM accounting_period);
+
+    SELECT to_date INTO accounting_period_end_var FROM accounting_period
+        WHERE id = (SELECT MAX(id) FROM accounting_period);
+
+    -- if units are positive then it is a standard credit to the users account
+    -- they have bought money and get it added to their account
+
+    IF units >= 0 THEN
+        credit_account_id = user_credited_account; 
+        debit_account_id = intake_account_var;
+    ELSE 
+        credit_account_id = intake_account_var; 
+        debit_account_id = user_credited_account;
+    END IF;
+
+    PERFORM transfer_asset(
+        asset_type_var := asset_type_var, 
+        account_period_start := accounting_period_start_var, 
+        account_period_end := accounting_period_end_var, 
+        debit_account := debit_account_id,
+        credit_account := credit_account_id, 
+        units := CAST (abs(units) AS UINT), 
+        authorship_id := authorship_id);
+    RETURN;
+END;
+$$ LANGUAGE plpgsql;

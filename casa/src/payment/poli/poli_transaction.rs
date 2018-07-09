@@ -29,5 +29,5 @@ pub struct PoliTransaction {
     #[serde(rename="Timeout")]
     pub timeout: String,
     #[serde(rename="UserIPAddress")]
-    pub user_ip_address: String 
+    pub user_ip_address: Option<String>
 }
