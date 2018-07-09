@@ -43,7 +43,7 @@ impl<'a> PostgresHelper for PostgresTransactionHelper<'a> {
     }
 }
 
-impl<'a> Transaction<'a> for PostgresTransactionHelper<'a> {
+impl<'a> Transaction for PostgresTransactionHelper<'a> {
     fn commit(self) -> Result<(), CambioError> {
         self.transaction.set_commit();
         Ok(try!(self.transaction.commit()))

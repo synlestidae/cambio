@@ -3,7 +3,7 @@ use std::str::FromStr;
 use std::fmt;
 use serde::*;
 
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Decimal {
     is_positive: bool,
     dollars: u64,

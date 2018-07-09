@@ -10,11 +10,11 @@ fn test_example_deserializes() {
     assert_eq!(CurrencyCode::NZD, d.transaction.currency_code);
     assert_eq!("http://www.pricebusterdvd.com/checkout", d.transaction.merchant_checkout_url.unwrap());
     assert_eq!("PriceBusterDVD", d.transaction.merchant_code.0);
-    assert_eq!("MerchantDataAssociatedWithTransaction", d.transaction.merchant_data.0);
+    assert_eq!("MerchantDataAssociatedWithTransaction", d.transaction.merchant_data.unwrap().0);
     assert_eq!("2008-08-18 14:01:02", d.transaction.merchant_date_time.to_string());
-    assert_eq!("MerchantReferenceAssociateWithTransaction", d.transaction.merchant_ref.0);
+    assert_eq!("MerchantReferenceAssociateWithTransaction", d.transaction.merchant_ref.unwrap().0);
     assert_eq!("http://www.pricebusterdvd.com/notification", d.transaction.notification_url.unwrap());
-    assert_eq!(None, d.transaction.selected_fi_code);
+    assert_eq!(Some(String::new()), d.transaction.selected_fi_code);
     assert_eq!("http://www.pricebusterdvd.com/successful", d.transaction.successful_url);
     assert_eq!("1000", d.transaction.timeout);
     assert_eq!("http://www.pricebusterdvd.com/unsuccessful", d.transaction.unsuccessful_url.unwrap());

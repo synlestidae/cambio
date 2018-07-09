@@ -1,15 +1,15 @@
-use db::PostgresHelper;
+use db::{PostgresHelper, Transaction};
 use domain::{Payment, User, Account, AccountSet};
 use iron::response::Response;
 use repository::Readable;
 use iron;
 
-pub struct PaymentApi<H: PostgresHelper + 'static> {
+pub struct PaymentApi<H: PostgresHelper + Transaction> {
     db: H
 }
 
-impl<H: PostgresHelper + 'static> PaymentApi<H> {
-    pub fn new(db: H) -> Self {
+/*impl<H: PostgresHelper + Transaction> PaymentApi<H> {
+    pub fn new(db: &mut H) -> Self {
         Self {
             db: db
         }
@@ -18,6 +18,7 @@ impl<H: PostgresHelper + 'static> PaymentApi<H> {
     pub fn post_payment(&mut self, 
         user: &User,
         payment: &Payment) -> Response {
+        /*
         const CREDIT_FUNC: &'static str = "
             SELECT credit_account_from_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
         ";
@@ -44,6 +45,7 @@ impl<H: PostgresHelper + 'static> PaymentApi<H> {
         ]) {
             Ok(_) => iron::response::Response::with((iron::status::Status::Ok, format!(""))), //unimplemented!(),
             Err(err) => err.into(),
-        }
+        }*/
+        unimplemented!()
     }
-}
+}*/

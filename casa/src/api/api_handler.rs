@@ -73,6 +73,7 @@ impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Syn
         if api_request.requires_auth() && user.id.is_none() {
             return Ok(api::ApiError::unauthorised().into())
         }
+
         let response = match api_request {
             ApiRequest::User(user_request) => {
                 let mut user_api = UserApi::new(db.clone(), &self.web3_address);
@@ -116,11 +117,8 @@ impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Syn
                 }
             },
             ApiRequest::Payment(payment_req) => {
-                let mut payment_api = api::PaymentApi::new(self.db.clone());
-                match payment_req {
-                    PaymentRequest::CreditCardPayment(payment) => payment_api.post_payment(&user, &payment)
-                }
-            }
+                unimplemented!()
+            } 
         };
 
         Ok(response)
