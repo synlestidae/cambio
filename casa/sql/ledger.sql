@@ -146,18 +146,6 @@ CREATE TABLE vendor (
     intake_account SERIAL NOT NULL REFERENCES account(id)
 );
 
-CREATE TABLE user_payment (
-    id SERIAL NOT NULL PRIMARY KEY,
-    vendor SERIAL NOT NULL REFERENCES vendor(id),
-    payment_method payment_method NOT NULL,
-    datetime_payment_made TIMESTAMP NOT NULL,
-    datetime_recorded TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
-    asset_type ASSET_TYPE NOT NULL,
-    units INT8 NOT NULL,
-    unique_id VARCHAR(256) NOT NULL,
-    CONSTRAINT Unique_payment_each_vendor UNIQUE(vendor, unique_id)
-);
-
 CREATE TYPE business_ends_type AS ENUM (
     'wallet_deposit',
     'wallet_withdrawal',

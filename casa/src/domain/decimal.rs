@@ -1,7 +1,14 @@
 use std::ops::{Add, Sub};
+use db::CambioError;
 use std::str::FromStr;
 use std::fmt;
 use serde::*;
+use std;
+use postgres::types::{FromSql, ToSql, Type};
+use postgres::types::IsNull;
+use std::error::Error;
+
+type ToSqlResult = Result<IsNull, Box<Error + 'static + Send + Sync>>;
 
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Decimal {
@@ -106,4 +113,52 @@ impl<'de> Deserialize<'de> for Decimal {
         let currency_val = String::deserialize(deserializer).unwrap();
         Ok(Self::from_str(&currency_val).unwrap())
     }
+}
+
+impl ToSql for Decimal {
+    fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
+        self.to_string().to_sql(ty, out)
+    }
+
+    fn accepts(ty: &Type) -> bool
+    where
+        Self: Sized,
+    {
+        true
+    }
+
+    fn to_sql_checked(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
+        self.to_string().to_sql_checked(ty, out)
+    }
+}
+
+impl FromSql for Decimal {
+    fn from_sql(
+        ty: &Type,
+        raw: &[u8],
+    ) -> Result<Self, Box<Error + 'static + Send + Sync>> {
+        let value = try!(String::from_sql(ty, raw));
+        Decimal::from_str(&value).map_err(|_| err())
+    }
+
+    fn accepts(ty: &Type) -> bool {
+        true
+    }
+
+    fn from_sql_null(ty: &Type) -> Result<Self, Box<Error + 'static + Send + Sync>> {
+        let value = try!(String::from_sql_null(ty));
+        Decimal::from_str(&value).map_err(|_| err())
+    }
+
+    fn from_sql_nullable(
+        ty: &Type,
+        raw: Option<&[u8]>,
+    ) -> Result<Self, Box<Error + 'static + Send + Sync>> {
+        let value = try!(String::from_sql_nullable(ty, raw));
+        Decimal::from_str(&value).map_err(|_| err())
+    }
+}
+
+fn err() -> Box<Error + Sync + Send + 'static> {
+    unimplemented!()
 }

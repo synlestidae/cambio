@@ -6,7 +6,7 @@ use iron;
 use postgres;
 use r2d2;
 use std::error;
-use std::error::Error;
+use std::error::Error as StdError;
 use std::fmt;
 use web3;
 
@@ -137,12 +137,15 @@ impl CambioError {
     }
 }
 
-impl error::Error for CambioError {
+unsafe impl Send for CambioError {}
+unsafe impl Sync for CambioError {}
+
+impl StdError for CambioError {
     fn description(&self) -> &str {
         &self.system_message
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&StdError> {
         None
     }
 }

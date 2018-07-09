@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer};
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct AuthenticationCode(pub String);
 
 impl<'de> Deserialize<'de> for AuthenticationCode {
