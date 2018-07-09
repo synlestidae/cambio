@@ -3,6 +3,7 @@ use db::{PostgresHelper, Transaction};
 use domain::{User, PoliPaymentRequest};
 use db::CambioError;
 use hyper::client::Client;
+use serde_xml_rs::{deserialize, serialize};
 
 pub struct PoliService<H: PostgresHelper + Transaction> {
     poli_config: PoliConfig,
@@ -23,6 +24,20 @@ impl<'a, T: PostgresHelper + Transaction> PoliService<T> {
             &self.poli_config,
             poli_payment_request
         );
+
+        // All unwraps to be removed
+
+        let mut buffer = Vec::new();
+        serialize(&init_tx, &mut buffer).unwrap();
+        let body: &[u8] = &buffer;
+
+        let res_result = Client::new()
+            .post(&self.poli_config.initiate_transaction_url.to_string())
+            .body(body)
+            .send();
+
+        let res = res_result.unwrap();
+        let response: InitiateTransactionResponse = deserialize(res).unwrap();
         unimplemented!()
     }
 }
