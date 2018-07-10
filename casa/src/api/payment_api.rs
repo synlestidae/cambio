@@ -41,8 +41,8 @@ impl<H: ConnectionSource> PaymentApi<H> {
             transaction_token: None
         };
         payment_req.create(&mut tx).unwrap();
-        let tx_response = poli_service.initiate_transaction(&payment_req).unwrap();
-        let resp = match tx_response.transaction {
+        let mut tx_response = poli_service.initiate_transaction(&payment_req).unwrap();
+        let resp = match tx_response.transaction.pop() {
             Some(poli_tx) => {
                 payment_req.transaction_token = Some(poli_tx.transaction_token);
                 payment_req.payment_status = PaymentStatus::StartedWithPoli;

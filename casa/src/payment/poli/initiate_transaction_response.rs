@@ -8,8 +8,8 @@ use payment::poli::{
 pub struct InitiateTransactionResponse {
     #[serde(rename="Error", default)]
     pub errors: Vec<InitiateTransactionError>,
-    #[serde(rename="TransactionStatusCode")]
+    #[serde(rename="TransactionStatusCode, default")]
     pub transaction_status_code: Option<TransactionStatusCode>,
-    #[serde(rename="Transaction")]
-    pub transaction: Option<PoliTransactionResponse>
+    #[serde(rename="Transaction", default)]
+    pub transaction: Vec<PoliTransactionResponse>
 }

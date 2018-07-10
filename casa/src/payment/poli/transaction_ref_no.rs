@@ -1,7 +1,8 @@
 use postgres::types::{ToSql, FromSql, Type, IsNull};
+use serde::{Deserialize, Deserializer};
 use std::error::Error;
 
-#[derive(Eq, PartialEq, Clone, Serialize, Deserialize, Debug)]
+#[derive(Eq, PartialEq, Clone, Serialize, Debug)]
 pub struct TransactionRefNo(String);
 
 impl FromSql for TransactionRefNo {
@@ -34,4 +35,11 @@ impl ToSql for TransactionRefNo {
 		out.append(&mut bytes);
         Ok(IsNull::No)
 	}
+}
+
+impl<'de> Deserialize<'de> for TransactionRefNo {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let data = try!(String::deserialize(deserializer));
+        Ok(TransactionRefNo(data))
+    }
 }
