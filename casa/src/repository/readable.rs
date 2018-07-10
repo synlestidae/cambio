@@ -319,6 +319,15 @@ impl Readable<domain::PersonalIdentity> for domain::Id {
     }
 }
 
+impl Readable<domain::PoliPaymentRequest> for domain::PoliPaymentRequestId {
+    fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::PoliPaymentRequest>, CambioError> {
+        const SELECT_ADDRESS: &'static str = "
+            SELECT * FROM poli_payment_request where id = $1
+        ";
+        db.query(SELECT_ADDRESS, &[self])
+    }
+}
+
 const SELECT_BY_OWNER: &'static str = "
     SELECT *, users.id as user_id, account_owner.id as owner_id
     FROM users 

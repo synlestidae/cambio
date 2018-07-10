@@ -188,3 +188,17 @@ impl Creatable for domain::OrderSettlement {
         ])
     }
 }
+
+impl Creatable for domain::PoliPaymentRequest {
+    type Id = domain::PoliPaymentRequestId;
+
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const QUERY: &'static str = 
+            "INSERT INTO poli_payment_request(user_id, amount, unique_code, started_at, payment_status, transaction_ref_no) 
+             VALUES ($1, $2, $3, $4, $5, $6) 
+             RETURNING id";
+        Ok(try!(db.query_raw(QUERY, &[
+            &self.user_id, &self.amount, &self.unique_code, &self.started_at, &self.payment_status, &self.transaction_ref_no
+        ])))
+    }
+}

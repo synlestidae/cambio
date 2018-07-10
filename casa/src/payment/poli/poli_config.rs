@@ -1,6 +1,7 @@
 use payment::poli::*;
 use hyper::Url;
 
+#[derive(Clone)]
 pub struct PoliConfig {
     pub merchant_code: MerchantCode,
     pub authentication_code: AuthenticationCode,

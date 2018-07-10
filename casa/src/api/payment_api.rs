@@ -1,51 +1,48 @@
-use db::{PostgresHelper, Transaction};
-use domain::{Payment, User, Account, AccountSet};
+use db::*;
+use db::Transaction;
+use domain::*;
+use payment::poli::*;
+use api::PaymentRequest;
+use services::{PoliService};
+use chrono::prelude::*;
 use iron::response::Response;
-use repository::Readable;
+use repository::{Readable, Creatable};
 use iron;
 
-pub struct PaymentApi<H: PostgresHelper + Transaction> {
-    db: H
+pub struct PaymentApi<H: ConnectionSource> {
+    conn_src: H,
+    poli_config: PoliConfig
 }
 
-/*impl<H: PostgresHelper + Transaction> PaymentApi<H> {
-    pub fn new(db: &mut H) -> Self {
+impl<H: ConnectionSource> PaymentApi<H> {
+    pub fn new(poli_config: PoliConfig, conn_src: H) -> Self {
         Self {
-            db: db
+            conn_src: conn_src,
+            poli_config: poli_config 
         }
     }
 
-    pub fn post_payment(&mut self, 
+    pub fn request_payment(&mut self, 
         user: &User,
-        payment: &Payment) -> Response {
-        /*
-        const CREDIT_FUNC: &'static str = "
-            SELECT credit_account_from_payment($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
-        ";
-        let accounts: Vec<Account> = match user.owner_id.unwrap().get_vec(&mut self.db) {
-            Ok(accounts) => accounts,
-            Err(err) => return err.into()
+        payment: &PaymentRequest) -> Response {
+        let conn = self.conn_src.get().unwrap();
+        let conn_tx = conn.transaction();
+        let mut tx = PostgresTransactionHelper::new(conn_tx.unwrap());
+        let mut poli_service = PoliService::new(
+            self.poli_config.clone()
+        );
+        let payment_req = PoliPaymentRequest {
+            id: None,
+            user_id: user.id.unwrap(),
+            amount: payment.amount.clone(),
+            unique_code: Code::new(),
+            started_at: Utc::now(),
+            payment_status: PaymentStatus::StartedByUser,
+            transaction_ref_no: None
         };
-        let account_set: AccountSet = match AccountSet::from(accounts) {
-            Ok(accounts) => accounts,
-            Err(err) => return err.into()
-        };
-        let account_id = account_set.nzd_wallet();
-        match self.db.execute(CREDIT_FUNC, &[
-            &user.id,
-            &user.email_address,
-            &account_id,
-            &payment.asset_type,
-            &payment.vendor,
-            &payment.payment_method,
-            &payment.datetime_payment_made.naive_utc(),
-            &payment.unique_id,
-            &payment.user_credit,
-            &"Test credit of {} from user."
-        ]) {
-            Ok(_) => iron::response::Response::with((iron::status::Status::Ok, format!(""))), //unimplemented!(),
-            Err(err) => err.into(),
-        }*/
+        payment_req.create(&mut tx);
+        let tx_response = poli_service.initiate_transaction(&payment_req).unwrap();
+        tx.commit();
         unimplemented!()
     }
-}*/
+}

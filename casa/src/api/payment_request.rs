@@ -2,8 +2,8 @@ use domain::{Decimal, UniqueId, CurrencyCode, PaymentMethod}; //Payment;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct PaymentRequest {
-    amount: Decimal,
-    unique_id: UniqueId,
-    currency_code: CurrencyCode,
-    method: PaymentMethod
+    pub amount: Decimal,
+    pub unique_id: UniqueId,
+    pub currency_code: CurrencyCode,
+    pub method: PaymentMethod
 }

@@ -40,9 +40,9 @@ CREATE TABLE user_payment (
 
 CREATE TABLE poli_payment_request (
     id SERIAL NOT NULL PRIMARY KEY,
-    unique_code VARCHAR(12) NOT NULL,
-    amount MONEY NOT NULL,
     user_id SERIAL REFERENCES users(id),
+    amount MONEY NOT NULL,
+    unique_code VARCHAR(12) NOT NULL,
     started_at TIMESTAMP NOT NULL,
     payment_status payment_status_type NOT NULL,
     transaction_ref_no VARCHAR(12) NOT NULL

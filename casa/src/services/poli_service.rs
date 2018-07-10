@@ -1,21 +1,20 @@
 use payment::poli::*;
-use db::{PostgresHelper, Transaction};
+//use db::{PostgresHelper, Transaction};
 use domain::{User, PoliPaymentRequest};
-use db::CambioError;
+//use db::CambioError;
 use hyper::client::Client;
 use serde_xml_rs::{deserialize, serialize};
 use services::PoliError;
 
-pub struct PoliService<H: PostgresHelper + Transaction> {
+pub struct PoliService {
     poli_config: PoliConfig,
-    db: H
+    //db: H
 }
 
-impl<'a, T: PostgresHelper + Transaction> PoliService<T> {
-    pub fn new(poli_config: PoliConfig, db: T) -> Self {
+impl PoliService {
+    pub fn new(poli_config: PoliConfig) -> Self {
         Self {
-            poli_config: poli_config, 
-            db: db
+            poli_config: poli_config
         }
     }
 
@@ -44,6 +43,12 @@ impl<'a, T: PostgresHelper + Transaction> PoliService<T> {
 
     pub fn get_transaction(&mut self, transaction_token: &TransactionToken) 
         -> Result<GetTransactionResponse, PoliError> {
+        let poli_config = &self.poli_config;
+        let get_transaction = GetTransaction {
+            merchant_code: poli_config.merchant_code.clone(),
+            authentication_code: poli_config.authentication_code.clone(),
+            transaction_token: transaction_token.clone()
+        };
         unimplemented!()
     }
 }
