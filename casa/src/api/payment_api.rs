@@ -31,17 +31,18 @@ impl<H: ConnectionSource> PaymentApi<H> {
         let mut poli_service = PoliService::new(
             self.poli_config.clone()
         );
-        let payment_req = PoliPaymentRequest {
+        let mut payment_req = PoliPaymentRequest {
             id: None,
             user_id: user.id.unwrap(),
             amount: payment.amount.clone(),
             unique_code: Code::new(),
             started_at: Utc::now(),
             payment_status: PaymentStatus::StartedByUser,
-            transaction_ref_no: None
+            transaction_token: None
         };
-        payment_req.create(&mut tx);
+        payment_req.create(&mut tx).unwrap();
         let tx_response = poli_service.initiate_transaction(&payment_req).unwrap();
+        payment_req.transaction_token = Some(tx_response.transaction.unwrap().transaction_token);
         tx.commit();
         unimplemented!()
     }
