@@ -80,5 +80,6 @@ const RESPONSE_EXAMPLE_ERROR: &'static str = r#"
       </dco:Error>
   </Errors>
   <TransactionStatusCode i:nil="true" />
+  <Transaction i:nil="true" xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
 </InitiateTransactionResponse>
 "#;

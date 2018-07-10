@@ -1,4 +1,6 @@
 mod authentication_code;
+mod poli_error_code;
+mod poli_error_code_type;
 mod error_vec;
 mod initiate_transaction;
 mod nudge;
