@@ -38,6 +38,6 @@ impl<'a, T: PostgresHelper + Transaction> PoliService<T> {
 
         let res = res_result.unwrap();
         let response: InitiateTransactionResponse = deserialize(res).unwrap();
-        unimplemented!()
+        Ok(response)
     }
 }

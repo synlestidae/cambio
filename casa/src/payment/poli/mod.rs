@@ -1,5 +1,6 @@
 mod authentication_code;
 mod initiate_transaction;
+mod nudge;
 mod merchant_code;
 mod merchant_ref;
 mod merchant_data;
@@ -11,6 +12,8 @@ mod initiate_transaction_error;
 mod poli_transaction_response;
 mod transaction_token;
 mod transaction_ref_no;
+mod get_transaction;
+mod get_transaction_response;
 
 pub use self::authentication_code::*;
 pub use self::initiate_transaction::*;
@@ -25,3 +28,6 @@ pub use self::initiate_transaction_error::*;
 pub use self::poli_transaction_response::*;
 pub use self::transaction_token::*;
 pub use self::transaction_ref_no::*;
+pub use self::get_transaction::*;
+pub use self::get_transaction_response::*;
+pub use self::nudge::*;
