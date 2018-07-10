@@ -67,3 +67,21 @@ impl Updateable for domain::Session {
         self.session_token.get(db)
     }
 }
+
+impl Updateable for domain::PoliPaymentRequest {
+    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
+        let id = match self.id {
+            Some(id) => id,
+            None => return Err(CambioError::db_update_failed("PoliPaymentRequest"))
+        };
+        const QUERY: &'static str = "
+            UPDATE poli_payment_request 
+            SET payment_status = $2, transaction_token = $3
+            WHERE id = $1
+        ";
+        try!(db.execute(QUERY, &[
+            &self.id, &self.payment_status, &self.transaction_token
+        ]));
+        id.get(db)
+    }
+}

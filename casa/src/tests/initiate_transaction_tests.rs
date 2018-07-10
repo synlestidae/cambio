@@ -18,7 +18,7 @@ fn test_request_deserializes() {
     assert_eq!("http://www.pricebusterdvd.com/successful", d.transaction.successful_url);
     assert_eq!("1000", d.transaction.timeout);
     assert_eq!("http://www.pricebusterdvd.com/unsuccessful", d.transaction.unsuccessful_url.unwrap());
-    assert_eq!("65.2.45.1", d.transaction.user_ip_address);
+    assert_eq!("65.2.45.1", d.transaction.user_ip_address.unwrap());
 }
 
 #[test]

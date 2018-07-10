@@ -6,7 +6,7 @@ use api::PaymentRequest;
 use services::{PoliService};
 use chrono::prelude::*;
 use iron::response::Response;
-use repository::{Readable, Creatable};
+use repository::{Readable, Creatable, Updateable};
 use iron;
 
 pub struct PaymentApi<H: ConnectionSource> {
@@ -42,8 +42,18 @@ impl<H: ConnectionSource> PaymentApi<H> {
         };
         payment_req.create(&mut tx).unwrap();
         let tx_response = poli_service.initiate_transaction(&payment_req).unwrap();
-        payment_req.transaction_token = Some(tx_response.transaction.unwrap().transaction_token);
+        match tx_response.transaction {
+            Some(poli_tx) => {
+                payment_req.transaction_token = Some(poli_tx.transaction_token);
+                payment_req.update(&mut tx).unwrap();
+                unimplemented!()
+            },
+            None => {
+                payment_req.payment_status = PaymentStatus::Failed;
+                payment_req.update(&mut tx).unwrap();
+                unimplemented!()
+            }
+        };
         tx.commit();
-        unimplemented!()
     }
 }
