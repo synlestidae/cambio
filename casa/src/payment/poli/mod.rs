@@ -1,4 +1,5 @@
 mod authentication_code;
+mod error_vec;
 mod initiate_transaction;
 mod nudge;
 mod merchant_code;
@@ -31,3 +32,4 @@ pub use self::transaction_ref_no::*;
 pub use self::get_transaction::*;
 pub use self::get_transaction_response::*;
 pub use self::nudge::*;
+pub use self::error_vec::ErrorVec;
