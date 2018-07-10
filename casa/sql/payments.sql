@@ -45,7 +45,7 @@ CREATE TABLE poli_payment_request (
     unique_code VARCHAR(12) NOT NULL,
     started_at TIMESTAMP NOT NULL,
     payment_status payment_status_type NOT NULL,
-    transaction_ref_no VARCHAR(12) NOT NULL
+    transaction_token VARCHAR(12) NOT NULL
 );
 
 CREATE TABLE entry (

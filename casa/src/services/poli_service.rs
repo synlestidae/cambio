@@ -8,7 +8,6 @@ use services::PoliError;
 
 pub struct PoliService {
     poli_config: PoliConfig,
-    //db: H
 }
 
 impl PoliService {
@@ -30,12 +29,10 @@ impl PoliService {
         let mut buffer = Vec::new();
         serialize(&init_tx, &mut buffer).unwrap();
         let body: &[u8] = &buffer;
-
         let res_result = Client::new()
             .post(&self.poli_config.initiate_transaction_url.to_string())
             .body(body)
             .send();
-
         let res = res_result.unwrap();
         let response: InitiateTransactionResponse = deserialize(res).unwrap();
         Ok(response)
