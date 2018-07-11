@@ -35,3 +35,5 @@ pub use self::get_transaction::*;
 pub use self::get_transaction_response::*;
 pub use self::nudge::*;
 pub use self::error_vec::ErrorVec;
+pub use self::poli_error_code::*;
+pub use self::poli_error_code_type::*;

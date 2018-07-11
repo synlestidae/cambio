@@ -1,7 +1,5 @@
 use payment::poli::*;
-//use db::{PostgresHelper, Transaction};
 use domain::{User, PoliPaymentRequest};
-//use db::CambioError;
 use hyper::client::Client;
 use serde_xml_rs::{deserialize, serialize};
 use services::PoliError;
