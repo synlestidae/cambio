@@ -1,5 +1,6 @@
 use db::{CambioError, PostgresHelper};
 use repository::Readable;
+use services::LoggedPoliError;
 use postgres::rows::Rows;
 use domain;
 use std;
@@ -202,3 +203,10 @@ impl Creatable for domain::PoliPaymentRequest {
         ])))
     }
 }
+
+/*impl Creatable for LoggedPoliError {
+    type Id = domain::Id;
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        unimplemented!()
+    }
+}*/

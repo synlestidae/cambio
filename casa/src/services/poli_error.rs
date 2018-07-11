@@ -1,7 +1,10 @@
 use payment::poli::PoliErrorCode;
+use db::{PostgresHelper, CambioError};
 use std::error::Error;
 use serde_xml_rs::Error as SerdeError;
 use hyper::Error as HyperError;
+use postgres::Connection;
+use domain::UserId;
 
 #[derive(Debug)]
 pub enum PoliError {
@@ -19,5 +22,17 @@ impl From<SerdeError> for PoliError {
 impl From<HyperError> for PoliError {
     fn from(e: HyperError) -> Self {
         PoliError::Response(Box::new(e))
+    }
+}
+
+impl PoliError {
+    pub fn save_in_log(&self, user_id: UserId, db: &mut Connection) -> Result<(), CambioError> {
+        Ok(())
+    }
+}
+
+impl Into<CambioError> for PoliError {
+    fn into(self) -> CambioError {
+        unimplemented!()
     }
 }

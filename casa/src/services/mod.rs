@@ -1,4 +1,5 @@
 mod account_service;
+mod logged_poli_error;
 mod ethereum_service;
 mod order_service;
 mod profile_service;
@@ -15,3 +16,4 @@ pub use self::settlement_service::SettlementService;
 pub use self::user_service::UserService;
 pub use self::poli_service::PoliService;
 pub use self::poli_error::PoliError;
+pub use self::logged_poli_error::*;
