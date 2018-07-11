@@ -37,7 +37,7 @@ CREATE TABLE user_payment (
 );
 
 CREATE TABLE poli_payment_request (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     user_id SERIAL REFERENCES users(id),
     amount MONEY NOT NULL,
     unique_code VARCHAR(12) NOT NULL,
@@ -47,8 +47,8 @@ CREATE TABLE poli_payment_request (
 );
 
 CREATE TABLE poli_error_log (
-    id SERIAL NOT NULL PRIMARY KEY,
-    user_id SERIAL REFERENCES users(users)
+    id SERIAL PRIMARY KEY,
+    user_id SERIAL REFERENCES users(id),
     message VARCHAR NOT NULL,
     info VARCHAR,
     datetime TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc')
