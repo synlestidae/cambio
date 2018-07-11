@@ -10,5 +10,6 @@ pub struct PoliConfig {
     pub unsuccessful_url: Url,
     pub merchant_checkout_url: Url, 
     pub merchant_home_page_url: Url,
-    pub initiate_transaction_url: Url
+    pub initiate_transaction_url: Url,
+    pub get_transaction_url: Url
 }

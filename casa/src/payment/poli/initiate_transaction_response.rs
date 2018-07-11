@@ -13,3 +13,13 @@ pub struct InitiateTransactionResponse {
     #[serde(rename="Transaction", default)]
     pub transaction: Vec<PoliTransactionResponse>
 }
+
+impl InitiateTransactionResponse {
+    pub fn get_transaction(mut self) 
+        -> Result<PoliTransactionResponse, Vec<InitiateTransactionError>> {
+        match (self.transaction.pop(), self.errors) {
+            (Some(tx), _) => Ok(tx),
+            (_, errors) => Err(errors)
+        }
+    }
+}
