@@ -14,3 +14,17 @@ pub struct PoliPaymentRequest {
     pub payment_status: PaymentStatus, 
     pub transaction_token: Option<TransactionToken>
 }
+
+impl PoliPaymentRequest {
+    pub fn new(user_id: UserId, amount: Decimal) -> Self {
+        PoliPaymentRequest {
+            id: None,
+            user_id: user_id,
+            amount: amount,
+            unique_code: Code::new(),
+            started_at: Utc::now(),
+            payment_status: PaymentStatus::StartedByUser,
+            transaction_token: None
+        }
+    }
+}

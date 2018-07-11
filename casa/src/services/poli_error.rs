@@ -1,4 +1,4 @@
-use payment::poli::PoliErrorCode;
+use payment::poli::{InitiateTransactionError, PoliErrorCode};
 use db::{PostgresHelper, CambioError};
 use std::error::Error;
 use serde_xml_rs::Error as SerdeError;
@@ -10,7 +10,14 @@ use domain::UserId;
 pub enum PoliError {
     Request(Box<Error>),
     Response(Box<Error>),
-    PoliError(PoliErrorCode)
+    PoliError(PoliErrorCode),
+    InitTx(Vec<InitiateTransactionError>)
+}
+
+impl From<Vec<InitiateTransactionError>> for PoliError {
+    fn from(errs: Vec<InitiateTransactionError>) -> Self {
+        PoliError::InitTx(errs)
+    }
 }
 
 impl From<SerdeError> for PoliError {

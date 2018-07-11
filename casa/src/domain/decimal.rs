@@ -10,7 +10,7 @@ use std::error::Error;
 
 type ToSqlResult = Result<IsNull, Box<Error + 'static + Send + Sync>>;
 
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub struct Decimal {
     is_positive: bool,
     dollars: u64,

@@ -11,9 +11,9 @@ pub struct PoliService {
 }
 
 impl PoliService {
-    pub fn new(poli_config: PoliConfig) -> Self {
+    pub fn new(poli_config: &PoliConfig) -> Self {
         Self {
-            poli_config: poli_config
+            poli_config: poli_config.clone()
         }
     }
 

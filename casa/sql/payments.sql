@@ -15,8 +15,6 @@ CREATE TYPE business_ends_type AS ENUM (
     'order_settlement'
 );
 
-
-
 CREATE TYPE payment_status_type AS ENUM(
     'started_by_user',
     'started_with_poli',
@@ -46,6 +44,14 @@ CREATE TABLE poli_payment_request (
     started_at TIMESTAMP NOT NULL,
     payment_status payment_status_type NOT NULL,
     transaction_token VARCHAR(12) NOT NULL
+);
+
+CREATE TABLE poli_error_log (
+    id SERIAL NOT NULL PRIMARY KEY,
+    user_id SERIAL REFERENCES users(users)
+    message VARCHAR NOT NULL,
+    info VARCHAR,
+    datetime TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc')
 );
 
 CREATE TABLE entry (
