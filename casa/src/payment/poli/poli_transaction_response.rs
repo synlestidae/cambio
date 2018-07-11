@@ -1,6 +1,6 @@
 use payment::poli::{TransactionRefNo, TransactionToken};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PoliTransactionResponse {
     #[serde(rename="NavigateURL")]
     pub navigate_url: String,

@@ -1,4 +1,4 @@
-use payment::poli::{InitiateTransaction, InitiateTransactionResponse};
+use payment::poli::*; //{InitiateTransaction, InitiateTransactionResponse, TransactionStatusCode}
 use serde_xml_rs::deserialize;
 use domain::CurrencyCode;
 
@@ -25,6 +25,20 @@ fn test_request_deserializes() {
 fn test_response_deserializes() {
     let d: InitiateTransactionResponse = 
         deserialize(RESPONSE_EXAMPLE_SUCCESS.as_bytes()).unwrap();
+    assert_eq!(d.transaction_status_code, Some(TransactionStatusCode::Initiated));
+    let t = d.get_transaction().unwrap();
+    assert_eq!(
+        "https://txn.apac.paywithpoli.com/?token=%2bXo3AxIuS8T%2fukpoUCZyXw%3d%3d", 
+        t.navigate_url
+    );
+    assert_eq!(
+        t.transaction_ref_no.to_string(),
+        "996100000001"
+    );
+    assert_eq!(
+        t.transaction_token.to_string(),
+        "+Xo3AxIuS8T/ukpoUCZyXw=="
+    );
 }
 
 #[test]
@@ -80,6 +94,5 @@ const RESPONSE_EXAMPLE_ERROR: &'static str = r#"
       </dco:Error>
   </Errors>
   <TransactionStatusCode i:nil="true" />
-  <Transaction i:nil="true" xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
 </InitiateTransactionResponse>
 "#;

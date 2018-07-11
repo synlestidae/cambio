@@ -4,11 +4,11 @@ use payment::poli::{
     PoliTransactionResponse
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct InitiateTransactionResponse {
     #[serde(rename="Error", default)]
     pub errors: Vec<InitiateTransactionError>,
-    #[serde(rename="TransactionStatusCode, default")]
+    #[serde(rename="TransactionStatusCode")]
     pub transaction_status_code: Option<TransactionStatusCode>,
     #[serde(rename="Transaction", default)]
     pub transaction: Vec<PoliTransactionResponse>

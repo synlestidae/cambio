@@ -1,9 +1,16 @@
 use postgres::types::{ToSql, FromSql, Type, IsNull};
 use serde::{Deserialize, Deserializer};
 use std::error::Error;
+use std::fmt;
 
 #[derive(Eq, PartialEq, Clone, Serialize, Debug)]
 pub struct TransactionRefNo(String);
+
+impl fmt::Display for TransactionRefNo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl FromSql for TransactionRefNo {
     fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<Error + 'static + Send + Sync>> {
