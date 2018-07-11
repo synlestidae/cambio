@@ -85,14 +85,19 @@ const RESPONSE_EXAMPLE_SUCCESS: &'static str = r#"
 
 const RESPONSE_EXAMPLE_ERROR: &'static str = r#"
 <?xml version="1.0" encoding="utf-8"?>
-<InitiateTransactionResponse xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-  <Errors xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO">
-      <dco:Error>
-          <dco:Code>1003</dco:Code>
-          <dco:Field />
-          <dco:Message>POLi is unable to continue with this payment. Please contact the Merchant for assistance.</dco:Message> 
-      </dco:Error>
+<InitiateTransactionResponse
+xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contract
+s" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+  <Errors
+xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO"
+>
+<dco:Error>
+<dco:Code>1003</dco:Code>
+<dco:Field />
+<dco:Message>POLi is unable to continue with this payment. Please contact the
+Merchant for assistance.</dco:Message> </dco:Error>
   </Errors>
   <TransactionStatusCode i:nil="true" />
+  <Transaction i:nil="true" xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
 </InitiateTransactionResponse>
 "#;
