@@ -5,6 +5,8 @@ use serde_xml_rs::Error as SerdeError;
 use hyper::Error as HyperError;
 use postgres::Connection;
 use domain::UserId;
+use std::fmt;
+use std::marker;
 
 #[derive(Debug)]
 pub enum PoliError {
@@ -12,6 +14,27 @@ pub enum PoliError {
     Response(Box<Error>),
     PoliError(PoliErrorCode),
     InitTx(Vec<InitiateTransactionError>)
+}
+
+impl fmt::Display for PoliError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+
+impl Error for PoliError {
+    fn description(&self) -> &str {
+        match self {
+            PoliError::Request(_) => "Creating the request for POLi failed",
+            PoliError::Response(_) => "There was a fatal error in the POLi response",
+            PoliError::PoliError(_) => "POLi returned an error code in its response",
+            PoliError::InitTx(_) => "Could not initialised the transaction with POLi"
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
 }
 
 impl From<Vec<InitiateTransactionError>> for PoliError {
@@ -33,7 +56,7 @@ impl From<HyperError> for PoliError {
 }
 
 impl PoliError {
-    pub fn save_in_log(&self, user_id: UserId, db: &mut Connection) -> Result<(), CambioError> {
+    pub fn save_in_log(&self, user_id: &Option<UserId>, db: &mut Connection) -> Result<(), CambioError> {
         Ok(())
     }
 }

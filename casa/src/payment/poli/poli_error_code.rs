@@ -1,6 +1,8 @@
 use payment::poli::PoliErrorCodeType;
 use serde::{Deserialize, Deserializer};
 use std::str::FromStr;
+use std::error::Error;
+use std::fmt;
 
 #[derive(Debug, Eq, PartialEq, Serialize)]
 pub struct PoliErrorCode(String);
@@ -35,6 +37,22 @@ impl PoliErrorCode {
             return None;
         };
         Some(err_type)
+    }
+}
+
+impl fmt::Display for PoliErrorCode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Error for PoliErrorCode {
+    fn description(&self) -> &str {
+        "An error occurred while interacting with Poli"
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        None
     }
 }
 
