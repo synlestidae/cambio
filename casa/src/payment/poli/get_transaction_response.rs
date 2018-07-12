@@ -30,7 +30,7 @@ pub struct GetTransactionResponse {
     #[serde(rename="TransactionStatusCode")]
     pub transaction_status_code: TransactionStatusCode,
     #[serde(rename="ErrorCode")]
-    pub error_code: Option<String>,
+    pub error_code: Option<PoliErrorCode>,
     #[serde(rename="ErrorMessage")]
     pub error_message: Option<String>,
     #[serde(rename="FinancialInstitutionCountryCode")]

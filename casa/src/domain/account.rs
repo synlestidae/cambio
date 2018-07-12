@@ -1,6 +1,7 @@
 use db::{TryFromRow, TryFromRowError};
 use domain::{
-    AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, Id, OwnerId,
+    AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, AccountId, OwnerId,
+    CurrencyCode,
 };
 use postgres;
 use postgres::rows::Row;
@@ -8,7 +9,7 @@ use postgres::rows::Row;
 #[derive(Debug, Clone, PartialEq, Eq, TryFromRow, Serialize)]
 pub struct Account {
     #[column_id(account_id)]
-    pub id: Option<Id>,
+    pub id: Option<AccountId>,
     #[column_id(owner_id)]
     pub owner_user_id: Option<OwnerId>,
     pub asset_type: AssetType,
@@ -22,6 +23,14 @@ impl Account {
     pub fn is_user_visible(&self) -> bool {
         return self.account_business_type == AccountBusinessType::UserCashWallet
             && self.account_role == AccountRole::Primary;
+    }
+
+    pub fn get_currency_code(&self) -> Option<CurrencyCode> {
+        if self.asset_type == AssetType::NZD {
+            Some(CurrencyCode::NZD)
+        } else {
+            None
+        }
     }
 }
 

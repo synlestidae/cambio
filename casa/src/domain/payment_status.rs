@@ -1,4 +1,4 @@
-#[derive(Debug, ToSql, FromSql)]
+#[derive(Debug, ToSql, FromSql, Eq, PartialEq)]
 #[postgres(name = "payment_status_type")]
 pub enum PaymentStatus {
     #[postgres(name = "started_by_user")]

@@ -117,7 +117,7 @@ impl<T: db::PostgresHelper + Clone> repository::RepoUpdate for AccountRepository
                 &item.account_status
             ]
         ));
-        let mut accounts = try!(self.read(&repository::UserClause::Id(id)));
+        let mut accounts = try!(self.read(&repository::UserClause::Id(id.into())));
         match accounts.pop() {
             Some(account) => Ok(account),
             None => Err(db::CambioError::shouldnt_happen(

@@ -36,11 +36,11 @@ impl AccountSet {
         }
     }
 
-    pub fn nzd_wallet(&self) -> domain::Id {
+    pub fn nzd_wallet(&self) -> domain::AccountId {
         self.nzd_wallet_account.id.unwrap() //TODO  Remove unwrap()
     }
 
-    pub fn nzd_hold(&self) -> domain::Id {
+    pub fn nzd_hold(&self) -> domain::AccountId {
         self.nzd_holding_account.id.unwrap() //TODO Remove unwrap()
     }
 }

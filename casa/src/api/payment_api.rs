@@ -8,6 +8,7 @@ use chrono::prelude::*;
 use iron::response::Response;
 use repository::{Readable, Creatable, Updateable};
 use iron;
+use services::LedgerService;
 
 pub struct PaymentApi<H: ConnectionSource> {
     conn_src: H,
@@ -63,15 +64,43 @@ impl<H: ConnectionSource> PaymentApi<H> {
         let conn = try!(self.conn_src.get());
         let mut db = PostgresTransactionHelper::new(try!(conn.transaction()));
         let poli_service = self.get_poli_service();
+
+        // Retrieve the transaction from our DB and Poli 
         let tx_result = poli_service.get_transaction(&nudge.token);
-        let tx = match tx_result {
+        let poli_tx = match tx_result {
             Ok(tx) => tx,
             Err(err) => {
                 self.save_in_log(&None, &err);
                 return Err(err.into());
             }
         };
-        let poli_payment = try!(nudge.transaction_token.read(&mut db));
+        let payment_request = try!(nudge.token.get(&mut db));
+        let user: User = try!(payment_request.user_id.get(&mut db));
+        let owner_id = user.owner_id.unwrap();
+        let account_set = try!(AccountSet::from(try!(owner_id.get_vec(&mut db))));
+
+        // requirements for credit
+        // * PaymentRequest not marked as completed
+        // * PaymentRequest is marked as StartedWithPoli
+        // * TransactionResponse has no errors
+        // * TransactionResponse currency matches credit account currency
+
+        if let Some(err) = poli_tx.error_code {
+            unimplemented!()
+        }
+
+        if payment_request.payment_status != PaymentStatus::StartedWithPoli {
+            unimplemented!()
+        }
+
+        let mut conn2 = try!(self.conn_src.get());
+        let mut ledger_service = LedgerService::new(&mut conn2); 
+
+        let poli_deduct_account = unimplemented!();
+        let user_wallet_account = account_set.nzd_wallet();
+
+        // account may now be credit
+        ledger_service.transfer_money(poli_deduct_account, user_wallet_account);
         unimplemented!()
     }
 

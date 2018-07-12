@@ -9,6 +9,7 @@ use repositories;
 use repository;
 use repository::RepoRead;
 use repository::UserClause;
+use payment;
 
 // suppose I just want an easy way to retrieve the owner id from the user
 // then i implement retrievable where the Item is a User, the c
@@ -328,7 +329,7 @@ impl Readable<domain::PoliPaymentRequest> for domain::PoliPaymentRequestId {
     }
 }
 
-impl Readable<domain::PoliPaymentRequest> for poli::payment::TransactionToken {
+impl Readable<domain::PoliPaymentRequest> for payment::poli::TransactionToken {
     fn get_vec<H: PostgresHelper>(&self, db: &mut H) -> Result<Vec<domain::PoliPaymentRequest>, CambioError> {
         const SELECT_ADDRESS: &'static str = "
             SELECT * FROM poli_payment_request where transaction_token = $1

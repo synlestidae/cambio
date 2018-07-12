@@ -91,7 +91,7 @@ impl<T: db::PostgresHelper + Clone> UserPaymentRepository<T> {
 
         // load the statement
         let account_id = try!(account.id.ok_or(account_error));
-        let statement = self.account_service.get_latest_statement(account_id);
+        let statement = self.account_service.get_latest_statement(account_id.into());
         statement
     }
 }
