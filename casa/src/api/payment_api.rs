@@ -60,6 +60,8 @@ impl<H: ConnectionSource> PaymentApi<H> {
 
     pub fn handle_nudge(&mut self, nudge: &Nudge) 
         -> Result<RequestPaymentResponse, CambioError> {
+        let conn = try!(self.conn_src.get());
+        let mut db = PostgresTransactionHelper::new(try!(conn.transaction()));
         let poli_service = self.get_poli_service();
         let tx_result = poli_service.get_transaction(&nudge.token);
         let tx = match tx_result {
@@ -69,6 +71,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
                 return Err(err.into());
             }
         };
+        let poli_payment = try!(nudge.transaction_token.read(&mut db));
         unimplemented!()
     }
 
