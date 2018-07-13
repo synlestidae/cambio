@@ -5,6 +5,6 @@ use domain;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OrderBuy {
-    pub order_id: domain::Id,
+    pub order_id: domain::OrderId,
     pub order_request: OrderRequest,
 }

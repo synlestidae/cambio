@@ -8,35 +8,27 @@ use iron::headers::{Authorization, Bearer, Cookie};
 use iron::prelude::*;
 use iron::request::Request;
 use params::{Params, Value};
-use repositories::{AccountRepository, SessionRepository, UserRepository};
-use repository;
-use repository::RepoRead;
+use repository::{Readable};
 use serde::Serialize;
-use serde_json;
 use services::AccountService;
-use repository::Readable;
+use serde_json;
+use postgres::GenericConnection;
 
-#[derive(Clone)]
-pub struct AccountApiImpl<C: PostgresHelper + Clone> {
-    account_repo: AccountRepository<C>,
-    account_service: AccountService<C>,
-    session_repo: SessionRepository<C>,
-    user_repo: UserRepository<C>,
+pub struct AccountApiImpl<C: GenericConnection> {
     db: C,
+    account_service: AccountService
 }
 
-impl<C: PostgresHelper + Clone> AccountApiImpl<C> {
-    pub fn new(helper: C) -> Self {
+impl<C: GenericConnection> AccountApiImpl<C> {
+    pub fn new(db: C) -> Self {
         Self {
-            account_repo: AccountRepository::new(helper.clone()),
-            account_service: AccountService::new(helper.clone()),
-            session_repo: SessionRepository::new(helper.clone()),
-            user_repo: UserRepository::new(helper.clone()),
-            db: helper
+            db: db,
+            account_service: AccountService::new()
         }
     }
 
     fn get_statement(&mut self, user: &User, account_id: AccountId) -> Result<AccountStatement, iron::Response> {
+        let account_service = AccountService::new();
         let account = match account_id.get(&mut self.db) {
             Ok(a) => a,
             Err(err) => return Err(err.into())
@@ -44,74 +36,16 @@ impl<C: PostgresHelper + Clone> AccountApiImpl<C> {
         if user.owner_id != account.owner_user_id {
             return Err(ApiError::not_found("Account").into());
         }
-        match self.account_service.get_latest_statement(Id(account_id.0)) {
+        match self.account_service.get_latest_statement(&mut self.db, account_id) {
             Ok(s) => Ok(s),
             err => Err(to_response(err)),
         }
     }
-
-    fn check_owner(&mut self, owner_id: OwnerId, session_token: &str) -> Result<(), ApiError> {
-        let clause = repository::UserClause::SessionToken(session_token.to_owned());
-        let session = self.session_repo.read(&clause).unwrap().pop().unwrap();
-        if !session.is_valid() {
-            return Err(ApiError::new(
-                "You are not logged in.".to_owned(),
-                ErrorType::NotLoggedIn,
-            ));
-        }
-        let user = self.user_repo.get_owner(owner_id).unwrap();
-        if session.email_address.unwrap() != user.email_address {
-            return Err(ApiError::new(
-                "Cannot retrieve object.".to_owned(),
-                ErrorType::NotFound,
-            ));
-        }
-        Ok(())
-    }
-
-    fn get_session(&mut self, request: &Request) -> Result<Session, iron::Response> {
-        let session_token_match = get_session_token(request);
-        let session_token = match session_token_match {
-            Some(t) => t,
-            None => return Err(ApiError::unauthorised().into()),
-        };
-
-        let clause = repository::UserClause::SessionToken(session_token.to_owned());
-        match self.session_repo.read(&clause).map(|mut s| s.pop()) {
-            Ok(Some(session)) => Ok(session),
-            _ => Err(ApiError::unauthorised().into()),
-        }
-    }
-
-    fn _get_account(&mut self, request: &Request) -> Option<Account> {
-        let account_id = get_param(request, 1).unwrap();
-        let clause = repository::UserClause::Id(account_id);
-        let session_token = get_session_token(request).unwrap();
-        let session_clause = repository::UserClause::SessionToken(session_token);
-        let mut accounts = self.account_repo.read(&clause).unwrap();
-        let session = self
-            .session_repo
-            .read(&session_clause)
-            .unwrap()
-            .pop()
-            .unwrap();
-        let account = accounts.pop();
-        if let &Some(ref a) = &account {
-            let owner_user_id = a.owner_user_id.unwrap();
-            let user_clause = repository::UserClause::Id(owner_user_id.into());
-            let account_user = self.user_repo.read(&user_clause).unwrap().pop().unwrap();
-            if session.email_address != Some(account_user.email_address) {
-                return None;
-            }
-        }
-        account
-    }
 }
 
-impl<C: PostgresHelper + Clone> AccountApiTrait for AccountApiImpl<C> {
+impl<C: GenericConnection> AccountApiTrait for AccountApiImpl<C> {
     fn get_accounts(&mut self, user: &User) -> iron::Response {
-        let email_clause = repository::UserClause::EmailAddress(user.email_address.clone());
-        let accounts = match self.account_repo.read(&email_clause) {
+        let accounts: Vec<Account> = match user.owner_id.unwrap().get_vec(&mut self.db) {
             Ok(a) => a,
             Err(err) => {
                 let api_error: ApiError = err.into();

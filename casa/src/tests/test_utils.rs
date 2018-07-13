@@ -1,5 +1,7 @@
 use api;
+use postgres;
 use jobs::JobRequest;
+use db::ConnectionSource;
 use std::sync::mpsc::{Receiver, Sender};
 use chrono::NaiveDate;
 use iron::status::Status;
@@ -49,15 +51,27 @@ where
     test();
 }
 
+pub const TEST_CONN_STR: &'static str = "postgres://mate@localhost:5432/test_database_only";
+
+pub fn get_db_source() -> PostgresSource {
+    PostgresSource::new(TEST_CONN_STR).unwrap()
+}
+
+pub fn get_db_connection() -> postgres::Connection {
+    Connection::connect(TEST_CONN_STR, TlsMode::None).unwrap()
+}
+
 #[allow(dead_code)]
 pub fn get_db_helper() -> PostgresHelperImpl {
-    let source = PostgresSource::new("postgres://mate@localhost:5432/test_database_only").unwrap();
-    PostgresHelperImpl::new(source)
+    PostgresHelperImpl
 }
 
 pub fn log_in(username: &str, password: &str) -> String {
-    let mut user_service = UserService::new(get_db_helper(), "http://localhost:8081"); 
-    let user = user_service.create_user(username, 
+    let mut db = get_db_connection();
+    let mut user_service = UserService::new("http://localhost:8081"); 
+    let user = user_service.create_user(
+        &mut db,
+        username, 
         &hash(password, 6).unwrap(), 
         &PersonalDetails {
             first_names: "Jerry".to_string(),
@@ -73,7 +87,7 @@ pub fn log_in(username: &str, password: &str) -> String {
         },
         password
     );
-    user_service.log_user_in(username, password.to_owned()).unwrap().session_token.0
+    user_service.log_user_in(&mut db, username, password.to_owned()).unwrap().session_token.0
 }
 
 pub fn post_channel<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, tx: Sender<JobRequest>) -> String {
@@ -91,13 +105,12 @@ pub fn get<'a, E: Serialize>(url: &str, token: Option<&str>) -> String {
 }
 
 fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, is_get: bool, tx: Sender<JobRequest>) -> String {
-    let mut db = get_db_helper();
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
-    let handler = api::ApiHandler::new(db.clone(), "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, "http://localhost:8081", tx);
     let response = if is_get {
         request::get(url, 
             headers.clone(), 

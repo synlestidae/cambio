@@ -1,47 +1,36 @@
 use chrono::prelude::*;
-use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
+use db::{CambioError, ErrorKind, ErrorReccomendation};
 use domain::{
     EthAccount, EthTransferRequest, EthereumOutboundTransaction, Id, Order, OrderSettlement,
 };
 use hex;
-use repositories;
-use repository;
-use repository::*;
+use repository::{Readable};
 use services::UserService;
 use std::str::FromStr;
 use web3;
 use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
+use postgres::GenericConnection;
 
 #[derive(Clone)]
-pub struct EthereumService<T: PostgresHelper + Clone> {
-    db_helper: T,
-    user_repo: repositories::UserRepository<T>,
+pub struct EthereumService {
     web3_address: String,
 }
-impl<T: PostgresHelper + Clone> EthereumService<T> {
-    pub fn new(db_helper: T, web3_address: &str) -> Self {
-        let user_repo = repositories::UserRepository::new(db_helper.clone());
+impl EthereumService {
+    pub fn new(web3_address: &str) -> Self {
         Self {
-            db_helper: db_helper,
-            user_repo: user_repo,
             web3_address: web3_address.to_owned(),
         }
     }
 
-    pub fn new_account(
-        &mut self,
+    pub fn new_account<C: GenericConnection>(
+        &self,
+        db: &mut C,
         user_email: &str,
         account_password: &str,
     ) -> Result<EthAccount, CambioError> {
         let (_eloop, web3) = try!(self.get_web3_inst());
-        let query = repository::UserClause::EmailAddress(user_email.to_owned());
-        let err = CambioError::not_found_search(
-            "Cannot create account for unknown user",
-            "Failed to find user or owner_id",
-        );
-        let user_match = try!(self.user_repo.read(&query)).pop();
-        let user = try!(user_match.ok_or(err));
+        let user = try!(Readable::get(user_email, db));
         let owner_id = user.owner_id.unwrap();
         let account_result = web3.personal().new_account(account_password).wait();
         let address = try!(account_result);
@@ -49,7 +38,7 @@ impl<T: PostgresHelper + Clone> EthereumService<T> {
     }
 
     fn get_request(
-        &mut self,
+        &self,
         transfer: &EthTransferRequest,
     ) -> Result<TransactionRequest, CambioError> {
         const BLOCK_CONFIRMATIONS: u64 = 4;
@@ -82,10 +71,8 @@ impl<T: PostgresHelper + Clone> EthereumService<T> {
         })
     }
 
-    pub fn send_transaction(
-        &mut self,
-        request: TransactionRequest,
-    ) -> Result<web3::types::Transaction, CambioError> {
+    pub fn send_transaction(&mut self,
+        request: TransactionRequest) -> Result<web3::types::Transaction, CambioError> {
         let (_eloop, web3) = try!(self.get_web3_inst());
         let eth = web3.eth();
 

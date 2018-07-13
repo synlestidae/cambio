@@ -77,16 +77,15 @@ use std::thread;
 
 fn main() {
     const WEB3_ADDRESS: &'static str = "http://localhost:8081";
+    let conn_str = "postgres://mate@localhost:5432/cambio_test";
     env_logger::init().expect("Could not start logger");
     let middleware = CorsMiddleware {};
-    let db =
-        PostgresHelperImpl::new_from_conn_str("postgres://mate@localhost:5432/cambio_test");
     let (tx, rx) = channel();
-    let mut job_loop = JobLoop::new(db.clone(), WEB3_ADDRESS, rx);
+    let mut job_loop = JobLoop::new(conn_str, WEB3_ADDRESS, rx);
     thread::spawn(move || {
         job_loop.run();
     });
-    let api_handler = api::ApiHandler::new(db, WEB3_ADDRESS, tx);
+    let api_handler = api::ApiHandler::new(conn_str, WEB3_ADDRESS, tx);
     let mut chain = iron::Chain::new(api_handler);
     chain.link_around(middleware);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();

@@ -1,17 +1,18 @@
 use db::{CambioError, PostgresHelper};
+use postgres::GenericConnection;
 use repository::Readable;
 use domain;
 use std;
 
 pub trait Updateable where Self: std::marker::Sized {
-    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError>;
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError>;
 }
 
 impl Updateable for domain::OrderSettlement {
-    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
         if let Some(id) = self.id {
             const UPDATE_SETTLEMENT: &'static str = 
-                "UPDATE asset_order SET order_status = $2 WHERE id = $1;";
+                "UPDATE order_settlement SET status = $2 WHERE id = $1;";
             try!(db.execute(UPDATE_SETTLEMENT, &[&self.id, &self.settlement_status])); 
             id.get(db)
         } else {
@@ -21,7 +22,7 @@ impl Updateable for domain::OrderSettlement {
 }
 
 impl Updateable for domain::Registration {
-    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
         let id = match self.id {
             Some(id) => id,
             None => return Err(CambioError::db_update_failed("Registration"))
@@ -50,11 +51,7 @@ impl Updateable for domain::Registration {
 }
 
 impl Updateable for domain::Session {
-    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
-        /*let id = match self.user_id {
-            Some(id) => id,
-            None => return Err(CambioError::missing_field("Session", "id"))
-        };*/
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
         const QUERY: &'static str = "
             UPDATE user_session_info 
             SET started_at = $2, session_state = $3
@@ -69,7 +66,7 @@ impl Updateable for domain::Session {
 }
 
 impl Updateable for domain::PoliPaymentRequest {
-    fn update<H: PostgresHelper>(&self, db: &mut H) -> Result<Self, CambioError> {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
         let id = match self.id {
             Some(id) => id,
             None => return Err(CambioError::db_update_failed("PoliPaymentRequest"))
@@ -83,5 +80,17 @@ impl Updateable for domain::PoliPaymentRequest {
             &self.id, &self.payment_status, &self.transaction_token
         ]));
         id.get(db)
+    }
+}
+
+impl Updateable for domain::Order {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
+        if let Some(id) = self.id {
+            const SQL: &'static str = "UPDATE asset_order SET order_status = $2 WHERE id = $1;";
+            try!(db.execute(SQL, &[&self.id, &self.status])); 
+            id.get(db)
+        } else {
+            Err(CambioError::format_obj("Failed to locate order.", "Order is missing ID field."))
+        }
     }
 }

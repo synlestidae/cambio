@@ -3,7 +3,7 @@ use db::{PostgresHelper, CambioError};
 use std::error::Error;
 use serde_xml_rs::Error as SerdeError;
 use hyper::Error as HyperError;
-use postgres::Connection;
+use postgres::GenericConnection;
 use domain::UserId;
 use std::fmt;
 use std::marker;
@@ -56,7 +56,7 @@ impl From<HyperError> for PoliError {
 }
 
 impl PoliError {
-    pub fn save_in_log(&self, user_id: &Option<UserId>, db: &mut Connection) -> Result<(), CambioError> {
+    pub fn save_in_log<C: GenericConnection>(&self, user_id: &Option<UserId>, db: &mut C) -> Result<(), CambioError> {
         Ok(())
     }
 }

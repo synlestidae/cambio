@@ -6,31 +6,25 @@ use domain::{Id, Session, SessionState, User, Registration, Profile, Address, Pe
 use repositories;
 use repository;
 use repository::*;
+use postgres::GenericConnection;
 use services;
 use std::error::Error;
 
-pub struct UserService<T: PostgresHelper + Clone> {
-    db: T,
-    user_repository: repositories::UserRepository<T>,
-    session_repository: repositories::SessionRepository<T>,
+pub struct UserService {
     web3_address: String
 }
 
 const BCRYPT_COST: u32 = 8;
 
-impl<T: PostgresHelper + Clone> UserService<T> {
-    pub fn new(db_helper: T, web3_address: &str) -> Self {
-        let users = repositories::UserRepository::new(db_helper.clone());
-        let sessions = repositories::SessionRepository::new(db_helper.clone());
+impl UserService {
+    pub fn new(web3_address: &str) -> Self {
         Self {
-            db: db_helper.clone(),
-            user_repository: users,
-            session_repository: sessions,
             web3_address: web3_address.to_string()
         }
     }
 
-    pub fn confirm_registration(&mut self, 
+    pub fn confirm_registration<T: GenericConnection>(&self, 
+        db: &mut T,
         registration: &Registration,
         personal_details: &PersonalDetails,
         eth_password: &str) -> Result<User, CambioError> {
@@ -40,11 +34,12 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         // Mark the registration as confirmed
         let mut confirmed_registration = registration.clone();
         confirmed_registration.confirm();
-        try!(confirmed_registration.update(&mut self.db));
+        try!(confirmed_registration.update(db));
         info!("Creating registration...");
 
         // Create and store the user, ready to log in
         let user = try!(self.create_user(
+            db,
             &confirmed_registration.email_address, 
             &confirmed_registration.password_hash,
             &personal_details,
@@ -54,18 +49,19 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         Ok(user)
     }
 
-    pub fn register_user(
-        &mut self,
+    pub fn register_user<T: GenericConnection>(&self,
+        db: &mut T,
         email_address: &str,
         password: &str,
         personal_details: &PersonalDetails) -> Result<User, CambioError> {
         // get the BCrypt hash
         let password_hash = try!(hash(password, BCRYPT_COST));
-        self.create_user(email_address, &password_hash, personal_details, password)
+        self.create_user(db, email_address, &password_hash, personal_details, password)
     }
 
-    pub fn create_user(
-        &mut self,
+    pub fn create_user<T: GenericConnection>(
+        &self,
+        db: &mut T,
         email_address: &str,
         password_hash: &str,
         personal_details: &PersonalDetails,
@@ -77,9 +73,7 @@ impl<T: PostgresHelper + Clone> UserService<T> {
             ));
         }
 
-        let query = repository::UserClause::EmailAddress(email_address.to_owned());
-        // check user exists
-        if let Some(_) = try!(self.user_repository.read(&query)).pop() {
+        if let Some(_) = try!(email_address.get_option(db)) {
             return Err(CambioError::user_exists());
         }
         let mut user = User {
@@ -91,37 +85,37 @@ impl<T: PostgresHelper + Clone> UserService<T> {
         };
 
         info!("Making a user");
-        user = try!(self.user_repository.create(&user));
+        user = try!(user.create(&mut *db));
         info!("Made user {:?}", user.id);
         info!("Making eth account");
-        try!(self.create_eth_accounts(email_address, eth_password));
+        try!(self.create_eth_accounts(db, email_address, eth_password));
         let profile = personal_details.clone().into_profile(user.id.unwrap());
-        let new_profile = try!(profile.create(&mut self.db));
+        let new_profile = try!(profile.create(db));
         info!("Making profile!");
 
         Ok(user)
     }
 
-    fn create_eth_accounts(&mut self, 
+    fn create_eth_accounts<T: GenericConnection>(&self, 
+        db: &mut T,
         email_address: &str, 
         password: &str
     ) -> Result<EthAccount, CambioError> {
         info!("Creating ethereum account for {}", email_address);
-        let mut eth_service = services::EthereumService::new(self.db.clone(), &self.web3_address);
-        let account = try!(eth_service.new_account(email_address, password));
+        let mut eth_service = services::EthereumService::new(&self.web3_address);
+        let account = try!(eth_service.new_account(db, email_address, password));
         info!("Eth account created. Saving...");
-        let account_result = try!(account.create(&mut self.db));
+        let account_result = try!(account.create(db));
         info!("Account with address {:?} created", account.address);
         Ok(account_result)
     }
 
-    pub fn log_user_in(
-        &mut self,
+    pub fn log_user_in<T: GenericConnection>(&self,
+        db: &mut T,
         email_address: &str,
         password: String,
     ) -> Result<Session, CambioError> {
-        let query = repository::UserClause::EmailAddress(email_address.to_owned());
-        let user_option = try!(self.user_repository.read(&query)).pop();
+        let user_option = try!(email_address.get_option(db));
         info!("Logging in {}", email_address);
         if user_option.is_none() {
             info!("User {} does not exist", email_address);
@@ -141,17 +135,18 @@ impl<T: PostgresHelper + Clone> UserService<T> {
 
         let mut session = Session::new(email_address, user_id, SESSION_TIME_MILLISECONDS);
         info!("Creating a session");
-        let session = try!(self.session_repository.create(&session));
+        let session = try!(session.create(db));
         Ok(session)
     }
 
-    pub fn log_user_out(&mut self, email_address: &str) -> Result<(), CambioError> {
-        let query = repository::UserClause::EmailAddress(email_address.to_owned());
-        let sessions = try!(self.session_repository.read(&query));
-        for mut session in sessions.into_iter() {
-            session.session_state = SessionState::Invalidated;
-            try!(self.session_repository.update(&session));
-        }
+    pub fn log_user_out<C: GenericConnection>(&mut self, db: &mut C, email_address: &str) -> Result<(), CambioError> {
+        const LOG_OUT: &'static str = "
+            UPDATE session_info SET 
+            session_state = 'invalidated'
+            FROM user_session 
+            JOIN users ON user_session.user_id = users.id
+            WHERE users.email_address = $1";
+        try!(db.execute(email_address, &[&email_address]));
         Ok(())
     }
 }

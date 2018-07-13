@@ -1,32 +1,24 @@
 use chrono::prelude::*;
 use db::{CambioError, PostgresHelper};
 use domain;
-use domain::{Id, Order, OrderStatus, AssetType};
-use repositories;
-use repository;
-use repository::*;
+use domain::{User, OrderId, Order, OrderStatus, AssetType, All};
+use repository::{Readable, Creatable, Updateable};
 use web3::types::U256;
+use postgres::GenericConnection;
 
 #[derive(Clone)]
-pub struct OrderService<T: PostgresHelper + Clone> {
-    user_repo: repositories::UserRepository<T>,
-    order_repo: repositories::OrderRepository<T>,
-    account_repo: repositories::AccountRepository<T>,
-}
+pub struct OrderService { }
 
 const ORDER_TIME_MINUTES: i64 = 10;
 
-impl<T: PostgresHelper + Clone> OrderService<T> {
-    pub fn new(db_helper: T) -> Self {
-        Self {
-            user_repo: repositories::UserRepository::new(db_helper.clone()),
-            order_repo: repositories::OrderRepository::new(db_helper.clone()),
-            account_repo: repositories::AccountRepository::new(db_helper.clone()),
-        }
+impl OrderService {
+    pub fn new() -> Self {
+        Self { }
     }
 
-    pub fn place_order(
-        &mut self,
+    pub fn place_order<C: GenericConnection>(
+        &self,
+        db: &mut C,
         email: &str,
         unique_id: &str,
         sell_units: u64,
@@ -35,17 +27,8 @@ impl<T: PostgresHelper + Clone> OrderService<T> {
         buy_currency: AssetType,
         wei_cost: Option<U256>
     ) -> Result<Order, CambioError> {
-        let user_clause = repository::UserClause::EmailAddress(email.to_owned());
-        let user = try!(self.user_repo.read(&user_clause)).pop();
-        let user_owner_id = match user {
-            None => {
-                return Err(CambioError::not_found_search(
-                    "Cannot find user for order",
-                    "UserRepository.read() returned None",
-                ))
-            }
-            Some(user) => user.owner_id.unwrap(),
-        };
+        let user: User = try!(Readable::get(email, db));
+        let user_owner_id = user.owner_id.unwrap();
         let order = Order {
             id: None,
             owner_id: user_owner_id,
@@ -58,7 +41,7 @@ impl<T: PostgresHelper + Clone> OrderService<T> {
             status: OrderStatus::Active,
             max_wei: wei_cost
         };
-        self.order_repo.create(&order)
+        order.create(db)
     }
 
     fn get_order_expiry(&self) -> DateTime<Utc> {
@@ -67,37 +50,27 @@ impl<T: PostgresHelper + Clone> OrderService<T> {
         now + Duration::minutes(ORDER_TIME_MINUTES)
     }
 
-    pub fn cancel_order(&mut self, order_id: Id) -> Result<Option<Order>, CambioError> {
-        let order_clause = repository::UserClause::Id(order_id);
-        let order_result = self.order_repo.read(&order_clause);
-        let mut order_match = try!(order_result).pop();
-        match order_match {
-            None => Ok(None),
-            Some(mut modifying_order) => {
-                if modifying_order.status == domain::OrderStatus::Active {
-                    try!(self.order_repo.delete(&modifying_order));
-                    Ok(try!(self.order_repo.read(&order_clause)).pop())
-                } else {
-                    Err(CambioError::not_permitted(
-                        "Can only cancel an active order",
-                        "Can only change order status if status = 'active'",
-                    ))
-                }
-            }
+    pub fn cancel_order<C: GenericConnection>(&self, db: &mut C, order_id: OrderId) 
+        -> Result<Order, CambioError> {
+        let mut order: Order = try!(order_id.get(db)); //self.order_repo.read(&order_clause);
+        if order.status == domain::OrderStatus::Active {
+            order.status = domain::OrderStatus::Deleted;
+            Ok(try!(order.update(db)))
+        } else {
+            Err(CambioError::not_permitted(
+                "Can only cancel an active order",
+                "Can only change order status if status = 'active'",
+            ))
         }
     }
 
-    pub fn get_orders(
-        &mut self,
+    pub fn get_orders<C: GenericConnection>(
+        &self,
+        db: &mut C,
         user: Option<&str>,
         only_active: bool,
     ) -> Result<Vec<Order>, CambioError> {
-        let clause: repository::UserClause;
-        clause = match user {
-            None => repository::UserClause::All(only_active),
-            Some(email_address) => repository::UserClause::EmailAddress(email_address.to_owned()),
-        };
-        let orders = try!(self.order_repo.read(&clause))
+        let orders: Vec<Order> = try!(All.get_vec(db))
             .into_iter()
             .filter(|order| !only_active || order.status == domain::OrderStatus::Active)
             .collect();

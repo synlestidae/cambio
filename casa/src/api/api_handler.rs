@@ -12,26 +12,29 @@ use repository::Updateable;
 use jobs::JobRequest;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
+use postgres::GenericConnection;
+use postgres::{Connection, TlsMode};
 
-pub struct ApiHandler<T: db::PostgresHelper + db::ConnectionSource> {
-    db: T,
+pub struct ApiHandler {
+    conn_str: String,
     web3_address: String,
     job_tx: Mutex<Sender<JobRequest>>
 }
 
-impl<T: db::PostgresHelper + db::ConnectionSource + 'static> ApiHandler<T> {
-    pub fn new(db: T, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
+impl ApiHandler {
+    pub fn new(conn_str: &str, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
         Self {
-            db: db,
+            conn_str: conn_str.to_owned(),
             web3_address: web3_address.to_owned(),
             job_tx: Mutex::new(job_tx)
         }
     }
 }
 
-impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Sync> Handler for ApiHandler<T> {
+impl Handler for ApiHandler {
     fn handle<'a, 'b>(&self, request: &mut Request<'a, 'b>) -> IronResult<Response> {
-        let mut db = self.db.clone();
+        let conn_str: &str = &self.conn_str;
+        let mut db = Connection::connect(conn_str, TlsMode::None).unwrap();
         let fake_user = domain::User { 
             id: None, 
             email_address: "".to_owned(),
@@ -76,7 +79,7 @@ impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Syn
 
         let response = match api_request {
             ApiRequest::User(user_request) => {
-                let mut user_api = UserApi::new(db.clone(), &self.web3_address);
+                let mut user_api = UserApi::new(db, &self.web3_address);
                 match user_request {
                     UserRequest::Register(reg) => user_api.put_register(&reg),
                     UserRequest::ResendEmail(email_resend) => user_api.post_resend_email(&email_resend),

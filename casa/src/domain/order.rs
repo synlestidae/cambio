@@ -7,7 +7,6 @@ use domain::{AssetType, Id, OrderId, OrderStatus, OwnerId, User};
 use postgres;
 use postgres::rows::Row;
 use rand;
-use repositories::UserRepository;
 use repository::Readable;
 use std;
 use web3::types::U256;
@@ -120,25 +119,6 @@ impl TryFromRow for Order {
         })
     }
 }
-
-/*impl Readable<User> for Order {
-    fn get<H: PostgresHelper>(&self, db: H) -> Result<User, CambioError> {
-        match self.get_option(db) {
-            Ok(Some(user)) => Ok(user),
-            Ok(None) => Err(CambioError::not_found_search("No user found for that order", 
-                "Owner ID does not correspond to a user")),
-            err => err
-        }
-    }
-
-    fn get_option<H: PostgresHelper>(&self, db: H)  -> Result<Option<User>, CambioError> {
-        let mut repo = UserRepository::new(db);
-        match repo.get_owner(self.owner_id) {
-            Ok(owner) => Ok(Some(owner)),
-            Err(err) => err
-        }
-    }
-}*/
 
 fn random_string() -> String {
     let mut token = String::new();

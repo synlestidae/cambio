@@ -44,15 +44,6 @@ impl Registration {
 
 fn random_identifier_code() -> IdentifierCode {
     let mut rng = rand::thread_rng();
-    //let mut token = String::new();
-    /*for _ in 0..20 {
-       if rand::random::<bool>() {
-           token.push_str(&rng.gen_range(0, 9).to_string());
-       } else {
-           token.push(rng.gen_range('a', 'z'));
-       }
-    }*/
-    //token
     IdentifierCode(iter::repeat(())
         .map(|()| rng.sample(Alphanumeric))
         .take(20)

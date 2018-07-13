@@ -9,26 +9,26 @@ use iron::response::Response;
 use repository::{Readable, Creatable, Updateable};
 use iron;
 use services::LedgerService;
+use postgres::GenericConnection;
 
-pub struct PaymentApi<H: ConnectionSource> {
-    conn_src: H,
-    poli_config: PoliConfig
+pub struct PaymentApi<C: GenericConnection> {
+    poli_config: PoliConfig,
+    db: C
 }
 
-impl<H: ConnectionSource> PaymentApi<H> {
-    pub fn new(poli_config: PoliConfig, conn_src: H) -> Self {
+impl<C: GenericConnection> PaymentApi<C> {
+    pub fn new(poli_config: PoliConfig, db: C) -> Self {
         Self {
-            conn_src: conn_src,
-            poli_config: poli_config 
+            poli_config: poli_config, 
+            db: db
         }
     }
 
     pub fn request_payment(&mut self, 
         user: &User,
         payment: &PaymentRequest) -> Result<RequestPaymentResponse, CambioError> {
-        let conn = try!(self.conn_src.get());
+        let mut tx = try!(self.db.transaction());
         let user_id = user.id.clone().unwrap();
-        let mut tx = PostgresTransactionHelper::new(try!(conn.transaction()));
         let mut poli_service = self.get_poli_service();
         let mut payment_req = PoliPaymentRequest::new(user_id, payment.amount);
         payment_req = try!(payment_req.create(&mut tx));
@@ -49,7 +49,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
             },
             Err(err) => {
                 let poli_err = PoliError::from(err);
-                self.save_in_log(&user.id, &poli_err);
+                //self.save_in_log(&mut tx, &user.id, &poli_err);
                 payment_req.payment_status = PaymentStatus::Failed;
                 try!(payment_req.update(&mut tx));
                 return Err(poli_err.into())
@@ -59,25 +59,24 @@ impl<H: ConnectionSource> PaymentApi<H> {
         Ok(resp)
     }
 
-    pub fn handle_nudge(&mut self, nudge: &Nudge) 
+    pub fn handle_nudge(&mut self, db: &mut C, nudge: &Nudge) 
         -> Result<RequestPaymentResponse, CambioError> {
-        let conn = try!(self.conn_src.get());
-        let mut db = PostgresTransactionHelper::new(try!(conn.transaction()));
+        let mut conn = try!(self.db.transaction());
         let poli_service = self.get_poli_service();
 
         // Retrieve the transaction from our DB and Poli 
-        let tx_result = poli_service.get_transaction(&nudge.token);
-        let poli_tx = match tx_result {
+        let poli_tx_result = poli_service.get_transaction(&nudge.token);
+        let poli_tx = match poli_tx_result {
             Ok(tx) => tx,
             Err(err) => {
-                self.save_in_log(&None, &err);
+                //self.save_in_log(&mut conn, &None, &err);
                 return Err(err.into());
             }
         };
-        let payment_request = try!(nudge.token.get(&mut db));
-        let user: User = try!(payment_request.user_id.get(&mut db));
+        let payment_request = try!(nudge.token.get(&mut conn));
+        let user: User = try!(payment_request.user_id.get(&mut conn));
         let owner_id = user.owner_id.unwrap();
-        let account_set = try!(AccountSet::from(try!(owner_id.get_vec(&mut db))));
+        let account_set = try!(AccountSet::from(try!(owner_id.get_vec(&mut conn))));
 
         // requirements for credit
         // * PaymentRequest not marked as completed
@@ -93,14 +92,12 @@ impl<H: ConnectionSource> PaymentApi<H> {
             unimplemented!()
         }
 
-        let mut conn2 = try!(self.conn_src.get());
-        let mut ledger_service = LedgerService::new(&mut conn2); 
-
+        let mut ledger_service = LedgerService::new(); 
         let poli_deduct_account = unimplemented!();
         let user_wallet_account = account_set.nzd_wallet();
 
         // account may now be credit
-        ledger_service.transfer_money(poli_deduct_account, user_wallet_account);
+        ledger_service.transfer_money(db, poli_deduct_account, user_wallet_account, payment_request.amount);
         unimplemented!()
     }
 
@@ -110,11 +107,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
         )
     }
 
-    fn save_in_log(&mut self, user_id: &Option<UserId>, err: &PoliError) {
-        let mut log_conn = match self.conn_src.get() {
-            Ok(c) => c,
-            Err(_) => return
-        };
-        drop(err.save_in_log(user_id, &mut log_conn));
+    fn save_in_log(&mut self, db: &mut C, user_id: &Option<UserId>, err: &PoliError) {
+        drop(err.save_in_log(user_id, db));
     }
 }

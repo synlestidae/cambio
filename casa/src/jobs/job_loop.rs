@@ -7,31 +7,31 @@ use domain;
 use jobs::JobRequest;
 use repository::{Readable, Updateable};
 use repository;
-use repositories::SettlementRepository;
 use services::EthereumService;
 use std::str::FromStr;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver};
 use threadpool::ThreadPool;
 use web3::types::U256;
+use postgres::{Connection, TlsMode};
 
-pub struct JobLoop<H: PostgresHelper + Clone> {
-    db_helper: H,
-    eth_service: EthereumService<H>,
+pub struct JobLoop {
+    conn_str: String,
+    eth_service: EthereumService,
     threads: ThreadPool,
     rcv: Receiver<JobRequest>
 }
 
 const NUM_JOBS: usize = 10;
 
-impl<H: PostgresHelper + Clone> JobLoop<H> {
-    pub fn new(db: H, web3_address: &str, rx: Receiver<JobRequest>) -> Self {
+impl JobLoop {
+    pub fn new(conn_str: &str, web3_address: &str, rx: Receiver<JobRequest>) -> Self {
         let threadpool = ThreadPool::new(NUM_JOBS);
         let job_loop = Self { 
+            conn_str: conn_str.to_owned(),
             threads: threadpool,
             rcv: rx,
-            eth_service: EthereumService::new(db.clone(), web3_address),
-            db_helper: db, 
+            eth_service: EthereumService::new(web3_address)
         };
         job_loop
     }
@@ -63,7 +63,9 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
 
     fn begin_settlement(&mut self, sid: OrderSettlementId, password: String) -> 
         Result<(), db::CambioError> {
-        let mut settlement = try!(sid.get(&mut self.db_helper));
+        let conn_str: &str = &self.conn_str;
+        let mut db = try!(Connection::connect(conn_str, TlsMode::None));
+        let mut settlement = try!(sid.get(&mut db));
         info!("Handling settlement ID {:?}", settlement.id);
         if settlement.settlement_status != domain::SettlementStatus::WaitingEthCredentials {
             info!("Expected WaitingEth status, got {:?}", settlement.settlement_status);
@@ -73,11 +75,11 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
             ));
         }
         settlement.settlement_status = domain::SettlementStatus::WaitingEth;
-        try!(settlement.update(&mut self.db_helper));
+        try!(settlement.update(&mut db));
         let src_account: domain::EthAccount = 
-            try!(settlement.selling_order.owner_id.get(&mut self.db_helper));
+            try!(settlement.selling_order.owner_id.get(&mut db));
         let dst_account: domain::EthAccount = 
-            try!(settlement.buying_order.owner_id.get(&mut self.db_helper));
+            try!(settlement.buying_order.owner_id.get(&mut db));
 
         let max_wei = match settlement.selling_order.max_wei {
             Some(wei) => wei,
@@ -139,7 +141,7 @@ impl<H: PostgresHelper + Clone> JobLoop<H> {
             }
         }
 
-        settlement.update(&mut self.db_helper).map(|_| ())
+        settlement.update(&mut db).map(|_| ())
     }
 
     /*fn get_eth_account<H: PostgresHelper>(&mut self, order: &domain::Order, db: &mut H) 
