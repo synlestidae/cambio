@@ -13,13 +13,13 @@ use jobs::JobRequest;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 
-pub struct ApiHandler<T: db::PostgresHelper + db::ConnectionSource> {
+pub struct ApiHandler<T: db::ConnectionSource + 'static> {
     db: T,
     web3_address: String,
     job_tx: Mutex<Sender<JobRequest>>
 }
 
-impl<T: db::PostgresHelper + db::ConnectionSource + 'static> ApiHandler<T> {
+impl<T: db::ConnectionSource + 'static> ApiHandler<T> {
     pub fn new(db: T, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
         Self {
             db: db,
@@ -29,9 +29,9 @@ impl<T: db::PostgresHelper + db::ConnectionSource + 'static> ApiHandler<T> {
     }
 }
 
-impl<T: db::PostgresHelper + db::ConnectionSource + 'static + Clone + Send + Sync> Handler for ApiHandler<T> {
+impl<T: db::ConnectionSource + Clone + Send + Sync + 'static> Handler for ApiHandler<T> {
     fn handle<'a, 'b>(&self, request: &mut Request<'a, 'b>) -> IronResult<Response> {
-        let mut db = self.db.clone();
+        let mut db = try!(self.db.get());
         let fake_user = domain::User { 
             id: None, 
             email_address: "".to_owned(),

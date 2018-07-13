@@ -130,7 +130,8 @@ const SELECT_BY_TOKEN: &'static str = "
 
 const ACTIVATE: &'static str = "SELECT activate_user_session($1)";
 
-const UPDATE: &'static str = "UPDATE session_info SET 
+const UPDATE: &'static str = "
+    UPDATE session_info SET 
     session_token=$2, started_at=$3, ttl_milliseconds=$4
     FROM user_session 
     JOIN users ON user_session.user_id = users.id

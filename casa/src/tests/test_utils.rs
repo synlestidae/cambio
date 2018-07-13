@@ -1,5 +1,6 @@
 use api;
 use jobs::JobRequest;
+use db::ConnectionSource;
 use std::sync::mpsc::{Receiver, Sender};
 use chrono::NaiveDate;
 use iron::status::Status;
@@ -16,6 +17,7 @@ use std::process::Command;
 use std::sync::mpsc::channel;
 use std;
 use api::PersonalDetails;
+use std::rc::Rc;
 
 #[allow(dead_code)]
 pub fn setup() {
@@ -49,14 +51,23 @@ where
     test();
 }
 
+const TEST_CONN_STR: &'static str = "postgres://mate@localhost:5432/test_database_only";
+
+pub fn get_db_source() -> PostgresSource {
+    PostgresSource::new(TEST_CONN_STR).unwrap()
+}
+
+pub fn get_db_connection() -> Rc<postgres::Connection> {
+    Rc::new(Connection::connect(TEST_CONN_STR, TlsMode::None).unwrap())
+}
+
 #[allow(dead_code)]
 pub fn get_db_helper() -> PostgresHelperImpl {
-    let source = PostgresSource::new("postgres://mate@localhost:5432/test_database_only").unwrap();
-    PostgresHelperImpl::new(source)
+    PostgresHelperImpl
 }
 
 pub fn log_in(username: &str, password: &str) -> String {
-    let mut user_service = UserService::new(get_db_helper(), "http://localhost:8081"); 
+    let mut user_service: UserService<Connection> = UserService::new(get_db_connection(), "http://localhost:8081"); 
     let user = user_service.create_user(username, 
         &hash(password, 6).unwrap(), 
         &PersonalDetails {
@@ -91,13 +102,12 @@ pub fn get<'a, E: Serialize>(url: &str, token: Option<&str>) -> String {
 }
 
 fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, is_get: bool, tx: Sender<JobRequest>) -> String {
-    let mut db = get_db_helper();
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
-    let handler = api::ApiHandler::new(db.clone(), "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(get_db_source(), "http://localhost:8081", tx);
     let response = if is_get {
         request::get(url, 
             headers.clone(), 

@@ -10,7 +10,6 @@ use services;
 #[derive(Clone)]
 pub struct UserPaymentRepository<T: db::PostgresHelper + Clone> {
     user_repository: repositories::UserRepository<T>,
-    account_service: services::AccountService<T>,
     account_repo: repositories::AccountRepository<T>,
     db_helper: T,
 }
@@ -19,7 +18,7 @@ impl<T: db::PostgresHelper + Clone> UserPaymentRepository<T> {
     pub fn new(db: T) -> Self {
         UserPaymentRepository {
             user_repository: repositories::UserRepository::new(db.clone()),
-            account_service: services::AccountService::new(db.clone()),
+            //account_service: services::AccountService::new(db.clone()),
             account_repo: repositories::AccountRepository::new(db.clone()),
             db_helper: db,
         }
@@ -91,7 +90,8 @@ impl<T: db::PostgresHelper + Clone> UserPaymentRepository<T> {
 
         // load the statement
         let account_id = try!(account.id.ok_or(account_error));
-        let statement = self.account_service.get_latest_statement(account_id.into());
+        // TODO replace with Readable
+        let statement = unimplemented!();//self.account_service.get_latest_statement(account_id.into());
         statement
     }
 }

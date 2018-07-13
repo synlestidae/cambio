@@ -10,6 +10,7 @@ use std::io::Read;
 use tests::get_db_helper;
 use uuid;
 use web3;
+use std::rc::Rc;
 
 pub fn get_user(email: &str) -> domain::User {
     let mut user_repo = repositories::UserRepository::new(get_db_helper());
@@ -30,7 +31,7 @@ pub fn quick_order(
 ) -> (domain::Order, domain::Order) {
     // create the user first
     let mut user_service = services::UserService::new(
-        get_db_helper(),
+        Rc::new(get_db_connection()),
         "http://localhost:8081",
     );
 

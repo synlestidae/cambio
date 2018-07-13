@@ -13,9 +13,9 @@ use domain;
 use api;
 use repository::{Creatable, Readable};
 
-pub struct UserApi<C: PostgresHelper + Clone> {
-    db: C,
-    user_service: UserService<C>
+pub struct UserApi<C: Connection> {
+    db: C//,
+    //user_service: UserService<C>
 }
 
 impl<C: PostgresHelper + Clone> UserApi<C> {
@@ -63,6 +63,7 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
 
     pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
         -> Response {
+            let user_service = UserService::new(self.db
             let registration = match registration_confirm.identifier_code.get(&mut self.db) {
                 Ok(r) => r,
                 Err(err) => return err.into()
@@ -71,7 +72,7 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
             if registration_confirm.can_confirm(&registration) {
                 info!("Registration with ID {} is confirmed", registration_confirm.identifier_code.0);
                 let registration_result = 
-                    self.user_service.confirm_registration(
+                    user_service.confirm_registration(
                         &registration, 
                         &registration_confirm.personal_details,
                         &registration_confirm.eth_account_password);
@@ -91,9 +92,10 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
     }
 
     pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {
-        let log_in_result = self
-            .user_service
-            .log_user_in(&login.email_address, login.password.clone());
+        let log_in_result = user_service.log_user_in(
+            &login.email_address, 
+            login.password.clone()
+        );
 
         match log_in_result {
             Ok(result) => {

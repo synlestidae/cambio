@@ -39,9 +39,8 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
         let tx = self.db.get().unwrap();
         {
             let transaction = tx.transaction().unwrap();
-            let db = db::PostgresTransactionHelper::new(transaction);
             info!("Processing credentials for order {:?}", order_id); 
-            let order: domain::Order = match order_id.get(&mut self.db) {
+            let order: domain::Order = match order_id.get(&mut transaction) {
                 Ok(o) => o,
                 Err(err) => {
                     info!("Order {:?} does not exist", order_id);
@@ -58,7 +57,7 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
 
             // retrieve the settlement
             info!("Checking settlement exists");
-            let mut settlement: domain::OrderSettlement = match order_id.get(&mut self.db) {
+            let mut settlement: domain::OrderSettlement = match order_id.get(&mut transaction) {
                 Ok(s) => s,
                 Err(err) => return err.into()
             };
@@ -77,7 +76,7 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
             info!("Getting Ethereum account");
 
             // TODO make this unwrap unnecessary
-            let eth_account: domain::EthAccount = match user.owner_id.unwrap().get(&mut self.db) {
+            let eth_account: domain::EthAccount = match user.owner_id.unwrap().get(&mut transaction) {
                 Ok(e) => e,
                 Err(err) => return err.into()
             };
@@ -89,7 +88,7 @@ impl<H: PostgresHelper + ConnectionSource> SettlementApiImpl<H> {
                 match self.job_tx.send(req) {
                     Ok(s) => {
                         info!("Job was placed on queue");
-                        db.commit();
+                        transaction.commit();
                         iron::response::Response::with((iron::status::Status::Ok, format!("")))
                     }, 
                     Err(_) => {

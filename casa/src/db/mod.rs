@@ -11,7 +11,6 @@ mod try_from_row_error;
 mod try_from_row_utils;
 mod transaction;
 mod transaction_source;
-mod postgres_transaction_helper;
 
 pub use self::cambio_error::CambioError;
 pub use self::connection_source::*;
@@ -25,4 +24,3 @@ pub use self::try_from_row_error::TryFromRowError;
 pub use self::try_from_row_utils::{get_value, get_value_option};
 pub use self::transaction::Transaction;
 pub use self::transaction_source::TransactionSource;
-pub use self::postgres_transaction_helper::PostgresTransactionHelper;

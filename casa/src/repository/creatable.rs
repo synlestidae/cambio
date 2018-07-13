@@ -2,6 +2,7 @@ use db::{CambioError, PostgresHelper};
 use repository::Readable;
 use services::LoggedPoliError;
 use postgres::rows::Rows;
+use payment::poli;
 use domain;
 use std;
 use postgres::types::FromSql;
@@ -49,30 +50,14 @@ impl Creatable for domain::EthAccount {
     }
 }
 
-impl Creatable for domain::Registration {
-    type Id = domain::RegistrationId;
+impl Creatable for domain::Session {
+    type Id = domain::SessionToken;
 
     fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        const QUERY: &'static str = "
-            INSERT INTO registration(email_address, password_hash, confirmation_code, identifier_code, requested_at, confirmed_at)
-            VALUES($1, $2, $3, $4, $5, $6)
-            RETURNING id
-        ";
-        let result = db.query_raw(QUERY, &[
+        const QUERY: &'static str = "SELECT activate_user_session($1)";
+        db.query_raw(QUERY, &[
             &self.email_address, 
-            &self.password_hash, 
-            &self.confirmation_code, 
-            &self.identifier_code, 
-            &self.requested_at, 
-            &self.confirmed_at, 
-        ]);
-        match result {
-            Ok(r) => Ok(r),
-            Err(err) => {
-                panic!("Err {:?}", err);
-                return Err(err);
-            }
-        }
+        ])
     }
 }
 
@@ -192,6 +177,20 @@ impl Creatable for domain::OrderSettlement {
 
 impl Creatable for domain::PoliPaymentRequest {
     type Id = domain::PoliPaymentRequestId;
+
+    fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const QUERY: &'static str = 
+            "INSERT INTO poli_payment_request(user_id, amount, unique_code, started_at, payment_status, transaction_token) 
+             VALUES ($1, $2, $3, $4, $5, $6) 
+             RETURNING id";
+        Ok(try!(db.query_raw(QUERY, &[
+            &self.user_id, &self.amount, &self.unique_code, &self.started_at, &self.payment_status, &self.transaction_token
+        ])))
+    }
+}
+
+impl Creatable for poli::PoliPaymentRequest {
+    type Id = poli::TransactionToken;
 
     fn run_sql<H: PostgresHelper>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const QUERY: &'static str = 

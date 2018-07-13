@@ -28,7 +28,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
         payment: &PaymentRequest) -> Result<RequestPaymentResponse, CambioError> {
         let conn = try!(self.conn_src.get());
         let user_id = user.id.clone().unwrap();
-        let mut tx = PostgresTransactionHelper::new(try!(conn.transaction()));
+        let mut tx = try!(conn.transaction());
         let mut poli_service = self.get_poli_service();
         let mut payment_req = PoliPaymentRequest::new(user_id, payment.amount);
         payment_req = try!(payment_req.create(&mut tx));
@@ -61,8 +61,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
 
     pub fn handle_nudge(&mut self, nudge: &Nudge) 
         -> Result<RequestPaymentResponse, CambioError> {
-        let conn = try!(self.conn_src.get());
-        let mut db = PostgresTransactionHelper::new(try!(conn.transaction()));
+        let conn = try!(try!(self.conn_src.get()).transaction());
         let poli_service = self.get_poli_service();
 
         // Retrieve the transaction from our DB and Poli 
@@ -74,10 +73,10 @@ impl<H: ConnectionSource> PaymentApi<H> {
                 return Err(err.into());
             }
         };
-        let payment_request = try!(nudge.token.get(&mut db));
-        let user: User = try!(payment_request.user_id.get(&mut db));
+        let payment_request = try!(nudge.token.get(&mut conn));
+        let user: User = try!(payment_request.user_id.get(&mut conn));
         let owner_id = user.owner_id.unwrap();
-        let account_set = try!(AccountSet::from(try!(owner_id.get_vec(&mut db))));
+        let account_set = try!(AccountSet::from(try!(owner_id.get_vec(&mut conn))));
 
         // requirements for credit
         // * PaymentRequest not marked as completed
@@ -93,9 +92,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
             unimplemented!()
         }
 
-        let mut conn2 = try!(self.conn_src.get());
-        let mut ledger_service = LedgerService::new(&mut conn2); 
-
+        let mut ledger_service = LedgerService::new(&mut conn); 
         let poli_deduct_account = unimplemented!();
         let user_wallet_account = account_set.nzd_wallet();
 

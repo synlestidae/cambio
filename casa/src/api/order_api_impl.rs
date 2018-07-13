@@ -1,5 +1,4 @@
 use api;
-use db::PostgresTransactionHelper;
 use db::Transaction;
 use api::utils;
 use db;
@@ -141,7 +140,7 @@ impl<C: PostgresHelper + ConnectionSource + Clone> api::OrderApiTrait for api::O
         let conn = self.db_helper.get().unwrap();
         {
             let tx = conn.transaction().unwrap();
-            let mut db_tx = PostgresTransactionHelper::new(tx);
+            let mut db_tx = unimplemented!(); //PostgresTransactionHelper::new(tx);
             // locate the target order
             let order_clause = repository::UserClause::Id(order.order_id);
             let read_result = self.order_repo.read(&order_clause);

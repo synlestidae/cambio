@@ -13,13 +13,13 @@ use repository;
 use repository::RepoRead;
 use serde::Serialize;
 use serde_json;
-use services::AccountService;
+//use services::AccountService;
 use repository::Readable;
 
 #[derive(Clone)]
 pub struct AccountApiImpl<C: PostgresHelper + Clone> {
     account_repo: AccountRepository<C>,
-    account_service: AccountService<C>,
+    //account_service: AccountService<C>,
     session_repo: SessionRepository<C>,
     user_repo: UserRepository<C>,
     db: C,
@@ -29,7 +29,7 @@ impl<C: PostgresHelper + Clone> AccountApiImpl<C> {
     pub fn new(helper: C) -> Self {
         Self {
             account_repo: AccountRepository::new(helper.clone()),
-            account_service: AccountService::new(helper.clone()),
+            //account_service: AccountService::new(helper.clone()),
             session_repo: SessionRepository::new(helper.clone()),
             user_repo: UserRepository::new(helper.clone()),
             db: helper
@@ -44,10 +44,12 @@ impl<C: PostgresHelper + Clone> AccountApiImpl<C> {
         if user.owner_id != account.owner_user_id {
             return Err(ApiError::not_found("Account").into());
         }
-        match self.account_service.get_latest_statement(Id(account_id.0)) {
+        // TODO Replace this with readable
+        /*match self.account_service.get_latest_statement(Id(account_id.0)) {
             Ok(s) => Ok(s),
             err => Err(to_response(err)),
-        }
+        }*/
+        unimplemented!()
     }
 
     fn check_owner(&mut self, owner_id: OwnerId, session_token: &str) -> Result<(), ApiError> {
