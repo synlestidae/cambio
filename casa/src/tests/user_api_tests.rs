@@ -3,7 +3,7 @@ use iron::prelude::*;
 use iron::{Handler, Headers};
 use iron::status::Status;
 use iron_test::{request, response};
-use tests::test_utils::get_db_helper;
+use tests::test_utils::*;
 use serde_json;
 use repository::Readable;
 use domain;
@@ -19,7 +19,7 @@ fn test_registration_successful() {
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
-    let handler = api::ApiHandler::new(get_db_helper(), "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, "http://localhost:8081", tx);
     let response = request::post("http://localhost:3000/users/register", 
         headers, 
         new_user,
@@ -34,7 +34,7 @@ fn test_registration_successful() {
 fn test_creates_new_user_and_password_works() {
     use chrono::prelude::*;
 
-    let mut db = get_db_helper();
+    let mut db = get_db_connection();
     let new_user = r#"{
         "email_address": "pat@coolcat.com",
         "password": "supersecret1234"
@@ -42,7 +42,7 @@ fn test_creates_new_user_and_password_works() {
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
-    let handler = api::ApiHandler::new(db.clone(), "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, "http://localhost:8081", tx);
     let register_response = request::post("http://localhost:3000/users/register", 
         headers.clone(), 
         new_user,
