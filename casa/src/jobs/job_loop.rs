@@ -7,30 +7,30 @@ use domain;
 use jobs::JobRequest;
 use repository::{Readable, Updateable};
 use repository;
-use repositories::SettlementRepository;
 use services::EthereumService;
 use std::str::FromStr;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver};
 use threadpool::ThreadPool;
 use web3::types::U256;
+use postgres::GenericConnection;
 
-pub struct JobLoop<H: PostgresHelper + Clone> {
+pub struct JobLoop<H: GenericConnection> {
     db_helper: H,
-    eth_service: EthereumService<H>,
+    eth_service: EthereumService,
     threads: ThreadPool,
     rcv: Receiver<JobRequest>
 }
 
 const NUM_JOBS: usize = 10;
 
-impl<H: PostgresHelper + Clone> JobLoop<H> {
+impl<H: GenericConnection> JobLoop<H> {
     pub fn new(db: H, web3_address: &str, rx: Receiver<JobRequest>) -> Self {
         let threadpool = ThreadPool::new(NUM_JOBS);
         let job_loop = Self { 
             threads: threadpool,
             rcv: rx,
-            eth_service: EthereumService::new(db.clone(), web3_address),
+            eth_service: EthereumService::new(web3_address),
             db_helper: db, 
         };
         job_loop

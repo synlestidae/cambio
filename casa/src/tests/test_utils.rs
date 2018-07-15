@@ -1,4 +1,5 @@
 use api;
+use postgres;
 use jobs::JobRequest;
 use db::ConnectionSource;
 use std::sync::mpsc::{Receiver, Sender};
@@ -17,7 +18,6 @@ use std::process::Command;
 use std::sync::mpsc::channel;
 use std;
 use api::PersonalDetails;
-use std::rc::Rc;
 
 #[allow(dead_code)]
 pub fn setup() {
@@ -57,8 +57,8 @@ pub fn get_db_source() -> PostgresSource {
     PostgresSource::new(TEST_CONN_STR).unwrap()
 }
 
-pub fn get_db_connection() -> Rc<postgres::Connection> {
-    Rc::new(Connection::connect(TEST_CONN_STR, TlsMode::None).unwrap())
+pub fn get_db_connection() -> postgres::Connection {
+    Connection::connect(TEST_CONN_STR, TlsMode::None).unwrap()
 }
 
 #[allow(dead_code)]
@@ -67,8 +67,11 @@ pub fn get_db_helper() -> PostgresHelperImpl {
 }
 
 pub fn log_in(username: &str, password: &str) -> String {
-    let mut user_service: UserService<Connection> = UserService::new(get_db_connection(), "http://localhost:8081"); 
-    let user = user_service.create_user(username, 
+    let mut db = get_db_connection();
+    let mut user_service = UserService::new("http://localhost:8081"); 
+    let user = user_service.create_user(
+        &mut db,
+        username, 
         &hash(password, 6).unwrap(), 
         &PersonalDetails {
             first_names: "Jerry".to_string(),
@@ -84,7 +87,7 @@ pub fn log_in(username: &str, password: &str) -> String {
         },
         password
     );
-    user_service.log_user_in(username, password.to_owned()).unwrap().session_token.0
+    user_service.log_user_in(&mut db, username, password.to_owned()).unwrap().session_token.0
 }
 
 pub fn post_channel<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, tx: Sender<JobRequest>) -> String {

@@ -1,41 +1,21 @@
 use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
-use domain::{Account, AccountStatement, Id, Transaction};
-use repositories;
-use repository;
-use repository::*;
+use domain::{Account, AccountStatement, AccountId, Transaction};
+use repository::Readable;
 use std::error::Error;
 
-#[derive(Clone)]
-pub struct AccountService<T: PostgresHelper + Clone> {
-    account_repo: repositories::AccountRepository<T>,
-    db_helper: T,
+pub struct AccountService<'a, C: GenericConnection> {
 }
 
-impl<T: PostgresHelper + Clone> AccountService<T> {
-    pub fn new(db_helper: T) -> AccountService<T> {
-        AccountService {
-            db_helper: db_helper.clone(),
-            account_repo: repositories::AccountRepository::new(db_helper),
-        }
+impl AccountService {
+    pub fn new() -> AccountService {
+        AccountService { }
     }
 
-    pub fn get_latest_statement(
-        &mut self,
-        account_id: Id,
+    pub fn get_latest_statement<C: GenericConnection>(
+        &self,
+        db: &mut C,
+        account_id: AccountId,
     ) -> Result<AccountStatement, CambioError> {
-        let account_match = try!(
-            self.account_repo
-                .read(&repository::UserClause::Id(account_id))
-        ).pop();
-        let error = CambioError::not_found_search(
-            "Your account could not be found.",
-            &format!("Account with ID {} not found", account_id),
-        );
-        let account = match account_match {
-            Some(acc) => acc,
-            None => return Err(error),
-        };
-
         let mut transactions = try!(self.get_transactions_for_account(account_id));
 
         transactions.sort_by_key(|t: &Transaction| t.id);
@@ -57,10 +37,11 @@ impl<T: PostgresHelper + Clone> AccountService<T> {
     }
 
     pub fn get_transactions_for_account(
-        &mut self,
-        account_id: Id,
+        &self,
+        db: &mut GenericConnection,
+        account_id: AccountId,
     ) -> Result<Vec<Transaction>, CambioError> {
-        let transactions = try!(self.db_helper.query(LATEST_STATEMENT_QUERY, &[&account_id]));
+        let transactions = try!(db.query(LATEST_STATEMENT_QUERY, &[&account_id]));
         Ok(transactions)
     }
 }

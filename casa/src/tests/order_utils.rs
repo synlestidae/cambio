@@ -2,23 +2,16 @@ use chrono::prelude::*;
 use api::PersonalDetails;
 use db;
 use domain;
-use repositories;
-use repository;
-use repository::*;
+use repository::{Readable, Creatable};
 use services;
 use std::io::Read;
-use tests::get_db_helper;
+use tests::get_db_connection;
 use uuid;
 use web3;
 use std::rc::Rc;
 
 pub fn get_user(email: &str) -> domain::User {
-    let mut user_repo = repositories::UserRepository::new(get_db_helper());
-    user_repo
-        .read(&repository::UserClause::EmailAddress(email.to_owned()))
-        .unwrap()
-        .pop()
-        .unwrap()
+    Readable::get(email, &mut get_db_connection()).unwrap()
 }
 
 pub fn quick_order(
@@ -29,21 +22,20 @@ pub fn quick_order(
     sell_szabo: u64,
     buy_money: u32,
 ) -> (domain::Order, domain::Order) {
+    /*let mut db = get_db_connection();
     // create the user first
     let mut user_service = services::UserService::new(
-        Rc::new(get_db_connection()),
         "http://localhost:8081",
     );
 
-    let mut account_repo = repositories::AccountRepository::new(get_db_helper());
     let mut order_repo = repositories::OrderRepository::new(get_db_helper());
 
     let user1 = user_service
-        .register_user(buyer, "excellent123", &fake_details())
+        .register_user(&mut db, buyer, "excellent123", &fake_details())
         .unwrap();
 
     let user2 = user_service
-        .register_user(seller, "dohnut123", &fake_details())
+        .register_user(&mut db, seller, "dohnut123", &fake_details())
         .unwrap();
 
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
@@ -52,7 +44,8 @@ pub fn quick_order(
     order1 = order_repo.create(&order1).unwrap();
     order2 = order_repo.create(&order2).unwrap();
 
-    (order1, order2)
+    (order1, order2)*/
+    unimplemented!()
 }
 
 pub fn just_order(
@@ -63,61 +56,39 @@ pub fn just_order(
     sell_szabo: u64,
     buy_money: u32,
 ) -> (domain::Order, domain::Order) {
-    let mut user_repo = repositories::UserRepository::new(get_db_helper());
-    let mut account_repo = repositories::AccountRepository::new(get_db_helper());
-    let mut order_repo = repositories::OrderRepository::new(get_db_helper());
-
-    let user1 = user_repo
-        .read(&repository::UserClause::EmailAddress(buyer.to_owned()))
-        .unwrap()
-        .pop()
-        .unwrap();
-    let user2 = user_repo
-        .read(&repository::UserClause::EmailAddress(seller.to_owned()))
-        .unwrap()
-        .pop()
-        .unwrap();
+    let mut db = get_db_connection();
+    let user1 = Readable::get(buyer, &mut db).unwrap();
+    let user2 = Readable::get(seller, &mut db).unwrap();
 
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user1.owner_id.unwrap(), buy_money, sell_szabo, 10);
 
-    order1 = order_repo.create(&order1).unwrap();
-    order2 = order_repo.create(&order2).unwrap();
+    order1 = order1.create(&mut db).unwrap();
+    order2 = order2.create(&mut db).unwrap();
 
     (order1, order2)
 }
 
 pub fn quick_credit(who: &str, how_much: u32) {
-    let mut payment_repo = repositories::UserPaymentRepository::new(get_db_helper());
-    let payment_builder = domain::PaymentBuilder::new(
-        domain::AssetType::NZD,
-        domain::PaymentMethod::NZBankDeposit,
-        domain::PaymentVendor::Poli,
-    );
-    let payment = payment_builder
-        .transaction_details(
-            &uuid::Uuid::new_v4().to_string(),
-            Utc::now(),
-            how_much as i64,
-        )
-        .unwrap();
-
-    let user_payment = domain::UserPayment {
-        payment: payment,
-        email_address: who.to_owned(),
-    };
-
-    let payment = payment_repo.create(&user_payment).unwrap();
+    let mut db = get_db_connection();
+    let user: domain::User = Readable::get(who, &mut db).unwrap();
+    let account_set = domain::AccountSet::from(user.owner_id.unwrap().get_vec(&mut  db).unwrap()).unwrap();
+    let ledger_service = services::LedgerService::new();
+    ledger_service.transfer_money(&mut db, 
+        unimplemented!(), 
+        account_set.nzd_wallet(), 
+        domain::Decimal::from_cents(how_much as i64)
+    ).unwrap();
 }
 
 pub fn quick_credit_szabo(who: &str, how_much: u64) {
     use std::process::Command;
-
+    unimplemented!()
+    /*let mut db = get_db_connection();
     let mut wei = web3::types::U256::from(how_much);
     wei = wei.full_mul(web3::types::U256::exp10(12)).into();
-    let mut eth_account_repo = repositories::EthAccountRepository::new(get_db_helper());
     let clause = repository::UserClause::EmailAddress(who.to_owned());
-    let account = eth_account_repo.read(&clause).unwrap().pop().unwrap();
+    let account: domain::EthAccount = unimplemented!();//eth_account_repo.read(&clause).unwrap().pop().unwrap();
     let args = &[
         "../moneda/index.js",
         "http://localhost:8081",
@@ -135,7 +106,7 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
     if !output.status.success() {
         let error = String::from_utf8(output.stderr).unwrap();
         panic!("Failed to credit account. Program error.\n{}", error); //: '{}'\nError below: \n {}", stdout_str, stderr_str);// output: {}\n", err_str);
-    }
+    }*/
 }
 
 pub fn fake_details() -> PersonalDetails {

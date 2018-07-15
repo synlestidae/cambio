@@ -12,17 +12,18 @@ use services::UserService;
 use domain;
 use api;
 use repository::{Creatable, Readable};
+use postgres::GenericConnection;
 
-pub struct UserApi<C: Connection> {
-    db: C//,
-    //user_service: UserService<C>
+pub struct UserApi<C: GenericConnection> {
+    db: C,
+    web3_address: String
 }
 
-impl<C: PostgresHelper + Clone> UserApi<C> {
-    pub fn new(helper: C, web3_address: &str) -> Self {
+impl<C: GenericConnection> UserApi<C> {
+    pub fn new(db: C, web3_address: &str) -> Self {
         Self {
-            db: helper.clone(),
-            user_service: UserService::new(helper, web3_address),
+            db: db,
+            web3_address: web3_address
         }
     }
 
@@ -63,36 +64,38 @@ impl<C: PostgresHelper + Clone> UserApi<C> {
 
     pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
         -> Response {
-            let user_service = UserService::new(self.db
-            let registration = match registration_confirm.identifier_code.get(&mut self.db) {
-                Ok(r) => r,
-                Err(err) => return err.into()
-            };
-            info!("Confirming registration");
-            if registration_confirm.can_confirm(&registration) {
-                info!("Registration with ID {} is confirmed", registration_confirm.identifier_code.0);
-                let registration_result = 
-                    user_service.confirm_registration(
-                        &registration, 
-                        &registration_confirm.personal_details,
-                        &registration_confirm.eth_account_password);
-                match registration_result {
-                    Ok(user) => {
-                        let content_type = "application/json".parse::<Mime>().unwrap();
-                        let content = serde_json::to_string(&user).unwrap();
-                        iron::Response::with((iron::status::Ok, content, content_type))
-                    },
-                    Err(err) => {
-                        err.into()
-                    }
+        let user_service = UserService::new(self, "http://localhost:8081");
+        let registration = match registration_confirm.identifier_code.get(&mut self.db) {
+            Ok(r) => r,
+            Err(err) => return err.into()
+        };
+        info!("Confirming registration");
+        if registration_confirm.can_confirm(&registration) {
+            info!("Registration with ID {} is confirmed", registration_confirm.identifier_code.0);
+            let registration_result = 
+                user_service.confirm_registration(
+                    &registration, 
+                    &registration_confirm.personal_details,
+                    &registration_confirm.eth_account_password);
+            match registration_result {
+                Ok(user) => {
+                    let content_type = "application/json".parse::<Mime>().unwrap();
+                    let content = serde_json::to_string(&user).unwrap();
+                    iron::Response::with((iron::status::Ok, content, content_type))
+                },
+                Err(err) => {
+                    err.into()
                 }
-            } else {
-                CambioError::unauthorised().into()
             }
+        } else {
+            CambioError::unauthorised().into()
+        }
     }
 
     pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {
+        let user_service = UserService::new(&self.web3_address);
         let log_in_result = user_service.log_user_in(
+            &mut self.db,
             &login.email_address, 
             login.password.clone()
         );

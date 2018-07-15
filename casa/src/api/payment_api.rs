@@ -9,26 +9,26 @@ use iron::response::Response;
 use repository::{Readable, Creatable, Updateable};
 use iron;
 use services::LedgerService;
+use postgres::GenericConnection;
 
-pub struct PaymentApi<H: ConnectionSource> {
-    conn_src: H,
-    poli_config: PoliConfig
+pub struct PaymentApi<C: GenericConnection> {
+    poli_config: PoliConfig,
+    db: C
 }
 
-impl<H: ConnectionSource> PaymentApi<H> {
-    pub fn new(poli_config: PoliConfig, conn_src: H) -> Self {
+impl<C: GenericConnection> PaymentApi<C> {
+    pub fn new(poli_config: PoliConfig, db: C) -> Self {
         Self {
-            conn_src: conn_src,
-            poli_config: poli_config 
+            poli_config: poli_config, 
+            db: db
         }
     }
 
     pub fn request_payment(&mut self, 
         user: &User,
         payment: &PaymentRequest) -> Result<RequestPaymentResponse, CambioError> {
-        let conn = try!(self.conn_src.get());
+        let mut tx = try!(self.conn.transaction());
         let user_id = user.id.clone().unwrap();
-        let mut tx = try!(conn.transaction());
         let mut poli_service = self.get_poli_service();
         let mut payment_req = PoliPaymentRequest::new(user_id, payment.amount);
         payment_req = try!(payment_req.create(&mut tx));
@@ -59,7 +59,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
         Ok(resp)
     }
 
-    pub fn handle_nudge(&mut self, nudge: &Nudge) 
+    pub fn handle_nudge(&mut self, db: &mut C, nudge: &Nudge) 
         -> Result<RequestPaymentResponse, CambioError> {
         let conn = try!(try!(self.conn_src.get()).transaction());
         let poli_service = self.get_poli_service();
@@ -97,7 +97,7 @@ impl<H: ConnectionSource> PaymentApi<H> {
         let user_wallet_account = account_set.nzd_wallet();
 
         // account may now be credit
-        ledger_service.transfer_money(poli_deduct_account, user_wallet_account);
+        ledger_service.transfer_money(db, poli_deduct_account, user_wallet_account);
         unimplemented!()
     }
 

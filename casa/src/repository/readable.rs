@@ -52,7 +52,7 @@ impl Readable<domain::User> for str {
             FROM users 
             JOIN account_owner ON account_owner.user_id = users.id 
             WHERE users.email_address = $1";
-        PostgresHelperImpl::query(db, SELECT_BY_EMAIL, &[self])
+        PostgresHelperImpl::query(db, SELECT_BY_EMAIL, &[&self])
     }
 }
 
@@ -65,6 +65,18 @@ impl Readable<domain::Order> for domain::OrderId {
             WHERE orders.owner_id = owners.id AND
                   orders.id = $1";
         PostgresHelperImpl::query(db, SELECT_BY_ID, &[self])
+    }
+}
+
+impl Readable<domain::Order> for domain::All{
+    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {
+        const SELECT_ALL: &'static str = "
+            SELECT *, orders.id AS order_id
+            FROM asset_order orders,
+                 account_owner owners 
+            WHERE orders.owner_id = owners.id AND
+                  orders.status = active";
+        PostgresHelperImpl::query(db, SELECT_ALL, &[])
     }
 }
 
@@ -146,7 +158,7 @@ impl Readable<domain::OrderSettlement> for domain::OrderId {
         const SQL: &'static str = "SELECT id 
             FROM order_settlement 
             WHERE buying_crypto_id = $1 OR buying_fiat_id = $1"; 
-        let rows = try!(db.query_raw(SQL, &[&self]));
+        let rows = try!(db.query(SQL, &[&self]));
         if rows.is_empty() {
             return not_found;
         };
@@ -252,7 +264,7 @@ impl Readable<domain::Profile> for domain::ProfileId {
             FROM personal_info 
             JOIN users ON personal_info.user_id = users.id 
             WHERE personal_info.id = $1";
-        let id: Option<domain::UserId> = try!(db.query_raw(SELECT_PROF, &[&self])).get(0).get("user_id");
+        let id: Option<domain::UserId> = try!(db.query(SELECT_PROF, &[&self])).get(0).get("user_id");
         match id {
             Some(id) => id.get_vec(db),
             None => Err(CambioError::missing_field("Profile", "user_id"))
@@ -271,7 +283,7 @@ impl Readable<domain::Profile> for domain::UserId {
             LEFT JOIN contact_info ON personal_info.contact_info_id = contact_info.id
             WHERE users.id = $1";
         let mut result = vec![];
-        for row in try!(db.query_raw(SELECT_ID, &[self])).into_iter() {
+        for row in try!(db.query(SELECT_ID, &[self])).into_iter() {
             let date_of_birth: NaiveDate = match row.get("date_of_birth") {
                 Some(d) => d,
                 None => return Err(CambioError::missing_field("Profile", "date_of_birth"))

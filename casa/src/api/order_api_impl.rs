@@ -14,50 +14,18 @@ use repository::Readable;
 use repository::Creatable;
 use serde_json;
 use services;
+use postgres::GenericConnection;
 
-pub struct OrderApiImpl<C: PostgresHelper + ConnectionSource + Clone> {
-    order_repo: repositories::OrderRepository<C>,
-    order_service: services::OrderService<C>,
-    settlement_service: services::SettlementService<C>,
-    session_repo: repositories::SessionRepository<C>,
-    user_repo: repositories::UserRepository<C>,
-    db_helper: C,
+pub struct OrderApiImpl<C: GenericConnection> {
+    db: C
 }
 
-impl<C: PostgresHelper + ConnectionSource + Clone> OrderApiImpl<C> {
-    pub fn new(db_helper: C) -> Self {
+impl<C: GenericConnection> OrderApiImpl<C> {
+    pub fn new(db: C) -> Self {
         let eth_path = "http://localhost:303030";
-        let settlement_service = services::SettlementService::new(db_helper.clone(), eth_path);
         Self {
-            order_repo: repositories::OrderRepository::new(db_helper.clone()),
-            order_service: services::OrderService::new(db_helper.clone()),
-            settlement_service: settlement_service,
-            session_repo: repositories::SessionRepository::new(db_helper.clone()),
-            user_repo: repositories::UserRepository::new(db_helper.clone()),
-            db_helper: db_helper.clone(),
+            db: db
         }
-    }
-
-    fn check_owner(
-        &mut self,
-        owner_id: domain::OwnerId,
-        session_token: &domain::SessionToken,
-    ) -> Result<(), api::ApiError> {
-        let session = try!(session_token.get(&mut self.db_helper));
-        if !session.is_valid() {
-            return Err(api::ApiError::new(
-                "You are not logged in.".to_owned(),
-                api::ErrorType::NotLoggedIn,
-            ));
-        }
-        let user = self.user_repo.get_owner(owner_id).unwrap();
-        if session.email_address.unwrap() != user.email_address {
-            return Err(api::ApiError::new(
-                "Cannot retrieve object.".to_owned(),
-                api::ErrorType::NotFound,
-            ));
-        }
-        Ok(())
     }
 
     fn create_order(
@@ -66,6 +34,7 @@ impl<C: PostgresHelper + ConnectionSource + Clone> OrderApiImpl<C> {
         email_address: &str,
     ) -> Result<domain::Order, iron::Response> {
         let order_result = self.order_service.place_order(
+            &mut self.db,
             email_address,
             &order.unique_id,
             order.sell_asset_units as u64,
@@ -80,34 +49,11 @@ impl<C: PostgresHelper + ConnectionSource + Clone> OrderApiImpl<C> {
             err => Err(utils::to_response(err)),
         }
     }
-
-    fn get_session(&mut self, request: &iron::Request) -> Result<domain::Session, api::ApiError> {
-        let unauth_err = Err(api::ApiError::from(db::CambioError::unauthorised()));
-        let session_token = match utils::get_session_token(request) {
-            Some(s) => s,
-            None => {
-                return unauth_err;
-            }
-        };
-        let clause = repository::UserClause::SessionToken(session_token.to_owned());
-        let session = match self.session_repo.read(&clause).map(|mut s| s.pop()) {
-            Ok(Some(s)) => {
-                if !s.is_valid() {
-                    return Err(api::ApiError::unauthorised());
-                }
-                s
-            }
-            Ok(None) => return Err(api::ApiError::unauthorised()),
-            Err(err) => return Err(api::ApiError::from(err)),
-        };
-        Ok(session)
-    }
 }
 
-impl<C: PostgresHelper + ConnectionSource + Clone> api::OrderApiTrait for api::OrderApiImpl<C> {
+impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
     fn get_active_orders(&mut self) -> iron::Response {
-        let order_clause = repository::UserClause::All(false);
-        let order_result = self.order_repo.read(&order_clause);
+        let order_result = domain::All::get_vec(&mut self.db);
         match order_result {
             Ok(orders) => utils::to_response(Ok(orders)),
             err => utils::to_response(err),
@@ -140,8 +86,7 @@ impl<C: PostgresHelper + ConnectionSource + Clone> api::OrderApiTrait for api::O
         let conn = self.db_helper.get().unwrap();
         {
             let tx = conn.transaction().unwrap();
-            let mut db_tx = unimplemented!(); //PostgresTransactionHelper::new(tx);
-            // locate the target order
+            let mut db_tx = unimplemented!(); 
             let order_clause = repository::UserClause::Id(order.order_id);
             let read_result = self.order_repo.read(&order_clause);
             let target_order = match read_result.map(|mut o| o.pop()) {

@@ -1,4 +1,5 @@
 mod account;
+mod all;
 mod payment_status;
 mod poli_payment_request;
 mod poli_payment_request_id;
@@ -113,3 +114,4 @@ pub use self::poli_payment_request_id::PoliPaymentRequestId;
 pub use self::payment_status::PaymentStatus;
 pub use self::poli_payment_request::PoliPaymentRequest;
 pub use self::code::*;
+pub use self::all::*;
