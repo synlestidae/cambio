@@ -16,7 +16,7 @@ clean_up () {
     #clean_db
 }
 
-export RUSTFLAGS=-Awarnings
+#export RUSTFLAGS=-Awarnings
 
 cargo build
 
