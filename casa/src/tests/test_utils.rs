@@ -69,7 +69,8 @@ pub fn get_db_helper() -> PostgresHelperImpl {
 pub fn log_in(username: &str, password: &str) -> String {
     let mut db = get_db_connection();
     let mut user_service = UserService::new("../eth_test/data/geth.ipc"); 
-    let user = user_service.create_user(
+    println!("Creating user {}", username);
+    let user_result = user_service.create_user(
         &mut db,
         username, 
         &hash(password, 6).unwrap(), 

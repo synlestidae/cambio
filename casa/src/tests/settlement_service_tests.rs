@@ -12,6 +12,9 @@ use web3::types::U256;
 
 #[test]
 fn refuses_settlement_no_eth_balance() {
+    use std::env;
+    let path = env::current_dir().unwrap();
+    println!("The current directory is {}", path.display());
     let mut settlement_service = services::SettlementService::new(
         "../eth_test/data/geth.ipc",
     );

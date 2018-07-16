@@ -24,6 +24,9 @@ pub fn quick_order(
 ) -> (domain::Order, domain::Order) {
     let mut db = get_db_connection();
     // create the user first
+    use std::env;
+    let path = env::current_dir().unwrap();
+    println!("The current directory is {}", path.display());
     let mut user_service = services::UserService::new(
         "../eth_test/data/geth.ipc",
     );
