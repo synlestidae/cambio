@@ -12,14 +12,20 @@ use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
 use postgres::GenericConnection;
 
-#[derive(Clone)]
 pub struct EthereumService {
     web3_address: String,
+    eloop: web3::transports::EventLoopHandle,
+    web3: web3::Web3<web3::transports::http::Http>
 }
+
 impl EthereumService {
     pub fn new(web3_address: &str) -> Self {
+        let (eloop, transport) = web3::transports::http::Http::new(web3_address).unwrap();
+        let web3 = web3::Web3::new(transport);
         Self {
             web3_address: web3_address.to_owned(),
+            eloop: eloop,
+            web3: web3
         }
     }
 
@@ -29,10 +35,12 @@ impl EthereumService {
         user_email: &str,
         account_password: &str,
     ) -> Result<EthAccount, CambioError> {
-        let (_eloop, web3) = try!(self.get_web3_inst());
+        println!("Making a super account");
+        println!("Loading the user");
         let user = try!(Readable::get(user_email, db));
         let owner_id = user.owner_id.unwrap();
-        let account_result = web3.personal().new_account(account_password).wait();
+        println!("Calling web3");
+        let account_result = self.web3.personal().new_account(account_password).wait();
         let address = try!(account_result);
         Ok(EthAccount::new(&address, account_password.to_owned(), owner_id))
     }
@@ -43,10 +51,8 @@ impl EthereumService {
     ) -> Result<TransactionRequest, CambioError> {
         const BLOCK_CONFIRMATIONS: u64 = 4;
         const GAS_TRANSFER: u64 = 21000;
-
-        let (_eloop, web3) = try!(self.get_web3_inst());
-        let personal = web3.personal();
-        let eth = web3.eth();
+        let personal = self.web3.personal();
+        let eth = self.web3.eth();
 
         let gas_price_wei = try!(eth.gas_price().wait());
         let block = try!(eth.block_number().wait());
@@ -73,8 +79,7 @@ impl EthereumService {
 
     pub fn send_transaction(&mut self,
         request: TransactionRequest) -> Result<web3::types::Transaction, CambioError> {
-        let (_eloop, web3) = try!(self.get_web3_inst());
-        let eth = web3.eth();
+        let eth = self.web3.eth();
 
         let hash = try!(eth.send_transaction(request).wait());
         let transaction = try!(
@@ -101,8 +106,7 @@ impl EthereumService {
         max_fee: U256,
         unique_id: &str,
     ) -> Result<EthereumOutboundTransaction, CambioError> {
-        let (_eloop, web3) = try!(self.get_web3_inst());
-        let personal = web3.personal();
+        let personal = self.web3.personal();
         try!(
             personal
                 .unlock_account(source_account.address, &password, None)
@@ -120,12 +124,6 @@ impl EthereumService {
         let outbound_transaction = try!(self.send_transaction(tx_request));
 
         unimplemented!()
-    }
-
-    fn get_web3_inst(&self) -> Result<Web3Pair, CambioError> {
-        // TODO make this use some kind of connection pool if need be
-        let (_eloop, transport) = try!(web3::transports::http::Http::new(&self.web3_address));
-        Ok((_eloop, web3::Web3::new(transport)))
     }
 }
 
