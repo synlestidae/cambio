@@ -22,13 +22,11 @@ pub fn quick_order(
     sell_szabo: u64,
     buy_money: u32,
 ) -> (domain::Order, domain::Order) {
-    /*let mut db = get_db_connection();
+    let mut db = get_db_connection();
     // create the user first
     let mut user_service = services::UserService::new(
         "http://localhost:8081",
     );
-
-    let mut order_repo = repositories::OrderRepository::new(get_db_helper());
 
     let user1 = user_service
         .register_user(&mut db, buyer, "excellent123", &fake_details())
@@ -41,11 +39,10 @@ pub fn quick_order(
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user2.owner_id.unwrap(), buy_money, sell_szabo, 10);
 
-    order1 = order_repo.create(&order1).unwrap();
-    order2 = order_repo.create(&order2).unwrap();
+    let saved_order1 = order1.create(&mut db).unwrap();
+    let saved_order2 = order2.create(&mut db).unwrap();
 
-    (order1, order2)*/
-    unimplemented!()
+    (order1, order2)
 }
 
 pub fn just_order(
@@ -74,8 +71,9 @@ pub fn quick_credit(who: &str, how_much: u32) {
     let user: domain::User = Readable::get(who, &mut db).unwrap();
     let account_set = domain::AccountSet::from(user.owner_id.unwrap().get_vec(&mut  db).unwrap()).unwrap();
     let ledger_service = services::LedgerService::new();
+    let account_id = domain::PaymentVendor::Poli.get(&mut db).unwrap();
     ledger_service.transfer_money(&mut db, 
-        unimplemented!(), 
+        account_id, 
         account_set.nzd_wallet(), 
         domain::Decimal::from_cents(how_much as i64)
     ).unwrap();

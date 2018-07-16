@@ -2,9 +2,7 @@ use bcrypt::hash;
 use api::{RegistrationConfirm, PersonalDetails};
 use checkmail;
 use db::{CambioError, PostgresHelper};
-use domain::{Id, Session, SessionState, User, Registration, Profile, Address, PersonalIdentity, EthAccount};
-use repositories;
-use repository;
+use domain::{Id, Session, SessionState, User, Registration, Profile, Address, PersonalIdentity, EthAccount, Account, AssetType, AccountRole};
 use repository::*;
 use postgres::GenericConnection;
 use services;
@@ -66,14 +64,17 @@ impl UserService {
         password_hash: &str,
         personal_details: &PersonalDetails,
         eth_password: &str) -> Result<User, CambioError> {
+        println!("Starting transaction");
+        let mut db_tx = try!(db.transaction());
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input(
                 "Please check that the email entered is valid",
                 "Email address is invalid",
             ));
         }
+        println!("Getting an option");
 
-        if let Some(_) = try!(email_address.get_option(db)) {
+        if let Some(_) = try!(email_address.get_option(&mut db_tx)) {
             return Err(CambioError::user_exists());
         }
         let mut user = User {
@@ -83,16 +84,27 @@ impl UserService {
             password_hash: Some(password_hash.to_owned()),
             owner_id: None,
         };
+        let mut wallet = Account::new_wallet(AssetType::NZD);
+        let mut hold = Account::new_hold(AssetType::NZD);
 
-        info!("Making a user");
-        user = try!(user.create(&mut *db));
-        info!("Made user {:?}", user.id);
-        info!("Making eth account");
-        try!(self.create_eth_accounts(db, email_address, eth_password));
+        println!("Creating user!");
+        user = try!(user.create(&mut db_tx));
+        wallet.owner_user_id = user.owner_id;
+        hold.owner_user_id = user.owner_id;
+
+        println!("Creating wallets");
+        try!(wallet.create(&mut db_tx));
+        try!(hold.create(&mut db_tx));
+
+        println!("Creating eth accounts");
+        try!(self.create_eth_accounts(&mut db_tx, email_address, eth_password));
+        println!("Eth accounts ready. Creating profile");
         let profile = personal_details.clone().into_profile(user.id.unwrap());
-        let new_profile = try!(profile.create(db));
-        info!("Making profile!");
+        let new_profile = try!(profile.create(&mut db_tx));
+        println!("Profile created");
 
+        println!("Committing!");
+        db_tx.set_commit();
         Ok(user)
     }
 

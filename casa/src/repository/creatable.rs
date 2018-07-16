@@ -16,7 +16,7 @@ pub trait Creatable where Self: std::marker::Sized {
         if result.is_empty() {
             return Err(update_failed)
         }
-        let id: Self::Id = match result.get(0).get("id") {
+        let id: Self::Id = match result.get(0).get(0) {
                 Some(id) => id,
                 None => return Err(update_failed)
         };
@@ -28,12 +28,21 @@ pub trait Creatable where Self: std::marker::Sized {
 impl Creatable for domain::User {
     type Id = domain::UserId;
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        const QUERY: &'static str = 
-            "INSERT INTO users(email_address, password_hash) VALUES ($1, $2) RETURNING id";
-        Ok(try!(db.query(QUERY, &[
+        const QUERY: &'static str = "INSERT INTO users(email_address, password_hash) VALUES ($1, $2) RETURNING id;";
+        //const OWNER_QUERY: &'static str = "";
+        //try!(db.execute(OWNER_QUERY, &[]));
+        let result = try!(db.query(QUERY, &[
             &self.email_address,
             &self.password_hash
-        ])))
+        ]));
+        if result.len() > 0 {
+            println!("Inserting! {:?}", result.get(0));
+            let id: domain::UserId = result.get(0).get("id");
+            try!(db.execute("INSERT INTO account_owner(user_id) VALUES ($1)", &[&id]));
+            Ok(result)
+        } else {
+            unreachable!()
+        }
     }
 }
 
@@ -48,6 +57,33 @@ impl Creatable for domain::EthAccount {
         Ok(try!(db.query(QUERY, &[
             &address, &self.password_hash_bcrypt, &self.owner_id
         ])))
+    }
+}
+
+impl Creatable for domain::Account {
+    type Id = domain::AccountId;
+
+    fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        const QUERY: &'static str = "INSERT INTO 
+            account(owner_id, asset_type, account_type, account_business_type, account_role, account_status) 
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id";
+        println!("Inserting account now...");
+        let result = match db.query(QUERY, &[
+            &self.owner_user_id,
+            &self.asset_type,
+            &self.account_type,
+            &self.account_business_type,
+            &self.account_role,
+            &self.account_status]) {
+            Ok(u) => u,
+            Err(err) => {
+                println!("Account inserted {:?}", err);
+                return Err(err.into());
+            }
+        };
+        println!("Account inserted");
+        Ok(result)
     }
 }
 

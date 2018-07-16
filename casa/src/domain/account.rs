@@ -32,6 +32,30 @@ impl Account {
             None
         }
     }
+
+    pub fn new_wallet(asset_type: AssetType) -> Self {
+        Self {
+            id: None,
+            owner_user_id: None,
+            asset_type: asset_type,
+            account_status: AccountStatus::Active,
+            account_type: AccountType::Liability,
+            account_business_type: AccountBusinessType::UserCashWallet,
+            account_role: AccountRole::Primary
+        }
+    }
+
+    pub fn new_hold(asset_type: AssetType) -> Self {
+        Self {
+            id: None,
+            owner_user_id: None,
+            asset_type: asset_type,
+            account_status: AccountStatus::Active,
+            account_type: AccountType::Liability,
+            account_business_type: AccountBusinessType::OrderPaymentHold,
+            account_role: AccountRole::System
+        }
+    }
 }
 
 /*struct AccountRow {

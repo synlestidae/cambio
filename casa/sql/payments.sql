@@ -78,6 +78,8 @@ CREATE TABLE journal (
     credit UINT,
     debit UINT,
     balance INT8,
-    authorship_id SERIAL REFERENCES authorship(id),
+    authorship_id INTEGER REFERENCES authorship(id) DEFAULT NULL,
     CHECK((credit IS NOT NULL AND debit IS NULL) OR (credit IS NULL AND debit IS NOT NULL))
 );
+
+ALTER TABLE authorship ALTER COLUMN entry DROP NOT NULL;

@@ -375,6 +375,24 @@ impl Readable<domain::PoliPaymentRequest> for payment::poli::TransactionToken {
     }
 }
 
+impl Readable<domain::AccountId> for domain::PaymentVendor {
+    fn get_vec<T: GenericConnection>(&self, db: &mut T) -> Result<Vec<domain::AccountId>, CambioError> {
+        const SQL: &'static str = "SELECT intake_account FROM vendor WHERE name = $1";
+        let err = Err(CambioError::not_found_search(
+            "Could not process payment vendor.",
+            "Payment vendor not in DB")
+        );
+        let result = try!(db.query(SQL, &[&self]));
+        if result.len() < 1 {
+            return err;
+        }
+        if let Some(account_id) = result.get(0).get(0) {
+            return Ok(vec![account_id]);
+        }
+        err
+    }
+}
+
 const SELECT_BY_OWNER: &'static str = "
     SELECT *, users.id as user_id, account_owner.id as owner_id
     FROM users 
