@@ -48,8 +48,9 @@ impl TryFromRow for EthAccount {
 
 impl EthAccount {
     pub fn new(address: &H160, password: String, owner_id: OwnerId) -> Self {
+        println!("hashing password");
         let bcrypted_password = hash(&password, BCRYPT_COST).unwrap();
-        drop(password);
+        println!("Password hashed");
         Self {
             id: None,
             address: *address,

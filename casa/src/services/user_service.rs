@@ -27,13 +27,13 @@ impl UserService {
         personal_details: &PersonalDetails,
         eth_password: &str) -> Result<User, CambioError> {
         // TODO transaction needed here
-        info!("Confirming registration");
+        println!("Confirming registration");
         
         // Mark the registration as confirmed
         let mut confirmed_registration = registration.clone();
         confirmed_registration.confirm();
         try!(confirmed_registration.update(db));
-        info!("Creating registration...");
+        println!("Creating registration...");
 
         // Create and store the user, ready to log in
         let user = try!(self.create_user(
@@ -113,12 +113,12 @@ impl UserService {
         email_address: &str, 
         password: &str
     ) -> Result<EthAccount, CambioError> {
-        info!("Creating ethereum account for {}", email_address);
+        println!("Creating ethereum account for {}", email_address);
         let mut eth_service = services::EthereumService::new(&self.web3_address);
         let account = try!(eth_service.new_account(db, email_address, password));
-        info!("Eth account created. Saving...");
+        println!("Eth account created. Saving...");
         let account_result = try!(account.create(db));
-        info!("Account with address {:?} created", account.address);
+        println!("Account with address {:?} created", account.address);
         Ok(account_result)
     }
 
@@ -128,9 +128,9 @@ impl UserService {
         password: String,
     ) -> Result<Session, CambioError> {
         let user_option = try!(email_address.get_option(db));
-        info!("Logging in {}", email_address);
+        println!("Logging in {}", email_address);
         if user_option.is_none() {
-            info!("User {} does not exist", email_address);
+            println!("User {} does not exist", email_address);
             return Err(CambioError::not_found_search(
                 &format!("Could not find account for user {}", email_address),
                 "User repository returned None for User",
@@ -138,7 +138,7 @@ impl UserService {
         }
         let user = user_option.unwrap();
         if !user.hash_matches_password(&password) {
-            info!("Hash does not match password");
+            println!("Hash does not match password");
             return Err(CambioError::invalid_password());
         }
         let user_id = user.id.unwrap();
@@ -146,7 +146,7 @@ impl UserService {
         drop(password);
 
         let mut session = Session::new(email_address, user_id, SESSION_TIME_MILLISECONDS);
-        info!("Creating a session");
+        println!("Creating a session");
         let session = try!(session.create(db));
         Ok(session)
     }

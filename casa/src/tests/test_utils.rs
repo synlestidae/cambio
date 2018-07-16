@@ -87,6 +87,8 @@ pub fn log_in(username: &str, password: &str) -> String {
         },
         password
     );
+    println!("Welp, got a result {:?}", user_result);
+    user_result.unwrap();
     user_service.log_user_in(&mut db, username, password.to_owned()).unwrap().session_token.0
 }
 
