@@ -13,7 +13,7 @@ use web3::types::U256;
 #[test]
 fn refuses_settlement_no_eth_balance() {
     let mut settlement_service = services::SettlementService::new(
-        "http://localhost:8081",
+        "../eth_test/data/geth.ipc",
     );
     let (order1, order2) = quick_order(
         "ricky@gervais.com",

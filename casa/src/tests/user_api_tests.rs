@@ -19,7 +19,7 @@ fn test_registration_successful() {
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
-    let handler = api::ApiHandler::new(TEST_CONN_STR, "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
     let response = request::post("http://localhost:3000/users/register", 
         headers, 
         new_user,
@@ -42,7 +42,7 @@ fn test_creates_new_user_and_password_works() {
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
-    let handler = api::ApiHandler::new(TEST_CONN_STR, "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
     let register_response = request::post("http://localhost:3000/users/register", 
         headers.clone(), 
         new_user,

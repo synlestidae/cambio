@@ -15,12 +15,12 @@ use postgres::GenericConnection;
 pub struct EthereumService {
     web3_address: String,
     eloop: web3::transports::EventLoopHandle,
-    web3: web3::Web3<web3::transports::http::Http>
+    web3: web3::Web3<web3::transports::ipc::Ipc>
 }
 
 impl EthereumService {
     pub fn new(web3_address: &str) -> Self {
-        let (eloop, transport) = web3::transports::http::Http::new(web3_address).unwrap();
+        let (eloop, transport) = web3::transports::ipc::Ipc::new(web3_address).unwrap();
         let web3 = web3::Web3::new(transport);
         Self {
             web3_address: web3_address.to_owned(),
@@ -129,5 +129,5 @@ impl EthereumService {
 
 pub type Web3Pair = (
     web3::transports::EventLoopHandle,
-    web3::Web3<web3::transports::http::Http>,
+    web3::Web3<web3::transports::ipc::Ipc>,
 );

@@ -68,7 +68,7 @@ pub fn get_db_helper() -> PostgresHelperImpl {
 
 pub fn log_in(username: &str, password: &str) -> String {
     let mut db = get_db_connection();
-    let mut user_service = UserService::new("http://localhost:8081"); 
+    let mut user_service = UserService::new("../eth_test/data/geth.ipc"); 
     let user = user_service.create_user(
         &mut db,
         username, 
@@ -110,7 +110,7 @@ fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
-    let handler = api::ApiHandler::new(TEST_CONN_STR, "http://localhost:8081", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
     let response = if is_get {
         request::get(url, 
             headers.clone(), 

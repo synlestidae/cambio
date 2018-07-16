@@ -76,7 +76,7 @@ use jobs::JobLoop;
 use std::thread;
 
 fn main() {
-    const WEB3_ADDRESS: &'static str = "http://localhost:8081";
+    const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
     let conn_str = "postgres://mate@localhost:5432/cambio_test";
     env_logger::init().expect("Could not start logger");
     let middleware = CorsMiddleware {};

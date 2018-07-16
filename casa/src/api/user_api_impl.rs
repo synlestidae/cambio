@@ -64,7 +64,7 @@ impl<C: GenericConnection> UserApi<C> {
 
     pub fn post_confirm_register(&mut self, registration_confirm: &api::RegistrationConfirm) 
         -> Response {
-        let user_service = UserService::new("http://localhost:8081");
+        let user_service = UserService::new("../eth_test/data/geth.ipc");
         let registration = match registration_confirm.identifier_code.get(&mut self.db) {
             Ok(r) => r,
             Err(err) => return err.into()

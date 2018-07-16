@@ -25,7 +25,7 @@ pub fn quick_order(
     let mut db = get_db_connection();
     // create the user first
     let mut user_service = services::UserService::new(
-        "http://localhost:8081",
+        "../eth_test/data/geth.ipc",
     );
 
     let user1 = user_service
@@ -89,7 +89,7 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
     let account: domain::EthAccount = unimplemented!();//eth_account_repo.read(&clause).unwrap().pop().unwrap();
     let args = &[
         "../moneda/index.js",
-        "http://localhost:8081",
+        "../eth_test/data/geth.ipc",
         "0xA990F82d33Fd19C3872dc12c588A66224b9330A6",
         &format!("0x{:#x}", account.address),
         &format!("0x{:#x}", wei),
