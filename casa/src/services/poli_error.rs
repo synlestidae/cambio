@@ -13,7 +13,7 @@ pub enum PoliError {
     Request(Box<Error>),
     Response(Box<Error>),
     PoliError(PoliErrorCode),
-    InitTx(Vec<InitiateTransactionError>)
+    InitTx(Option<InitiateTransactionError>)
 }
 
 impl fmt::Display for PoliError {
@@ -37,8 +37,8 @@ impl Error for PoliError {
     }
 }
 
-impl From<Vec<InitiateTransactionError>> for PoliError {
-    fn from(errs: Vec<InitiateTransactionError>) -> Self {
+impl From<Option<InitiateTransactionError>> for PoliError {
+    fn from(errs: Option<InitiateTransactionError>) -> Self {
         PoliError::InitTx(errs)
     }
 }

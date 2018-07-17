@@ -97,7 +97,13 @@ impl UserService {
         try!(hold.create(&mut db_tx));
 
         println!("Creating eth accounts");
-        try!(self.create_eth_accounts(&mut db_tx, email_address, eth_password));
+        let account = match self.create_eth_accounts(&mut db_tx, email_address, eth_password) {
+            Ok(a) => a,
+            Err(err) => {
+                return Err(err);
+                println!("Err! {:?}", err);
+            }
+        };
         println!("Eth accounts ready. Creating profile");
         let profile = personal_details.clone().into_profile(user.id.unwrap());
         let new_profile = try!(profile.create(&mut db_tx));
