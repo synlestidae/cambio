@@ -3,22 +3,40 @@ use payment::poli::{
     TransactionStatusCode, 
     PoliTransactionResponse
 };
-use serde::de::Deserialize;
+use serde::de::{Deserialize, Deserializer, Visitor};
+use std::fmt;
 
 #[derive(Deserialize, Debug)]
-#[serde(rename_all = "PascalCase")]
+#[serde(rename_all="PascalCase")]
 pub struct InitiateTransactionResponse {
-    #[serde(flatten)]
-    pub errors: Option<InitiateTransactionError>,
-    #[serde(default)]
+    pub errors: Vec<InitiateTransactionError>,
     pub transaction_status_code: Option<TransactionStatusCode>,
-    #[serde(default)]
     pub transaction: Option<PoliTransactionResponse>
 }
 
+/*struct InitiateTransactionResponseVisitor {}
+
+impl<'de> Visitor<'de> for InitiateTransactionResponseVisitor {
+    type Value = InitiateTransactionResponse;
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "I dunno something amazing... I guess")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> {
+        unimplemented!()
+    }
+}
+
+
+impl<'de> Deserialize<'de> for InitiateTransactionResponse {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        deserializer.deserialize_string(InitiateTransactionResponseVisitor{})
+    }
+}*/
+
 impl InitiateTransactionResponse {
     pub fn get_transaction(mut self) 
-        -> Result<PoliTransactionResponse, Option<InitiateTransactionError>> {
+        -> Result<PoliTransactionResponse, Vec<InitiateTransactionError>> {
         match (self.transaction, self.errors) {
             (Some(tx), _) => Ok(tx),
             (_, error) => Err(error)
@@ -55,6 +73,7 @@ mod test {
     fn test_response_error_deserializes() {
         let d: InitiateTransactionResponse = 
             deserialize(RESPONSE_EXAMPLE_ERROR.as_bytes()).unwrap();
+        panic!("The stuff {:?}", d);
     }
 
     const RESPONSE_EXAMPLE_SUCCESS: &'static str = r#"
@@ -80,8 +99,6 @@ mod test {
             <dco:Message>POLi is unable to continue with this payment. Please contact the Merchant for assistance.</dco:Message> 
         </dco:Error>
     </Errors>
-    <TransactionStatusCode i:nil="true" />
-    <Transaction i:nil="true" xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
     </InitiateTransactionResponse>
     "#;
 
