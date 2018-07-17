@@ -24,14 +24,14 @@ fn from_row_string(source: String) -> TokenStream {
     let mut body_string = String::new();
     match input.data {
         syn::Data::Struct(struct_data) => {
-            let struct_name = input.ident.clone().into_tokens().to_string();
+            let struct_name = input.ident.to_string();
             let mut struct_declaration = format!("Ok({} {{\n", struct_name);
             for (i, field) in struct_data.fields.iter().enumerate() {
                 if i > 0 {
                     struct_declaration.push_str(",\n");
                 }
                 let column_name = get_column_name(&field);
-                let field_name = field.ident.unwrap().clone().into_tokens().to_string();
+                let field_name = field.ident.unwrap().to_string();
                 let type_name = get_rust_type(&field);
                 let is_option = is_optional(&field);
                 let variable_declaration = get_var_declaration(&field_name, &column_name,

@@ -1,94 +1,92 @@
-use payment::poli::{PoliConfig, AuthenticationCode, PoliTransaction as Transaction, MerchantRef};
+use payment::poli::*;
 use domain::PoliPaymentRequest;
 use domain::CurrencyCode;
+use domain::Decimal;
 use chrono::prelude::*;
 
 #[derive(Serialize, Debug)]
+#[serde(rename_all="PascalCase")]
 pub struct InitiateTransaction {
-    #[serde(rename="AuthenticationCode")]
-    pub authentication_code: AuthenticationCode,
-    #[serde(rename="Transaction")]
-    pub transaction: Transaction
+    amount: Decimal,
+    currency_code: CurrencyCode,
+    merchant_reference: MerchantRef,
+    merchant_reference_format: Option<String>,
+    merchant_data: Option<MerchantData>,
+    #[serde(rename="MerchantHomepageURL")]
+    merchant_homepage_url: String,
+    #[serde(rename="SuccessURL")]
+    success_url: String,
+    #[serde(rename="FailureURL")]
+    failure_url: Option<String>,
+    #[serde(rename="CancellationURL")]
+    cancellation_url: Option<String>,
+    #[serde(rename="NotificationURL")]
+    notification_url: Option<String>,
+    timeout: Option<u32>,
+    selected_fi_code: Option<String>
 }
 
 impl InitiateTransaction {
     pub fn from_request(poli_config: &PoliConfig, poli_payment_request: &PoliPaymentRequest) -> Self {
         let merchant_ref = MerchantRef(format!("Cambio Ltd|{}|Cred acc", poli_payment_request.unique_code));
-        let transaction = Transaction {
-            merchant_code: poli_config.merchant_code.clone(),
+        Self {
+            amount: poli_payment_request.amount,
             currency_code: CurrencyCode::NZD,
-            currency_amount: poli_payment_request.amount.clone(),
-            merchant_date_time: Utc::now().naive_utc(),
-            successful_url: poli_config.successful_url.to_string(),
-            merchant_ref: Some(merchant_ref),
+            merchant_reference: merchant_ref,
+            merchant_reference_format: Some(String::from("1")),
             merchant_data: None,
-            selected_fi_code: None,
+            merchant_homepage_url: poli_config.merchant_home_page_url.to_string(),
+            success_url: poli_config.successful_url.to_string(),
+            failure_url: Some(poli_config.unsuccessful_url.to_string()), 
+            cancellation_url: None,
             notification_url: Some(poli_config.notification_url.to_string()),
-            unsuccessful_url: Some(poli_config.unsuccessful_url.to_string()),
-            merchant_checkout_url: Some(poli_config.merchant_checkout_url.to_string()),
-            timeout: "3000".to_owned(),
-            user_ip_address: None
-        };
-        InitiateTransaction {
-            authentication_code: poli_config.authentication_code.clone(),
-            transaction: transaction
+            timeout: None,
+            selected_fi_code: None
         }
     }
 }
 
 mod test {
-use payment::poli::*; 
-use domain::CurrencyCode;
-use serde_json::*;
-use domain::Decimal;
-use chrono::prelude::*;
+    use payment::poli::*; 
+    use domain::CurrencyCode;
+    use serde_json::*;
+    use domain::Decimal;
+    use chrono::prelude::*;
 
-#[test]
-fn test_request_serializes() {
-    let auth_code = AuthenticationCode("9182hrf$902".to_string());
-    let poli_tx = PoliTransaction {
-        merchant_code: MerchantCode("Best Merchants Ever".to_string()),
-        currency_code: CurrencyCode::NZD,
-        currency_amount: Decimal::from_cents(30),
-        merchant_date_time: Utc::now().naive_utc(),
-        successful_url: "https://best-merchants-ever.co.nz/success".to_string(),
-        merchant_ref: Some(MerchantRef("best|merch|ever".to_owned())),
-        merchant_data: None,
-        selected_fi_code: None,
-        notification_url: Some("https://best-merchants-ever.co.nz/notification".to_string()),
-        unsuccessful_url: None,
-        merchant_checkout_url: None,
-        timeout: "2000".to_owned(),
-        user_ip_address: None
-    };
-    let d = InitiateTransaction {
-        authentication_code: auth_code,
-        transaction: poli_tx 
-    };
-    to_string(&d).unwrap();
-}
+    #[test]
+    fn test_request_serializes() {
+        let init_tx = InitiateTransaction {
+            amount: Decimal::from_cents(120),
+            currency_code: CurrencyCode::NZD,
+            merchant_reference: MerchantRef("CustomerRef12345".to_owned()),
+            merchant_reference_format: None,
+            merchant_data: None,
+            merchant_homepage_url: "https://www.mycompany.com".to_owned(),
+            success_url: "https://www.mycompany.com/Success".to_owned(),
+            failure_url: Some("https://www.mycompany.com/Failure".to_owned()),
+            cancellation_url: Some("https://www.mycompany.com/Cancelled".to_owned()),
+            notification_url: Some("https://www.mycompany.com/nudge".to_owned()),
+            timeout: Some(3000),
+            selected_fi_code: None
+        };
+        let map: Map<String, Value> = from_str(r#"{
+            "Amount":"1.2",
+            "CurrencyCode":"AUD",
+            "MerchantReference":"CustomerRef12345",
+            "MerchantHomepageURL":"https://www.mycompany.com",
+            "SuccessURL":"https://www.mycompany.com/Success",
+            "FailureURL":"https://www.mycompany.com/Failure",
+            "CancellationURL":"https://www.mycompany.com/Cancelled",
+            "NotificationURL":"https://www.mycompany.com/nudge"}
+        "#).unwrap();
 
-const REQUEST_EXAMPLE: &'static str = r#"
-<?xml version="1.0" encoding="UTF-8"?>
-<InitiateTransactionRequest xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contract s" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-   <AuthenticationCode>MerchantPassword</AuthenticationCode>
-   <Transaction xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO">
-      <dco:CurrencyAmount>15.00</dco:CurrencyAmount>
-      <dco:CurrencyCode>NZD</dco:CurrencyCode>
-      <dco:MerchantCheckoutURL>http://www.pricebusterdvd.com/checkout</dco:MerchantCheckoutURL>
-      <dco:MerchantCode>PriceBusterDVD</dco:MerchantCode>
-      <dco:MerchantData>MerchantDataAssociatedWithTransaction</dco:MerchantData>
-      <dco:MerchantDateTime>2008-08-18T14:01:02</dco:MerchantDateTime>
-      <dco:MerchantHomePageURL>http://www.pricebusterdvd.com/home</dco:MerchantHomePageURL>
-      <dco:MerchantRef>MerchantReferenceAssociateWithTransaction</dco:MerchantRef>
-      <dco:NotificationURL>http://www.pricebusterdvd.com/notification</dco:NotificationURL>
-      <dco:SelectedFICode i:nil="true" />
-      <dco:SuccessfulURL>http://www.pricebusterdvd.com/successful</dco:SuccessfulURL>
-      <dco:Timeout>1000</dco:Timeout>
-      <dco:UnsuccessfulURL>http://www.pricebusterdvd.com/unsuccessful</dco:UnsuccessfulURL>
-      <dco:UserIPAddress>65.2.45.1</dco:UserIPAddress>
-   </Transaction>
-</InitiateTransactionRequest>
-"#;
-
+        assert_eq!("1.2", map["Amount"]);
+        assert_eq!("AUD", map["CurrencyCode"]);
+        assert_eq!("CustomerRef12345", map["MerchantReference"]);
+        assert_eq!("https://www.mycompany.com", map["MerchantHomepageURL"]);
+        assert_eq!("https://www.mycompany.com/Success", map["SuccessURL"]);
+        assert_eq!("https://www.mycompany.com/Failure", map["FailureURL"]);
+        assert_eq!("https://www.mycompany.com/Cancelled", map["CancellationURL"]);
+        assert_eq!("https://www.mycompany.com/nudge", map["NotificationURL"]);
+    }
 }

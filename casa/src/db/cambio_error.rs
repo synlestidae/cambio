@@ -8,6 +8,7 @@ use r2d2;
 use std::error;
 use std::error::Error as StdError;
 use std::fmt;
+use services::PoliError;
 use web3;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -207,6 +208,17 @@ impl From<r2d2::Error> for CambioError {
             system_message: format!("r2d2 error: {:?}", err),
             kind: ErrorKind::DBConnection,
             reccomendation: ErrorReccomendation::TryAgainNow,
+        }
+    }
+}
+
+impl From<PoliError> for CambioError {
+    fn from(err: PoliError) -> Self {
+        CambioError {
+            user_message: "A fatal error occurred while handling your payment.".to_string(),
+            system_message: err.description().to_string(),
+            kind: ErrorKind::PaymentApi,
+            reccomendation: ErrorReccomendation::ContactProgrammer
         }
     }
 }

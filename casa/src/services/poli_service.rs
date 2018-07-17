@@ -31,8 +31,6 @@ impl PoliService {
         -> Result<GetTransactionResponse, PoliError> {
         let poli_config = &self.poli_config;
         let get_transaction = GetTransaction {
-            merchant_code: poli_config.merchant_code.clone(),
-            authentication_code: poli_config.authentication_code.clone(),
             transaction_token: transaction_token.clone()
         };
         self.make_request(&self.poli_config.get_transaction_url, get_transaction)

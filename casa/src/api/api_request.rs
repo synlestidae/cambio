@@ -2,15 +2,18 @@ use api;
 use db;
 use domain;
 use std::convert::TryFrom;
+use std::io::Read;
 use iron::request::Request;
 use bodyparser;
 use hyper::mime::Mime;
+use hyper::header::ContentType;
 use serde::Deserialize;
 use serde_json;
 use iron::prelude::*;
 use std::error::Error;
 use hyper::method::Method;
 use api::{UserRequest, OrderApiRequest, AccountRequest, SettlementRequest, PaymentRequest};
+use serde_urlencoded;
 
 #[derive(Debug)]
 pub enum ApiRequest {
@@ -87,11 +90,26 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
     }
 }
 
-fn get_api_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError>
-where
-    for<'a> T: Deserialize<'a>,
-{
-    let content_type = "application/json".parse::<Mime>().unwrap();
+fn get_api_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError> where for<'a> T: Deserialize<'a> {
+    let json_mime_type = "application/json".parse::<Mime>().unwrap();
+    let form_mime_type = "application/x-www-form-urlencoded".parse::<Mime>().unwrap();
+    let headers_copy = request.headers.clone();
+    let header = headers_copy.get::<ContentType>();
+
+    if let Some(m) = header {
+        if m.0 == json_mime_type {
+            get_json_obj(request)
+        } else if m.0 == form_mime_type {
+            get_form_obj(request)
+        } else {
+            Err(api::ApiError::bad_format("Unsupported Content-Type"))
+        }
+    } else {
+        Err(api::ApiError::bad_format("Missing `Content-Type` header"))
+    }
+}
+
+fn get_json_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError> where for<'a> T: Deserialize<'a> {
     match request.get_ref::<bodyparser::Struct<T>>() {
         Ok(&Some(ref body_obj)) => Ok(body_obj.clone()),
         Ok(&None) => {
@@ -101,4 +119,11 @@ where
             Err(api::ApiError::bad_format(error.description()))
         }
     }
+}
+
+fn get_form_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError> where for<'a> T: Deserialize<'a> {
+    let mut bytes = Vec::new();
+    try!(request.body.read_to_end(&mut bytes)); 
+    let obj: T = try!(serde_urlencoded::from_bytes(&bytes));
+    Ok(obj)
 }

@@ -15,4 +15,5 @@ pub enum ErrorKind {
     UnfairOperation,
     StateChangeNotPermitted,
     OverUserLimit,
+    PaymentApi
 }

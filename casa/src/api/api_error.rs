@@ -7,9 +7,11 @@ use iron::Response;
 use serde_json;
 use std::convert::{From, Into};
 use std::error::Error;
+use std;
 use std::fmt;
 use hyper::method::Method;
 use serde_json::Error as SerdeError;
+use serde_urlencoded::de::Error as SerdeURLError;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiError {
@@ -161,6 +163,18 @@ impl From<CambioError> for ApiError {
 
 impl From<SerdeError> for ApiError {
     fn from(err: SerdeError) -> Self {
+        ApiError::bad_format(err.description())
+    }
+}
+
+impl From<SerdeURLError> for ApiError {
+    fn from(err: SerdeURLError) -> Self {
+        ApiError::bad_format(err.description())
+    }
+}
+
+impl From<std::io::Error> for ApiError {
+    fn from(err: std::io::Error) -> Self {
         ApiError::bad_format(err.description())
     }
 }

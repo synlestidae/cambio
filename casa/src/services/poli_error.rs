@@ -77,9 +77,3 @@ impl PoliError {
         Ok(())
     }
 }
-
-impl Into<CambioError> for PoliError {
-    fn into(self) -> CambioError {
-        unimplemented!()
-    }
-}

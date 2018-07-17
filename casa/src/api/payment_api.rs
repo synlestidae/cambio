@@ -85,19 +85,32 @@ impl<C: GenericConnection> PaymentApi<C> {
         // * TransactionResponse currency matches credit account currency
 
         if let Some(err) = poli_tx.error_code {
+            //conn.commit();
+            //err.save_in_log(None, conn.connection());
+            //return Err(err.into());
             unimplemented!()
         }
 
         if payment_request.payment_status != PaymentStatus::StartedWithPoli {
-            unimplemented!()
+            return Err(CambioError::not_permitted(
+                "This payment cannot be nudged.", 
+                &format!("Expected payment to be in state `StartedWithPoli`, but got `{:?}`", payment_request.payment_status))
+            );
         }
 
         let mut ledger_service = LedgerService::new(); 
-        let poli_deduct_account = unimplemented!();
+        let poli_deduct_account: AccountId = try!(PaymentVendor::Poli.get(db));
         let user_wallet_account = account_set.nzd_wallet();
 
-        // account may now be credit
-        ledger_service.transfer_money(db, poli_deduct_account, user_wallet_account, payment_request.amount);
+        // check deduct account has role System and business type SystemFeesPaid 
+        // check credited account has role Primary and business type UserCashWallet 
+
+        // account may now be credited
+        try!(ledger_service.transfer_money(db, 
+            poli_deduct_account, 
+            user_wallet_account, 
+            payment_request.amount)
+        );
         unimplemented!()
     }
 

@@ -43,6 +43,7 @@ extern crate rlp;
 extern crate secp256k1;
 extern crate web3;
 extern crate threadpool;
+extern crate serde_urlencoded;
 
 mod api;
 mod cors_middleware;
