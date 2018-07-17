@@ -3,7 +3,7 @@ use domain::PoliPaymentRequest;
 use domain::CurrencyCode;
 use chrono::prelude::*;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct InitiateTransaction {
     #[serde(rename="AuthenticationCode")]
     pub authentication_code: AuthenticationCode,
@@ -39,24 +39,33 @@ impl InitiateTransaction {
 mod test {
 use payment::poli::*; 
 use domain::CurrencyCode;
+use serde_json::*;
+use domain::Decimal;
+use chrono::prelude::*;
 
 #[test]
-fn test_request_deserializes() {
-    let d: InitiateTransaction = from_str(REQUEST_EXAMPLE.as_bytes()).unwrap();
-    assert_eq!("MerchantPassword", d.authentication_code.0);
-    assert_eq!("15.00", d.transaction.currency_amount.to_string());
-    assert_eq!(CurrencyCode::NZD, d.transaction.currency_code);
-    assert_eq!("http://www.pricebusterdvd.com/checkout", d.transaction.merchant_checkout_url.unwrap());
-    assert_eq!("PriceBusterDVD", d.transaction.merchant_code.0);
-    assert_eq!("MerchantDataAssociatedWithTransaction", d.transaction.merchant_data.unwrap().0);
-    assert_eq!("2008-08-18 14:01:02", d.transaction.merchant_date_time.to_string());
-    assert_eq!("MerchantReferenceAssociateWithTransaction", d.transaction.merchant_ref.unwrap().0);
-    assert_eq!("http://www.pricebusterdvd.com/notification", d.transaction.notification_url.unwrap());
-    assert_eq!(Some(String::new()), d.transaction.selected_fi_code);
-    assert_eq!("http://www.pricebusterdvd.com/successful", d.transaction.successful_url);
-    assert_eq!("1000", d.transaction.timeout);
-    assert_eq!("http://www.pricebusterdvd.com/unsuccessful", d.transaction.unsuccessful_url.unwrap());
-    assert_eq!("65.2.45.1", d.transaction.user_ip_address.unwrap());
+fn test_request_serializes() {
+    let auth_code = AuthenticationCode("9182hrf$902".to_string());
+    let poli_tx = PoliTransaction {
+        merchant_code: MerchantCode("Best Merchants Ever".to_string()),
+        currency_code: CurrencyCode::NZD,
+        currency_amount: Decimal::from_cents(30),
+        merchant_date_time: Utc::now().naive_utc(),
+        successful_url: "https://best-merchants-ever.co.nz/success".to_string(),
+        merchant_ref: Some(MerchantRef("best|merch|ever".to_owned())),
+        merchant_data: None,
+        selected_fi_code: None,
+        notification_url: Some("https://best-merchants-ever.co.nz/notification".to_string()),
+        unsuccessful_url: None,
+        merchant_checkout_url: None,
+        timeout: "2000".to_owned(),
+        user_ip_address: None
+    };
+    let d = InitiateTransaction {
+        authentication_code: auth_code,
+        transaction: poli_tx 
+    };
+    to_string(&d).unwrap();
 }
 
 const REQUEST_EXAMPLE: &'static str = r#"

@@ -1,6 +1,6 @@
 use domain::{PoliPaymentRequestId, PaymentStatus, Code, UserId, Decimal};
 use chrono::prelude::*;
-use payment::poli::TransactionToken;
+use payment::poli::TransactionRefNo;
 use postgres;
 use db::{TryFromRow, TryFromRowError};
 
@@ -12,7 +12,7 @@ pub struct PoliPaymentRequest {
     pub unique_code: Code,
     pub started_at: DateTime<Utc>, 
     pub payment_status: PaymentStatus, 
-    pub transaction_token: Option<TransactionToken>
+    pub transaction_ref_no: Option<TransactionRefNo>
 }
 
 impl PoliPaymentRequest {
@@ -24,7 +24,7 @@ impl PoliPaymentRequest {
             unique_code: Code::new(),
             started_at: Utc::now(),
             payment_status: PaymentStatus::StartedByUser,
-            transaction_token: None
+            transaction_ref_no: None
         }
     }
 }

@@ -40,7 +40,7 @@ impl<C: GenericConnection> PaymentApi<C> {
         };
         let resp = match tx_response.get_transaction() {
             Ok(poli_tx) => {
-                payment_req.transaction_token = Some(poli_tx.transaction_token);
+                payment_req.transaction_ref_no = Some(poli_tx.transaction_ref_no);
                 payment_req.payment_status = PaymentStatus::StartedWithPoli;
                 try!(payment_req.update(&mut tx));
                 RequestPaymentResponse {

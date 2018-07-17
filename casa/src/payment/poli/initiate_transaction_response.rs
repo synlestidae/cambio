@@ -1,45 +1,37 @@
-use payment::poli::{
-    InitiateTransactionError, 
-    TransactionStatusCode, 
-    PoliTransactionResponse
-};
+use payment::poli::*;
 use serde::de::{Deserialize, Deserializer, Visitor};
 use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all="PascalCase")]
 pub struct InitiateTransactionResponse {
-    pub errors: Vec<InitiateTransactionError>,
-    pub transaction_status_code: Option<TransactionStatusCode>,
-    pub transaction: Option<PoliTransactionResponse>
+	pub success: bool,
+	pub transaction_ref_no: Option<TransactionRefNo>,
+    #[serde(rename="NavigateURL")]
+	pub navigate_url: Option<String>,
+	pub error_code: Option<PoliErrorCode>,
+	pub error_message: Option<String>	
 }
-
-/*struct InitiateTransactionResponseVisitor {}
-
-impl<'de> Visitor<'de> for InitiateTransactionResponseVisitor {
-    type Value = InitiateTransactionResponse;
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "I dunno something amazing... I guess")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> {
-        unimplemented!()
-    }
-}
-
-
-impl<'de> Deserialize<'de> for InitiateTransactionResponse {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        deserializer.deserialize_string(InitiateTransactionResponseVisitor{})
-    }
-}*/
 
 impl InitiateTransactionResponse {
     pub fn get_transaction(mut self) 
-        -> Result<PoliTransactionResponse, Vec<InitiateTransactionError>> {
-        match (self.transaction, self.errors) {
-            (Some(tx), _) => Ok(tx),
-            (_, error) => Err(error)
+        -> Result<PoliTransactionResponse, InitiateTransactionError> {
+        if self.success {
+            match (self.navigate_url, self.transaction_ref_no) {
+                (Some(url), Some(reference)) => return Ok(PoliTransactionResponse {
+                    navigate_url: url,
+                    transaction_ref_no: reference
+                }),
+                _ => unimplemented!()
+            }
+        } else {
+            match (self.error_code, self.error_message) {
+                (Some(code), Some(msg)) => return Err(InitiateTransactionError {
+                    error_code: code,
+                    error_message: msg
+                }),
+                _ => unimplemented!()
+            }
         }
     }
 }
@@ -47,68 +39,46 @@ impl InitiateTransactionResponse {
 mod test {
     use payment::poli::*; 
     use domain::CurrencyCode;
+    use serde_json::*;
 
     #[test]
     fn test_response_deserializes() {
         let d: InitiateTransactionResponse = from_str(RESPONSE_EXAMPLE_SUCCESS).unwrap();
-        assert_eq!(d.transaction_status_code, Some(TransactionStatusCode::Initiated));
         let t = d.get_transaction().unwrap();
         assert_eq!(
-            "https://txn.apac.paywithpoli.com/?token=%2bXo3AxIuS8T%2fukpoUCZyXw%3d%3d", 
+            "https://txn.apac.paywithpoli.com/?Token=uo3K8YA7vCojXjA1yuQ3txqX4s26gQSh", 
             t.navigate_url
         );
         assert_eq!(
             t.transaction_ref_no.to_string(),
-            "996100000001"
-        );
-        assert_eq!(
-            t.transaction_token.to_string(),
-            "+Xo3AxIuS8T/ukpoUCZyXw=="
+            "996117408041"
         );
     }
 
     #[test]
     fn test_response_error_deserializes() {
-        let d: InitiateTransactionResponse = InitiateTransactionResponse {
-            errors: vec![
-                InitiateTransactionError {
-                    code: PoliErrorCode("1234".to_owned()),
-                    field: None,
-                    message: "Hello!".to_owned()
-                }
-            ],
-            transaction_status_code: None,
-            transaction: None
-        };
-        let mut buffo = Vec::new();
-        serialize(d, &mut buffo).unwrap();
-        println!("Poop {}", String::from_utf8(buffo).unwrap());
+        let d: InitiateTransactionResponse = from_str(RESPONSE_EXAMPLE_ERROR_1).unwrap();
+        let err = d.get_transaction().err().unwrap();
+        assert_eq!(5005, err.error_code.0);
+        assert_eq!("The certificate was bad", err.error_message);
     }
 
     const RESPONSE_EXAMPLE_SUCCESS: &'static str = r#"
-    <?xml version="1.0" encoding="utf-8"?>
-    <InitiateTransactionResponse xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contracts" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-        <Errors xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" />
-        <TransactionStatusCode>Initiated</TransactionStatusCode>
-        <Transaction xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" >
-            <dco:NavigateURL>https://txn.apac.paywithpoli.com/?token=%2bXo3AxIuS8T%2fukpoUCZyXw%3d%3d</dco:NavigateURL>
-            <dco:TransactionRefNo>996100000001</dco:TransactionRefNo>
-            <dco:TransactionToken>+Xo3AxIuS8T/ukpoUCZyXw==</dco:TransactionToken> 
-        </Transaction>
-    </InitiateTransactionResponse>
+	{
+		"Success": true,
+		"NavigateURL": "https://txn.apac.paywithpoli.com/?Token=uo3K8YA7vCojXjA1yuQ3txqX4s26gQSh",
+		"ErrorCode": 0,
+		"ErrorMessage": null,
+		"TransactionRefNo": "996117408041"
+	}
     "#;
 
-    const RESPONSE_EXAMPLE_ERROR: &'static str = r#"
-    <?xml version="1.0" encoding="utf-8"?>
-    <InitiateTransactionResponse xmlns="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.Contract s" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-    <Errors xmlns:dco="http://schemas.datacontract.org/2004/07/Centricom.POLi.Services.MerchantAPI.DCO" >
-        <dco:Error>
-            <dco:Code>1003</dco:Code>
-            <dco:Field />
-            <dco:Message>POLi is unable to continue with this payment. Please contact the Merchant for assistance.</dco:Message> 
-        </dco:Error>
-    </Errors>
-    </InitiateTransactionResponse>
+    const RESPONSE_EXAMPLE_ERROR_1: &'static str = r#"
+	{
+		"Success": false,
+		"ErrorCode": 5005,
+		"ErrorMessage": "The certificate was bad"
+	}
     "#;
 
     const RESPONSE_EXAMPLE_ERROR_NOFIELDS: &'static str = r#"
