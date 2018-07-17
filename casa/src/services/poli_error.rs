@@ -1,17 +1,22 @@
 use payment::poli::{InitiateTransactionError, PoliErrorCode};
 use db::{PostgresHelper, CambioError};
 use std::error::Error;
-use serde_xml_rs::Error as SerdeError;
 use hyper::Error as HyperError;
+use serde_json::error::Error as SerializeError;
 use postgres::GenericConnection;
 use domain::UserId;
 use std::fmt;
 use std::marker;
 
 #[derive(Debug)]
+struct PoliErrorInfo {
+    description: String
+}
+
+#[derive(Debug)]
 pub enum PoliError {
-    Request(Box<Error>),
-    Response(Box<Error>),
+    Request(PoliErrorInfo),
+    Response(PoliErrorInfo),
     PoliError(PoliErrorCode),
     InitTx(Vec<InitiateTransactionError>)
 }
@@ -43,15 +48,27 @@ impl From<Vec<InitiateTransactionError>> for PoliError {
     }
 }
 
-impl From<SerdeError> for PoliError {
-    fn from(e: SerdeError) -> Self {
-        PoliError::Request(Box::new(e))
+/*impl From<SerializeError> for PoliError {
+    fn from(e: SerializeError) -> Self {
+        PoliError::Request(PoliErrorInfo {
+            description: e.description()
+        })
+    }
+}*/
+
+impl From<SerializeError> for PoliError {
+    fn from(e: SerializeError) -> Self {
+        PoliError::Request(PoliErrorInfo {
+            description: e.description().to_owned()
+        })
     }
 }
 
 impl From<HyperError> for PoliError {
     fn from(e: HyperError) -> Self {
-        PoliError::Response(Box::new(e))
+        PoliError::Response(PoliErrorInfo {
+            description: e.description().to_owned()
+        })
     }
 }
 

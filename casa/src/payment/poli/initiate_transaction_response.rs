@@ -6,7 +6,7 @@ use payment::poli::{
 use serde::de::{Deserialize, Deserializer, Visitor};
 use std::fmt;
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all="PascalCase")]
 pub struct InitiateTransactionResponse {
     pub errors: Vec<InitiateTransactionError>,
@@ -46,13 +46,11 @@ impl InitiateTransactionResponse {
 
 mod test {
     use payment::poli::*; 
-    use serde_xml_rs::deserialize;
     use domain::CurrencyCode;
 
     #[test]
     fn test_response_deserializes() {
-        let d: InitiateTransactionResponse = 
-            deserialize(RESPONSE_EXAMPLE_SUCCESS.as_bytes()).unwrap();
+        let d: InitiateTransactionResponse = from_str(RESPONSE_EXAMPLE_SUCCESS).unwrap();
         assert_eq!(d.transaction_status_code, Some(TransactionStatusCode::Initiated));
         let t = d.get_transaction().unwrap();
         assert_eq!(
@@ -71,9 +69,20 @@ mod test {
 
     #[test]
     fn test_response_error_deserializes() {
-        let d: InitiateTransactionResponse = 
-            deserialize(RESPONSE_EXAMPLE_ERROR.as_bytes()).unwrap();
-        panic!("The stuff {:?}", d);
+        let d: InitiateTransactionResponse = InitiateTransactionResponse {
+            errors: vec![
+                InitiateTransactionError {
+                    code: PoliErrorCode("1234".to_owned()),
+                    field: None,
+                    message: "Hello!".to_owned()
+                }
+            ],
+            transaction_status_code: None,
+            transaction: None
+        };
+        let mut buffo = Vec::new();
+        serialize(d, &mut buffo).unwrap();
+        println!("Poop {}", String::from_utf8(buffo).unwrap());
     }
 
     const RESPONSE_EXAMPLE_SUCCESS: &'static str = r#"

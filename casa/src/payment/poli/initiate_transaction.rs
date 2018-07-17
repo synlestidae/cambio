@@ -38,12 +38,11 @@ impl InitiateTransaction {
 
 mod test {
 use payment::poli::*; 
-use serde_xml_rs::deserialize;
 use domain::CurrencyCode;
 
 #[test]
 fn test_request_deserializes() {
-    let d: InitiateTransaction = deserialize(REQUEST_EXAMPLE.as_bytes()).unwrap();
+    let d: InitiateTransaction = from_str(REQUEST_EXAMPLE.as_bytes()).unwrap();
     assert_eq!("MerchantPassword", d.authentication_code.0);
     assert_eq!("15.00", d.transaction.currency_amount.to_string());
     assert_eq!(CurrencyCode::NZD, d.transaction.currency_code);

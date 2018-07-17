@@ -5,7 +5,7 @@ use std::error::Error;
 use std::fmt;
 
 #[derive(Debug, Eq, PartialEq, Serialize)]
-pub struct PoliErrorCode(String);
+pub struct PoliErrorCode(pub String);
 
 impl PoliErrorCode {
     pub fn get_type(&self) -> Option<PoliErrorCodeType> {

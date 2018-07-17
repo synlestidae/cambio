@@ -2,9 +2,10 @@ use payment::poli::*;
 use domain::{User, PoliPaymentRequest};
 use hyper::client::{Client};
 use hyper::Url;
-use serde_xml_rs::{deserialize, serialize};
 use services::PoliError;
+use serde;
 use serde::{Serialize, Deserialize};
+use serde_json::{from_str, from_reader, to_string, to_vec};
 
 pub struct PoliService {
     poli_config: PoliConfig,
@@ -37,16 +38,15 @@ impl PoliService {
         self.make_request(&self.poli_config.get_transaction_url, get_transaction)
     }
 
-    fn make_request<'a, E: Serialize, T: Deserialize<'a>>(&self, url: &Url, obj: E) -> Result<T, PoliError> {
-        let mut buffer = Vec::new();
-        try!(serialize(&obj, &mut buffer));
-        let body: &[u8] = &buffer;
+    fn make_request<'a, E: Serialize, T>(&self, url: &Url, obj: E) -> Result<T, PoliError> where for<'de> T: serde::Deserialize<'de> {
+        //let mut buffer = Vec::new();
+        let body = try!(to_vec(&obj));
         let result = try!(Client::new()
             .post(&url.to_string())
-            .body(body)
+            .body(&body as &[u8])
             .send()
         );
-        let result_obj = try!(deserialize(result));
+        let result_obj = try!(from_reader(result));
         Ok(result_obj)
     }
 }
