@@ -67,7 +67,10 @@ impl<C: GenericConnection> PaymentApi<C> {
         // Retrieve the transaction from our DB and Poli 
         let poli_tx_result = poli_service.get_transaction(&nudge.token);
         let poli_tx = match poli_tx_result {
-            Ok(tx) => tx,
+            Ok(tx) => match tx.get_transaction() {
+                Ok(tx) => tx,
+                Err(_) => unimplemented!()
+            },
             Err(err) => {
                 //self.save_in_log(&mut conn, &None, &err);
                 return Err(err.into());
@@ -86,13 +89,6 @@ impl<C: GenericConnection> PaymentApi<C> {
         
         // TODO Deal with getting error from GetTransactionResponse
 
-        if let Some(err) = poli_tx.error_code {
-            //err.save_in_log(None, &mut conn);
-            conn.commit();
-            //return Err(err.into());
-            unimplemented!()
-        }
-
         if payment_request.payment_status != PaymentStatus::StartedWithPoli {
             return Err(CambioError::not_permitted(
                 "This payment cannot be nudged.", 
@@ -110,7 +106,7 @@ impl<C: GenericConnection> PaymentApi<C> {
             payment_request.payment_status = PaymentStatus::Unknown; 
             try!(payment_request.update(&mut conn));
             conn.commit();
-            unimplemented!();
+            unimplemented!()
         }
         // credited account already assured by nzd_wallet() logic
         // account may now be credited

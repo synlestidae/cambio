@@ -6,29 +6,29 @@ use chrono::prelude::*;
 #[derive(Deserialize)]
 #[serde(rename_all="PascalCase")]
 pub struct GetTransactionResponse {
-    #[serde(rename="TransactionRefNo")]
-    pub transaction_ref_no: TransactionRefNo,
-    #[serde(rename="CurrencyCode")]
-    pub currency_code: CurrencyCode,
-    #[serde(rename="CurrencyName")]
-    pub currency_name: String,
-    #[serde(rename="CountryCode")]
-    pub country_code: String,
-    #[serde(rename="CountryName")]
-    pub country_name: String,
-    #[serde(rename="PaymentAmount")]
-    pub payment_amount: Decimal,
-    #[serde(rename="AmountPaid")]
-    pub amount_paid: Decimal,
+    #[serde(rename="TransactionRefNo", default, with="empty_string_option")]
+    pub transaction_ref_no: Option<TransactionRefNo>,
+    #[serde(rename="CurrencyCode", default, with="empty_string_option")]
+    pub currency_code: Option<CurrencyCode>,
+    #[serde(rename="CurrencyName", default, with="empty_string_option")]
+    pub currency_name: Option<String>,
+    #[serde(rename="CountryCode", default, with="empty_string_option")]
+    pub country_code: Option<String>,
+    #[serde(rename="CountryName", default, with="empty_string_option")]
+    pub country_name: Option<String>,
+    #[serde(rename="PaymentAmount", default, with="empty_string_option")]
+    pub payment_amount: Option<Decimal>,
+    #[serde(rename="AmountPaid", default, with="empty_string_option")]
+    pub amount_paid: Option<Decimal>,
     #[serde(with = "poli_date_format", rename="EstablishedDateTime")]
     pub established_date_time: NaiveDateTime,
     #[serde(with = "poli_date_format", rename="StartDateTime")]
     pub start_date_time: NaiveDateTime,
     #[serde(with = "poli_date_format", rename="MerchantEstablishedDateTime")]
     pub merchant_established_date_time: NaiveDateTime,
-    #[serde(rename="MerchantReference")]
-    pub merchant_reference: MerchantRef,
-    #[serde(rename="TransactionStatusCode", with="empty_string_option")]
+    #[serde(rename="MerchantReference", default, with="empty_string_option")]
+    pub merchant_reference: Option<MerchantRef>,
+    #[serde(rename="TransactionStatusCode", default, with="empty_string_option")]
     pub transaction_status_code: Option<TransactionStatusCode>,
     #[serde(rename="BankReceipt", default, with="empty_string_option")]
     pub bank_receipt: Option<String>,
@@ -54,6 +54,32 @@ pub struct GetTransactionResponse {
     pub merchant_acct_suffix: Option<String>,
     #[serde(rename="MerchantAccountNumber", default, with="empty_string_option")]
     pub merchant_acct_number: Option<String>,
+}
+
+impl GetTransactionResponse {
+    pub fn get_transaction(&self) -> Result<RemoteTransaction, Option<RemoteTransactionError>> {
+        match (&self.transaction_ref_no, &self.currency_code, &self.payment_amount, &self.amount_paid, &self.transaction_status_code) {
+            (Some(ref tx_ref), Some(ref code), Some(ref amount), Some(ref paid), Some(ref status)) => {
+                return Ok(RemoteTransaction {
+                    transaction_ref_no: tx_ref.clone(),
+                    currency_code: code.clone(),
+                    payment_amount: amount.clone(),
+                    amount_paid: paid.clone(),
+                    transaction_status_code: status.clone()
+                });
+            },
+            _ => ()
+        };
+
+        Err(if let Some(error_code) = self.error_code {
+            Some(RemoteTransactionError {
+                error_code: error_code,
+                error_message: self.error_message.clone()
+            })
+        } else {
+            None
+        })
+    }
 }
 
 mod test {

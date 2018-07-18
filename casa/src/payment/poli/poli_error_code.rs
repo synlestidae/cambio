@@ -4,7 +4,7 @@ use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
 
-#[derive(Debug, Eq, PartialEq, Serialize)]
+#[derive(Debug, Eq, PartialEq, Serialize, Clone, Copy)]
 pub struct PoliErrorCode(pub u32);
 
 impl PoliErrorCode {

@@ -1,4 +1,6 @@
 mod authentication_code;
+mod remote_transaction;
+mod remote_transaction_error;
 mod poli_error_code;
 mod poli_error_code_type;
 mod error_vec;
@@ -40,3 +42,5 @@ pub use self::nudge::*;
 pub use self::error_vec::ErrorVec;
 pub use self::poli_error_code::*;
 pub use self::poli_error_code_type::*;
+pub use self::remote_transaction::*;
+pub use self::remote_transaction_error::*;
