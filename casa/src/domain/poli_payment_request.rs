@@ -12,7 +12,7 @@ pub struct PoliPaymentRequest {
     pub unique_code: Code,
     pub started_at: DateTime<Utc>, 
     pub payment_status: PaymentStatus, 
-    pub transaction_ref_no: Option<TransactionRefNo>
+    pub transaction_ref_no: Option<TransactionRefNo>,
 }
 
 impl PoliPaymentRequest {

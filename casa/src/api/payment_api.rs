@@ -109,7 +109,7 @@ impl<C: GenericConnection> PaymentApi<C> {
         try!(ledger_service.transfer_money(db, 
             poli_deduct_account, 
             user_wallet_account, 
-            payment_request.amount)
+            poli_tx.amount_paid)
         );
         unimplemented!()
     }

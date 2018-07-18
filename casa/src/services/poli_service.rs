@@ -1,6 +1,7 @@
 use payment::poli::*;
 use domain::{User, PoliPaymentRequest};
 use hyper::client::{Client};
+use hyper::header::{Headers, Authorization, Basic};
 use hyper::Url;
 use services::PoliError;
 use serde;
@@ -38,6 +39,7 @@ impl PoliService {
     fn get<'a, T>(&self, url: &Url) -> Result<T, PoliError> where for<'de> T: serde::Deserialize<'de> {
         let result = try!(Client::new()
             .get(&url.to_string())
+            .headers(self.get_headers())
             .send()
         );
         let result_obj = try!(from_reader(result));
@@ -48,10 +50,20 @@ impl PoliService {
         let body = try!(to_vec(&obj));
         let result = try!(Client::new()
             .post(&url.to_string())
+            .headers(self.get_headers())
             .body(&body as &[u8])
             .send()
         );
         let result_obj = try!(from_reader(result));
         Ok(result_obj)
+    }
+
+    fn get_headers(&self) -> Headers {
+        let mut headers = Headers::new();
+        headers.set(Authorization(Basic {
+            username: self.poli_config.merchant_code.to_string(),
+            password: Some(self.poli_config.authentication_code.to_string())
+        }));
+        headers
     }
 }
