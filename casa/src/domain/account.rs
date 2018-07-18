@@ -56,6 +56,17 @@ impl Account {
             account_role: AccountRole::System
         }
     }
+
+    pub fn is_for_deducting_payments(&self) -> bool {
+        self.account_business_type == AccountBusinessType::SystemFeesPaid &&
+            self.account_role == AccountRole::System
+    }
+
+    pub fn is_for_wallet(&self) -> bool {
+        self.account_business_type == AccountBusinessType::UserCashWallet &&
+            self.account_role == AccountRole::Primary
+    }
+
 }
 
 /*struct AccountRow {

@@ -20,3 +20,13 @@ impl fmt::Display for AccountRole {
         write!(f, "{}", string)
     }
 }
+
+impl AccountRole {
+    pub fn is_for_wallet(&self) -> bool {
+        self == &AccountRole::Primary
+    }
+
+    pub fn is_for_deducting_payments(&self) -> bool {
+        self == &AccountRole::Primary
+    }
+}

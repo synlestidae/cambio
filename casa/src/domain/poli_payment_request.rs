@@ -13,6 +13,8 @@ pub struct PoliPaymentRequest {
     pub started_at: DateTime<Utc>, 
     pub payment_status: PaymentStatus, 
     pub transaction_ref_no: Option<TransactionRefNo>,
+    #[column_name(amount_paid_cents)]
+    pub amount_paid: Decimal
 }
 
 impl PoliPaymentRequest {
@@ -24,7 +26,8 @@ impl PoliPaymentRequest {
             unique_code: Code::new(),
             started_at: Utc::now(),
             payment_status: PaymentStatus::StartedByUser,
-            transaction_ref_no: None
+            transaction_ref_no: None,
+            amount_paid: Decimal::from_dollars(0)
         }
     }
 }

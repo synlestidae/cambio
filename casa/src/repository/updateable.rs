@@ -73,11 +73,11 @@ impl Updateable for domain::PoliPaymentRequest {
         };
         const QUERY: &'static str = "
             UPDATE poli_payment_request 
-            SET payment_status = $2, transaction_ref_no = $3
+            SET payment_status = $2, transaction_ref_no = $3, amount_paid_cents = $4
             WHERE id = $1
         ";
         try!(db.execute(QUERY, &[
-            &self.id, &self.payment_status, &self.transaction_ref_no
+            &self.id, &self.payment_status, &self.transaction_ref_no, &self.amount_paid
         ]));
         id.get(db)
     }

@@ -60,7 +60,7 @@ impl<C: GenericConnection> PaymentApi<C> {
     }
 
     pub fn handle_nudge(&mut self, db: &mut C, nudge: &Nudge) 
-        -> Result<RequestPaymentResponse, CambioError> {
+        -> Result<(), CambioError> {
         let mut conn = try!(self.db.transaction());
         let poli_service = self.get_poli_service();
 
@@ -73,7 +73,7 @@ impl<C: GenericConnection> PaymentApi<C> {
                 return Err(err.into());
             }
         };
-        let payment_request = try!(nudge.token.get(&mut conn));
+        let mut payment_request = try!(nudge.token.get(&mut conn));
         let user: User = try!(payment_request.user_id.get(&mut conn));
         let owner_id = user.owner_id.unwrap();
         let account_set = try!(AccountSet::from(try!(owner_id.get_vec(&mut conn))));
@@ -83,10 +83,12 @@ impl<C: GenericConnection> PaymentApi<C> {
         // * PaymentRequest is marked as StartedWithPoli
         // * TransactionResponse has no errors
         // * TransactionResponse currency matches credit account currency
+        
+        // TODO Deal with getting error from GetTransactionResponse
 
         if let Some(err) = poli_tx.error_code {
-            //conn.commit();
-            //err.save_in_log(None, conn.connection());
+            //err.save_in_log(None, &mut conn);
+            conn.commit();
             //return Err(err.into());
             unimplemented!()
         }
@@ -99,19 +101,28 @@ impl<C: GenericConnection> PaymentApi<C> {
         }
 
         let mut ledger_service = LedgerService::new(); 
-        let poli_deduct_account: AccountId = try!(PaymentVendor::Poli.get(db));
-        let user_wallet_account = account_set.nzd_wallet();
+        let poli_deduct_account_id: AccountId = try!(PaymentVendor::Poli.get(&mut conn));
+        let user_wallet_account_id = account_set.nzd_wallet();
 
         // check deduct account has role System and business type SystemFeesPaid 
-        // check credited account has role Primary and business type UserCashWallet 
-
+        let poli_deduct_account = try!(poli_deduct_account_id.get(&mut conn));
+        if !poli_deduct_account.is_for_deducting_payments() {
+            payment_request.payment_status = PaymentStatus::Unknown; 
+            try!(payment_request.update(&mut conn));
+            conn.commit();
+            unimplemented!();
+        }
+        // credited account already assured by nzd_wallet() logic
         // account may now be credited
-        try!(ledger_service.transfer_money(db, 
-            poli_deduct_account, 
-            user_wallet_account, 
+        payment_request.amount_paid = payment_request.amount_paid + poli_tx.amount_paid;
+        payment_request.payment_status = PaymentStatus::Completed;
+        try!(payment_request.update(&mut conn));
+        try!(ledger_service.transfer_money(&mut conn, 
+            poli_deduct_account_id, 
+            user_wallet_account_id, 
             poli_tx.amount_paid)
         );
-        unimplemented!()
+        Ok(())
     }
 
     fn get_poli_service(&self) -> PoliService {
