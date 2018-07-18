@@ -3,6 +3,7 @@ use db::CambioError;
 use std::str::FromStr;
 use std::fmt;
 use serde::*;
+use serde_json::Value;
 use std;
 use postgres::types::{FromSql, ToSql, Type};
 use postgres::types::IsNull;
@@ -96,6 +97,10 @@ impl FromStr for Decimal {
                     _ => Err(())
                 }
             },
+            &[ref dollars] => match i64::from_str(dollars) {
+                Ok(d) => Ok(Self::from_cents(sign * ((d.abs() * 100)))),
+                _ => Err(())
+            },
             _ => Err(())
         }
     }
@@ -110,8 +115,12 @@ impl Serialize for Decimal {
 impl<'de> Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
         // TODO Unwrap is unnacceptable!
-        let currency_val = String::deserialize(deserializer).unwrap();
-        Ok(Self::from_str(&currency_val).unwrap())
+        let currency_val = try!(Value::deserialize(deserializer));
+        println!("Currency val {}", currency_val);
+        match Self::from_str(&currency_val.to_string()) {
+            Err(_) => unimplemented!("How do I handle this"),
+            Ok(val) => Ok(val)
+        }
     }
 }
 
