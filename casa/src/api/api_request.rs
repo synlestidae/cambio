@@ -1,6 +1,6 @@
 use api;
 use api::{AccountRequest, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest};
-use bodyparser;
+//use bodyparser;
 use db;
 use domain;
 use hyper::header::ContentType;
@@ -135,13 +135,21 @@ fn get_json_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::Api
 where
     for<'a> T: Deserialize<'a>,
 {
-    match request.get_ref::<bodyparser::Struct<T>>() {
-        Ok(&Some(ref body_obj)) => Ok(body_obj.clone()),
-        Ok(&None) => Err(api::ApiError::bad_format(
+    let mut bytes = Vec::new();
+    try!(request.body.read_to_end(&mut bytes));
+    if bytes.len() == 0 {
+        Err(api::ApiError::bad_format(
             "Body of HTTP request cannot be empty",
-        )),
-        Err(error) => Err(api::ApiError::bad_format(error.description())),
+        )) 
+    } else {
+        let val: T = serde_json::from_slice(&bytes)?;
+        Ok(val)
     }
+    /*match request.get_ref::<bodyparser::Struct<T>>() {
+        Ok(&Some(ref body_obj)) => Ok(body_obj.clone()),
+        Ok(&None) => ,
+        Err(error) => Err(api::ApiError::bad_format(error.description())),
+    }*/
 }
 
 fn get_form_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError>
