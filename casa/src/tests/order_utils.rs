@@ -10,6 +10,8 @@ use tests::get_db_connection;
 use uuid;
 use web3;
 
+pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
+
 pub fn get_user(email: &str) -> domain::User {
     Readable::get(email, &mut get_db_connection()).unwrap()
 }
@@ -27,7 +29,7 @@ pub fn quick_order(
     use std::env;
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
-    let mut user_service = services::UserService::new("../eth_test/data/geth.ipc");
+    let mut user_service = services::UserService::new(WEB3_ADDRESS);
 
     let user1 = user_service
         .register_user(&mut db, buyer, "excellent123", &fake_details())
@@ -94,7 +96,7 @@ pub fn quick_credit_szabo(who: &str, how_much: u64) {
     let account: domain::EthAccount = unimplemented!();//eth_account_repo.read(&clause).unwrap().pop().unwrap();
     let args = &[
         "../moneda/index.js",
-        "../eth_test/data/geth.ipc",
+        IPC_ADDRESS,
         "0xA990F82d33Fd19C3872dc12c588A66224b9330A6",
         &format!("0x{:#x}", account.address),
         &format!("0x{:#x}", wei),

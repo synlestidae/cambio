@@ -112,7 +112,10 @@ impl UserService {
 
         println!("Creating eth accounts");
         let account = match self.create_eth_accounts(&mut db_tx, email_address, eth_password) {
-            Ok(a) => a,
+            Ok(a) => {
+                println!("Lovely... your accounts are here");
+                a
+            },
             Err(err) => {
                 return Err(err);
                 println!("Err! {:?}", err);
@@ -140,7 +143,7 @@ impl UserService {
         println!("Eth account created. Saving...");
         let account_result = try!(account.create(db));
         println!("Account with address {:?} created", account.address);
-        Ok(account_result)
+        return Ok(account_result);
     }
 
     pub fn log_user_in<T: GenericConnection>(
