@@ -3,16 +3,16 @@ use bcrypt::hash;
 use crypto;
 use crypto::digest::Digest;
 use db::{TryFromRow, TryFromRowError};
-use domain::{DecryptError, Id, EthAccountId, OwnerId};
+use domain::{DecryptError, EthAccountId, Id, OwnerId};
 use openssl::aes;
 use openssl::symm;
 use postgres;
+use postgres::rows::Row;
 use rand;
 use rand::{OsRng, Rng};
 use std;
 use std::iter;
 use web3::types::{H160, Transaction, U256};
-use postgres::rows::Row;
 
 const BCRYPT_COST: u32 = 8;
 
@@ -41,7 +41,7 @@ impl TryFromRow for EthAccount {
             id: eth.id,
             address: H160(bytes),
             password_hash_bcrypt: eth.password_hash_bcrypt,
-            owner_id: eth.owner_id
+            owner_id: eth.owner_id,
         })
     }
 }

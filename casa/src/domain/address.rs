@@ -1,8 +1,8 @@
+use db::TryFromRow;
+use db::TryFromRowError;
 use domain::Id;
 use postgres;
 use postgres::rows::Row;
-use db::TryFromRow;
-use db::TryFromRowError;
 
 #[derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
 pub struct Address {
@@ -14,5 +14,5 @@ pub struct Address {
     pub address_line_5: Option<String>,
     pub address_line_6: Option<String>,
     pub address_line_7: Option<String>,
-    pub country_name: String
+    pub country_name: String,
 }

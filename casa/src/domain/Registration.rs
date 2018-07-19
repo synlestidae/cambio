@@ -1,14 +1,14 @@
-use domain::{RegistrationId, IdentifierCode};
 use chrono::prelude::*;
 use chrono::prelude::{DateTime, Utc};
 use db::{TryFromRow, TryFromRowError};
+use domain::{IdentifierCode, RegistrationId};
 use postgres;
 use postgres::rows::Row;
 use rand;
 
-use rand::Rng;
-use bcrypt::{hash};
+use bcrypt::hash;
 use rand::distributions::Alphanumeric;
+use rand::Rng;
 use std::iter;
 
 #[derive(TryFromRow, Debug, Clone)]
@@ -16,10 +16,10 @@ pub struct Registration {
     pub id: Option<RegistrationId>,
     pub email_address: String,
     pub password_hash: String,
-    pub confirmation_code: String, 
-    pub identifier_code: IdentifierCode, 
+    pub confirmation_code: String,
+    pub identifier_code: IdentifierCode,
     pub requested_at: NaiveDateTime,
-    pub confirmed_at: Option<NaiveDateTime>
+    pub confirmed_at: Option<NaiveDateTime>,
 }
 
 impl Registration {
@@ -33,7 +33,7 @@ impl Registration {
             confirmation_code: random_5_digit_code(),
             identifier_code: random_identifier_code(),
             requested_at: Utc::now().naive_utc(),
-            confirmed_at: None
+            confirmed_at: None,
         }
     }
 
@@ -44,10 +44,12 @@ impl Registration {
 
 fn random_identifier_code() -> IdentifierCode {
     let mut rng = rand::thread_rng();
-    IdentifierCode(iter::repeat(())
-        .map(|()| rng.sample(Alphanumeric))
-        .take(20)
-        .collect())
+    IdentifierCode(
+        iter::repeat(())
+            .map(|()| rng.sample(Alphanumeric))
+            .take(20)
+            .collect(),
+    )
 }
 
 fn random_5_digit_code() -> String {

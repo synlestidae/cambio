@@ -6,7 +6,7 @@ use domain::{OwnerId, UserId};
 use postgres::rows::Row;
 use std;
 
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 
 const BCRYPT_COST: u32 = 8;
 
@@ -86,7 +86,8 @@ impl TryFromRow for User {
 // This is what #[derive(Serialize)] would generate.
 impl Serialize for User {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut s = serializer.serialize_map(Some(2))?;
         s.serialize_key("email_address")?;
@@ -96,4 +97,3 @@ impl Serialize for User {
         s.end()
     }
 }
-

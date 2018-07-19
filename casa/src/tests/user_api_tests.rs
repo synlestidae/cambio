@@ -1,14 +1,14 @@
 use api;
-use iron::prelude::*;
-use iron::{Handler, Headers};
-use iron::status::Status;
-use iron_test::{request, response};
-use tests::test_utils::*;
-use serde_json;
-use repository::Readable;
 use domain;
-use std::sync::mpsc::channel;
+use iron::prelude::*;
+use iron::status::Status;
+use iron::{Handler, Headers};
+use iron_test::{request, response};
+use repository::Readable;
 use serde::Serialize;
+use serde_json;
+use std::sync::mpsc::channel;
+use tests::test_utils::*;
 
 #[test]
 fn test_registration_successful() {
@@ -20,10 +20,12 @@ fn test_registration_successful() {
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
     let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
-    let response = request::post("http://localhost:3000/users/register", 
-        headers, 
+    let response = request::post(
+        "http://localhost:3000/users/register",
+        headers,
         new_user,
-        &handler).unwrap();
+        &handler,
+    ).unwrap();
     let result_body = response::extract_body_to_string(response);
     let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
     assert_eq!("mate@coolcat.com", reg_result.email_address);
@@ -43,10 +45,12 @@ fn test_creates_new_user_and_password_works() {
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
     let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
-    let register_response = request::post("http://localhost:3000/users/register", 
-        headers.clone(), 
+    let register_response = request::post(
+        "http://localhost:3000/users/register",
+        headers.clone(),
         new_user,
-        &handler).unwrap();
+        &handler,
+    ).unwrap();
 
     let result_body = response::extract_body_to_string(register_response);
     let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
@@ -56,7 +60,7 @@ fn test_creates_new_user_and_password_works() {
 
     let confirmation = api::RegistrationConfirm {
         email_address: "pat@coolcat.com".to_owned(),
-        confirmation_code: registration.confirmation_code,    
+        confirmation_code: registration.confirmation_code,
         identifier_code: registration.identifier_code,
         personal_details: api::PersonalDetails {
             first_names: "John Bambam Windsor".to_owned(),
@@ -68,23 +72,26 @@ fn test_creates_new_user_and_password_works() {
             country: "NEW ZEALAND".to_owned(),
             dob: dob,
             id_type: "Passport_NZ".to_owned(),
-            id_number: "LM123456".to_owned()
+            id_number: "LM123456".to_owned(),
         },
-        eth_account_password: "ethpassword123".to_owned()
+        eth_account_password: "ethpassword123".to_owned(),
     };
 
-    request::post("http://localhost:3000/users/confirm", 
-        headers.clone(), 
+    request::post(
+        "http://localhost:3000/users/confirm",
+        headers.clone(),
         &serde_json::to_string(&confirmation).unwrap(),
-        &handler).unwrap();
+        &handler,
+    ).unwrap();
 
-    let login_response = request::post("http://localhost:3000/users/log_in", 
-        headers.clone(), 
+    let login_response = request::post(
+        "http://localhost:3000/users/log_in",
+        headers.clone(),
         r#"{
             "email_address": "pat@coolcat.com",
             "password": "supersecret1234"
         }"#,
-        &handler).unwrap();
+        &handler,
+    ).unwrap();
     assert_eq!(Status::Ok, login_response.status.unwrap());
 }
-

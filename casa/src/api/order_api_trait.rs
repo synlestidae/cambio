@@ -1,6 +1,6 @@
-use iron;
 use api;
 use domain;
+use iron;
 
 pub trait OrderApiTrait {
     fn get_active_orders(&mut self) -> iron::Response;

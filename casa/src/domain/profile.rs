@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
-use domain;
 use db::TryFromRow;
 use db::TryFromRowError;
+use domain;
 use postgres::rows::Row;
 
 #[derive(Debug, Clone)]
@@ -12,5 +12,5 @@ pub struct Profile {
     pub family_names: String,
     pub date_of_birth: NaiveDate,
     pub address: domain::Address,
-    pub personal_identity: Option<domain::PersonalIdentity>
+    pub personal_identity: Option<domain::PersonalIdentity>,
 }

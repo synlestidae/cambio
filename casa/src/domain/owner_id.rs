@@ -1,6 +1,6 @@
 use domain::Id;
-use postgres::types::{FromSql, ToSql, Type};
 use postgres::types::IsNull;
+use postgres::types::{FromSql, ToSql, Type};
 use std;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, SqlId)]
@@ -11,5 +11,3 @@ impl Into<Id> for OwnerId {
         Id(self.0)
     }
 }
-
-

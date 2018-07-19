@@ -3,7 +3,7 @@ use std::fmt;
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum CurrencyCode {
     NZD,
-    AUD
+    AUD,
 }
 
 impl fmt::Display for CurrencyCode {

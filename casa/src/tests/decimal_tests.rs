@@ -22,14 +22,14 @@ fn test_subtraction() {
 
 fn run_add_test(lhs: &str, rhs: &str, expected: &str) {
     assert_eq!(
-        Decimal::from_str(lhs).unwrap() + Decimal::from_str(rhs).unwrap(), 
+        Decimal::from_str(lhs).unwrap() + Decimal::from_str(rhs).unwrap(),
         Decimal::from_str(expected).unwrap()
     );
 }
 
 fn run_sub_test(lhs: &str, rhs: &str, expected: &str) {
     assert_eq!(
-        Decimal::from_str(lhs).unwrap() - Decimal::from_str(rhs).unwrap(), 
+        Decimal::from_str(lhs).unwrap() - Decimal::from_str(rhs).unwrap(),
         Decimal::from_str(expected).unwrap()
     );
 }

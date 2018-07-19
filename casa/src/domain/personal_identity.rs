@@ -1,6 +1,6 @@
 use db::{get_value, get_value_option};
 use db::{TryFromRow, TryFromRowError};
-use domain::{Id, UserId, PhotoStatus};
+use domain::{Id, PhotoStatus, UserId};
 use postgres;
 use postgres::rows::Row;
 

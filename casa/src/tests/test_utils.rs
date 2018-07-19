@@ -1,23 +1,23 @@
 use api;
-use postgres;
-use jobs::JobRequest;
-use db::ConnectionSource;
-use std::sync::mpsc::{Receiver, Sender};
-use chrono::NaiveDate;
-use iron::status::Status;
+use api::PersonalDetails;
 use bcrypt::hash;
+use chrono::NaiveDate;
+use db::ConnectionSource;
 use db::{PostgresHelperImpl, PostgresSource};
 use iron::headers::Headers;
+use iron::status::Status;
 use iron_test::{request, response};
+use jobs::JobRequest;
+use postgres;
 use postgres::{Connection, TlsMode};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_json;
 use services::UserService;
+use std;
 use std::panic::catch_unwind;
 use std::process::Command;
 use std::sync::mpsc::channel;
-use std;
-use api::PersonalDetails;
+use std::sync::mpsc::{Receiver, Sender};
 
 #[allow(dead_code)]
 pub fn setup() {
@@ -68,12 +68,12 @@ pub fn get_db_helper() -> PostgresHelperImpl {
 
 pub fn log_in(username: &str, password: &str) -> String {
     let mut db = get_db_connection();
-    let mut user_service = UserService::new("../eth_test/data/geth.ipc"); 
+    let mut user_service = UserService::new("../eth_test/data/geth.ipc");
     println!("Creating user {}", username);
     let user_result = user_service.create_user(
         &mut db,
-        username, 
-        &hash(password, 6).unwrap(), 
+        username,
+        &hash(password, 6).unwrap(),
         &PersonalDetails {
             first_names: "Jerry".to_string(),
             family_name: "Jackson".to_string(),
@@ -84,16 +84,25 @@ pub fn log_in(username: &str, password: &str) -> String {
             country: "NEW ZEALAND".to_string(),
             dob: NaiveDate::from_ymd(1990, 1, 1),
             id_type: "NZ_Passport".to_string(),
-            id_number: "LM008381".to_string()
+            id_number: "LM008381".to_string(),
         },
-        password
+        password,
     );
     println!("Welp, got a result {:?}", user_result);
     user_result.unwrap();
-    user_service.log_user_in(&mut db, username, password.to_owned()).unwrap().session_token.0
+    user_service
+        .log_user_in(&mut db, username, password.to_owned())
+        .unwrap()
+        .session_token
+        .0
 }
 
-pub fn post_channel<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, tx: Sender<JobRequest>) -> String {
+pub fn post_channel<'a, E: Serialize>(
+    url: &str,
+    token: Option<&str>,
+    obj: Option<E>,
+    tx: Sender<JobRequest>,
+) -> String {
     make_request(url, token, obj, false, tx)
 }
 
@@ -107,7 +116,13 @@ pub fn get<'a, E: Serialize>(url: &str, token: Option<&str>) -> String {
     make_request(url, token, None as Option<()>, true, tx)
 }
 
-fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>, is_get: bool, tx: Sender<JobRequest>) -> String {
+fn make_request<'a, E: Serialize>(
+    url: &str,
+    token: Option<&str>,
+    obj: Option<E>,
+    is_get: bool,
+    tx: Sender<JobRequest>,
+) -> String {
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     if let Some(t) = token {
@@ -115,14 +130,14 @@ fn make_request<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>
     }
     let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
     let response = if is_get {
-        request::get(url, 
-            headers.clone(), 
-            &handler).unwrap()
+        request::get(url, headers.clone(), &handler).unwrap()
     } else {
-        request::post(url, 
-            headers.clone(), 
+        request::post(
+            url,
+            headers.clone(),
             &serde_json::to_string(&obj).unwrap(),
-            &handler).unwrap()
+            &handler,
+        ).unwrap()
     };
 
     let status = response.status.clone();

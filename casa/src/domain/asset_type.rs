@@ -27,7 +27,7 @@ impl ToString for AssetType {
         let asset_type_str = match self {
             &AssetType::NZD => "nzd",
             &AssetType::ETH => "eth_wei",
-            &AssetType::ETHSzabo => "eth_szabo"
+            &AssetType::ETHSzabo => "eth_szabo",
         };
         asset_type_str.to_owned()
     }

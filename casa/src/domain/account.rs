@@ -1,7 +1,7 @@
 use db::{TryFromRow, TryFromRowError};
 use domain::{
-    AccountBusinessType, AccountRole, AccountStatus, AccountType, AssetType, AccountId, OwnerId,
-    CurrencyCode,
+    AccountBusinessType, AccountId, AccountRole, AccountStatus, AccountType, AssetType,
+    CurrencyCode, OwnerId,
 };
 use postgres;
 use postgres::rows::Row;
@@ -41,7 +41,7 @@ impl Account {
             account_status: AccountStatus::Active,
             account_type: AccountType::Liability,
             account_business_type: AccountBusinessType::UserCashWallet,
-            account_role: AccountRole::Primary
+            account_role: AccountRole::Primary,
         }
     }
 
@@ -53,20 +53,19 @@ impl Account {
             account_status: AccountStatus::Active,
             account_type: AccountType::Liability,
             account_business_type: AccountBusinessType::OrderPaymentHold,
-            account_role: AccountRole::System
+            account_role: AccountRole::System,
         }
     }
 
     pub fn is_for_deducting_payments(&self) -> bool {
-        self.account_business_type == AccountBusinessType::SystemFeesPaid &&
-            self.account_role == AccountRole::System
+        self.account_business_type == AccountBusinessType::SystemFeesPaid
+            && self.account_role == AccountRole::System
     }
 
     pub fn is_for_wallet(&self) -> bool {
-        self.account_business_type == AccountBusinessType::UserCashWallet &&
-            self.account_role == AccountRole::Primary
+        self.account_business_type == AccountBusinessType::UserCashWallet
+            && self.account_role == AccountRole::Primary
     }
-
 }
 
 /*struct AccountRow {

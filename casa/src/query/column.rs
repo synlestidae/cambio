@@ -3,7 +3,7 @@ use query::Field;
 pub enum Column {
     Column(Field),
     ColumnAs(Field, Field),
-    All
+    All,
 }
 
 impl Column {

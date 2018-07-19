@@ -3,15 +3,15 @@ use db::CambioError;
 use db::PostgresHelper;
 use db::PostgresHelperImpl;
 use db::{TryFromRow, TryFromRowError};
-use query::Selectable;
 use domain;
+use payment;
 use postgres;
+use postgres::GenericConnection;
+use query::Selectable;
 use repositories;
 use repository;
 use repository::RepoRead;
 use repository::UserClause;
-use postgres::GenericConnection;
-use payment;
 
 // suppose I just want an easy way to retrieve the owner id from the user
 // then i implement retrievable where the Item is a User, the c
@@ -80,7 +80,7 @@ impl Readable<domain::Order> for domain::OwnerId {
     }
 }
 
-impl Readable<domain::Order> for domain::All{
+impl Readable<domain::Order> for domain::All {
     fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Order>, CambioError> {
         const SELECT_ALL: &'static str = "
             SELECT *, orders.id AS order_id
@@ -93,7 +93,10 @@ impl Readable<domain::Order> for domain::All{
 }
 
 impl Readable<domain::Session> for domain::SessionToken {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Session>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Session>, CambioError> {
         const SELECT_BY_TOKEN: &'static str = "
             SELECT user_session.id AS session_id, session_info.*, users.email_address, users.id as user_id
             FROM user_session
@@ -118,7 +121,10 @@ impl Readable<domain::User> for domain::OwnerId {
 }
 
 impl Readable<domain::EthAccount> for domain::OwnerId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::EthAccount>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::EthAccount>, CambioError> {
         const SELECT_BY_OWNER: &'static str = "
             SELECT *
             FROM ethereum_account_details
@@ -128,7 +134,10 @@ impl Readable<domain::EthAccount> for domain::OwnerId {
 }
 
 impl Readable<domain::Account> for domain::OwnerId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Account>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Account>, CambioError> {
         const SELECT_BY_ID: &'static str = "
             SELECT *, account.id as account_id, account.asset_type as account_asset_type
             FROM account 
@@ -138,7 +147,10 @@ impl Readable<domain::Account> for domain::OwnerId {
 }
 
 impl Readable<domain::Account> for domain::AccountId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Account>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Account>, CambioError> {
         const SELECT_BY_ID: &'static str = "
             SELECT *, account.id as account_id, account.asset_type as account_asset_type
             FROM account 
@@ -148,13 +160,19 @@ impl Readable<domain::Account> for domain::AccountId {
 }
 
 impl Readable<domain::EthAccount> for domain::EthAccountId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::EthAccount>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::EthAccount>, CambioError> {
         const SELECT_BY_ID: &'static str = "SELECT * FROM ethereum_account_details WHERE id = $1";
         PostgresHelperImpl::query(db, SELECT_BY_ID, &[self])
     }
 }
 
-impl<E> Readable<E> for Selectable<E> where E: TryFromRow {
+impl<E> Readable<E> for Selectable<E>
+where
+    E: TryFromRow,
+{
     fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<E>, CambioError> {
         let sql = self.get_specifier().get_sql_query();
         PostgresHelperImpl::query(db, &sql, &[])
@@ -162,14 +180,17 @@ impl<E> Readable<E> for Selectable<E> where E: TryFromRow {
 }
 
 impl Readable<domain::OrderSettlement> for domain::OrderId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
         let not_found = Err(CambioError::not_found_search(
             "Item could not be found.",
             "No results for query.",
         ));
         const SQL: &'static str = "SELECT id 
             FROM order_settlement 
-            WHERE buying_crypto_id = $1 OR buying_fiat_id = $1"; 
+            WHERE buying_crypto_id = $1 OR buying_fiat_id = $1";
         let rows = try!(db.query(SQL, &[&self]));
         if rows.is_empty() {
             return not_found;
@@ -178,7 +199,10 @@ impl Readable<domain::OrderSettlement> for domain::OrderId {
         let id: Option<domain::OrderSettlementId> = row.get("id");
         match id {
             Some(s_id) => s_id.get_vec(db),
-            None => Err(CambioError::format_obj("Failed to load settlement from DB", "Settlement query has no ID field"))
+            None => Err(CambioError::format_obj(
+                "Failed to load settlement from DB",
+                "Settlement query has no ID field",
+            )),
         }
     }
 }
@@ -195,8 +219,15 @@ struct SettlementRow {
 }
 
 impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::OrderSettlement>, CambioError> {
-        let orders: Vec<SettlementRow> = try!(PostgresHelperImpl::query(db, "SELECT * FROM order_settlement WHERE id = $1", &[&self]));
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+        let orders: Vec<SettlementRow> = try!(PostgresHelperImpl::query(
+            db,
+            "SELECT * FROM order_settlement WHERE id = $1",
+            &[&self]
+        ));
         let mut settlements = Vec::new();
         for o in orders.into_iter() {
             let buy = try!(o.buying_crypto_id.get(db));
@@ -251,7 +282,10 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
 }
 
 impl Readable<domain::Registration> for domain::RegistrationId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Registration>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Registration>, CambioError> {
         const SELECT_ID: &'static str = "
             SELECT * FROM registration WHERE id = $1
         ";
@@ -260,7 +294,10 @@ impl Readable<domain::Registration> for domain::RegistrationId {
 }
 
 impl Readable<domain::Registration> for domain::IdentifierCode {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Registration>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Registration>, CambioError> {
         const SELECT_ID: &'static str = "
             SELECT * FROM registration WHERE identifier_code = $1
         ";
@@ -268,24 +305,29 @@ impl Readable<domain::Registration> for domain::IdentifierCode {
     }
 }
 
-
 impl Readable<domain::Profile> for domain::ProfileId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
-        const SELECT_PROF: &'static str = 
-            "SELECT *, users.id as user_id 
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Profile>, CambioError> {
+        const SELECT_PROF: &'static str = "SELECT *, users.id as user_id 
             FROM personal_info 
             JOIN users ON personal_info.user_id = users.id 
             WHERE personal_info.id = $1";
-        let id: Option<domain::UserId> = try!(db.query(SELECT_PROF, &[&self])).get(0).get("user_id");
+        let id: Option<domain::UserId> =
+            try!(db.query(SELECT_PROF, &[&self])).get(0).get("user_id");
         match id {
             Some(id) => id.get_vec(db),
-            None => Err(CambioError::missing_field("Profile", "user_id"))
+            None => Err(CambioError::missing_field("Profile", "user_id")),
         }
     }
 }
 
 impl Readable<domain::Profile> for domain::UserId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Profile>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Profile>, CambioError> {
         const SELECT_ID: &'static str = "
             SELECT * 
             FROM personal_info  
@@ -298,30 +340,29 @@ impl Readable<domain::Profile> for domain::UserId {
         for row in try!(db.query(SELECT_ID, &[self])).into_iter() {
             let date_of_birth: NaiveDate = match row.get("date_of_birth") {
                 Some(d) => d,
-                None => return Err(CambioError::missing_field("Profile", "date_of_birth"))
+                None => return Err(CambioError::missing_field("Profile", "date_of_birth")),
             };
             let personal_identity_id: Option<domain::Id> = row.get("personal_identity_id");
             let personal_identity: Option<domain::PersonalIdentity> = match personal_identity_id {
                 Some(_) => Some(try!(domain::PersonalIdentity::try_from_row(&row))),
-                None => None
+                None => None,
             };
-            let address: domain::Address= 
-                try!(domain::Address::try_from_row(&row));
+            let address: domain::Address = try!(domain::Address::try_from_row(&row));
             let given_names: String = match row.get("given_names") {
                 Some(n) => n,
-                None => return Err(CambioError::missing_field("Profile", "given_names"))
+                None => return Err(CambioError::missing_field("Profile", "given_names")),
             };
             let family_names: String = match row.get("family_names") {
                 Some(n) => n,
-                None => return Err(CambioError::missing_field("Profile", "family_names"))
+                None => return Err(CambioError::missing_field("Profile", "family_names")),
             };
             let id: domain::ProfileId = match row.get("id") {
                 Some(id) => id,
-                None => return Err(CambioError::missing_field("Profile", "id"))
+                None => return Err(CambioError::missing_field("Profile", "id")),
             };
             let user_id: domain::UserId = match row.get("user_id") {
                 Some(uid) => uid,
-                None => return Err(CambioError::missing_field("Profile", "user_id"))
+                None => return Err(CambioError::missing_field("Profile", "user_id")),
             };
             result.push(domain::Profile {
                 id: Some(id),
@@ -331,16 +372,18 @@ impl Readable<domain::Profile> for domain::UserId {
                 date_of_birth: date_of_birth,
                 //contact_details: contact_details,
                 address: address,
-                personal_identity: personal_identity
+                personal_identity: personal_identity,
             });
         }
         Ok(result)
     }
 }
 
-
 impl Readable<domain::Address> for domain::Id {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::Address>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Address>, CambioError> {
         const SELECT_ADDRESS: &'static str = "
             SELECT * FROM address WHERE id = $1
         ";
@@ -349,7 +392,10 @@ impl Readable<domain::Address> for domain::Id {
 }
 
 impl Readable<domain::PersonalIdentity> for domain::Id {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::PersonalIdentity>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::PersonalIdentity>, CambioError> {
         const SELECT_ADDRESS: &'static str = "
             SELECT * FROM personal_identity where id = $1
         ";
@@ -358,7 +404,10 @@ impl Readable<domain::PersonalIdentity> for domain::Id {
 }
 
 impl Readable<domain::PoliPaymentRequest> for domain::PoliPaymentRequestId {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::PoliPaymentRequest>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::PoliPaymentRequest>, CambioError> {
         const SELECT_ADDRESS: &'static str = "
             SELECT * FROM poli_payment_request where id = $1
         ";
@@ -367,7 +416,10 @@ impl Readable<domain::PoliPaymentRequest> for domain::PoliPaymentRequestId {
 }
 
 impl Readable<domain::PoliPaymentRequest> for payment::poli::TransactionToken {
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<domain::PoliPaymentRequest>, CambioError> {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::PoliPaymentRequest>, CambioError> {
         const SELECT_ADDRESS: &'static str = "
             SELECT * FROM poli_payment_request where transaction_token = $1
         ";
@@ -376,12 +428,15 @@ impl Readable<domain::PoliPaymentRequest> for payment::poli::TransactionToken {
 }
 
 impl Readable<domain::AccountId> for domain::PaymentVendor {
-    fn get_vec<T: GenericConnection>(&self, db: &mut T) -> Result<Vec<domain::AccountId>, CambioError> {
+    fn get_vec<T: GenericConnection>(
+        &self,
+        db: &mut T,
+    ) -> Result<Vec<domain::AccountId>, CambioError> {
         const SQL: &'static str = "SELECT intake_account FROM vendor WHERE name = $1";
         let err = Err(CambioError::not_found_search(
             "Could not process payment vendor.",
-            "Payment vendor not in DB")
-        );
+            "Payment vendor not in DB",
+        ));
         let result = try!(db.query(SQL, &[&self]));
         if result.len() < 1 {
             return err;

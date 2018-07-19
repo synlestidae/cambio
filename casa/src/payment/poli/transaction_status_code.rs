@@ -9,5 +9,5 @@ pub enum TransactionStatusCode {
     Cancelled,
     Failed,
     ReceiptUnverified,
-    TimedOut
+    TimedOut,
 }

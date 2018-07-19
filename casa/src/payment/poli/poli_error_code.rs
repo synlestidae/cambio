@@ -1,8 +1,8 @@
 use payment::poli::PoliErrorCodeType;
 use serde::{Deserialize, Deserializer};
-use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
+use std::str::FromStr;
 
 #[derive(Debug, Eq, PartialEq, Serialize, Clone, Copy)]
 pub struct PoliErrorCode(pub u32);
@@ -16,7 +16,11 @@ impl PoliErrorCode {
             PoliErrorCodeType::PoliTransactionAbort
         } else if 3001 <= val && val <= 3030 {
             PoliErrorCodeType::PoliTransactionPageAbort
-        } else if (5001 <= val && val <= 5002) || val == 5004 || (5006 <= val && val <= 5007) || (5010 <= val && val <= 5026) {
+        } else if (5001 <= val && val <= 5002)
+            || val == 5004
+            || (5006 <= val && val <= 5007)
+            || (5010 <= val && val <= 5026)
+        {
             PoliErrorCodeType::VectorError
         } else if val == 2028 || val == 5003 || (5008 <= val && val <= 5009) {
             PoliErrorCodeType::InvalidCertificate
@@ -54,7 +58,10 @@ impl Error for PoliErrorCode {
 }
 
 impl<'de> Deserialize<'de> for PoliErrorCode {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let data = try!(u32::deserialize(deserializer));
         Ok(PoliErrorCode(data))
     }

@@ -23,7 +23,7 @@ pub struct Order {
     pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
     pub status: OrderStatus,
-    pub max_wei: Option<U256>
+    pub max_wei: Option<U256>,
 }
 
 impl Order {
@@ -41,7 +41,7 @@ impl Order {
             buy_asset_type: domain::AssetType::ETH,
             expires_at: expiry,
             status: domain::OrderStatus::Active,
-            max_wei: None
+            max_wei: None,
         }
     }
 
@@ -59,16 +59,15 @@ impl Order {
             buy_asset_type: domain::AssetType::NZD,
             expires_at: expiry,
             status: domain::OrderStatus::Active,
-            max_wei: None
+            max_wei: None,
         }
     }
 
     pub fn is_fair(&self, other: &Order) -> bool {
-        return 
-            self.sell_asset_type == other.buy_asset_type && 
-            self.buy_asset_type == other.sell_asset_type && 
-            self.sell_asset_units == other.buy_asset_units && 
-            self.buy_asset_units == other.sell_asset_units;
+        return self.sell_asset_type == other.buy_asset_type
+            && self.buy_asset_type == other.sell_asset_type
+            && self.sell_asset_units == other.buy_asset_units
+            && self.buy_asset_units == other.sell_asset_units;
     }
 
     pub fn is_expired(&self) -> bool {
@@ -79,7 +78,6 @@ impl Order {
         !self.is_expired() && self.status == domain::OrderStatus::Active
     }
 }
-
 
 #[derive(TryFromRow)]
 struct OrderRow {
@@ -93,18 +91,17 @@ struct OrderRow {
     pub buy_asset_units: i64,
     pub expires_at: DateTime<Utc>,
     pub status: OrderStatus,
-    pub max_wei: Option<Vec<u8>>
+    pub max_wei: Option<Vec<u8>>,
 }
 
 impl TryFromRow for Order {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let order_row: OrderRow = try!(OrderRow::try_from_row(row));
-        let wei: Option<U256> = order_row.max_wei
-            .map(|w| {
-                let mut array: [u8; 32] = [0; 32];
-                array.copy_from_slice(&w);
-                U256::from(array)
-            });    
+        let wei: Option<U256> = order_row.max_wei.map(|w| {
+            let mut array: [u8; 32] = [0; 32];
+            array.copy_from_slice(&w);
+            U256::from(array)
+        });
         Ok(Order {
             id: order_row.id,
             owner_id: order_row.owner_id,
@@ -115,7 +112,7 @@ impl TryFromRow for Order {
             buy_asset_units: order_row.buy_asset_units,
             expires_at: order_row.expires_at,
             status: order_row.status,
-            max_wei: wei
+            max_wei: wei,
         })
     }
 }

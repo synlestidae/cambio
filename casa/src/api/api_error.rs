@@ -1,17 +1,17 @@
 use db;
 use db::CambioError;
+use hyper::method::Method;
 use hyper::mime::Mime;
 use iron;
 use iron::status::Status;
 use iron::Response;
 use serde_json;
-use std::convert::{From, Into};
-use std::error::Error;
-use std;
-use std::fmt;
-use hyper::method::Method;
 use serde_json::Error as SerdeError;
 use serde_urlencoded::de::Error as SerdeURLError;
+use std;
+use std::convert::{From, Into};
+use std::error::Error;
+use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiError {
@@ -65,8 +65,10 @@ impl ApiError {
     }
 
     pub fn bad_method(supported_method: Method) -> Self {
-        let msg = format!("Incorrect HTTP method for this resource. Supported method is {}", 
-            supported_method);
+        let msg = format!(
+            "Incorrect HTTP method for this resource. Supported method is {}",
+            supported_method
+        );
         Self::new(msg, ErrorType::BadMethod)
     }
 
@@ -91,7 +93,10 @@ impl ApiError {
     }
 
     pub fn not_found_path(path: &str) -> Self {
-        Self::new(format!("The API path '{}' does not exist.", path), ErrorType::NotFound)
+        Self::new(
+            format!("The API path '{}' does not exist.", path),
+            ErrorType::NotFound,
+        )
     }
 
     pub fn unauthorised() -> Self {
@@ -140,7 +145,7 @@ impl Into<Status> for ErrorType {
     fn into(self) -> Status {
         match self {
             ErrorType::BadFormat => Status::BadRequest,
-            ErrorType::BadMethod=> Status::MethodNotAllowed,
+            ErrorType::BadMethod => Status::MethodNotAllowed,
             ErrorType::DatabaseDriver => Status::InternalServerError,
             ErrorType::InternalError => Status::InternalServerError,
             ErrorType::InvalidLogin => Status::Unauthorized,

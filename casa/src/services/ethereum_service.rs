@@ -4,18 +4,18 @@ use domain::{
     EthAccount, EthTransferRequest, EthereumOutboundTransaction, Id, Order, OrderSettlement,
 };
 use hex;
-use repository::{Readable};
+use postgres::GenericConnection;
+use repository::Readable;
 use services::UserService;
 use std::str::FromStr;
 use web3;
 use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
-use postgres::GenericConnection;
 
 pub struct EthereumService {
     web3_address: String,
     eloop: web3::transports::EventLoopHandle,
-    web3: web3::Web3<web3::transports::ipc::Ipc>
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
 impl EthereumService {
@@ -25,7 +25,7 @@ impl EthereumService {
         Self {
             web3_address: web3_address.to_owned(),
             eloop: eloop,
-            web3: web3
+            web3: web3,
         }
     }
 
@@ -43,7 +43,11 @@ impl EthereumService {
         println!("Got a result {:?}", account_result);
         let address = try!(account_result);
         println!("Account has address {}", address);
-        Ok(EthAccount::new(&address, account_password.to_owned(), owner_id))
+        Ok(EthAccount::new(
+            &address,
+            account_password.to_owned(),
+            owner_id,
+        ))
         //Ok(EthAccount::new(&H160::from_str("36F2FAdE6023478f9295B2E77bAD35F5792379B4").unwrap(), account_password.to_owned(), owner_id))
     }
 
@@ -79,8 +83,10 @@ impl EthereumService {
         })
     }
 
-    pub fn send_transaction(&mut self,
-        request: TransactionRequest) -> Result<web3::types::Transaction, CambioError> {
+    pub fn send_transaction(
+        &mut self,
+        request: TransactionRequest,
+    ) -> Result<web3::types::Transaction, CambioError> {
         let eth = self.web3.eth();
 
         let hash = try!(eth.send_transaction(request).wait());

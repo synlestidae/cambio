@@ -1,20 +1,20 @@
-use domain::{PoliPaymentRequestId, PaymentStatus, Code, UserId, Decimal};
 use chrono::prelude::*;
+use db::{TryFromRow, TryFromRowError};
+use domain::{Code, Decimal, PaymentStatus, PoliPaymentRequestId, UserId};
 use payment::poli::TransactionRefNo;
 use postgres;
-use db::{TryFromRow, TryFromRowError};
 
 #[derive(FromSql, ToSql, Debug, TryFromRow)]
 pub struct PoliPaymentRequest {
-    pub id: Option<PoliPaymentRequestId>, 
+    pub id: Option<PoliPaymentRequestId>,
     pub user_id: UserId,
     pub amount: Decimal,
     pub unique_code: Code,
-    pub started_at: DateTime<Utc>, 
-    pub payment_status: PaymentStatus, 
+    pub started_at: DateTime<Utc>,
+    pub payment_status: PaymentStatus,
     pub transaction_ref_no: Option<TransactionRefNo>,
     #[column_name(amount_paid_cents)]
-    pub amount_paid: Decimal
+    pub amount_paid: Decimal,
 }
 
 impl PoliPaymentRequest {
@@ -27,7 +27,7 @@ impl PoliPaymentRequest {
             started_at: Utc::now(),
             payment_status: PaymentStatus::StartedByUser,
             transaction_ref_no: None,
-            amount_paid: Decimal::from_dollars(0)
+            amount_paid: Decimal::from_dollars(0),
         }
     }
 }

@@ -20,7 +20,7 @@ impl SettlementStatus {
         match self {
             SettlementStatus::WaitingEthCredentials => true,
             SettlementStatus::WaitingEth => true,
-            _ => false
+            _ => false,
         }
     }
 }

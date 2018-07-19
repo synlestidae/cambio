@@ -1,5 +1,5 @@
-use payment::poli::*;
 use hyper::Url;
+use payment::poli::*;
 
 #[derive(Clone)]
 pub struct PoliConfig {
@@ -8,8 +8,8 @@ pub struct PoliConfig {
     pub notification_url: Url,
     pub successful_url: Url,
     pub unsuccessful_url: Url,
-    pub merchant_checkout_url: Url, 
+    pub merchant_checkout_url: Url,
     pub merchant_home_page_url: Url,
     pub initiate_transaction_url: Url,
-    pub get_transaction_url: Url
+    pub get_transaction_url: Url,
 }

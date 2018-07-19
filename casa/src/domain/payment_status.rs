@@ -12,5 +12,5 @@ pub enum PaymentStatus {
     #[postgres(name = "unknown")]
     Unknown,
     #[postgres(name = "completed")]
-    Completed
+    Completed,
 }

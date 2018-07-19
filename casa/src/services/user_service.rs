@@ -1,15 +1,18 @@
+use api::{PersonalDetails, RegistrationConfirm};
 use bcrypt::hash;
-use api::{RegistrationConfirm, PersonalDetails};
 use checkmail;
 use db::{CambioError, PostgresHelper};
-use domain::{Id, Session, SessionState, User, Registration, Profile, Address, PersonalIdentity, EthAccount, Account, AssetType, AccountRole};
-use repository::*;
+use domain::{
+    Account, AccountRole, Address, AssetType, EthAccount, Id, PersonalIdentity, Profile,
+    Registration, Session, SessionState, User,
+};
 use postgres::GenericConnection;
+use repository::*;
 use services;
 use std::error::Error;
 
 pub struct UserService {
-    web3_address: String
+    web3_address: String,
 }
 
 const BCRYPT_COST: u32 = 8;
@@ -17,18 +20,20 @@ const BCRYPT_COST: u32 = 8;
 impl UserService {
     pub fn new(web3_address: &str) -> Self {
         Self {
-            web3_address: web3_address.to_string()
+            web3_address: web3_address.to_string(),
         }
     }
 
-    pub fn confirm_registration<T: GenericConnection>(&self, 
+    pub fn confirm_registration<T: GenericConnection>(
+        &self,
         db: &mut T,
         registration: &Registration,
         personal_details: &PersonalDetails,
-        eth_password: &str) -> Result<User, CambioError> {
+        eth_password: &str,
+    ) -> Result<User, CambioError> {
         // TODO transaction needed here
         println!("Confirming registration");
-        
+
         // Mark the registration as confirmed
         let mut confirmed_registration = registration.clone();
         confirmed_registration.confirm();
@@ -38,23 +43,31 @@ impl UserService {
         // Create and store the user, ready to log in
         let user = try!(self.create_user(
             db,
-            &confirmed_registration.email_address, 
+            &confirmed_registration.email_address,
             &confirmed_registration.password_hash,
             &personal_details,
-            eth_password)
-        );
+            eth_password
+        ));
 
         Ok(user)
     }
 
-    pub fn register_user<T: GenericConnection>(&self,
+    pub fn register_user<T: GenericConnection>(
+        &self,
         db: &mut T,
         email_address: &str,
         password: &str,
-        personal_details: &PersonalDetails) -> Result<User, CambioError> {
+        personal_details: &PersonalDetails,
+    ) -> Result<User, CambioError> {
         // get the BCrypt hash
         let password_hash = try!(hash(password, BCRYPT_COST));
-        self.create_user(db, email_address, &password_hash, personal_details, password)
+        self.create_user(
+            db,
+            email_address,
+            &password_hash,
+            personal_details,
+            password,
+        )
     }
 
     pub fn create_user<T: GenericConnection>(
@@ -63,7 +76,8 @@ impl UserService {
         email_address: &str,
         password_hash: &str,
         personal_details: &PersonalDetails,
-        eth_password: &str) -> Result<User, CambioError> {
+        eth_password: &str,
+    ) -> Result<User, CambioError> {
         println!("Starting transaction");
         let mut db_tx = try!(db.transaction());
         if !checkmail::validate_email(&email_address.to_owned()) {
@@ -114,10 +128,11 @@ impl UserService {
         Ok(user)
     }
 
-    fn create_eth_accounts<T: GenericConnection>(&self, 
+    fn create_eth_accounts<T: GenericConnection>(
+        &self,
         db: &mut T,
-        email_address: &str, 
-        password: &str
+        email_address: &str,
+        password: &str,
     ) -> Result<EthAccount, CambioError> {
         println!("Creating ethereum account for {}", email_address);
         let mut eth_service = services::EthereumService::new(&self.web3_address);
@@ -128,7 +143,8 @@ impl UserService {
         Ok(account_result)
     }
 
-    pub fn log_user_in<T: GenericConnection>(&self,
+    pub fn log_user_in<T: GenericConnection>(
+        &self,
         db: &mut T,
         email_address: &str,
         password: String,
@@ -157,7 +173,11 @@ impl UserService {
         Ok(session)
     }
 
-    pub fn log_user_out<C: GenericConnection>(&mut self, db: &mut C, email_address: &str) -> Result<(), CambioError> {
+    pub fn log_user_out<C: GenericConnection>(
+        &mut self,
+        db: &mut C,
+        email_address: &str,
+    ) -> Result<(), CambioError> {
         const LOG_OUT: &'static str = "
             UPDATE session_info SET 
             session_state = 'invalidated'

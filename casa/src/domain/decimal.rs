@@ -1,14 +1,14 @@
-use std::ops::{Add, Sub};
 use db::CambioError;
-use std::str::FromStr;
-use std::fmt;
+use postgres::types::IsNull;
+use postgres::types::{FromSql, ToSql, Type};
+use serde::de::Error;
 use serde::*;
 use serde_json::Value;
-use serde::de::Error;
 use std;
-use postgres::types::{FromSql, ToSql, Type};
-use postgres::types::IsNull;
 use std::error::Error as StdError;
+use std::fmt;
+use std::ops::{Add, Sub};
+use std::str::FromStr;
 
 type ToSqlResult = Result<IsNull, Box<StdError + 'static + Send + Sync>>;
 
@@ -16,7 +16,7 @@ type ToSqlResult = Result<IsNull, Box<StdError + 'static + Send + Sync>>;
 pub struct Decimal {
     is_positive: bool,
     dollars: u64,
-    cents: u64
+    cents: u64,
 }
 
 impl Decimal {
@@ -27,7 +27,7 @@ impl Decimal {
         Self {
             dollars: dollars.abs() as u64,
             is_positive: dollars >= 0,
-            cents: 0
+            cents: 0,
         }
     }
 
@@ -37,14 +37,14 @@ impl Decimal {
         Self {
             is_positive: cents >= 0,
             dollars: dollars as u64,
-            cents: cents_100 as u64
+            cents: cents_100 as u64,
         }
     }
 
     pub fn to_cents(&self) -> i64 {
         let d = self.dollars as i64;
         let c = self.cents as i64;
-        (d * 100) + c * if self.is_positive { 1 } else { -1 } 
+        (d * 100) + c * if self.is_positive { 1 } else { -1 }
     }
 }
 
@@ -68,11 +68,7 @@ impl Sub for Decimal {
 
 impl fmt::Display for Decimal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let sign = if self.is_positive {
-            ""
-        } else {
-            "-"
-        };
+        let sign = if self.is_positive { "" } else { "-" };
         write!(f, "{}{}.{:02}", sign, self.dollars, self.cents)
     }
 }
@@ -83,38 +79,47 @@ impl FromStr for Decimal {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let sign = match s.to_owned().chars().next() {
             Some('-') => -1,
-            _ => 1
+            _ => 1,
         };
-        match s.split(".").map(|s| s.to_owned()).collect::<Vec<String>>().as_slice() {
-            &[ref dollars, ref cents] => {
-                match (i64::from_str(dollars), u64::from_str(cents)) {
-                    (Ok(d), Ok(c)) => {
-                        if cents.len() != 2 {
-                            Err("Number of decimal places should be exactly 2")
-                        } else {
-                            Ok(Self::from_cents(sign * ((d.abs() * 100) + c as i64)))
-                        }
-                    },
-                    _ => Err("Could not parse the two figures")
+        match s
+            .split(".")
+            .map(|s| s.to_owned())
+            .collect::<Vec<String>>()
+            .as_slice()
+        {
+            &[ref dollars, ref cents] => match (i64::from_str(dollars), u64::from_str(cents)) {
+                (Ok(d), Ok(c)) => {
+                    if cents.len() != 2 {
+                        Err("Number of decimal places should be exactly 2")
+                    } else {
+                        Ok(Self::from_cents(sign * ((d.abs() * 100) + c as i64)))
+                    }
                 }
+                _ => Err("Could not parse the two figures"),
             },
             &[ref dollars] => match i64::from_str(dollars) {
                 Ok(d) => Ok(Self::from_cents(sign * ((d.abs() * 100)))),
-                _ => Err("Dollar amount without decimal places is not valid")
+                _ => Err("Dollar amount without decimal places is not valid"),
             },
-            _ => Err("Figure appears to have multiple decimal places")
+            _ => Err("Figure appears to have multiple decimal places"),
         }
     }
 }
 
 impl Serialize for Decimal {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(&self.to_string())
     }
 }
 
 impl<'de> Deserialize<'de> for Decimal {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         // TODO Unwrap is unnacceptable!
         let currency_val = Value::deserialize(deserializer)?;
         let decimal_string: String = if let Value::Number(num) = currency_val {
@@ -122,11 +127,13 @@ impl<'de> Deserialize<'de> for Decimal {
         } else if let Value::String(s) = currency_val {
             s.to_string()
         } else {
-            return Err(D::Error::custom(format!("Can only deserialize Decimal from string or number")));
+            return Err(D::Error::custom(format!(
+                "Can only deserialize Decimal from string or number"
+            )));
         };
         match Self::from_str(&decimal_string) {
             Err(err) => unimplemented!("How do I handle {}? {}", decimal_string, err),
-            Ok(val) => Ok(val)
+            Ok(val) => Ok(val),
         }
     }
 }
@@ -149,12 +156,9 @@ impl ToSql for Decimal {
 }
 
 impl FromSql for Decimal {
-    fn from_sql(
-        ty: &Type,
-        raw: &[u8],
-    ) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
+    fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
         let value = try!(i64::from_sql(ty, raw));
-        Ok(Decimal::from_cents(value))//.map_err(|e| Box::new(e))
+        Ok(Decimal::from_cents(value)) //.map_err(|e| Box::new(e))
     }
 
     fn accepts(ty: &Type) -> bool {

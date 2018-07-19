@@ -48,10 +48,9 @@ impl Transaction {
 impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let transaction_id_match: Option<TransactionId> = row.get("journal_entry_id");
-        let transaction_id: TransactionId = try!(transaction_id_match.ok_or(TryFromRowError::missing_field(
-            "Transaction",
-            "journal_entry_id",
-        )));
+        let transaction_id: TransactionId = try!(transaction_id_match.ok_or(
+            TryFromRowError::missing_field("Transaction", "journal_entry_id",)
+        ));
 
         let asset_type_match: Option<AssetType> = row.get("asset_type");
         let asset_type: AssetType = try!(

@@ -3,8 +3,7 @@ use std::marker::Sync;
 
 #[derive(Debug)]
 pub enum JobRequest {
-    BeginSettlement(OrderSettlementId, String)
+    BeginSettlement(OrderSettlementId, String),
 }
 
-unsafe impl Sync for JobRequest {
-}
+unsafe impl Sync for JobRequest {}

@@ -3,42 +3,45 @@ use serde::de::{Deserialize, Deserializer, Visitor};
 use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all="PascalCase")]
+#[serde(rename_all = "PascalCase")]
 pub struct InitiateTransactionResponse {
-	pub success: bool,
-	pub transaction_ref_no: Option<TransactionRefNo>,
-    #[serde(rename="NavigateURL")]
-	pub navigate_url: Option<String>,
-	pub error_code: Option<PoliErrorCode>,
-	pub error_message: Option<String>	
+    pub success: bool,
+    pub transaction_ref_no: Option<TransactionRefNo>,
+    #[serde(rename = "NavigateURL")]
+    pub navigate_url: Option<String>,
+    pub error_code: Option<PoliErrorCode>,
+    pub error_message: Option<String>,
 }
 
 impl InitiateTransactionResponse {
-    pub fn get_transaction(mut self) 
-        -> Result<PoliTransactionResponse, InitiateTransactionError> {
+    pub fn get_transaction(mut self) -> Result<PoliTransactionResponse, InitiateTransactionError> {
         if self.success {
             match (self.navigate_url, self.transaction_ref_no) {
-                (Some(url), Some(reference)) => return Ok(PoliTransactionResponse {
-                    navigate_url: url,
-                    transaction_ref_no: reference
-                }),
-                _ => unimplemented!()
+                (Some(url), Some(reference)) => {
+                    return Ok(PoliTransactionResponse {
+                        navigate_url: url,
+                        transaction_ref_no: reference,
+                    })
+                }
+                _ => unimplemented!(),
             }
         } else {
             match (self.error_code, self.error_message) {
-                (Some(code), Some(msg)) => return Err(InitiateTransactionError {
-                    error_code: code,
-                    error_message: msg
-                }),
-                _ => unimplemented!()
+                (Some(code), Some(msg)) => {
+                    return Err(InitiateTransactionError {
+                        error_code: code,
+                        error_message: msg,
+                    })
+                }
+                _ => unimplemented!(),
             }
         }
     }
 }
 
 mod test {
-    use payment::poli::*; 
     use domain::CurrencyCode;
+    use payment::poli::*;
     use serde_json::*;
 
     #[test]
@@ -46,13 +49,10 @@ mod test {
         let d: InitiateTransactionResponse = from_str(RESPONSE_EXAMPLE_SUCCESS).unwrap();
         let t = d.get_transaction().unwrap();
         assert_eq!(
-            "https://txn.apac.paywithpoli.com/?Token=uo3K8YA7vCojXjA1yuQ3txqX4s26gQSh", 
+            "https://txn.apac.paywithpoli.com/?Token=uo3K8YA7vCojXjA1yuQ3txqX4s26gQSh",
             t.navigate_url
         );
-        assert_eq!(
-            t.transaction_ref_no.to_string(),
-            "996117408041"
-        );
+        assert_eq!(t.transaction_ref_no.to_string(), "996117408041");
     }
 
     #[test]

@@ -1,4 +1,4 @@
 #[derive(Serialize, Deserialize)]
 pub struct RequestPaymentResponse {
-    pub navigate_url: String
+    pub navigate_url: String,
 }

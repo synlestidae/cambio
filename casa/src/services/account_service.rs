@@ -1,15 +1,14 @@
 use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
-use domain::{Account, AccountStatement, AccountId, Transaction};
+use domain::{Account, AccountId, AccountStatement, Transaction};
+use postgres::GenericConnection;
 use repository::Readable;
 use std::error::Error;
-use postgres::GenericConnection;
 
-pub struct AccountService {
-}
+pub struct AccountService {}
 
 impl AccountService {
     pub fn new() -> AccountService {
-        AccountService { }
+        AccountService {}
     }
 
     pub fn get_latest_statement<C: GenericConnection>(

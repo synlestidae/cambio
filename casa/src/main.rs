@@ -41,21 +41,21 @@ extern crate openssl;
 extern crate rand;
 extern crate rlp;
 extern crate secp256k1;
-extern crate web3;
-extern crate threadpool;
 extern crate serde_urlencoded;
+extern crate threadpool;
+extern crate web3;
 
 mod api;
 mod cors_middleware;
 mod db;
 mod domain;
 mod jobs;
+mod payment;
 mod query;
 mod repositories;
 mod repository;
 mod services;
 mod tests;
-mod payment;
 
 use api::ApiError;
 use bcrypt::{hash, verify, DEFAULT_COST};
@@ -66,14 +66,14 @@ use iron::headers::AccessControlAllowOrigin;
 use iron::prelude::*;
 use iron::status;
 use iron::{AfterMiddleware, Iron, IronResult, Request, Response};
+use jobs::JobLoop;
 use persistent::Read;
 use postgres::{Connection, TlsMode};
-use std::error::Error;
-use time::PreciseTime;
-use std::sync::mpsc::channel;
 use std::collections::HashSet;
-use jobs::JobLoop;
+use std::error::Error;
+use std::sync::mpsc::channel;
 use std::thread;
+use time::PreciseTime;
 
 fn main() {
     const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
@@ -90,4 +90,3 @@ fn main() {
     chain.link_around(middleware);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
 }
-

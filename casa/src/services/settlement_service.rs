@@ -1,13 +1,13 @@
 use db;
 use domain;
-use domain::{Id, OrderSettlementId, AssetType, User};
+use domain::{AssetType, Id, OrderSettlementId, User};
+use postgres::GenericConnection;
 use repository::{Creatable, Readable};
 use services;
 use web3::types::U256;
-use postgres::GenericConnection;
 
 pub struct SettlementService {
-    eth_address: String
+    eth_address: String,
 }
 
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
@@ -15,7 +15,7 @@ type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
 impl SettlementService {
     pub fn new(eth_address: &str) -> Self {
         Self {
-            eth_address: eth_address.to_owned()
+            eth_address: eth_address.to_owned(),
         }
     }
 
@@ -54,7 +54,7 @@ impl SettlementService {
             return Err(db::CambioError::format_obj(
                 "Buying order must be for Szabo",
                 "Error with settlement: unsupported selling type.",
-            ))
+            ));
         }
         let wei = U256::from(selling_order.sell_asset_units * 1000000000000);
         eth_service.register_transaction(
@@ -73,7 +73,7 @@ impl SettlementService {
         order: &domain::Order,
     ) -> Result<domain::EthAccount, db::CambioError> {
         let owner_id = &order.owner_id;
-        let user: User = try!(owner_id.get(db)); 
+        let user: User = try!(owner_id.get(db));
         let email_address = user.email_address.to_owned();
         owner_id.get(db)
     }

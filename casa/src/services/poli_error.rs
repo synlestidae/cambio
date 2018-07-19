@@ -1,16 +1,16 @@
-use payment::poli::{InitiateTransactionError, PoliErrorCode};
-use db::{PostgresHelper, CambioError};
-use std::error::Error;
-use hyper::Error as HyperError;
-use serde_json::error::Error as SerializeError;
-use postgres::GenericConnection;
+use db::{CambioError, PostgresHelper};
 use domain::UserId;
+use hyper::Error as HyperError;
+use payment::poli::{InitiateTransactionError, PoliErrorCode};
+use postgres::GenericConnection;
+use serde_json::error::Error as SerializeError;
+use std::error::Error;
 use std::fmt;
 use std::marker;
 
 #[derive(Debug)]
 struct PoliErrorInfo {
-    description: String
+    description: String,
 }
 
 #[derive(Debug)]
@@ -18,7 +18,7 @@ pub enum PoliError {
     Request(PoliErrorInfo),
     Response(PoliErrorInfo),
     PoliError(PoliErrorCode),
-    InitTx(InitiateTransactionError)
+    InitTx(InitiateTransactionError),
 }
 
 impl fmt::Display for PoliError {
@@ -33,7 +33,7 @@ impl Error for PoliError {
             PoliError::Request(_) => "Creating the request for POLi failed",
             PoliError::Response(_) => "There was a fatal error in the POLi response",
             PoliError::PoliError(_) => "POLi returned an error code in its response",
-            PoliError::InitTx(_) => "Could not initialised the transaction with POLi"
+            PoliError::InitTx(_) => "Could not initialised the transaction with POLi",
         }
     }
 
@@ -59,7 +59,7 @@ impl From<InitiateTransactionError> for PoliError {
 impl From<SerializeError> for PoliError {
     fn from(e: SerializeError) -> Self {
         PoliError::Request(PoliErrorInfo {
-            description: e.description().to_owned()
+            description: e.description().to_owned(),
         })
     }
 }
@@ -67,13 +67,17 @@ impl From<SerializeError> for PoliError {
 impl From<HyperError> for PoliError {
     fn from(e: HyperError) -> Self {
         PoliError::Response(PoliErrorInfo {
-            description: e.description().to_owned()
+            description: e.description().to_owned(),
         })
     }
 }
 
 impl PoliError {
-    pub fn save_in_log<C: GenericConnection>(&self, user_id: &Option<UserId>, db: &mut C) -> Result<(), CambioError> {
+    pub fn save_in_log<C: GenericConnection>(
+        &self,
+        user_id: &Option<UserId>,
+        db: &mut C,
+    ) -> Result<(), CambioError> {
         Ok(())
     }
 }

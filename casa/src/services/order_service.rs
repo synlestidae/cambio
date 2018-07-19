@@ -1,19 +1,19 @@
 use chrono::prelude::*;
 use db::{CambioError, PostgresHelper};
 use domain;
-use domain::{User, OrderId, Order, OrderStatus, AssetType, All};
-use repository::{Readable, Creatable, Updateable};
-use web3::types::U256;
+use domain::{All, AssetType, Order, OrderId, OrderStatus, User};
 use postgres::GenericConnection;
+use repository::{Creatable, Readable, Updateable};
+use web3::types::U256;
 
 #[derive(Clone)]
-pub struct OrderService { }
+pub struct OrderService {}
 
 const ORDER_TIME_MINUTES: i64 = 10;
 
 impl OrderService {
     pub fn new() -> Self {
-        Self { }
+        Self {}
     }
 
     pub fn place_order<C: GenericConnection>(
@@ -25,7 +25,7 @@ impl OrderService {
         sell_currency: AssetType,
         buy_units: u64,
         buy_currency: AssetType,
-        wei_cost: Option<U256>
+        wei_cost: Option<U256>,
     ) -> Result<Order, CambioError> {
         let user: User = try!(Readable::get(email, db));
         let user_owner_id = user.owner_id.unwrap();
@@ -39,7 +39,7 @@ impl OrderService {
             buy_asset_type: buy_currency,
             expires_at: self.get_order_expiry(),
             status: OrderStatus::Active,
-            max_wei: wei_cost
+            max_wei: wei_cost,
         };
         order.create(db)
     }
@@ -50,8 +50,11 @@ impl OrderService {
         now + Duration::minutes(ORDER_TIME_MINUTES)
     }
 
-    pub fn cancel_order<C: GenericConnection>(&self, db: &mut C, order_id: OrderId) 
-        -> Result<Order, CambioError> {
+    pub fn cancel_order<C: GenericConnection>(
+        &self,
+        db: &mut C,
+        order_id: OrderId,
+    ) -> Result<Order, CambioError> {
         let mut order: Order = try!(order_id.get(db)); //self.order_repo.read(&order_clause);
         if order.status == domain::OrderStatus::Active {
             order.status = domain::OrderStatus::Deleted;

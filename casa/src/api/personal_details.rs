@@ -1,5 +1,5 @@
 use chrono::prelude::*;
-use domain::{Profile, Address, PersonalIdentity, UserId};
+use domain::{Address, PersonalIdentity, Profile, UserId};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PersonalDetails {
@@ -10,9 +10,9 @@ pub struct PersonalDetails {
     pub post_code: String,
     pub city: String,
     pub country: String,
-    pub dob: NaiveDate, 
+    pub dob: NaiveDate,
     pub id_type: String,
-    pub id_number: String
+    pub id_number: String,
 }
 
 impl PersonalDetails {
@@ -34,7 +34,7 @@ impl PersonalDetails {
                 address_line_7: None,
                 country_name: self.country,
             },
-            personal_identity: None
+            personal_identity: None,
         }
     }
 }

@@ -15,9 +15,7 @@ fn refuses_settlement_no_eth_balance() {
     use std::env;
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
-    let mut settlement_service = services::SettlementService::new(
-        "../eth_test/data/geth.ipc",
-    );
+    let mut settlement_service = services::SettlementService::new("../eth_test/data/geth.ipc");
     let (order1, order2) = quick_order(
         "ricky@gervais.com",
         "karl@pilkington.com",
@@ -30,7 +28,12 @@ fn refuses_settlement_no_eth_balance() {
     let ricky = get_user("ricky@gervais.com");
 
     let mut settlement = settlement_service
-        .create_settlement(&mut get_db_connection(), ricky.id.unwrap(), &order1, &order2)
+        .create_settlement(
+            &mut get_db_connection(),
+            ricky.id.unwrap(),
+            &order1,
+            &order2,
+        )
         .unwrap();
 
     assert_eq!(
@@ -43,7 +46,7 @@ fn refuses_settlement_no_eth_balance() {
         settlement.id.unwrap(),
         "981upr983ucn982qr2349t9y34%tp9q83tup983q4",
         "dohnut123".to_owned(),
-        U256([0, 0, 0, 21000000000000])
+        U256([0, 0, 0, 21000000000000]),
     );
 
     assert!(result.is_err());

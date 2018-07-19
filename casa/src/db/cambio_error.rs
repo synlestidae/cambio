@@ -5,10 +5,10 @@ use db::{ErrorKind, ErrorReccomendation};
 use iron;
 use postgres;
 use r2d2;
+use services::PoliError;
 use std::error;
 use std::error::Error as StdError;
 use std::fmt;
-use services::PoliError;
 use web3;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
@@ -218,7 +218,7 @@ impl From<PoliError> for CambioError {
             user_message: "A fatal error occurred while handling your payment.".to_string(),
             system_message: err.description().to_string(),
             kind: ErrorKind::PaymentApi,
-            reccomendation: ErrorReccomendation::ContactProgrammer
+            reccomendation: ErrorReccomendation::ContactProgrammer,
         }
     }
 }

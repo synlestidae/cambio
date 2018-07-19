@@ -1,14 +1,14 @@
-use chrono::prelude::*;
 use api::PersonalDetails;
+use chrono::prelude::*;
 use db;
 use domain;
-use repository::{Readable, Creatable};
+use repository::{Creatable, Readable};
 use services;
 use std::io::Read;
+use std::rc::Rc;
 use tests::get_db_connection;
 use uuid;
 use web3;
-use std::rc::Rc;
 
 pub fn get_user(email: &str) -> domain::User {
     Readable::get(email, &mut get_db_connection()).unwrap()
@@ -27,9 +27,7 @@ pub fn quick_order(
     use std::env;
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
-    let mut user_service = services::UserService::new(
-        "../eth_test/data/geth.ipc",
-    );
+    let mut user_service = services::UserService::new("../eth_test/data/geth.ipc");
 
     let user1 = user_service
         .register_user(&mut db, buyer, "excellent123", &fake_details())
@@ -72,14 +70,18 @@ pub fn just_order(
 pub fn quick_credit(who: &str, how_much: u32) {
     let mut db = get_db_connection();
     let user: domain::User = Readable::get(who, &mut db).unwrap();
-    let account_set = domain::AccountSet::from(user.owner_id.unwrap().get_vec(&mut  db).unwrap()).unwrap();
+    let account_set =
+        domain::AccountSet::from(user.owner_id.unwrap().get_vec(&mut db).unwrap()).unwrap();
     let ledger_service = services::LedgerService::new();
     let account_id = domain::PaymentVendor::Poli.get(&mut db).unwrap();
-    ledger_service.transfer_money(&mut db, 
-        account_id, 
-        account_set.nzd_wallet(), 
-        domain::Decimal::from_cents(how_much as i64)
-    ).unwrap();
+    ledger_service
+        .transfer_money(
+            &mut db,
+            account_id,
+            account_set.nzd_wallet(),
+            domain::Decimal::from_cents(how_much as i64),
+        )
+        .unwrap();
 }
 
 pub fn quick_credit_szabo(who: &str, how_much: u64) {
@@ -119,8 +121,8 @@ pub fn fake_details() -> PersonalDetails {
         post_code: "1123".to_owned(),
         city: "Wellington".to_owned(),
         country: "NEW ZEALAND".to_owned(),
-        dob: NaiveDate::from_ymd(1990, 11, 11), 
+        dob: NaiveDate::from_ymd(1990, 11, 11),
         id_type: "NZ_Passport".to_owned(),
-        id_number: "LM123309".to_owned() 
+        id_number: "LM123309".to_owned(),
     }
 }

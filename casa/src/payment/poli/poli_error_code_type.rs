@@ -9,5 +9,5 @@ pub enum PoliErrorCodeType {
     CustomerUnable,
     WebServiceError,
     PaymentDataIncorrect,
-    PaymentAPIError
+    PaymentAPIError,
 }
