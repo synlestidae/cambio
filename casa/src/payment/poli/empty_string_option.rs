@@ -3,6 +3,8 @@ use serde::de::*;
 use serde::Deserialize;
 use serde_json;
 use serde_json::Value;
+use std::error::Error as StdError;
+use serde::de::Error;
 
 pub fn deserialize<'de, D, E: DeserializeOwned>(deserializer: D) -> Result<Option<E>, D::Error>
 where
@@ -21,8 +23,12 @@ where
         the_rest => the_rest,
     };
 
+    println!("JSON {:?}", string_input);
     match serde_json::from_value(string_input) {
-        Ok(o) => return Ok(Some(o)),
-        Err(err) => return unimplemented!(),
+        Ok(o) => Ok(Some(o)),
+        Err(err) => {
+            println!("SHit error {:?}", err);
+            Err(D::Error::custom(StdError::description(&err)))
+        }
     }
 }

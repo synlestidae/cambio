@@ -4,12 +4,15 @@ use std::error::Error;
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Eq, PartialEq, Serialize, Clone, Copy)]
-pub struct PoliErrorCode(pub u32);
+#[derive(Debug, Eq, PartialEq, Serialize, Clone)]
+pub struct PoliErrorCode(pub String);
 
 impl PoliErrorCode {
     pub fn get_type(&self) -> Option<PoliErrorCodeType> {
-        let val = self.0;
+        let val = match u32::from_str(&self.0) {
+            Ok(v) => v,
+            _ => return None
+        };
         let err_type = if 1001 <= val && val <= 1032 {
             PoliErrorCodeType::InitiateTransactionFailed
         } else if (2001 <= val && val <= 2027) || (2029 <= val && val <= 2038) {
@@ -62,7 +65,7 @@ impl<'de> Deserialize<'de> for PoliErrorCode {
     where
         D: Deserializer<'de>,
     {
-        let data = try!(u32::deserialize(deserializer));
+        let data = try!(String::deserialize(deserializer));
         Ok(PoliErrorCode(data))
     }
 }

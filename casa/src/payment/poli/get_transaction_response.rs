@@ -20,11 +20,11 @@ pub struct GetTransactionResponse {
     pub payment_amount: Option<Decimal>,
     #[serde(rename = "AmountPaid", default, with = "empty_string_option")]
     pub amount_paid: Option<Decimal>,
-    #[serde(with = "poli_date_format_option", rename = "EstablishedDateTime")]
+    #[serde(with = "poli_date_format_option", default, rename = "EstablishedDateTime")]
     pub established_date_time: Option<NaiveDateTime>,
-    #[serde(with = "poli_date_format_option", rename = "StartDateTime")]
+    #[serde(with = "poli_date_format_option", default, rename = "StartDateTime")]
     pub start_date_time: Option<NaiveDateTime>,
-    #[serde(with = "poli_date_format_option", rename = "MerchantEstablishedDateTime")]
+    #[serde(with = "poli_date_format_option", default, rename = "MerchantEstablishedDateTime")]
     pub merchant_established_date_time: Option<NaiveDateTime>,
     #[serde(rename = "MerchantReference", default, with = "empty_string_option")]
     pub merchant_reference: Option<MerchantRef>,
@@ -83,9 +83,9 @@ impl GetTransactionResponse {
             _ => (),
         };
 
-        Err(if let Some(error_code) = self.error_code {
+        Err(if let Some(ref error_code) = self.error_code {
             Some(RemoteTransactionError {
-                error_code: error_code,
+                error_code: error_code.clone(),
                 error_message: self.error_message.clone(),
             })
         } else {
@@ -146,6 +146,23 @@ mod test {
         assert_eq!(tx_response.merchant_acct_sort_code, None);
         assert_eq!(tx_response.merchant_acct_suffix, None);
         assert_eq!(tx_response.merchant_acct_number.unwrap(), "35313843");
+    }
+
+    #[test]
+    fn test_success_remote_transaction_fields() {
+        let tx_response: GetTransactionResponse = from_str(EXAMPLE).unwrap();
+        let tx = tx_response.get_transaction().unwrap();
+        assert_eq!(tx.transaction_ref_no.to_string(), "996108109898");
+        assert_eq!(tx.currency_code.to_string(), "AUD");
+        assert_eq!(tx.payment_amount.to_string(), "1.27");
+        assert_eq!(tx.amount_paid.to_string(), "0.00");
+        assert_eq!(tx.transaction_status_code, TransactionStatusCode::EulaAccepted);
+    }
+
+    #[test]
+    fn test_failure_remote_transaction_fields() {
+        let tx_response: GetTransactionResponse = from_str(EXAMPLE_ERR).unwrap();
+        let err = tx_response.get_transaction().err().unwrap();
     }
 
     #[test]
@@ -217,4 +234,8 @@ mod test {
         "MerchantAccountNumber": "35313843"
     }"#;
 
+    const EXAMPLE_ERR: &'static str = r#"{
+        "ErrorCode": "4054",
+        "ErrorMessage": "Multiple internet bank sessions were detected"
+    }"#;
 }

@@ -59,7 +59,7 @@ mod test {
     fn test_response_error_deserializes() {
         let d: InitiateTransactionResponse = from_str(RESPONSE_EXAMPLE_ERROR_1).unwrap();
         let err = d.get_transaction().err().unwrap();
-        assert_eq!(5005, err.error_code.0);
+        assert_eq!("5005", err.error_code.0);
         assert_eq!("The certificate was bad", err.error_message);
     }
 
@@ -67,7 +67,7 @@ mod test {
 	{
 		"Success": true,
 		"NavigateURL": "https://txn.apac.paywithpoli.com/?Token=uo3K8YA7vCojXjA1yuQ3txqX4s26gQSh",
-		"ErrorCode": 0,
+		"ErrorCode": null,
 		"ErrorMessage": null,
 		"TransactionRefNo": "996117408041"
 	}
@@ -76,7 +76,7 @@ mod test {
     const RESPONSE_EXAMPLE_ERROR_1: &'static str = r#"
 	{
 		"Success": false,
-		"ErrorCode": 5005,
+		"ErrorCode": "5005",
 		"ErrorMessage": "The certificate was bad"
 	}
     "#;
