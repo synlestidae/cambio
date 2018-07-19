@@ -20,12 +20,12 @@ pub struct GetTransactionResponse {
     pub payment_amount: Option<Decimal>,
     #[serde(rename="AmountPaid", default, with="empty_string_option")]
     pub amount_paid: Option<Decimal>,
-    #[serde(with = "poli_date_format", rename="EstablishedDateTime")]
-    pub established_date_time: NaiveDateTime,
-    #[serde(with = "poli_date_format", rename="StartDateTime")]
-    pub start_date_time: NaiveDateTime,
-    #[serde(with = "poli_date_format", rename="MerchantEstablishedDateTime")]
-    pub merchant_established_date_time: NaiveDateTime,
+    #[serde(with = "poli_date_format_option", rename="EstablishedDateTime")]
+    pub established_date_time: Option<NaiveDateTime>,
+    #[serde(with = "poli_date_format_option", rename="StartDateTime")]
+    pub start_date_time: Option<NaiveDateTime>,
+    #[serde(with = "poli_date_format_option", rename="MerchantEstablishedDateTime")]
+    pub merchant_established_date_time: Option<NaiveDateTime>,
     #[serde(rename="MerchantReference", default, with="empty_string_option")]
     pub merchant_reference: Option<MerchantRef>,
     #[serde(rename="TransactionStatusCode", default, with="empty_string_option")]
@@ -89,17 +89,17 @@ mod test {
     #[test]
     fn test_get_transaction_response_deserializes() {
         let tx_response: GetTransactionResponse = from_str(EXAMPLE).unwrap();
-        assert_eq!(tx_response.transaction_ref_no.to_string(), "996108109898");
-        assert_eq!(tx_response.currency_code.to_string(), "AUD");
-        assert_eq!(tx_response.currency_name, "Australian Dollar");
-        assert_eq!(tx_response.country_code, "AU");
-        assert_eq!(tx_response.country_name, "Australia");
-        assert_eq!(tx_response.payment_amount.to_string(), "1.27");
-        assert_eq!(tx_response.amount_paid.to_string(), "0.00");
-        assert_eq!(tx_response.established_date_time.to_string(), "2018-02-27 15:19:55.063");
-        assert_eq!(tx_response.start_date_time.to_string(), "2018-02-27 15:19:55.063");
-        assert_eq!(tx_response.merchant_established_date_time.to_string(), "2018-02-27 15:19:54.123");
-        assert_eq!(tx_response.merchant_reference.0, "MyRef01");
+        assert_eq!(tx_response.transaction_ref_no.unwrap().to_string(), "996108109898");
+        assert_eq!(tx_response.currency_code.unwrap().to_string(), "AUD");
+        assert_eq!(tx_response.currency_name.unwrap(), "Australian Dollar");
+        assert_eq!(tx_response.country_code.unwrap(), "AU");
+        assert_eq!(tx_response.country_name.unwrap(), "Australia");
+        assert_eq!(tx_response.payment_amount.unwrap().to_string(), "1.27");
+        assert_eq!(tx_response.amount_paid.unwrap().to_string(), "0.00");
+        assert_eq!(tx_response.established_date_time.unwrap().to_string(), "2018-02-27 15:19:55.063");
+        assert_eq!(tx_response.start_date_time.unwrap().to_string(), "2018-02-27 15:19:55.063");
+        assert_eq!(tx_response.merchant_established_date_time.unwrap().to_string(), "2018-02-27 15:19:54.123");
+        assert_eq!(tx_response.merchant_reference.unwrap().0, "MyRef01");
         assert_eq!(tx_response.transaction_status_code, Some(TransactionStatusCode::EulaAccepted));
         assert_eq!(tx_response.bank_receipt, None);
         assert_eq!(tx_response.bank_receipt_date_time, None);

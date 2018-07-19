@@ -4,12 +4,13 @@ use std::str::FromStr;
 use std::fmt;
 use serde::*;
 use serde_json::Value;
+use serde::de::Error;
 use std;
 use postgres::types::{FromSql, ToSql, Type};
 use postgres::types::IsNull;
-use std::error::Error;
+use std::error::Error as StdError;
 
-type ToSqlResult = Result<IsNull, Box<Error + 'static + Send + Sync>>;
+type ToSqlResult = Result<IsNull, Box<StdError + 'static + Send + Sync>>;
 
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub struct Decimal {
@@ -77,7 +78,7 @@ impl fmt::Display for Decimal {
 }
 
 impl FromStr for Decimal {
-    type Err = ();
+    type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let sign = match s.to_owned().chars().next() {
@@ -89,19 +90,19 @@ impl FromStr for Decimal {
                 match (i64::from_str(dollars), u64::from_str(cents)) {
                     (Ok(d), Ok(c)) => {
                         if cents.len() != 2 {
-                            Err(())
+                            Err("Number of decimal places should be exactly 2")
                         } else {
                             Ok(Self::from_cents(sign * ((d.abs() * 100) + c as i64)))
                         }
                     },
-                    _ => Err(())
+                    _ => Err("Could not parse the two figures")
                 }
             },
             &[ref dollars] => match i64::from_str(dollars) {
                 Ok(d) => Ok(Self::from_cents(sign * ((d.abs() * 100)))),
-                _ => Err(())
+                _ => Err("Dollar amount without decimal places is not valid")
             },
-            _ => Err(())
+            _ => Err("Figure appears to have multiple decimal places")
         }
     }
 }
@@ -115,10 +116,16 @@ impl Serialize for Decimal {
 impl<'de> Deserialize<'de> for Decimal {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
         // TODO Unwrap is unnacceptable!
-        let currency_val = try!(Value::deserialize(deserializer));
-        println!("Currency val {}", currency_val);
-        match Self::from_str(&currency_val.to_string()) {
-            Err(_) => unimplemented!("How do I handle this"),
+        let currency_val = Value::deserialize(deserializer)?;
+        let decimal_string: String = if let Value::Number(num) = currency_val {
+            num.to_string()
+        } else if let Value::String(s) = currency_val {
+            s.to_string()
+        } else {
+            return Err(D::Error::custom(format!("Can only deserialize Decimal from string or number")));
+        };
+        match Self::from_str(&decimal_string) {
+            Err(err) => unimplemented!("How do I handle {}? {}", decimal_string, err),
             Ok(val) => Ok(val)
         }
     }
@@ -145,29 +152,25 @@ impl FromSql for Decimal {
     fn from_sql(
         ty: &Type,
         raw: &[u8],
-    ) -> Result<Self, Box<Error + 'static + Send + Sync>> {
+    ) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
         let value = try!(i64::from_sql(ty, raw));
-        Ok(Decimal::from_cents(value))//.map_err(|_| err())
+        Ok(Decimal::from_cents(value))//.map_err(|e| Box::new(e))
     }
 
     fn accepts(ty: &Type) -> bool {
         true
     }
 
-    fn from_sql_null(ty: &Type) -> Result<Self, Box<Error + 'static + Send + Sync>> {
+    fn from_sql_null(ty: &Type) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
         let value = try!(String::from_sql_null(ty));
-        Decimal::from_str(&value).map_err(|_| err())
+        Decimal::from_str(&value).map_err(|e| unimplemented!("Cannot get Decimal from SQL NULL"))
     }
 
     fn from_sql_nullable(
         ty: &Type,
         raw: Option<&[u8]>,
-    ) -> Result<Self, Box<Error + 'static + Send + Sync>> {
+    ) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
         let value = try!(String::from_sql_nullable(ty, raw));
-        Decimal::from_str(&value).map_err(|_| err())
+        Decimal::from_str(&value).map_err(|e| unimplemented!("Cannot get Decimal from SQL NULL"))
     }
-}
-
-fn err() -> Box<Error + Sync + Send + 'static> {
-    unimplemented!()
 }

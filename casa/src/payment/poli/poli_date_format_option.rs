@@ -19,6 +19,6 @@ pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<NaiveDateTime>, D::
 }
 
 fn parse<'a, D: Deserializer<'a>>(date_string: &str) -> Result<NaiveDateTime, D::Error> {
-    const FORMAT: &'static str = "%Y-%m-%dT%H-%M-%S%.3f";
+    const FORMAT: &'static str = "%Y-%m-%dT%H:%M:%S%.3f";
     Utc.datetime_from_str(date_string, FORMAT).map_err(serde::de::Error::custom).map(|x| x.naive_utc())
 }
