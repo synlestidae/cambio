@@ -14,8 +14,8 @@ use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
 
 pub struct EthereumService {
     web3_address: String,
-    eloop: web3::transports::EventLoopHandle,
     web3: web3::Web3<web3::transports::ipc::Ipc>,
+    eloop: web3::transports::EventLoopHandle
 }
 
 impl EthereumService {
