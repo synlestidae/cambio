@@ -37,7 +37,6 @@ impl Creatable for domain::User {
         //try!(db.execute(OWNER_QUERY, &[]));
         let result = try!(db.query(QUERY, &[&self.email_address, &self.password_hash]));
         if result.len() > 0 {
-            println!("Inserting! {:?}", result.get(0));
             let id: domain::UserId = result.get(0).get("id");
             try!(db.execute("INSERT INTO account_owner(user_id) VALUES ($1)", &[&id]));
             Ok(result)
@@ -70,7 +69,6 @@ impl Creatable for domain::Account {
             account(owner_id, asset_type, account_type, account_business_type, account_role, account_status) 
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING id";
-        println!("Inserting account now...");
         let result = match db.query(
             QUERY,
             &[
@@ -84,11 +82,9 @@ impl Creatable for domain::Account {
         ) {
             Ok(u) => u,
             Err(err) => {
-                println!("Account inserted {:?}", err);
                 return Err(err.into());
             }
         };
-        println!("Account inserted");
         Ok(result)
     }
 }

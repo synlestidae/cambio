@@ -6,7 +6,6 @@ use chrono::prelude::*;
 
 #[test]
 fn test_creates_eth_account() {
-    println!("Creating an account!");
     let (eloop, web3) = get_web3();
     let service = UserService::new(web3);
     let mut conn = get_db_connection();
@@ -28,6 +27,5 @@ fn test_creates_eth_account() {
             id_number: "DOG112358".to_string(),
         },
         "iloveeatingbacon").unwrap();
-    println!("Created user {}", user.email_address);
     assert_eq!("frankie@antunovic.nz", user.email_address);
 }

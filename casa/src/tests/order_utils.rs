@@ -27,7 +27,6 @@ pub fn quick_order(
     // create the user first
     use std::env;
     let path = env::current_dir().unwrap();
-    println!("The current directory is {}", path.display());
     let (eloop, web3) = get_web3();
     let mut user_service = services::UserService::new(web3);
 

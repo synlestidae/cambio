@@ -40,11 +40,6 @@ impl<C: GenericConnection> UserApi<C> {
             Err(err) => return err.into(),
         };
 
-        println!(
-            "Confirmation code for {} is {}",
-            created_reg.email_address, created_reg.confirmation_code
-        );
-
         let result = api::RegistrationInfo {
             email_address: created_reg.email_address,
             identifier_code: created_reg.identifier_code,

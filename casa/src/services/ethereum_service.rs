@@ -29,20 +29,16 @@ impl EthereumService {
         user_email: &str,
         account_password: &str,
     ) -> Result<EthAccount, CambioError> {
-        println!("Registering a new account");
         let user = try!(Readable::get(user_email, db));
         let owner_id = user.owner_id.unwrap();
         // TODO comment out when web3 decides to work
         let account_result = self.web3.personal().new_account(account_password).wait();
-        println!("Got a result {:?}", account_result);
         let address = try!(account_result);
-        println!("Account has address {}", address);
         Ok(EthAccount::new(
             &address,
             account_password.to_owned(),
             owner_id,
         ))
-        //Ok(EthAccount::new(&H160::from_str("36F2FAdE6023478f9295B2E77bAD35F5792379B4").unwrap(), account_password.to_owned(), owner_id))
     }
 
     fn get_request(

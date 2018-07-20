@@ -23,11 +23,9 @@ where
         the_rest => the_rest,
     };
 
-    println!("JSON {:?}", string_input);
     match serde_json::from_value(string_input) {
         Ok(o) => Ok(Some(o)),
         Err(err) => {
-            println!("SHit error {:?}", err);
             Err(D::Error::custom(StdError::description(&err)))
         }
     }

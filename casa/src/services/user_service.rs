@@ -33,13 +33,11 @@ impl UserService {
         eth_password: &str,
     ) -> Result<User, CambioError> {
         // TODO transaction needed here
-        println!("Confirming registration");
 
         // Mark the registration as confirmed
         let mut confirmed_registration = registration.clone();
         confirmed_registration.confirm();
         try!(confirmed_registration.update(db));
-        println!("Creating registration...");
 
         // Create and store the user, ready to log in
         let user = try!(self.create_user(
@@ -79,7 +77,6 @@ impl UserService {
         personal_details: &PersonalDetails,
         eth_password: &str,
     ) -> Result<User, CambioError> {
-        println!("Starting transaction");
         let mut db_tx = try!(db.transaction());
         if !checkmail::validate_email(&email_address.to_owned()) {
             return Err(CambioError::bad_input(
@@ -87,7 +84,6 @@ impl UserService {
                 "Email address is invalid",
             ));
         }
-        println!("Getting an option");
 
         if let Some(_) = try!(email_address.get_option(&mut db_tx)) {
             return Err(CambioError::user_exists());
@@ -102,32 +98,24 @@ impl UserService {
         let mut wallet = Account::new_wallet(AssetType::NZD);
         let mut hold = Account::new_hold(AssetType::NZD);
 
-        println!("Creating user!");
         user = try!(user.create(&mut db_tx));
         wallet.owner_user_id = user.owner_id;
         hold.owner_user_id = user.owner_id;
 
-        println!("Creating wallets");
         try!(wallet.create(&mut db_tx));
         try!(hold.create(&mut db_tx));
 
-        println!("Creating eth accounts");
         let account = match self.create_eth_accounts(&mut db_tx, email_address, eth_password) {
             Ok(a) => {
-                println!("Lovely... your accounts are here");
                 a
             },
             Err(err) => {
                 return Err(err);
-                println!("Err! {:?}", err);
             }
         };
-        println!("Eth accounts ready. Creating profile");
         let profile = personal_details.clone().into_profile(user.id.unwrap());
         let new_profile = try!(profile.create(&mut db_tx));
-        println!("Profile created");
 
-        println!("Committing!");
         db_tx.set_commit();
         Ok(user)
     }
@@ -139,11 +127,8 @@ impl UserService {
         password: &str,
     ) -> Result<EthAccount, CambioError> {
         let eth_service = services::EthereumService::new(self.web3.clone());
-        println!("Creating ethereum account for {}", email_address);
         let account = try!(eth_service.new_account(db, email_address, password));
-        println!("Eth account created. Saving...");
         let account_result = try!(account.create(db));
-        println!("Account with address {:?} created", account.address);
         return Ok(account_result);
     }
 
@@ -154,9 +139,7 @@ impl UserService {
         password: String,
     ) -> Result<Session, CambioError> {
         let user_option = try!(email_address.get_option(db));
-        println!("Logging in {}", email_address);
         if user_option.is_none() {
-            println!("User {} does not exist", email_address);
             return Err(CambioError::not_found_search(
                 &format!("Could not find account for user {}", email_address),
                 "User repository returned None for User",
@@ -164,7 +147,6 @@ impl UserService {
         }
         let user = user_option.unwrap();
         if !user.hash_matches_password(&password) {
-            println!("Hash does not match password");
             return Err(CambioError::invalid_password());
         }
         let user_id = user.id.unwrap();
@@ -172,7 +154,6 @@ impl UserService {
         drop(password);
 
         let mut session = Session::new(email_address, user_id, SESSION_TIME_MILLISECONDS);
-        println!("Creating a session");
         let session = try!(session.create(db));
         Ok(session)
     }
