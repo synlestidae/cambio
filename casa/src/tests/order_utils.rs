@@ -9,8 +9,7 @@ use std::rc::Rc;
 use tests::get_db_connection;
 use uuid;
 use web3;
-
-pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
+use tests::test_utils::*;
 
 pub fn get_user(email: &str) -> domain::User {
     Readable::get(email, &mut get_db_connection()).unwrap()
@@ -29,7 +28,8 @@ pub fn quick_order(
     use std::env;
     let path = env::current_dir().unwrap();
     println!("The current directory is {}", path.display());
-    let mut user_service = services::UserService::new(WEB3_ADDRESS);
+    let (eloop, web3) = get_web3();
+    let mut user_service = services::UserService::new(web3);
 
     let user1 = user_service
         .register_user(&mut db, buyer, "excellent123", &fake_details())

@@ -5,17 +5,18 @@ use postgres::GenericConnection;
 use repository::{Creatable, Readable};
 use services;
 use web3::types::U256;
+use web3;
 
 pub struct SettlementService {
-    eth_address: String,
+    web3: web3::Web3<web3::transports::Ipc>
 }
 
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
 
 impl SettlementService {
-    pub fn new(eth_address: &str) -> Self {
+    pub fn new(web3: web3::Web3<web3::transports::Ipc>) -> Self {
         Self {
-            eth_address: eth_address.to_owned(),
+            web3: web3 
         }
     }
 
@@ -38,7 +39,7 @@ impl SettlementService {
         starting_user_password: String,
         max_cost_wei: U256,
     ) -> Result<domain::EthereumOutboundTransaction, db::CambioError> {
-        let mut eth_service = services::EthereumService::new(&self.eth_address);
+        let mut eth_service = services::EthereumService::new(self.web3.clone());
         let mut settlement = try!(settlement_id.get(db));
         if settlement.settlement_status != domain::SettlementStatus::WaitingEth {
             return Err(db::CambioError::unfair_operation(

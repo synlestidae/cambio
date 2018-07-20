@@ -14,12 +14,14 @@ use std::sync::mpsc::channel;
 use std::sync::mpsc::Receiver;
 use threadpool::ThreadPool;
 use web3::types::U256;
+use web3;
 
 pub struct JobLoop {
     conn_str: String,
-    eth_service: EthereumService,
     threads: ThreadPool,
     rcv: Receiver<JobRequest>,
+    eloop: web3::transports::EventLoopHandle,
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
 const NUM_JOBS: usize = 10;
@@ -27,11 +29,14 @@ const NUM_JOBS: usize = 10;
 impl JobLoop {
     pub fn new(conn_str: &str, web3_address: &str, rx: Receiver<JobRequest>) -> Self {
         let threadpool = ThreadPool::new(NUM_JOBS);
+        let (eloop, transport) = web3::transports::ipc::Ipc::new(web3_address).unwrap();
+        let web3 = web3::Web3::new(transport);    
         let job_loop = Self {
             conn_str: conn_str.to_owned(),
             threads: threadpool,
             rcv: rx,
-            eth_service: EthereumService::new(web3_address),
+            eloop: eloop,
+            web3: web3
         };
         job_loop
     }
@@ -69,6 +74,7 @@ impl JobLoop {
         let conn_str: &str = &self.conn_str;
         let mut db = try!(Connection::connect(conn_str, TlsMode::None));
         let mut settlement = try!(sid.get(&mut db));
+        let mut eth_service = EthereumService::new(self.web3.clone());
         info!("Handling settlement ID {:?}", settlement.id);
         if settlement.settlement_status != domain::SettlementStatus::WaitingEthCredentials {
             info!(
@@ -131,7 +137,7 @@ impl JobLoop {
                 "Password correct, creating transaction from account {:?}",
                 src_account
             );
-            self.eth_service.register_transaction(
+            eth_service.register_transaction(
                 &src_account,
                 password,
                 &dst_account,

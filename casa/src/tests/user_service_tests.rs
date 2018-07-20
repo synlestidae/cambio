@@ -7,7 +7,8 @@ use chrono::prelude::*;
 #[test]
 fn test_creates_eth_account() {
     println!("Creating an account!");
-    let service = UserService::new(WEB3_ADDRESS);
+    let (eloop, web3) = get_web3();
+    let service = UserService::new(web3);
     let mut conn = get_db_connection();
     let mut db = conn.transaction().unwrap();
     let user = service.create_user(

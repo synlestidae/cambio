@@ -11,17 +11,18 @@ use postgres::GenericConnection;
 use repository::{Creatable, Readable};
 use serde_json;
 use services::UserService;
+use web3;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
-    web3_address: String,
+    web3: web3::Web3<web3::transports::ipc::Ipc>
 }
 
 impl<C: GenericConnection> UserApi<C> {
-    pub fn new(db: C, web3_address: &str) -> Self {
+    pub fn new(db: C, web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
         Self {
             db: db,
-            web3_address: web3_address.to_owned(),
+            web3: web3
         }
     }
 
@@ -62,7 +63,7 @@ impl<C: GenericConnection> UserApi<C> {
         &mut self,
         registration_confirm: &api::RegistrationConfirm,
     ) -> Response {
-        let user_service = UserService::new("../eth_test/data/geth.ipc");
+        let user_service = UserService::new(self.web3.clone());
         let registration = match registration_confirm.identifier_code.get(&mut self.db) {
             Ok(r) => r,
             Err(err) => return err.into(),
@@ -93,7 +94,7 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {
-        let user_service = UserService::new(&self.web3_address);
+        let user_service = UserService::new(self.web3.clone());
         let log_in_result =
             user_service.log_user_in(&mut self.db, &login.email_address, login.password.clone());
 

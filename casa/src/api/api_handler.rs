@@ -14,19 +14,23 @@ use repository::Updateable;
 use std::convert::TryFrom;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
+use web3;
 
 pub struct ApiHandler {
     conn_str: String,
-    web3_address: String,
     job_tx: Mutex<Sender<JobRequest>>,
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
+    eloop: web3::transports::EventLoopHandle
 }
 
 impl ApiHandler {
     pub fn new(conn_str: &str, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
+        let (eloop, transport) = web3::transports::ipc::Ipc::new(web3_address).unwrap();
         Self {
             conn_str: conn_str.to_owned(),
-            web3_address: web3_address.to_owned(),
             job_tx: Mutex::new(job_tx),
+            eloop: eloop,    
+            web3: web3::Web3::new(transport)
         }
     }
 }
@@ -78,7 +82,7 @@ impl Handler for ApiHandler {
 
         let response = match api_request {
             ApiRequest::User(user_request) => {
-                let mut user_api = UserApi::new(db, &self.web3_address);
+                let mut user_api = UserApi::new(db, self.web3.clone());
                 match user_request {
                     UserRequest::Register(reg) => user_api.put_register(&reg),
                     UserRequest::ResendEmail(email_resend) => {

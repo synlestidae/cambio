@@ -13,19 +13,13 @@ use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
 
 pub struct EthereumService {
-    web3_address: String,
-    web3: web3::Web3<web3::transports::ipc::Ipc>,
-    eloop: web3::transports::EventLoopHandle
+    web3: web3::Web3<web3::transports::ipc::Ipc>
 }
 
 impl EthereumService {
-    pub fn new(web3_address: &str) -> Self {
-        let (eloop, transport) = web3::transports::ipc::Ipc::new(web3_address).unwrap();
-        let web3 = web3::Web3::new(transport);
+    pub fn new(web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
         Self {
-            web3_address: web3_address.to_owned(),
-            eloop: eloop,
-            web3: web3,
+            web3: web3
         }
     }
 

@@ -18,6 +18,9 @@ use std::panic::catch_unwind;
 use std::process::Command;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
+use web3;
+
+pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
 
 #[allow(dead_code)]
 pub fn setup() {
@@ -57,6 +60,11 @@ pub fn get_db_source() -> PostgresSource {
     PostgresSource::new(TEST_CONN_STR).unwrap()
 }
 
+pub fn get_web3() -> (web3::transports::EventLoopHandle, web3::Web3<web3::transports::ipc::Ipc>) {
+     let (eloop, transport) = web3::transports::ipc::Ipc::new(WEB3_ADDRESS).unwrap();
+     (eloop, web3::Web3::new(transport))
+}
+
 pub fn get_db_connection() -> postgres::Connection {
     Connection::connect(TEST_CONN_STR, TlsMode::None).unwrap()
 }
@@ -68,8 +76,8 @@ pub fn get_db_helper() -> PostgresHelperImpl {
 
 pub fn log_in(username: &str, password: &str) -> String {
     let mut db = get_db_connection();
-    let mut user_service = UserService::new("../eth_test/data/geth.ipc");
-    println!("Creating user {}", username);
+    let (eloop, web3) = get_web3();
+    let mut user_service = UserService::new(web3);
     let user_result = user_service.create_user(
         &mut db,
         username,
@@ -88,7 +96,6 @@ pub fn log_in(username: &str, password: &str) -> String {
         },
         password,
     );
-    println!("Welp, got a result {:?}", user_result);
     user_result.unwrap();
     user_service
         .log_user_in(&mut db, username, password.to_owned())
@@ -128,7 +135,7 @@ fn make_request<'a, E: Serialize>(
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
-    let handler = api::ApiHandler::new(TEST_CONN_STR, "../eth_test/data/geth.ipc", tx);
+    let handler = api::ApiHandler::new(TEST_CONN_STR, WEB3_ADDRESS, tx);
     let response = if is_get {
         request::get(url, headers.clone(), &handler).unwrap()
     } else {

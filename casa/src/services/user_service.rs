@@ -10,17 +10,18 @@ use postgres::GenericConnection;
 use repository::*;
 use services;
 use std::error::Error;
+use web3;
 
 pub struct UserService {
-    web3_address: String,
+    web3: web3::Web3<web3::transports::ipc::Ipc>
 }
 
 const BCRYPT_COST: u32 = 8;
 
 impl UserService {
-    pub fn new(web3_address: &str) -> Self {
+    pub fn new(web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
         Self {
-            web3_address: web3_address.to_string(),
+            web3: web3
         }
     }
 
@@ -137,8 +138,8 @@ impl UserService {
         email_address: &str,
         password: &str,
     ) -> Result<EthAccount, CambioError> {
+        let eth_service = services::EthereumService::new(self.web3.clone());
         println!("Creating ethereum account for {}", email_address);
-        let mut eth_service = services::EthereumService::new(&self.web3_address);
         let account = try!(eth_service.new_account(db, email_address, password));
         println!("Eth account created. Saving...");
         let account_result = try!(account.create(db));
