@@ -135,7 +135,8 @@ fn make_request<'a, E: Serialize>(
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
-    let handler = api::ApiHandler::new(TEST_CONN_STR, WEB3_ADDRESS, tx);
+    let (eloop, web3) = get_web3();
+    let handler = api::ApiHandler::new(TEST_CONN_STR, web3, tx);
     let response = if is_get {
         request::get(url, headers.clone(), &handler).unwrap()
     } else {

@@ -49,5 +49,8 @@ fn refuses_settlement_no_eth_balance() {
         U256([0, 0, 0, 21000000000000]),
     );
 
+    drop(settlement_service);
+    drop(eloop);
+
     assert!(result.is_err());
 }

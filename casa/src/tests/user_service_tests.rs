@@ -28,4 +28,6 @@ fn test_creates_eth_account() {
         },
         "iloveeatingbacon").unwrap();
     assert_eq!("frankie@antunovic.nz", user.email_address);
+    drop(service);
+    drop(eloop);
 }

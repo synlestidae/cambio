@@ -19,18 +19,15 @@ use web3;
 pub struct ApiHandler {
     conn_str: String,
     job_tx: Mutex<Sender<JobRequest>>,
-    web3: web3::Web3<web3::transports::ipc::Ipc>,
-    eloop: web3::transports::EventLoopHandle
+    web3: web3::Web3<web3::transports::ipc::Ipc>
 }
 
 impl ApiHandler {
-    pub fn new(conn_str: &str, web3_address: &str, job_tx: Sender<JobRequest>) -> Self {
-        let (eloop, transport) = web3::transports::ipc::Ipc::new(web3_address).unwrap();
+    pub fn new(conn_str: &str, web3: web3::Web3<web3::transports::ipc::Ipc>, job_tx: Sender<JobRequest>) -> Self {
         Self {
             conn_str: conn_str.to_owned(),
             job_tx: Mutex::new(job_tx),
-            eloop: eloop,    
-            web3: web3::Web3::new(transport)
+            web3: web3
         }
     }
 }

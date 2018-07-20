@@ -38,6 +38,8 @@ pub fn quick_order(
         .register_user(&mut db, seller, "dohnut123", &fake_details())
         .unwrap();
 
+    drop(user_service);
+
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user2.owner_id.unwrap(), buy_money, sell_szabo, 10);
 

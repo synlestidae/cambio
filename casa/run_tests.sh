@@ -34,4 +34,4 @@ psql test_database_only < all.sql
 cd ..
 
 echo "Running tests"
-cargo test $1 -- --nocapture --test-threads=1
+cargo test $1 -- --nocapture --test-threads=4

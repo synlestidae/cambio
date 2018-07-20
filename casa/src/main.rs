@@ -85,7 +85,9 @@ fn main() {
     thread::spawn(move || {
         job_loop.run();
     });
-    let api_handler = api::ApiHandler::new(conn_str, WEB3_ADDRESS, tx);
+    let (eloop, transport) = web3::transports::ipc::Ipc::new(WEB3_ADDRESS).unwrap();
+    let web3 = web3::Web3::new(transport);
+    let api_handler = api::ApiHandler::new(conn_str, web3, tx);
     let mut chain = iron::Chain::new(api_handler);
     chain.link_around(middleware);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
