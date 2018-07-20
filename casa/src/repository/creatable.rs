@@ -226,7 +226,7 @@ impl Creatable for domain::Order {
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const SQL: &'static str = "INSERT INTO asset_order(owner_id, unique_id, sell_asset_type, 
             sell_asset_units, buy_asset_type, buy_asset_units, expires_at, status, max_wei) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id";
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id";
 
         let max_wei: Option<Vec<u8>> = if let Some(ref w) = &self.max_wei {
             let mut b = Vec::new();

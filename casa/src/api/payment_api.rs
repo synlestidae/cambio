@@ -119,6 +119,7 @@ impl<C: GenericConnection> PaymentApi<C> {
             &mut conn,
             poli_deduct_account_id,
             user_wallet_account_id,
+            poli_tx.currency_code.asset_type(),
             poli_tx.amount_paid
         ));
         Ok(())

@@ -82,6 +82,7 @@ pub fn quick_credit(who: &str, how_much: u32) {
             &mut db,
             account_id,
             account_set.nzd_wallet(),
+            domain::AssetType::NZD,
             domain::Decimal::from_cents(how_much as i64),
         )
         .unwrap();
