@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION transfer_asset(
     account_period_end DATE,
     debit_account INTEGER,
     credit_account INTEGER,
-    units UINT
+    units INT8
 )
 RETURNS INTEGER AS $$
 DECLARE 
@@ -225,7 +225,7 @@ BEGIN
         account_period_end := accounting_period_end_var, 
         debit_account := debit_account_id,
         credit_account := credit_account_id, 
-        units := CAST (abs(units) AS UINT), 
+        units abs(units), 
         authorship_id := authorship_id);
     RETURN;
 END;
