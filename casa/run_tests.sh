@@ -16,10 +16,6 @@ clean_up () {
     #clean_db
 }
 
-#export RUSTFLAGS=-Awarnings
-
-cargo build
-
 source run_eth.sh &
 
 trap clean_up EXIT

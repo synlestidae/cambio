@@ -21,7 +21,7 @@ fn test_creates_eth_account() {
             address_line_2: None,
             post_code: "1123".to_string(),
             city: "New Plymouth".to_string(),
-            country: "New Zealand".to_string(),
+            country: "NEW ZEALAND".to_string(),
             dob: NaiveDate::from_ymd(2007, 1, 1),
             id_type: "NZPassport".to_string(),
             id_number: "DOG112358".to_string(),

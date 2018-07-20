@@ -13,7 +13,6 @@ use web3::types::U256;
 #[test]
 fn refuses_settlement_no_eth_balance() {
     use std::env;
-    let path = env::current_dir().unwrap();
     let (eloop, web3) = get_web3();
     let mut settlement_service = services::SettlementService::new(web3);
     let (order1, order2) = quick_order(
