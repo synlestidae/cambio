@@ -47,7 +47,6 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             order.buy_asset_type,
             order.max_wei,
         );
-
         match order_result {
             Ok(result) => Ok(result),
             err => Err(utils::to_response(err)),
@@ -89,7 +88,10 @@ impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
         }
         let mut db_tx = self.db.transaction().unwrap();
         match self.create_order(&mut db_tx, &order, &user.email_address) {
-            Ok(order) => utils::to_response(Ok(order)),
+            Ok(order) => {
+                db_tx.commit();
+                utils::to_response(Ok(order))
+            },
             Err(err_resp) => return err_resp,
         }
     }
@@ -175,6 +177,7 @@ impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
             // generate the receipt
             let response = match settlement_result {
                 Ok(settlement) => {
+                    db_tx.commit();
                     info!("Settlement creation was successful");
                     let response_json = serde_json::to_string(&settlement).unwrap();
                     let content_type = "application/json".parse::<Mime>().unwrap();
@@ -182,7 +185,6 @@ impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
                 }
                 Err(err) => return api::ApiError::from(err).into(),
             };
-            db_tx.commit();
             response
         };
         response

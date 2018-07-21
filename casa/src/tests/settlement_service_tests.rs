@@ -15,16 +15,19 @@ fn refuses_settlement_no_eth_balance() {
     use std::env;
     let (eloop, web3) = get_web3();
     let mut settlement_service = services::SettlementService::new(web3);
+    const KARL: &'static str = "karl@orangeheadedbuffoon.com";
+    const RICKY: &'static str = "ricky@gangstermail.com";
     let (order1, order2) = quick_order(
-        "ricky@gervais.com",
-        "karl@pilkington.com",
+        RICKY,
+        KARL,
         100000,
         200 * 100,
         100000,
         200 * 100,
     );
-    quick_credit("ricky@gervais.com", 200 * 100);
-    let ricky = get_user("ricky@gervais.com");
+    quick_credit(RICKY, 200 * 100);
+    let ricky = get_user(RICKY);
+    get_user(KARL);
 
     let mut settlement = settlement_service
         .create_settlement(

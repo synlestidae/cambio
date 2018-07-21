@@ -224,12 +224,21 @@ impl Creatable for domain::Order {
     type Id = domain::OrderId;
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        const SQL: &'static str = "INSERT INTO asset_order(owner_id, unique_id, sell_asset_type, 
-            sell_asset_units, buy_asset_type, buy_asset_units, expires_at, status, max_wei) 
+        const SQL: &'static str = "INSERT INTO asset_order(
+            owner_id, 
+            unique_id,
+            sell_asset_type,
+            sell_asset_units,
+            buy_asset_type,
+            buy_asset_units,
+            expires_at,
+            status,
+            max_wei) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id";
 
         let max_wei: Option<Vec<u8>> = if let Some(ref w) = &self.max_wei {
             let mut b = Vec::new();
+            b.resize(4 * 8, 0);
             w.to_big_endian(&mut b);
             Some(b)
         } else {
@@ -245,7 +254,7 @@ impl Creatable for domain::Order {
                 &self.sell_asset_units,
                 &self.buy_asset_type,
                 &self.buy_asset_units,
-                &self.expires_at,
+                &self.expires_at.naive_utc(),
                 &self.status,
                 &max_wei
             ]
@@ -272,14 +281,13 @@ impl Creatable for domain::OrderSettlement {
         }
         const SQL: &'static str = "INSERT INTO order_settlement(
                 transaction_id,
+                starting_user,
                 buying_crypto_id,
                 buying_fiat_id
-            ) VALUES (NULL, $1, $2)
+            ) VALUES (NULL, $1, $2, $3)
             RETURNING id
         ";
-
-        let settlement = try!(db.query(SQL, &[&self.buying_order.id, &self.selling_order.id,]));
-
+        let settlement = try!(db.query(SQL, &[&self.starting_user, &self.buying_order.id, &self.selling_order.id]));
         Ok(settlement)
     }
 }

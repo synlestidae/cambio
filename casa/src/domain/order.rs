@@ -89,7 +89,7 @@ struct OrderRow {
     pub sell_asset_units: i64,
     pub buy_asset_type: AssetType,
     pub buy_asset_units: i64,
-    pub expires_at: DateTime<Utc>,
+    pub expires_at: NaiveDateTime,//DateTime<Utc>,
     pub status: OrderStatus,
     pub max_wei: Option<Vec<u8>>,
 }
@@ -102,6 +102,7 @@ impl TryFromRow for Order {
             array.copy_from_slice(&w);
             U256::from(array)
         });
+        let expires_at = DateTime::from_utc(order_row.expires_at, Utc);
         Ok(Order {
             id: order_row.id,
             owner_id: order_row.owner_id,
@@ -110,7 +111,7 @@ impl TryFromRow for Order {
             sell_asset_units: order_row.sell_asset_units,
             buy_asset_type: order_row.buy_asset_type,
             buy_asset_units: order_row.buy_asset_units,
-            expires_at: order_row.expires_at,
+            expires_at: expires_at,
             status: order_row.status,
             max_wei: wei,
         })

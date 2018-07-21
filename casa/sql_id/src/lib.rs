@@ -21,8 +21,17 @@ fn impl_sql_traits(ast: &syn::DeriveInput) -> quote::Tokens {
         use serde;
         use serde::ser::Serialize;
         use serde::de::Deserialize;
+        use std::str::FromStr;
 
         type ToSqlResult = Result<IsNull, Box<std::error::Error + 'static + Send + Sync>>;
+
+        impl FromStr for #name {
+            type Err = ();
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                let val = i32::from_str(s).map_err(|_| ())?;
+                Ok(#name(val))
+            }
+        }
 
         impl ToSql for #name {
             fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
@@ -78,8 +87,10 @@ fn impl_sql_traits(ast: &syn::DeriveInput) -> quote::Tokens {
         use serde::Deserializer;
         impl<'de> Deserialize<'de> for #name {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+                use std::str::FromStr;
                 // TODO Unwrap is unnacceptable
-                let int_val = i32::deserialize(deserializer).unwrap();
+                let string_val = String::deserialize(deserializer).unwrap();
+                let int_val: i32 = i32::from_str(&string_val).unwrap();
                 Ok(#name(int_val))
             }
         }

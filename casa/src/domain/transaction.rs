@@ -4,19 +4,18 @@ use db::TryFromRow;
 use db::TryFromRowError;
 use domain::{AssetType, BusinessEnds, Id, TransactionId};
 use postgres::rows::Row;
+use postgres;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, TryFromRow, Clone, Serialize)]
 pub struct Transaction {
-    pub id: TransactionId,
+    pub correspondence_id: Id,
     pub from_account: Id,
     pub to_account: Id,
     pub asset_type: AssetType,
     pub value: i64,
     pub transaction_time: DateTime<Utc>,
     pub accounting_period_id: Id,
-    pub balance: i64,
-    pub message: String,
-    pub business_ends: BusinessEnds,
+    pub balance_to_account: i64,
 }
 
 impl Transaction {
@@ -45,7 +44,7 @@ impl Transaction {
     }
 }
 
-impl TryFromRow for Transaction {
+/*impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let transaction_id_match: Option<TransactionId> = row.get("journal_entry_id");
         let transaction_id: TransactionId = try!(transaction_id_match.ok_or(
@@ -113,4 +112,4 @@ impl TryFromRow for Transaction {
             business_ends: business_ends,
         })
     }
-}
+}*/

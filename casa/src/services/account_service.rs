@@ -19,14 +19,14 @@ impl AccountService {
         let account = try!(account_id.get(db));
         let mut transactions = try!(self.get_transactions_for_account(db, account_id));
 
-        transactions.sort_by_key(|t: &Transaction| t.id);
+        transactions.sort_by_key(|t: &Transaction| t.correspondence_id);
 
         let mut opening_balance = 0;
         let mut closing_balance = 0;
 
         if transactions.len() > 0 {
-            opening_balance = (&transactions[0]).balance;
-            closing_balance = (&transactions[transactions.len() - 1]).balance;
+            opening_balance = (&transactions[0]).balance_to_account;
+            closing_balance = (&transactions[transactions.len() - 1]).balance_to_account;
         }
 
         Ok(AccountStatement {

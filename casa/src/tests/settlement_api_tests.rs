@@ -52,7 +52,7 @@ fn test_settlement_gets_saved() {
         }),
     )).unwrap();
 
-    let order_id = order.id.unwrap().into();
+    let order_id = order.id.unwrap();
 
     post(
         "http://www.cambio.co.nz/orders/buy",

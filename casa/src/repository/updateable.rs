@@ -62,14 +62,14 @@ impl Updateable for domain::Registration {
 impl Updateable for domain::Session {
     fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
         const QUERY: &'static str = "
-            UPDATE user_session_info 
+            UPDATE session_info 
             SET started_at = $2, session_state = $3
             FROM user_session
             WHERE 
-                user_session.session_info_id = user_session_info.id AND
+                user_session.session_info_id = session_info.id AND
                 user_session.id = $1
         ";
-        try!(db.execute(QUERY, &[&self.id, &self.started_at, &self.session_state]));
+        try!(db.execute(QUERY, &[&self.id, &self.started_at.naive_utc(), &self.session_state]));
         self.session_token.get(db)
     }
 }

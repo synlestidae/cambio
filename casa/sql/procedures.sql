@@ -225,7 +225,7 @@ BEGIN
         account_period_end := accounting_period_end_var, 
         debit_account := debit_account_id,
         credit_account := credit_account_id, 
-        units abs(units), 
+        units, 
         authorship_id := authorship_id);
     RETURN;
 END;

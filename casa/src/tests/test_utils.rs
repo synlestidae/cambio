@@ -140,10 +140,11 @@ fn make_request<'a, E: Serialize>(
     let response = if is_get {
         request::get(url, headers.clone(), &handler).unwrap()
     } else {
+        let body = serde_json::to_string(&obj).unwrap();
         request::post(
             url,
             headers.clone(),
-            &serde_json::to_string(&obj).unwrap(),
+            &body,
             &handler,
         ).unwrap()
     };

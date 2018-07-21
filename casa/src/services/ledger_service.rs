@@ -20,23 +20,39 @@ impl LedgerService {
         credit_account: AccountId,
         asset_type: AssetType,
         amount: Decimal,
-    ) -> Result<(Transaction, Transaction), CambioError> {
+    ) -> Result<Transaction, CambioError> {
+        let amount_cents = amount.to_cents();
         let rows = try!(db.query(
             "SELECT transfer_asset($1, '2018-01-01', '2018-03-31', $2, $3, $4);",
-            &[&asset_type, &deduct_account, &credit_account, &amount]
+            &[&asset_type, &deduct_account, &credit_account, &amount_cents]
         ));
         let err = Err(CambioError::db_update_failed("Journal"));
         if rows.len() > 0 {
             let correspondence_id_option: Option<i32> = rows.get(0).get(0);
             if let Some(correspondence_id) = correspondence_id_option {
-                let transactions = try!(db.query(
-                    "SELECT * FROM journal WHERE correspondence_id = $1",
+                let entry = try!(db.query(
+                    "SELECT 
+                        journal_to.correspondence_id,
+                        journal_from.account_id as from_account, 
+                        journal_to.account_id as to_account, 
+                        journal_from.asset_type, 
+                        journal_from.debit as value, 
+                        journal_from.transaction_time, 
+                        journal_from.accounting_period as accounting_period_id,
+                        journal_to.balance as balance_to_account
+                    FROM 
+                        journal journal_from,
+                        journal journal_to
+                    WHERE 
+                        journal_from.correspondence_id = journal_to.correspondence_id AND
+                        journal_from.correspondence_id = $1 AND 
+                        journal_from.debit >= 0 AND 
+                        journal_to.credit >= 0",
                     &[&correspondence_id]
                 ));
-                if transactions.len() == 2 {
-                    let tx1: Transaction = try!(TryFromRow::try_from_row(&transactions.get(0)));
-                    let tx2: Transaction = try!(TryFromRow::try_from_row(&transactions.get(1)));
-                    return Ok((tx1, tx2));
+                if entry.len() == 1 {
+                    let tx: Transaction = try!(TryFromRow::try_from_row(&entry.get(0)));
+                    return Ok(tx);
                 }
             }
             err

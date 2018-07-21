@@ -105,7 +105,8 @@ impl Readable<domain::Session> for domain::SessionToken {
             WHERE session_info.session_token = $1 AND 
                 (now() at time zone 'utc') < (session_info.started_at + (session_info.ttl_milliseconds * ('1 millisecond'::INTERVAL)))
             ORDER BY session_info.started_at";
-        PostgresHelperImpl::query(db, SELECT_BY_TOKEN, &[self])
+        let result = PostgresHelperImpl::query(db, SELECT_BY_TOKEN, &[self]);
+        result
     }
 }
 

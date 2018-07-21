@@ -88,7 +88,8 @@ impl<C: GenericConnection> AccountApiTrait for AccountApiImpl<C> {
         account_id: AccountId,
         tx_id: TransactionId,
     ) -> iron::Response {
-        let statement = match self.get_statement(user, account_id) {
+        unimplemented!()
+        /*let statement = match self.get_statement(user, account_id) {
             Ok(s) => s,
             Err(err) => return err,
         };
@@ -103,7 +104,7 @@ impl<C: GenericConnection> AccountApiTrait for AccountApiImpl<C> {
                 tx_id
             ),
             "Could not find that transaction",
-        )))
+        )))*/
     }
 }
 

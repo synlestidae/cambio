@@ -1,5 +1,5 @@
 use api;
-use api::{AccountRequest, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest};
+use api::{AccountRequest, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest, ApiError};
 //use bodyparser;
 use db;
 use domain;
@@ -14,6 +14,7 @@ use serde_urlencoded;
 use std::convert::TryFrom;
 use std::error::Error;
 use std::io::Read;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub enum ApiRequest {
@@ -77,14 +78,16 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             }
             &["accounts"] => ApiRequest::Account(AccountRequest::GetAccounts),
             &["account", id] => {
-                ApiRequest::Account(AccountRequest::GetAccount(try!(serde_json::from_str(id))))
+                let account_id = domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
+                ApiRequest::Account(AccountRequest::GetAccount(account_id))
             }
             &["accounts", id, "transactions"] => {
-                let tx_req = AccountRequest::GetAccountTransactions(try!(serde_json::from_str(id)));
+                let account_id = domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
+                let tx_req = AccountRequest::GetAccountTransactions(account_id);
                 ApiRequest::Account(tx_req)
             }
             &["order", id, "settlement", "auth"] => {
-                let order_id = try!(serde_json::from_str(id));
+                let order_id = domain::OrderId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
                 let cred = try!(get_api_obj(request));
                 let s_req = SettlementRequest::PostSettlementEthAuth(order_id, cred);
                 ApiRequest::Settlement(s_req)
