@@ -11,7 +11,7 @@ impl CurrencyCode {
     pub fn asset_type(&self) -> AssetType {
         match self {
             CurrencyCode::NZD => AssetType::NZD,
-            _ => unimplemented!()
+            CurrencyCode::AUD => AssetType::AUD,
         }
     }
 }

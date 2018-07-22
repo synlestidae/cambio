@@ -51,7 +51,19 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn post_resend_email(&mut self, registration_confirm: &api::ResendEmail) -> Response {
-        unimplemented!()
+        // TODO Does not work yet
+        let registration_result = registration_confirm.identifier_code.get(&mut self.db);
+        let reg: domain::Registration = match registration_result {
+            Ok(reg) => reg,
+            Err(err) => return err.into()
+        };
+        let result = api::RegistrationInfo {
+            email_address: reg.email_address,
+            identifier_code: reg.identifier_code,
+        };
+        let content_type = "application/json".parse::<Mime>().unwrap();
+        let content = serde_json::to_string(&result).unwrap();
+        iron::Response::with((iron::status::Ok, content, content_type))
     }
 
     pub fn post_confirm_register(

@@ -6,6 +6,8 @@ use postgres::rows::Row;
 pub enum AssetType {
     #[postgres(name = "nzd_cent")]
     NZD,
+    #[postgres(name = "aud_cent")]
+    AUD,
     #[postgres(name = "eth_wei")]
     ETH,
     #[postgres(name = "eth_szabo")]

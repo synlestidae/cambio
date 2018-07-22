@@ -1,5 +1,7 @@
+use domain::IdentifierCode;
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct ResendEmail {
-    email_address: String,
-    identifier_code: String,
+    pub email_address: String,
+    pub identifier_code: IdentifierCode
 }

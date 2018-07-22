@@ -113,7 +113,7 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
         }
     }
 
-    pub fn get_settlement_status(&mut self, request: &mut iron::Request) -> iron::Response {
+    pub fn get_settlement_status(&mut self, request: &domain::OrderId) -> iron::Response {
         unimplemented!()
     }
 }

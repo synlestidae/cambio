@@ -121,7 +121,9 @@ impl Handler for ApiHandler {
                     SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
                         settlement_api.post_settlement_eth_auth(&user, order_id, &cred)
                     },
-                    SettlementRequest::GetSettlementStatus(..) => unimplemented!()
+                    SettlementRequest::GetSettlementStatus(order_id) => {
+                        settlement_api.get_settlement_status(&order_id)
+                    }
                 }
             }
             ApiRequest::Payment(payment_req) => unimplemented!(),
