@@ -16,6 +16,8 @@ use repository::RepoUpdate;
 use services;
 use std::sync::mpsc::Sender;
 use web3::types::U256;
+use serde_json;
+use hyper::mime::Mime;
 
 pub struct SettlementApiImpl<C: GenericConnection> {
     job_tx: Sender<JobRequest>,
@@ -113,7 +115,13 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
         }
     }
 
-    pub fn get_settlement_status(&mut self, request: &domain::OrderId) -> iron::Response {
-        unimplemented!()
+    pub fn get_settlement_status(&mut self, order_id: &domain::OrderId) -> iron::Response {
+        let settlement: domain::OrderSettlement = match order_id.get(&mut self.db) {
+            Ok(settlement) => settlement,
+            Err(err) => return err.into()
+        };
+        let content_type = "application/json".parse::<Mime>().unwrap();
+        let content = serde_json::to_string(&settlement).unwrap();
+        iron::Response::with((iron::status::Ok, content, content_type))
     }
 }
