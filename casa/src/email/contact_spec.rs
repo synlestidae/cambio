@@ -1,8 +1,8 @@
 use lettre::EmailAddress;
 
 pub struct ContactSpec {
-    pub from_address: EmailAddress,
-    pub to_address: EmailAddress,
+    pub from: EmailAddress,
+    pub to: EmailAddress,
     pub from_name: Option<String>,
     pub to_name: Option<String>
 }
@@ -10,8 +10,8 @@ pub struct ContactSpec {
 impl ContactSpec {
     pub fn new_from_to(from: &EmailAddress, to: &EmailAddress) -> Self {
         Self {
-            from_address: from.clone(),
-            to_address: to.clone(),
+            from: from.clone(),
+            to: to.clone(),
             from_name: None,
             to_name: None
         }

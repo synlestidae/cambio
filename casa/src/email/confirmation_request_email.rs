@@ -1,6 +1,7 @@
 use email::to_email_message::ToEmailMessage;
 use email::contact_spec::ContactSpec;
 use email::email_message::EmailMessage;
+use email::message_body::MessageBody;
 
 pub struct ConfirmationRequestEmail {
     confirmation_code: String,
@@ -14,11 +15,31 @@ impl ConfirmationRequestEmail {
             given_name: given_name
         }
     }
+
+    fn get_subject(&self) -> String {
+        format!("{} is your Cambio confirmation code", self.confirmation_code)
+    }
+
+    fn get_body(&self) -> String {
+        format!("Hi {given_name},\r\n
+\r\n
+Your registration on Cambio.co.nz is almost confirmed. Just enter {confirmation_code} on the signup page to continue. If you didn't request this email, please ignore it as no action is required on your part.\r\n
+\r\n
+The Cambio team
+", given_name=self.given_name, confirmation_code=self.confirmation_code)
+    }
 }
 
 impl ToEmailMessage for ConfirmationRequestEmail {
     fn to_email_message(&self, contact: &ContactSpec) -> EmailMessage {
-        unimplemented!()
+        EmailMessage {
+            from: contact.from.clone(),
+            from_name: contact.from_name.clone(),
+            to: contact.to.clone(),
+            to_name: contact.to_name.clone(),
+            subject: self.get_subject(),
+            body: MessageBody::PlainText(self.get_body())
+        }
     }
 }
 
