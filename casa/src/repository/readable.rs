@@ -7,7 +7,6 @@ use domain;
 use payment;
 use postgres;
 use postgres::GenericConnection;
-use query::Selectable;
 use repository;
 use repository::RepoRead;
 use repository::UserClause;
@@ -169,7 +168,7 @@ impl Readable<domain::EthAccount> for domain::EthAccountId {
     }
 }
 
-impl<E> Readable<E> for Selectable<E>
+/*impl<E> Readable<E> for Selectable<E>
 where
     E: TryFromRow,
 {
@@ -177,7 +176,7 @@ where
         let sql = self.get_specifier().get_sql_query();
         PostgresHelperImpl::query(db, &sql, &[])
     }
-}
+}*/
 
 impl Readable<domain::OrderSettlement> for domain::OrderId {
     fn get_vec<H: GenericConnection>(
