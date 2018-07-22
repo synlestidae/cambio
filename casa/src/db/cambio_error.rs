@@ -6,6 +6,7 @@ use iron;
 use postgres;
 use r2d2;
 use services::PoliError;
+use payment::poli::RemoteTransactionError;
 use std::error;
 use std::error::Error as StdError;
 use std::fmt;
@@ -217,6 +218,22 @@ impl From<PoliError> for CambioError {
         CambioError {
             user_message: "A fatal error occurred while handling your payment.".to_string(),
             system_message: err.description().to_string(),
+            kind: ErrorKind::PaymentApi,
+            reccomendation: ErrorReccomendation::ContactProgrammer,
+        }
+    }
+}
+
+impl From<RemoteTransactionError> for CambioError {
+    fn from(err: RemoteTransactionError) -> Self {
+        let suffix = if let Some(m) = err.error_message { 
+            format!(": {}", m) 
+        } else {  
+            format!("") 
+        };
+        CambioError {
+            user_message: "A fatal error occurred while handling your payment.".to_string(),
+            system_message: format!("POLi error{}", suffix),
             kind: ErrorKind::PaymentApi,
             reccomendation: ErrorReccomendation::ContactProgrammer,
         }

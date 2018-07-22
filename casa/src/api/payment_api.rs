@@ -68,11 +68,16 @@ impl<C: GenericConnection> PaymentApi<C> {
         let poli_tx = match poli_tx_result {
             Ok(tx) => match tx.get_transaction() {
                 Ok(tx) => tx,
-                Err(_) => unimplemented!(),
+                Err(Some(err)) => {
+                    return Err(err.into());
+                },
+                Err(None) => return Err(CambioError::shouldnt_happen(
+                    "There was an unknown error with the Poli transation", 
+                    "Poli service get_transaction returned a transaction with unknown error"
+                ))
             },
             Err(err) => {
-                //self.save_in_log(&mut conn, &None, &err);
-                return Err(err.into());
+                return Err(err.into())
             }
         };
         let mut payment_request = try!(nudge.token.get(&mut conn));

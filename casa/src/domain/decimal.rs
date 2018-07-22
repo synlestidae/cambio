@@ -5,12 +5,12 @@ use serde::de::Error;
 use serde::*;
 use serde_json::Value;
 use std;
-use std::error::Error as StdError;
+use std::error;//::Error as StdError;
 use std::fmt;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
 
-type ToSqlResult = Result<IsNull, Box<StdError + 'static + Send + Sync>>;
+type ToSqlResult = Result<IsNull, Box<error::Error + 'static + Send + Sync>>;
 
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub struct Decimal {
@@ -132,7 +132,7 @@ impl<'de> Deserialize<'de> for Decimal {
             )));
         };
         match Self::from_str(&decimal_string) {
-            Err(err) => unimplemented!("How do I handle {}? {}", decimal_string, err),
+            Err(err) => Err(D::Error::custom(err)),
             Ok(val) => Ok(val),
         }
     }
@@ -156,25 +156,34 @@ impl ToSql for Decimal {
 }
 
 impl FromSql for Decimal {
-    fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
+    fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
         let value = try!(i64::from_sql(ty, raw));
-        Ok(Decimal::from_cents(value)) //.map_err(|e| Box::new(e))
+        Ok(Decimal::from_cents(value))
     }
 
     fn accepts(ty: &Type) -> bool {
         true
     }
 
-    fn from_sql_null(ty: &Type) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
+    fn from_sql_null(ty: &Type) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
         let value = try!(String::from_sql_null(ty));
-        Decimal::from_str(&value).map_err(|e| unimplemented!("Cannot get Decimal from SQL NULL"))
+        Decimal::from_str(&value).map_err(err_currency_format)
     }
 
     fn from_sql_nullable(
         ty: &Type,
         raw: Option<&[u8]>,
-    ) -> Result<Self, Box<StdError + 'static + Send + Sync>> {
+    ) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
         let value = try!(String::from_sql_nullable(ty, raw));
-        Decimal::from_str(&value).map_err(|e| unimplemented!("Cannot get Decimal from SQL NULL"))
+        Decimal::from_str(&value).map_err(err_format_obj)
     }
+}
+
+
+fn err_currency_format(e: &str) -> Box<error::Error + Send + Sync + 'static> {
+    Box::new(CambioError::format_obj("Currency was in incorrect format", e))
+}
+
+fn err_format_obj(e: &str) -> Box<error::Error + Send + Sync + 'static> {
+    Box::new(CambioError::format_obj("Failed to load currency from database.", e))
 }

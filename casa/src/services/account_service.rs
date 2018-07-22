@@ -44,7 +44,7 @@ impl AccountService {
     ) -> Result<Vec<Transaction>, CambioError> {
         //let transactions = try!(db.query(LATEST_STATEMENT_QUERY, &[&account_id]));
         //Ok(transactions)
-        unimplemented!()
+        unimplemented!("Please change LATEST_STATEMENT_QUERY to load Transactions")
     }
 }
 
