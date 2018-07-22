@@ -112,9 +112,6 @@ impl Handler for ApiHandler {
                     AccountRequest::GetAccountTransactions(account_id) => {
                         account_api.get_transactions(&user, account_id)
                     }
-                    AccountRequest::GetAccountTransaction(account_id, transaction_id) => {
-                        account_api.get_transaction(&user, account_id, transaction_id)
-                    }
                 }
             }
             ApiRequest::Settlement(settlement_request) => {
@@ -123,8 +120,8 @@ impl Handler for ApiHandler {
                 match settlement_request {
                     SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
                         settlement_api.post_settlement_eth_auth(&user, order_id, &cred)
-                    }
-                    _ => unimplemented!(),
+                    },
+                    SettlementRequest::GetSettlementStatus(..) => unimplemented!()
                 }
             }
             ApiRequest::Payment(payment_req) => unimplemented!(),

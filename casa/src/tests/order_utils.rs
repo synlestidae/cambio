@@ -83,34 +83,6 @@ pub fn quick_credit(who: &str, how_much: u32) {
         .unwrap();
 }
 
-pub fn quick_credit_szabo(who: &str, how_much: u64) {
-    use std::process::Command;
-    unimplemented!()
-    /*let mut db = get_db_connection();
-    let mut wei = web3::types::U256::from(how_much);
-    wei = wei.full_mul(web3::types::U256::exp10(12)).into();
-    let clause = repository::UserClause::EmailAddress(who.to_owned());
-    let account: domain::EthAccount = unimplemented!();//eth_account_repo.read(&clause).unwrap().pop().unwrap();
-    let args = &[
-        "../moneda/index.js",
-        IPC_ADDRESS,
-        "0xA990F82d33Fd19C3872dc12c588A66224b9330A6",
-        &format!("0x{:#x}", account.address),
-        &format!("0x{:#x}", wei),
-        "77173c4b349c6342ae695f86c5610688606de77361769bd8919301fc55823f1b",
-    ];
-    let mut output = Command::new("node")
-        .args(args)
-        .spawn()
-        .expect("failed to execute process")
-        .wait_with_output()
-        .unwrap();
-    if !output.status.success() {
-        let error = String::from_utf8(output.stderr).unwrap();
-        panic!("Failed to credit account. Program error.\n{}", error); //: '{}'\nError below: \n {}", stdout_str, stderr_str);// output: {}\n", err_str);
-    }*/
-}
-
 pub fn fake_details() -> PersonalDetails {
     PersonalDetails {
         first_names: "Jerry John".to_owned(),

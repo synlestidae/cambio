@@ -31,7 +31,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    fn create_order<D: GenericConnection>(
+    pub fn create_order<D: GenericConnection>(
         &self,
         db: &mut D,
         order: &api::OrderRequest,
@@ -52,10 +52,8 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             err => Err(utils::to_response(err)),
         }
     }
-}
 
-impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
-    fn get_active_orders(&mut self) -> iron::Response {
+    pub fn get_active_orders(&mut self) -> iron::Response {
         let order_result = domain::All.get_vec(&mut self.db);
         match order_result {
             Ok(orders) => utils::to_response(Ok(orders)),
@@ -63,7 +61,7 @@ impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
         }
     }
 
-    fn get_user_orders(&mut self, user: &domain::User) -> iron::Response {
+    pub fn get_user_orders(&mut self, user: &domain::User) -> iron::Response {
         let owner_id = match user.owner_id {
             Some(ref o) => o,
             None => {
@@ -80,7 +78,7 @@ impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
         }
     }
 
-    fn post_new_order(&mut self, user: &domain::User, order: &api::OrderRequest) -> iron::Response {
+    pub fn post_new_order(&mut self, user: &domain::User, order: &api::OrderRequest) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
         if order.sell_asset_type.is_crypto() && order.max_wei.is_none() {
             const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
@@ -96,7 +94,7 @@ impl<C: GenericConnection> api::OrderApiTrait for api::OrderApiImpl<C> {
         }
     }
 
-    fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
+    pub fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
         info!(
             "User {} is completing order {:?}",
             user.email_address, order.order_id

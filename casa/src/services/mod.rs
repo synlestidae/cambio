@@ -5,7 +5,6 @@ mod logged_poli_error;
 mod order_service;
 mod poli_error;
 mod poli_service;
-mod profile_service;
 mod settlement_service;
 mod user_service;
 
@@ -16,6 +15,5 @@ pub use self::logged_poli_error::*;
 pub use self::order_service::OrderService;
 pub use self::poli_error::PoliError;
 pub use self::poli_service::PoliService;
-pub use self::profile_service::ProfileService;
 pub use self::settlement_service::SettlementService;
 pub use self::user_service::UserService;

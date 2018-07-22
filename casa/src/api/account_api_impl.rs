@@ -1,5 +1,5 @@
 use api::utils::{get_session_token, to_response};
-use api::{AccountApiTrait, ApiError, ApiResult, ErrorType};
+use api::{ApiError, ApiResult, ErrorType};
 use db::{CambioError, ConnectionSource, PostgresHelper};
 use domain::{
     Account, AccountId, AccountStatement, Id, OwnerId, Session, Transaction, TransactionId, User,
@@ -29,7 +29,7 @@ impl<C: GenericConnection> AccountApiImpl<C> {
         }
     }
 
-    fn get_statement(
+    pub fn get_statement(
         &mut self,
         user: &User,
         account_id: AccountId,
@@ -50,10 +50,8 @@ impl<C: GenericConnection> AccountApiImpl<C> {
             err => Err(to_response(err)),
         }
     }
-}
 
-impl<C: GenericConnection> AccountApiTrait for AccountApiImpl<C> {
-    fn get_accounts(&mut self, user: &User) -> iron::Response {
+    pub fn get_accounts(&mut self, user: &User) -> iron::Response {
         let accounts: Vec<Account> = match user.owner_id.unwrap().get_vec(&mut self.db) {
             Ok(a) => a,
             Err(err) => {
@@ -68,43 +66,18 @@ impl<C: GenericConnection> AccountApiTrait for AccountApiImpl<C> {
         to_response::<Vec<Account>>(Ok(visible_accounts))
     }
 
-    fn get_account(&mut self, user: &User, account_id: AccountId) -> iron::Response {
+    pub fn get_account(&mut self, user: &User, account_id: AccountId) -> iron::Response {
         match account_id.get(&mut self.db) {
             Ok(account) => to_response(Ok(account)),
             Err(err) => err.into(),
         }
     }
 
-    fn get_transactions(&mut self, user: &User, account_id: AccountId) -> iron::Response {
+    pub fn get_transactions(&mut self, user: &User, account_id: AccountId) -> iron::Response {
         match self.get_statement(user, account_id) {
             Ok(statement) => to_response(Ok(statement.transactions)),
             Err(err) => err,
         }
-    }
-
-    fn get_transaction(
-        &mut self,
-        user: &User,
-        account_id: AccountId,
-        tx_id: TransactionId,
-    ) -> iron::Response {
-        unimplemented!()
-        /*let statement = match self.get_statement(user, account_id) {
-            Ok(s) => s,
-            Err(err) => return err,
-        };
-        for tx in statement.transactions.into_iter() {
-            if tx.id == tx_id {
-                return to_response(Ok(tx));
-            }
-        }
-        to_response::<Transaction>(Err(CambioError::not_found_search(
-            &format!(
-                "Transaction with ID {:?} not found in latest statement",
-                tx_id
-            ),
-            "Could not find that transaction",
-        )))*/
     }
 }
 

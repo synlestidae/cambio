@@ -119,9 +119,11 @@ impl EthereumService {
         };
 
         let tx_request = try!(self.get_request(&transfer));
-        let outbound_transaction = try!(self.send_transaction(tx_request));
-
-        unimplemented!()
+        let eth_transaction = try!(self.send_transaction(tx_request));
+        Ok(EthereumOutboundTransaction {
+            id: None,
+            eth_transaction: eth_transaction
+        })
     }
 }
 

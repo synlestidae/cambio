@@ -78,8 +78,4 @@ impl SettlementService {
         let email_address = user.email_address.to_owned();
         owner_id.get(db)
     }
-
-    fn get_cost(&self) -> Result<u64, db::CambioError> {
-        unimplemented!()
-    }
 }
