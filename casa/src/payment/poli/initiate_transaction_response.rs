@@ -58,7 +58,7 @@ mod test {
     #[test]
     fn test_response_error_deserializes() {
         let d: InitiateTransactionResponse = from_str(RESPONSE_EXAMPLE_ERROR_1).unwrap();
-        let err = d.get_transaction().err().unwrap();
+        let err = d.get_transaction().err().unwrap().unwrap();
         assert_eq!("5005", err.error_code.0);
         assert_eq!("The certificate was bad", err.error_message);
     }
