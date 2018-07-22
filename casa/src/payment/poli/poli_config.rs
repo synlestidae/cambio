@@ -11,5 +11,5 @@ pub struct PoliConfig {
     pub merchant_home_page_url: Url,
     pub notification_url: Url,
     pub unsuccessful_url: Url,
-    pub merchant_checkout_url: Url,
+    pub merchant_checkout_url: Option<Url>,
 }

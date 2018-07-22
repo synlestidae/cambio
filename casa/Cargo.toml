@@ -7,12 +7,15 @@ authors = ["Mate Antunovic <just.mate.antunovic@gmail.com>"]
 iron = "0.6.0"
 iron-test = "0.6.0"
 hyper = "0.10"
+url = "1.7.1"
+url_serde = "0.2.0"
 postgres = {version = "0.15.2", features = ["with-chrono"]}
 bcrypt = "0.2.0"
 router = "*"
 serde = "1.0.70"
 serde_derive = "1.0.34"
 serde_json = "1.0"
+toml = "0.4"
 chrono =  { version = "0.4", features = ["serde"] }
 time = "*"
 checkmail = "0.1.1"
@@ -46,6 +49,3 @@ branch ="drop_event_handle"
 [dependencies.params]
 git = "https://github.com/iron/params.git"
 tag = "0.7.1" 
-
-[dependencies.bodyparser]
-git = "https://github.com/iron/body-parser.git"

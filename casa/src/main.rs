@@ -1,8 +1,8 @@
 #![feature(custom_attribute)]
 #![feature(try_from)]
+#![feature(extern_prelude)]
 
 extern crate bcrypt;
-extern crate bodyparser;
 extern crate checkmail;
 extern crate chrono;
 extern crate env_logger;
@@ -20,6 +20,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate time;
 extern crate uuid;
+extern crate toml;
 
 #[macro_use]
 extern crate try_from_row;
@@ -43,6 +44,7 @@ extern crate rlp;
 extern crate secp256k1;
 extern crate serde_urlencoded;
 extern crate threadpool;
+extern crate url;
 extern crate web3;
 
 mod api;
@@ -54,6 +56,7 @@ mod payment;
 mod repository;
 mod services;
 mod tests;
+mod config;
 
 use api::ApiError;
 use bcrypt::{hash, verify, DEFAULT_COST};
@@ -69,24 +72,38 @@ use persistent::Read;
 use postgres::{Connection, TlsMode};
 use std::collections::HashSet;
 use std::error::Error;
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{Sender, channel};
 use std::thread;
 use time::PreciseTime;
+use config::*;
+
+const CONFIG_PATH: &'static str = "./config.secret.toml";
 
 fn main() {
-    const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
-    let conn_str = "postgres://mate@localhost:5432/cambio_test";
     env_logger::init().expect("Could not start logger");
-    let middleware = CorsMiddleware {};
+    let config = config::ServerConfig::from_file(CONFIG_PATH)
+        .expect("could not open server config file"); 
+    let tx = start_job_loop(&config);
+    let chain = build_chain(&config, tx);
+    Iron::new(chain).http("0.0.0.0:3000").unwrap();
+}
+
+fn start_job_loop(config: &ServerConfig) -> Sender<jobs::JobRequest> {
     let (tx, rx) = channel();
-    let mut job_loop = JobLoop::new(conn_str, WEB3_ADDRESS, rx);
+    let mut job_loop = JobLoop::new(&config.get_connection_string(), &config.get_web3_address(), rx);
     thread::spawn(move || {
         job_loop.run();
     });
-    let (eloop, transport) = web3::transports::ipc::Ipc::new(WEB3_ADDRESS).unwrap();
+    tx
+}
+
+
+fn build_chain(config: &config::ServerConfig, sender: Sender<jobs::JobRequest>) -> iron::Chain {
+    let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
     let web3 = web3::Web3::new(transport);
-    let api_handler = api::ApiHandler::new(conn_str, web3, tx);
+    let api_handler = api::ApiHandler::new(config, web3, sender);
     let mut chain = iron::Chain::new(api_handler);
+    let middleware = CorsMiddleware {};
     chain.link_around(middleware);
-    Iron::new(chain).http("0.0.0.0:3000").unwrap();
+    chain
 }

@@ -15,17 +15,18 @@ use std::convert::TryFrom;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use web3;
+use config::ServerConfig;
 
 pub struct ApiHandler {
-    conn_str: String,
+    server_config: ServerConfig,
     job_tx: Mutex<Sender<JobRequest>>,
-    web3: web3::Web3<web3::transports::ipc::Ipc>
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
 impl ApiHandler {
-    pub fn new(conn_str: &str, web3: web3::Web3<web3::transports::ipc::Ipc>, job_tx: Sender<JobRequest>) -> Self {
+    pub fn new(server_config: &ServerConfig, web3: web3::Web3<web3::transports::ipc::Ipc>, job_tx: Sender<JobRequest>) -> Self {
         Self {
-            conn_str: conn_str.to_owned(),
+            server_config: server_config.clone(),
             job_tx: Mutex::new(job_tx),
             web3: web3
         }
@@ -34,7 +35,7 @@ impl ApiHandler {
 
 impl Handler for ApiHandler {
     fn handle<'a, 'b>(&self, request: &mut Request<'a, 'b>) -> IronResult<Response> {
-        let conn_str: &str = &self.conn_str;
+        let conn_str: &str = &self.server_config.get_connection_string();
         let mut db = Connection::connect(conn_str, TlsMode::None).unwrap();
         let fake_user = domain::User {
             id: None,

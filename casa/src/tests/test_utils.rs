@@ -19,8 +19,10 @@ use std::process::Command;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use web3;
+use config::ServerConfig;
 
-pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
+//pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
+const CONFIG_PATH: &'static str = "./config.test.toml";
 
 #[allow(dead_code)]
 pub fn setup() {
@@ -60,9 +62,14 @@ pub fn get_db_source() -> PostgresSource {
     PostgresSource::new(TEST_CONN_STR).unwrap()
 }
 
+pub fn get_config() -> ServerConfig {
+    ServerConfig::from_file(CONFIG_PATH).unwrap()
+}
+
 pub fn get_web3() -> (web3::transports::EventLoopHandle, web3::Web3<web3::transports::ipc::Ipc>) {
-     let (eloop, transport) = web3::transports::ipc::Ipc::new(WEB3_ADDRESS).unwrap();
-     (eloop, web3::Web3::new(transport))
+    let config = get_config();
+    let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
+    (eloop, web3::Web3::new(transport))
 }
 
 pub fn get_db_connection() -> postgres::Connection {
@@ -136,7 +143,7 @@ fn make_request<'a, E: Serialize>(
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
     let (eloop, web3) = get_web3();
-    let handler = api::ApiHandler::new(TEST_CONN_STR, web3, tx);
+    let handler = api::ApiHandler::new(&get_config(), web3, tx);
     let response = if is_get {
         request::get(url, headers.clone(), &handler).unwrap()
     } else {

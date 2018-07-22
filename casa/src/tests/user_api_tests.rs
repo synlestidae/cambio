@@ -20,7 +20,7 @@ fn test_registration_successful() {
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
     let (_eloop, web3) = get_web3();
-    let handler = api::ApiHandler::new(TEST_CONN_STR, web3, tx);
+    let handler = api::ApiHandler::new(&get_config(), web3, tx);
     let response = request::post(
         "http://localhost:3000/users/register",
         headers,
@@ -46,7 +46,7 @@ fn test_creates_new_user_and_password_works() {
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     let (tx, rx) = channel();
     let (_eloop, web3) = get_web3();
-    let handler = api::ApiHandler::new(TEST_CONN_STR, web3, tx);
+    let handler = api::ApiHandler::new(&get_config(), web3, tx);
     let register_response = request::post(
         "http://localhost:3000/users/register",
         headers.clone(),
