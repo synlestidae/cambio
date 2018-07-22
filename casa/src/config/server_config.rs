@@ -20,7 +20,7 @@ pub struct ServerConfig {
     notification_url: Url,
     #[serde(with = "url_serde")]
     unsuccessful_url: Url,
-    #[serde(with = "url_serde")]
+    #[serde(with = "url_serde", default)]
     merchant_checkout_url: Option<Url>,
     connection_string: String,
     web3_address: String,

@@ -63,7 +63,8 @@ pub fn get_db_source() -> PostgresSource {
 }
 
 pub fn get_config() -> ServerConfig {
-    ServerConfig::from_file(CONFIG_PATH).unwrap()
+    let config = ServerConfig::from_file(CONFIG_PATH).unwrap();
+    config
 }
 
 pub fn get_web3() -> (web3::transports::EventLoopHandle, web3::Web3<web3::transports::ipc::Ipc>) {
