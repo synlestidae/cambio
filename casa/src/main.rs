@@ -46,6 +46,7 @@ extern crate serde_urlencoded;
 extern crate threadpool;
 extern crate url;
 extern crate web3;
+extern crate lettre;
 
 mod api;
 mod cors_middleware;
@@ -57,6 +58,7 @@ mod repository;
 mod services;
 mod tests;
 mod config;
+mod email;
 
 use api::ApiError;
 use bcrypt::{hash, verify, DEFAULT_COST};
