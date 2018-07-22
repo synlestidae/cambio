@@ -4,7 +4,7 @@ use domain::Id;
 use postgres;
 use postgres::rows::Row;
 
-#[derive(Debug, Clone, PartialEq, Eq, TryFromRow)]
+#[derive(Debug, Clone, PartialEq, Eq, TryFromRow, Serialize)]
 pub struct Address {
     pub id: Option<Id>,
     pub address_line_1: Option<String>,

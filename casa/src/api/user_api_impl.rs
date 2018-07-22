@@ -125,6 +125,12 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn get_profile(&mut self, user: &User) -> Response {
-        unimplemented!()
+        let profile: domain::Profile = match user.id.unwrap().get(&mut self.db) {
+            Ok(p) => p,
+            Err(err) => return err.into()
+        };
+        let content_type = "application/json".parse::<Mime>().unwrap();
+        let content = serde_json::to_string(&profile).unwrap();
+        iron::Response::with((iron::status::Ok, content, content_type))
     }
 }

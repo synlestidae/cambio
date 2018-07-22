@@ -4,7 +4,7 @@ use db::TryFromRowError;
 use domain;
 use postgres::rows::Row;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Profile {
     pub id: Option<domain::ProfileId>,
     pub user_id: domain::UserId,
