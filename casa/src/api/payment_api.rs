@@ -108,7 +108,7 @@ impl<C: GenericConnection> PaymentApi<C> {
         let user_wallet_account_id = account_set.nzd_wallet();
 
         // check deduct account has role System and business type SystemFeesPaid
-        let poli_deduct_account = try!(poli_deduct_account_id.get(&mut conn));
+        let poli_deduct_account: Account = try!(poli_deduct_account_id.get(&mut conn));
         if !poli_deduct_account.is_for_deducting_payments() {
             payment_request.payment_status = PaymentStatus::Unknown;
             try!(payment_request.update(&mut conn));

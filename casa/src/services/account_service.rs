@@ -37,28 +37,34 @@ impl AccountService {
         })
     }
 
-    pub fn get_transactions_for_account(
+    pub fn get_transactions_for_account<C: GenericConnection>(
         &self,
-        db: &mut GenericConnection,
+        db: &mut C,
         account_id: AccountId,
     ) -> Result<Vec<Transaction>, CambioError> {
-        //let transactions = try!(db.query(LATEST_STATEMENT_QUERY, &[&account_id]));
-        //Ok(transactions)
-        unimplemented!("Please change LATEST_STATEMENT_QUERY to load Transactions")
+        let transactions = account_id.get_vec(db)?;
+        Ok(transactions)
     }
 }
 
 const LATEST_STATEMENT_QUERY: &'static str = "
-    SELECT *, users.id as user_id, journal.id as journal_entry_id, journal.account_id AS to_account_id, account.asset_type as asset_type
-    FROM journal
-        JOIN account ON journal.account_id = account.id
-        JOIN account_owner ON account.owner_id = account_owner.id
-        JOIN users ON account_owner.user_id = users.id 
-        JOIN accounting_period ON journal.accounting_period = accounting_period.id
-        JOIN authorship ON journal.authorship_id = authorship.id
-    WHERE
-        journal.correspondence_id = journal.correspondence_id AND
-        account.id = $1 AND
-        accounting_period.id = (SELECT MAX(id) FROM accounting_period) 
-    ORDER BY journal.id
+    SELECT 
+        journal_to.correspondence_id,
+        journal_from.account_id as from_account, 
+        journal_to.account_id as to_account, 
+        journal_from.asset_type, 
+        journal_from.debit as value, 
+        journal_from.transaction_time, 
+        journal_from.accounting_period as accounting_period_id,
+        journal_to.balance as balance_to_account
+    FROM 
+        journal journal_from,
+        journal journal_to
+    WHERE 
+        journal_to.account_id = $1
+        journal_from.correspondence_id = journal_to.correspondence_id AND
+        journal_from.correspondence_id = $1 AND 
+        journal_from.debit >= 0 AND 
+        journal_to.credit >= 0
+    ORDER BY journal_to.correspondence_id
 ";

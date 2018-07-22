@@ -158,6 +158,36 @@ impl Readable<domain::Account> for domain::AccountId {
     }
 }
 
+impl Readable<domain::Transaction> for domain::AccountId {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::Transaction>, CambioError> {
+        const SELECT_TRANSACTIONS: &'static str = "
+            SELECT 
+                journal_to.correspondence_id,
+                journal_from.account_id as from_account, 
+                journal_to.account_id as to_account, 
+                journal_from.asset_type, 
+                journal_from.debit as value, 
+                journal_from.transaction_time, 
+                journal_from.accounting_period as accounting_period_id,
+                journal_to.balance as balance_to_account
+            FROM 
+                journal journal_from,
+                journal journal_to
+            WHERE 
+                journal_to.account_id = $1
+                journal_from.correspondence_id = journal_to.correspondence_id AND
+                journal_from.correspondence_id = $1 AND 
+                journal_from.debit >= 0 AND 
+                journal_to.credit >= 0
+            ORDER BY journal_to.correspondence_id
+        ";
+        PostgresHelperImpl::query(db, SELECT_TRANSACTIONS, &[self])
+    }
+}
+
 impl Readable<domain::EthAccount> for domain::EthAccountId {
     fn get_vec<H: GenericConnection>(
         &self,

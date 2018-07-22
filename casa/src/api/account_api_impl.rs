@@ -35,7 +35,7 @@ impl<C: GenericConnection> AccountApiImpl<C> {
         account_id: AccountId,
     ) -> Result<AccountStatement, iron::Response> {
         let account_service = AccountService::new();
-        let account = match account_id.get(&mut self.db) {
+        let account: Account = match account_id.get(&mut self.db) {
             Ok(a) => a,
             Err(err) => return Err(err.into()),
         };
@@ -67,10 +67,11 @@ impl<C: GenericConnection> AccountApiImpl<C> {
     }
 
     pub fn get_account(&mut self, user: &User, account_id: AccountId) -> iron::Response {
-        match account_id.get(&mut self.db) {
-            Ok(account) => to_response(Ok(account)),
-            Err(err) => err.into(),
-        }
+        let account: Account = match account_id.get(&mut self.db) {
+            Ok(account) => account,
+            Err(err) => return err.into(),
+        };
+        to_response(Ok(account))
     }
 
     pub fn get_transactions(&mut self, user: &User, account_id: AccountId) -> iron::Response {
