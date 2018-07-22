@@ -108,7 +108,9 @@ impl<C: GenericConnection> PaymentApi<C> {
             payment_request.payment_status = PaymentStatus::Unknown;
             try!(payment_request.update(&mut conn));
             conn.commit();
-            unimplemented!()
+            return Err(CambioError::shouldnt_happen("Error while finding account to credit.", 
+                &format!("Poli deduct account returned false for is_for_deducting_payments"))
+            );
         }
         // credited account already assured by nzd_wallet() logic
         // account may now be credited

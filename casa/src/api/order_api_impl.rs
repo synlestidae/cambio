@@ -9,7 +9,6 @@ use hyper::mime::Mime;
 use iron;
 use postgres::transaction::Transaction;
 use postgres::GenericConnection;
-use repositories;
 use repository;
 use repository::Creatable;
 use repository::Readable;

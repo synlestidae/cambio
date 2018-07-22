@@ -18,32 +18,6 @@ pub struct Transaction {
     pub balance_to_account: i64,
 }
 
-impl Transaction {
-    pub fn waller_to_hold() -> Self {
-        unimplemented!()
-    }
-
-    pub fn hold_reversal() -> Self {
-        unimplemented!()
-    }
-
-    pub fn hold_to_wallet() -> Self {
-        unimplemented!()
-    }
-
-    pub fn fee_transfer() -> Self {
-        unimplemented!()
-    }
-
-    pub fn wallet_deposit() -> Self {
-        unimplemented!()
-    }
-
-    pub fn wallet_withdrawal() -> Self {
-        unimplemented!()
-    }
-}
-
 /*impl TryFromRow for Transaction {
     fn try_from_row<'a>(row: &Row<'a>) -> Result<Self, TryFromRowError> {
         let transaction_id_match: Option<TransactionId> = row.get("journal_entry_id");

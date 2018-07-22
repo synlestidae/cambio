@@ -52,7 +52,6 @@ mod domain;
 mod jobs;
 mod payment;
 mod query;
-mod repositories;
 mod repository;
 mod services;
 mod tests;

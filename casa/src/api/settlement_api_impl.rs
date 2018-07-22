@@ -12,7 +12,6 @@ use iron;
 use jobs::JobRequest;
 use postgres::GenericConnection;
 use query::Selectable;
-use repositories;
 use repository::Readable;
 use repository::RepoUpdate;
 use services;

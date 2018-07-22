@@ -8,7 +8,6 @@ use payment;
 use postgres;
 use postgres::GenericConnection;
 use query::Selectable;
-use repositories;
 use repository;
 use repository::RepoRead;
 use repository::UserClause;
