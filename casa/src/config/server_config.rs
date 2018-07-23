@@ -3,6 +3,7 @@ use url::Url;
 use serde_derive;
 use toml;
 use std::io;
+use config::EmailConfig;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct ServerConfig {
@@ -24,6 +25,8 @@ pub struct ServerConfig {
     merchant_checkout_url: Option<Url>,
     connection_string: String,
     web3_address: String,
+    noreply_email_address: String,
+    noreply_password: String
 }
 
 impl ServerConfig {
@@ -43,6 +46,10 @@ impl ServerConfig {
             unsuccessful_url: self.unsuccessful_url.clone(),
             merchant_checkout_url: self.merchant_checkout_url.clone(),
         }
+    }
+
+    pub fn get_email_config(&self) -> EmailConfig {
+        unimplemented!()
     }
 
     pub fn get_web3_address(&self) -> String {

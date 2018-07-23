@@ -42,6 +42,7 @@ threadpool = "1.7.1"
 tokio-postgres = "0.3.0"
 serde_urlencoded = "0.5.1"
 lettre = "0.8.2"
+lettre_email = "0.8.2"
 
 [dependencies.web3]
 git = "https://github.com/synlestidae/rust-web3"
