@@ -15,6 +15,7 @@ use std::sync::mpsc::Receiver;
 use threadpool::ThreadPool;
 use web3::types::U256;
 use web3;
+use jobs::EmailRequest;
 
 pub struct JobLoop {
     conn_str: String,
@@ -62,8 +63,15 @@ impl JobLoop {
                     Ok(_) => info!("Successful settlement!"),
                     Err(err) => warn!("Bad settlement! {:?}", err),
                 }
+            },
+            JobRequest::SendEmail(request) => {
+                self.send_email(request).unwrap();
             }
         }
+    }
+
+    fn send_email(&mut self, email_request: EmailRequest) -> Result<(), db::CambioError> {
+        unimplemented!()
     }
 
     fn begin_settlement(
@@ -166,19 +174,4 @@ impl JobLoop {
 
         settlement.update(&mut db).map(|_| ())
     }
-
-    /*fn get_eth_account<H: PostgresHelper>(&mut self, order: &domain::Order, db: &mut H) 
-        -> Result<domain::EthAccount, db::CambioError> {
-        let owner_id = try!(order.owner_id.get(db));
-        let clause = repository::UserClause::Id(owner_id.into());
-        let user = try!(owner_id.get(&mut db));
-        let email_address = user.email_address.to_owned();
-        let eth_clause = repository::UserClause::EmailAddress(email_address);
-        let mut eth_account_match = try!(self.eth_repo.read(&eth_clause));
-        let not_found_error = db::CambioError::not_found_search(
-            "User does not have an Ethereum account yet.",
-            "Could not find Ethereum account.",
-        );
-        eth_account_match.pop().ok_or(not_found_error)
-    }*/
 }
