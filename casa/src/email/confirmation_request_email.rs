@@ -32,14 +32,10 @@ The Cambio team
 
 impl ToEmailMessage for ConfirmationRequestEmail {
     fn to_email_message(&self, contact: &ContactSpec) -> EmailMessage {
-        EmailMessage {
-            from: contact.from.clone(),
-            from_name: contact.from_name.clone(),
-            to: contact.to.clone(),
-            to_name: contact.to_name.clone(),
-            subject: self.get_subject(),
-            body: MessageBody::PlainText(self.get_body())
-        }
+        EmailMessage::new_plain(&contact.from, 
+            &contact.to, 
+            &self.get_subject(), 
+            &self.get_body())
     }
 }
 
