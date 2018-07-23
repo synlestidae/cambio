@@ -1,6 +1,9 @@
+use lettre::EmailAddress;
+
 #[derive(Clone)]
 pub struct EmailConfig {
-    pub login: String,
-    pub password: String,
-    pub server_host: String
+    pub login: EmailAddress,
+    pub email_address: EmailAddress,
+    pub password: EmailAddress,
+    pub server_host: EmailAddress,
 }

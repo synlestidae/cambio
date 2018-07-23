@@ -12,9 +12,12 @@ use repository::{Creatable, Readable};
 use serde_json;
 use services::UserService;
 use web3;
+// This shit shouldn't really be here
 use config::EmailConfig;
 use email::ConfirmationRequestEmail;
 use email::EmailClient;
+use email::ContactSpec;
+use lettre::EmailAddress;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
@@ -54,7 +57,11 @@ impl<C: GenericConnection> UserApi<C> {
             &created_reg.confirmation_code, 
             "customer"
         );
-        EmailClient::new(&self.email_config).send(unimplemented!(), &email).unwrap();
+        let contact = ContactSpec::new_from_to(
+            &self.email_config.email_address, 
+            &EmailAddress::new(result.email_address.clone()).unwrap()
+        );
+        EmailClient::new(&self.email_config).send(&contact, &email).unwrap();
 
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();
