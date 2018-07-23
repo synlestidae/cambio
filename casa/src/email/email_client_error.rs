@@ -2,6 +2,7 @@ use email::smtp_error::SMTPError;
 use email::smtp_response::SMTPResponse;
 use lettre::smtp::error::Error as LettreError;
 
+#[derive(Debug)]
 pub enum EmailClientError {
     SMTPError(SMTPError),
     SMTPFail(SMTPResponse),

@@ -12,17 +12,22 @@ use repository::{Creatable, Readable};
 use serde_json;
 use services::UserService;
 use web3;
+use config::EmailConfig;
+use email::ConfirmationRequestEmail;
+use email::EmailClient;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
-    web3: web3::Web3<web3::transports::ipc::Ipc>
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
+    email_config: EmailConfig
 }
 
 impl<C: GenericConnection> UserApi<C> {
-    pub fn new(db: C, web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
+    pub fn new(db: C, web3: web3::Web3<web3::transports::ipc::Ipc>, email_config: &EmailConfig) -> Self {
         Self {
             db: db,
-            web3: web3
+            web3: web3,
+            email_config: email_config.clone()
         }
     }
 
@@ -44,6 +49,12 @@ impl<C: GenericConnection> UserApi<C> {
             email_address: created_reg.email_address,
             identifier_code: created_reg.identifier_code,
         };
+
+        let email = ConfirmationRequestEmail::new(
+            &created_reg.confirmation_code, 
+            "customer"
+        );
+        EmailClient::new(&self.email_config).send(unimplemented!(), &email).unwrap();
 
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();
