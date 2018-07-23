@@ -13,12 +13,6 @@ use repository::{Creatable, Readable};
 use serde_json;
 use services::UserService;
 use web3;
-// This shit shouldn't really be here
-/*use config::EmailConfig;
-use email::ConfirmationRequestEmail;
-use email::EmailClient;
-use email::ContactSpec;
-use email::ToEmailMessage;*/
 use jobs;
 use lettre::EmailAddress;
 use std::sync::mpsc::Sender;
@@ -64,22 +58,12 @@ impl<C: GenericConnection> UserApi<C> {
             identifier_code: created_reg.identifier_code,
         };
 
-        /*let email = ConfirmationRequestEmail::new(
-            &created_reg.confirmation_code, 
-            "customer"
-        );*/
         let request = jobs::EmailRequest::confirmation_email(
             &self.email_config.email_address,
             &EmailAddress::new(email_address).unwrap(),
             "user",
             &created_reg.confirmation_code,
         );
-        /*let contact = ContactSpec::new_from_to(
-            &self.email_config.email_address, 
-            &EmailAddress::new(result.email_address.clone()).unwrap()
-        );*/
-        //let msg = email.to_email_message(&contact);
-        //EmailClient::new(&self.email_config).send(&msg).unwrap();
 
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();
