@@ -50,7 +50,11 @@ impl ServerConfig {
     }
 
     pub fn get_email_noreply_config(&self) -> EmailConfig {
-        unimplemented!()
+        EmailConfig {
+            login: self.noreply_email_address.to_string(),
+            password: self.noreply_password.to_string(),
+            server_host: self.email_server_host.to_string()
+        }
     }
 
     pub fn get_web3_address(&self) -> String {
