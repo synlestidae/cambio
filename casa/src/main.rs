@@ -47,6 +47,7 @@ extern crate threadpool;
 extern crate url;
 extern crate web3;
 extern crate lettre;
+extern crate lettre_email;
 
 mod api;
 mod cors_middleware;
