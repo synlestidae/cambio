@@ -3,6 +3,7 @@ use lettre::smtp::error::Error as LettreError;
 #[derive(Debug)]
 pub struct SMTPError {
     can_retry: bool,
+    original_error: LettreError
 }
 
 impl From<LettreError> for SMTPError {
@@ -13,7 +14,8 @@ impl From<LettreError> for SMTPError {
             _ => true
         };
         Self {
-            can_retry: can_retry
+            can_retry: can_retry,
+            original_error: err
         }
     }
 }
