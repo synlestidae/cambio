@@ -4,6 +4,7 @@ use serde_derive;
 use toml;
 use std::io;
 use config::EmailConfig;
+use lettre::EmailAddress;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct ServerConfig {
@@ -51,9 +52,10 @@ impl ServerConfig {
 
     pub fn get_email_noreply_config(&self) -> EmailConfig {
         EmailConfig {
-            login: self.noreply_email_address.to_string(),
-            password: self.noreply_password.to_string(),
-            server_host: self.email_server_host.to_string()
+            login: EmailAddress::new(self.noreply_email_address.clone()).unwrap(),
+            email_address: EmailAddress::new(self.noreply_email_address.clone()).unwrap(),
+            password: EmailAddress::new(self.noreply_password.clone()).unwrap(),
+            server_host: EmailAddress::new(self.email_server_host.clone()).unwrap()
         }
     }
 
