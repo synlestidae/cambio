@@ -39,7 +39,7 @@ fn test_creates_new_user_and_password_works() {
 
     let mut db = get_db_connection();
     let new_user = r#"{
-        "email_address": "pat@coolcat.com",
+        "email_address": "just.mate.antunovic@gmail.com",
         "password": "supersecret1234"
     }"#;
     let mut headers = Headers::new();
