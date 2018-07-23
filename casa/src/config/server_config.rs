@@ -26,7 +26,8 @@ pub struct ServerConfig {
     connection_string: String,
     web3_address: String,
     noreply_email_address: String,
-    noreply_password: String
+    noreply_password: String,
+    email_server_host: String
 }
 
 impl ServerConfig {
