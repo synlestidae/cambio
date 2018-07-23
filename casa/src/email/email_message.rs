@@ -5,12 +5,12 @@ use lettre_email::Email;
 use email::message_body::MessageBody;
 
 pub struct EmailMessage {
-    from: EmailAddress,
-    from_name: Option<String>,
-    to: EmailAddress,
-    to_name: Option<String>,
-    subject: String,
-    body: MessageBody
+    pub from: EmailAddress,
+    pub from_name: Option<String>,
+    pub to: EmailAddress,
+    pub to_name: Option<String>,
+    pub subject: String,
+    pub body: MessageBody
 }
 
 impl EmailMessage {
