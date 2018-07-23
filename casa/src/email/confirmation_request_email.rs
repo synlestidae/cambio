@@ -9,10 +9,10 @@ pub struct ConfirmationRequestEmail {
 }
 
 impl ConfirmationRequestEmail {
-    pub fn new(confirmation_code: String, given_name: String) -> Self {
+    pub fn new(confirmation_code: &str, given_name: &str) -> Self {
         Self {
-            confirmation_code: confirmation_code,
-            given_name: given_name
+            confirmation_code: confirmation_code.to_string(),
+            given_name: given_name.to_string()
         }
     }
 
