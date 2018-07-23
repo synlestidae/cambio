@@ -64,6 +64,7 @@ impl<C: GenericConnection> UserApi<C> {
             "user",
             &created_reg.confirmation_code,
         );
+        self.tx.send(jobs::JobRequest::SendEmail(request));
 
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();
@@ -90,12 +91,12 @@ impl<C: GenericConnection> UserApi<C> {
         &mut self,
         registration_confirm: &api::RegistrationConfirm,
     ) -> Response {
+        info!("Confirming registration");
         let user_service = UserService::new(self.web3.clone());
         let registration = match registration_confirm.identifier_code.get(&mut self.db) {
             Ok(r) => r,
             Err(err) => return err.into(),
         };
-        info!("Confirming registration");
         if registration_confirm.can_confirm(&registration) {
             info!(
                 "Registration with ID {} is confirmed",
