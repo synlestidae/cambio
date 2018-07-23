@@ -1,8 +1,8 @@
+use email::message_body::MessageBody;
 use lettre::EmailAddress;
 use lettre::SimpleSendableEmail;
-use lettre_email::EmailBuilder;
 use lettre_email::Email;
-use email::message_body::MessageBody;
+use lettre_email::EmailBuilder;
 
 pub struct EmailMessage {
     pub from: EmailAddress,
@@ -10,7 +10,7 @@ pub struct EmailMessage {
     pub to: EmailAddress,
     pub to_name: Option<String>,
     pub subject: String,
-    pub body: MessageBody
+    pub body: MessageBody,
 }
 
 impl EmailMessage {
@@ -21,7 +21,7 @@ impl EmailMessage {
             to: to.clone(),
             to_name: None,
             subject: subject.to_string(),
-            body: MessageBody::PlainText(body.to_string())
+            body: MessageBody::PlainText(body.to_string()),
         }
     }
 
@@ -31,7 +31,7 @@ impl EmailMessage {
             .to(self.to.to_string())
             .subject(self.subject.to_string())
             .text(match self.body {
-                MessageBody::PlainText(ref text) => text.to_string()
+                MessageBody::PlainText(ref text) => text.to_string(),
             })
             .build()
             .unwrap() // Should never fail

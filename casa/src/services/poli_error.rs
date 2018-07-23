@@ -19,7 +19,7 @@ pub enum PoliError {
     Response(PoliErrorInfo),
     PoliError(PoliErrorCode),
     InitTx(InitiateTransactionError),
-    InitTxUnknown
+    InitTxUnknown,
 }
 
 impl fmt::Display for PoliError {
@@ -35,7 +35,9 @@ impl Error for PoliError {
             PoliError::Response(_) => "There was a fatal error in the POLi response",
             PoliError::PoliError(_) => "POLi returned an error code in its response",
             PoliError::InitTx(_) => "Could not initialise Poli transaction",
-            PoliError::InitTxUnknown => "Could not initialise Poli transaction but an error code was not specified."
+            PoliError::InitTxUnknown => {
+                "Could not initialise Poli transaction but an error code was not specified."
+            }
         }
     }
 
@@ -48,7 +50,7 @@ impl From<Option<InitiateTransactionError>> for PoliError {
     fn from(err: Option<InitiateTransactionError>) -> Self {
         match err {
             Some(e) => PoliError::InitTx(e),
-            None => PoliError::InitTxUnknown
+            None => PoliError::InitTxUnknown,
         }
     }
 }

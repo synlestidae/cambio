@@ -77,7 +77,11 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    pub fn post_new_order(&mut self, user: &domain::User, order: &api::OrderRequest) -> iron::Response {
+    pub fn post_new_order(
+        &mut self,
+        user: &domain::User,
+        order: &api::OrderRequest,
+    ) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
         if order.sell_asset_type.is_crypto() && order.max_wei.is_none() {
             const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
@@ -88,7 +92,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             Ok(order) => {
                 db_tx.commit();
                 utils::to_response(Ok(order))
-            },
+            }
             Err(err_resp) => return err_resp,
         }
     }

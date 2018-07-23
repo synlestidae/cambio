@@ -2,6 +2,7 @@ use api;
 use api::PersonalDetails;
 use bcrypt::hash;
 use chrono::NaiveDate;
+use config::ServerConfig;
 use db::ConnectionSource;
 use db::{PostgresHelperImpl, PostgresSource};
 use iron::headers::Headers;
@@ -19,7 +20,6 @@ use std::process::Command;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
 use web3;
-use config::ServerConfig;
 
 //pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
 const CONFIG_PATH: &'static str = "./config.test.toml";
@@ -67,7 +67,10 @@ pub fn get_config() -> ServerConfig {
     config
 }
 
-pub fn get_web3() -> (web3::transports::EventLoopHandle, web3::Web3<web3::transports::ipc::Ipc>) {
+pub fn get_web3() -> (
+    web3::transports::EventLoopHandle,
+    web3::Web3<web3::transports::ipc::Ipc>,
+) {
     let config = get_config();
     let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
     (eloop, web3::Web3::new(transport))
@@ -149,12 +152,7 @@ fn make_request<'a, E: Serialize>(
         request::get(url, headers.clone(), &handler).unwrap()
     } else {
         let body = serde_json::to_string(&obj).unwrap();
-        request::post(
-            url,
-            headers.clone(),
-            &body,
-            &handler,
-        ).unwrap()
+        request::post(url, headers.clone(), &body, &handler).unwrap()
     };
 
     let status = response.status.clone();

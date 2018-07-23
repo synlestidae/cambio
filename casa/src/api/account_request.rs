@@ -4,5 +4,5 @@ use domain;
 pub enum AccountRequest {
     GetAccounts,
     GetAccount(domain::AccountId),
-    GetAccountTransactions(domain::AccountId)
+    GetAccountTransactions(domain::AccountId),
 }

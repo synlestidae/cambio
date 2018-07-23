@@ -19,8 +19,8 @@ extern crate postgres_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate time;
-extern crate uuid;
 extern crate toml;
+extern crate uuid;
 
 #[macro_use]
 extern crate try_from_row;
@@ -38,6 +38,8 @@ extern crate base64;
 extern crate byteorder;
 extern crate crypto;
 extern crate hex;
+extern crate lettre;
+extern crate lettre_email;
 extern crate openssl;
 extern crate rand;
 extern crate rlp;
@@ -46,23 +48,22 @@ extern crate serde_urlencoded;
 extern crate threadpool;
 extern crate url;
 extern crate web3;
-extern crate lettre;
-extern crate lettre_email;
 
 mod api;
+mod config;
 mod cors_middleware;
 mod db;
 mod domain;
+mod email;
 mod jobs;
 mod payment;
 mod repository;
 mod services;
 mod tests;
-mod config;
-mod email;
 
 use api::ApiError;
 use bcrypt::{hash, verify, DEFAULT_COST};
+use config::*;
 use cors_middleware::CorsMiddleware;
 use db::{PostgresHelper, PostgresHelperImpl};
 use domain::{Order, Session, User};
@@ -75,17 +76,16 @@ use persistent::Read;
 use postgres::{Connection, TlsMode};
 use std::collections::HashSet;
 use std::error::Error;
-use std::sync::mpsc::{Sender, channel};
+use std::sync::mpsc::{channel, Sender};
 use std::thread;
 use time::PreciseTime;
-use config::*;
 
 const CONFIG_PATH: &'static str = "./config.secret.toml";
 
 fn main() {
     env_logger::init().expect("Could not start logger");
-    let config = config::ServerConfig::from_file(CONFIG_PATH)
-        .expect("could not open server config file"); 
+    let config =
+        config::ServerConfig::from_file(CONFIG_PATH).expect("could not open server config file");
     let tx = start_job_loop(&config);
     let chain = build_chain(&config, tx);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
@@ -99,7 +99,6 @@ fn start_job_loop(config: &ServerConfig) -> Sender<jobs::JobRequest> {
     });
     tx
 }
-
 
 fn build_chain(config: &config::ServerConfig, sender: Sender<jobs::JobRequest>) -> iron::Chain {
     let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();

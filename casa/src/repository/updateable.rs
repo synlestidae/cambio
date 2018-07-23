@@ -69,7 +69,10 @@ impl Updateable for domain::Session {
                 user_session.session_info_id = session_info.id AND
                 user_session.id = $1
         ";
-        try!(db.execute(QUERY, &[&self.id, &self.started_at.naive_utc(), &self.session_state]));
+        try!(db.execute(
+            QUERY,
+            &[&self.id, &self.started_at.naive_utc(), &self.session_state]
+        ));
         self.session_token.get(db)
     }
 }

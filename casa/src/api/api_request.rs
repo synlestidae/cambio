@@ -1,5 +1,7 @@
 use api;
-use api::{AccountRequest, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest, ApiError};
+use api::{
+    AccountRequest, ApiError, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest,
+};
 //use bodyparser;
 use db;
 use domain;
@@ -78,16 +80,19 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             }
             &["accounts"] => ApiRequest::Account(AccountRequest::GetAccounts),
             &["account", id] => {
-                let account_id = domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
+                let account_id =
+                    domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
                 ApiRequest::Account(AccountRequest::GetAccount(account_id))
             }
             &["accounts", id, "transactions"] => {
-                let account_id = domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
+                let account_id =
+                    domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
                 let tx_req = AccountRequest::GetAccountTransactions(account_id);
                 ApiRequest::Account(tx_req)
             }
             &["order", id, "settlement", "auth"] => {
-                let order_id = domain::OrderId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
+                let order_id =
+                    domain::OrderId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
                 let cred = try!(get_api_obj(request));
                 let s_req = SettlementRequest::PostSettlementEthAuth(order_id, cred);
                 ApiRequest::Settlement(s_req)
@@ -143,7 +148,7 @@ where
     if bytes.len() == 0 {
         Err(api::ApiError::bad_format(
             "Body of HTTP request cannot be empty",
-        )) 
+        ))
     } else {
         let val: T = serde_json::from_slice(&bytes)?;
         Ok(val)

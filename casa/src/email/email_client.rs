@@ -1,19 +1,19 @@
 use config::EmailConfig;
+use email::contact_spec::ContactSpec;
+use email::email_client_error::EmailClientError;
 use email::email_message::EmailMessage;
 use email::smtp_response::SMTPResponse;
-use email::email_client_error::EmailClientError;
-use lettre::{EmailTransport, SmtpTransport};
-use lettre::smtp::authentication::Credentials;
 use email::to_email_message::ToEmailMessage;
-use email::contact_spec::ContactSpec;
+use lettre::smtp::authentication::Credentials;
 use lettre::smtp::client::net::ClientTlsParameters;
 use lettre::smtp::ClientSecurity;
+use lettre::{EmailTransport, SmtpTransport};
 
 #[derive(Debug)]
 pub struct EmailClient {
     server_host: String,
     login: String,
-    password: String
+    password: String,
 }
 
 impl EmailClient {
@@ -21,12 +21,12 @@ impl EmailClient {
         Self {
             server_host: config.server_host.to_string(),
             login: config.login.to_string(),
-            password: config.password.to_string() 
+            password: config.password.to_string(),
         }
     }
 
-    pub fn send<M: ToEmailMessage>(&self, contact: &ContactSpec, message_src: &M) -> Result<SMTPResponse, EmailClientError> {
-        let message = message_src.to_email_message(contact);
+    pub fn send(&self, message: &EmailMessage) -> Result<SMTPResponse, EmailClientError> {
+        //let message = message_src.to_email_message(contact);
         let lettre_email = message.to_lettre_email();
         let mut client = self.get_transport()?;
         let lettre_response = client.send(&lettre_email)?;

@@ -3,13 +3,13 @@ use lettre::smtp::response::Severity;
 
 #[derive(Debug)]
 pub struct SMTPResponse {
-    was_successful: bool
+    was_successful: bool,
 }
 
 impl SMTPResponse {
     pub fn from_code(code: &Code) -> Self {
         Self {
-            was_successful: code.severity == Severity::PositiveCompletion
+            was_successful: code.severity == Severity::PositiveCompletion,
         }
     }
 

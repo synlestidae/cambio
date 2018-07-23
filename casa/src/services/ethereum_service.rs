@@ -13,14 +13,12 @@ use web3::futures::Future;
 use web3::types::{Bytes, H160, H256, H512, TransactionRequest, U256};
 
 pub struct EthereumService {
-    web3: web3::Web3<web3::transports::ipc::Ipc>
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
 impl EthereumService {
     pub fn new(web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
-        Self {
-            web3: web3
-        }
+        Self { web3: web3 }
     }
 
     pub fn new_account<C: GenericConnection>(
@@ -122,7 +120,7 @@ impl EthereumService {
         let eth_transaction = try!(self.send_transaction(tx_request));
         Ok(EthereumOutboundTransaction {
             id: None,
-            eth_transaction: eth_transaction
+            eth_transaction: eth_transaction,
         })
     }
 }

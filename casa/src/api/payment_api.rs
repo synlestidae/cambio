@@ -65,21 +65,20 @@ impl<C: GenericConnection> PaymentApi<C> {
 
         // Retrieve the transaction from our DB and Poli
         let poli_tx_result = poli_service.get_transaction(&nudge.token);
-        let poli_tx = match poli_tx_result {
-            Ok(tx) => match tx.get_transaction() {
-                Ok(tx) => tx,
-                Err(Some(err)) => {
-                    return Err(err.into());
+        let poli_tx =
+            match poli_tx_result {
+                Ok(tx) => match tx.get_transaction() {
+                    Ok(tx) => tx,
+                    Err(Some(err)) => {
+                        return Err(err.into());
+                    }
+                    Err(None) => return Err(CambioError::shouldnt_happen(
+                        "There was an unknown error with the Poli transation",
+                        "Poli service get_transaction returned a transaction with unknown error",
+                    )),
                 },
-                Err(None) => return Err(CambioError::shouldnt_happen(
-                    "There was an unknown error with the Poli transation", 
-                    "Poli service get_transaction returned a transaction with unknown error"
-                ))
-            },
-            Err(err) => {
-                return Err(err.into())
-            }
-        };
+                Err(err) => return Err(err.into()),
+            };
         let mut payment_request = try!(nudge.token.get(&mut conn));
         let user: User = try!(payment_request.user_id.get(&mut conn));
         let owner_id = user.owner_id.unwrap();
@@ -113,9 +112,10 @@ impl<C: GenericConnection> PaymentApi<C> {
             payment_request.payment_status = PaymentStatus::Unknown;
             try!(payment_request.update(&mut conn));
             conn.commit();
-            return Err(CambioError::shouldnt_happen("Error while finding account to credit.", 
-                &format!("Poli deduct account returned false for is_for_deducting_payments"))
-            );
+            return Err(CambioError::shouldnt_happen(
+                "Error while finding account to credit.",
+                &format!("Poli deduct account returned false for is_for_deducting_payments"),
+            ));
         }
         // credited account already assured by nzd_wallet() logic
         // account may now be credited

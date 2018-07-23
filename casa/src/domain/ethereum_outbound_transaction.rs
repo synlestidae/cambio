@@ -15,5 +15,5 @@ use web3::types::{Bytes, H160, H256, H512, H520, H64, Transaction, U256};
 #[Derive(Debug, Clone, TryFromRow)]
 pub struct EthereumOutboundTransaction {
     pub id: Option<Id>,
-    pub eth_transaction: Transaction
+    pub eth_transaction: Transaction,
 }

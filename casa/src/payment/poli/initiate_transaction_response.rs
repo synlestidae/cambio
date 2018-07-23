@@ -14,26 +14,24 @@ pub struct InitiateTransactionResponse {
 }
 
 impl InitiateTransactionResponse {
-    pub fn get_transaction(mut self) -> Result<PoliTransactionResponse, Option<InitiateTransactionError>> {
+    pub fn get_transaction(
+        mut self,
+    ) -> Result<PoliTransactionResponse, Option<InitiateTransactionError>> {
         if self.success {
             match (self.navigate_url, self.transaction_ref_no) {
-                (Some(url), Some(reference)) => {
-                    Ok(PoliTransactionResponse {
-                        navigate_url: url,
-                        transaction_ref_no: reference,
-                    })
-                }
-                _ => Err(None)
+                (Some(url), Some(reference)) => Ok(PoliTransactionResponse {
+                    navigate_url: url,
+                    transaction_ref_no: reference,
+                }),
+                _ => Err(None),
             }
         } else {
             match (self.error_code, self.error_message) {
-                (Some(code), Some(msg)) => {
-                    Err(Some(InitiateTransactionError {
-                        error_code: code,
-                        error_message: msg,
-                    }))
-                }
-                _ => Err(None)
+                (Some(code), Some(msg)) => Err(Some(InitiateTransactionError {
+                    error_code: code,
+                    error_message: msg,
+                })),
+                _ => Err(None),
             }
         }
     }

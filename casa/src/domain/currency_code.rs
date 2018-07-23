@@ -1,5 +1,5 @@
-use std::fmt;
 use domain::AssetType;
+use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
 pub enum CurrencyCode {

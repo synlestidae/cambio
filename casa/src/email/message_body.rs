@@ -1,3 +1,3 @@
 pub enum MessageBody {
-    PlainText(String)
+    PlainText(String),
 }
