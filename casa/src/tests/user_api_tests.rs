@@ -12,25 +12,17 @@ use tests::test_utils::*;
 
 #[test]
 fn test_registration_successful() {
-    let new_user = r#"{
-        "email_address": "mate@coolcat.com",
-        "password": "supersecret123"
-    }"#;
-    let mut headers = Headers::new();
-    headers.set_raw("content-type", vec![b"application/json".to_vec()]);
-    let (tx, rx) = channel();
-    let (_eloop, web3) = get_web3();
-    let handler = api::ApiHandler::new(&get_config(), web3, tx);
-    let response = request::post(
-        "http://localhost:3000/users/register",
-        headers,
-        new_user,
-        &handler,
-    ).unwrap();
-    let result_body = response::extract_body_to_string(response);
-    let reg_result: api::RegistrationInfo = serde_json::from_str(&result_body).unwrap();
-    assert_eq!("mate@coolcat.com", reg_result.email_address);
-    assert_eq!(20, reg_result.identifier_code.0.len());
+    let rego = api::Registration {
+        email_address: "mate@coolcat.com".to_owned(),
+        password: "supersecret123".to_owned()
+    };
+    let result_string = post("https://localhost:3000/users/register", 
+        None, 
+        Some(rego)
+    );
+    let rego_result: api::RegistrationInfo = 
+        serde_json::from_str(&result_string).unwrap();
+    assert_eq!("mate@coolcat.com", rego_result.email_address);
 }
 
 #[test]
@@ -39,7 +31,7 @@ fn test_creates_new_user_and_password_works() {
 
     let mut db = get_db_connection();
     let new_user = r#"{
-        "email_address": "just.mate.antunovic@gmail.com",
+        "email_address": "pat@coolcat.com",
         "password": "supersecret1234"
     }"#;
     let mut headers = Headers::new();
@@ -95,5 +87,6 @@ fn test_creates_new_user_and_password_works() {
         }"#,
         &handler,
     ).unwrap();
+    println!("The response {:?}", login_response);
     assert_eq!(Status::Ok, login_response.status.unwrap());
 }
