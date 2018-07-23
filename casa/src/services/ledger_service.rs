@@ -1,8 +1,8 @@
 use db::{CambioError, TryFromRow};
 use domain::AccountId;
+use domain::AssetType;
 use domain::Decimal;
 use domain::Transaction;
-use domain::AssetType;
 use postgres::GenericConnection;
 
 pub struct LedgerService {}

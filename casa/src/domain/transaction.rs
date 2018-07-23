@@ -3,8 +3,8 @@ use chrono::prelude::{DateTime, Utc};
 use db::TryFromRow;
 use db::TryFromRowError;
 use domain::{AssetType, BusinessEnds, Id, TransactionId};
-use postgres::rows::Row;
 use postgres;
+use postgres::rows::Row;
 
 #[derive(Debug, TryFromRow, Clone, Serialize)]
 pub struct Transaction {

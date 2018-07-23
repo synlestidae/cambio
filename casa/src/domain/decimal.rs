@@ -5,7 +5,7 @@ use serde::de::Error;
 use serde::*;
 use serde_json::Value;
 use std;
-use std::error;//::Error as StdError;
+use std::error; //::Error as StdError;
 use std::fmt;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
@@ -179,11 +179,16 @@ impl FromSql for Decimal {
     }
 }
 
-
 fn err_currency_format(e: &str) -> Box<error::Error + Send + Sync + 'static> {
-    Box::new(CambioError::format_obj("Currency was in incorrect format", e))
+    Box::new(CambioError::format_obj(
+        "Currency was in incorrect format",
+        e,
+    ))
 }
 
 fn err_format_obj(e: &str) -> Box<error::Error + Send + Sync + 'static> {
-    Box::new(CambioError::format_obj("Failed to load currency from database.", e))
+    Box::new(CambioError::format_obj(
+        "Failed to load currency from database.",
+        e,
+    ))
 }

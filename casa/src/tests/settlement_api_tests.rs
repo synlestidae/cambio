@@ -84,7 +84,14 @@ fn test_settlement_gets_saved() {
 
     post_channel(&settlement_url, Some(&joe), Some(obj), tx);
 
-    let job = rx.recv().unwrap();
-    let JobRequest::BeginSettlement(id, password) = job;
-    assert_eq!(password, "grassword123");
+    for job in rx.iter() {
+        match job {
+            JobRequest::BeginSettlement(id, password) => {
+                assert_eq!(password, "grassword123");
+                return;
+            }
+            _ => {}
+        }
+    }
+    panic!("Did not receive settlement job");
 }

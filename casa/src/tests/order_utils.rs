@@ -7,9 +7,9 @@ use services;
 use std::io::Read;
 use std::rc::Rc;
 use tests::get_db_connection;
+use tests::test_utils::*;
 use uuid;
 use web3;
-use tests::test_utils::*;
 
 pub fn get_user(email: &str) -> domain::User {
     Readable::get(email, &mut get_db_connection()).unwrap()
@@ -41,7 +41,10 @@ pub fn quick_order(
     let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
     let mut order2 = domain::Order::sell_szabo(user2.owner_id.unwrap(), buy_money, sell_szabo, 10);
 
-    (order1.create(&mut db).unwrap(), order2.create(&mut db).unwrap())
+    (
+        order1.create(&mut db).unwrap(),
+        order2.create(&mut db).unwrap(),
+    )
 }
 
 pub fn just_order(

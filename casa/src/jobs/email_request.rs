@@ -8,11 +8,24 @@ pub enum EmailRequest {
         from: EmailAddress,
         to: EmailAddress,
         name: String,
-        confirmation_code: String 
-    }
+        confirmation_code: String,
+    },
 }
 
 impl EmailRequest {
+    pub fn confirmation_email(
+        from: &EmailAddress,
+        to: &EmailAddress,
+        name: &str,
+        code: &str,
+    ) -> Self {
+        EmailRequest::ConfirmationCode {
+            from: from.clone(),
+            to: to.clone(),
+            name: name.to_owned(),
+            confirmation_code: code.to_owned(),
+        }
+    }
     pub fn to_email(&self) -> EmailMessage {
         unimplemented!()
     }

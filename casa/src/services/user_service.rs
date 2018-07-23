@@ -13,16 +13,14 @@ use std::error::Error;
 use web3;
 
 pub struct UserService {
-    web3: web3::Web3<web3::transports::ipc::Ipc>
+    web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
 const BCRYPT_COST: u32 = 8;
 
 impl UserService {
     pub fn new(web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
-        Self {
-            web3: web3
-        }
+        Self { web3: web3 }
     }
 
     pub fn confirm_registration<T: GenericConnection>(
@@ -106,9 +104,7 @@ impl UserService {
         try!(hold.create(&mut db_tx));
 
         let account = match self.create_eth_accounts(&mut db_tx, email_address, eth_password) {
-            Ok(a) => {
-                a
-            },
+            Ok(a) => a,
             Err(err) => {
                 return Err(err);
             }

@@ -5,6 +5,8 @@ use db::PostgresHelper;
 use domain;
 use domain::OrderSettlement;
 use domain::OrderSettlementId;
+use email::*;
+use jobs::EmailRequest;
 use jobs::JobRequest;
 use postgres::{Connection, TlsMode};
 use repository;
@@ -14,10 +16,8 @@ use std::str::FromStr;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::Receiver;
 use threadpool::ThreadPool;
-use web3::types::U256;
 use web3;
-use jobs::EmailRequest;
-use email::*;
+use web3::types::U256;
 
 pub struct JobLoop {
     server_config: ServerConfig,
@@ -33,16 +33,16 @@ const NUM_JOBS: usize = 10;
 impl JobLoop {
     pub fn new(server_config: &ServerConfig, rx: Receiver<JobRequest>) -> Self {
         let threadpool = ThreadPool::new(NUM_JOBS);
-        let (eloop, transport) = 
+        let (eloop, transport) =
             web3::transports::ipc::Ipc::new(&server_config.get_web3_address()).unwrap();
-        let web3 = web3::Web3::new(transport);    
+        let web3 = web3::Web3::new(transport);
         let job_loop = Self {
             server_config: server_config.clone(),
             conn_str: server_config.get_connection_string(),
             threads: threadpool,
             rcv: rx,
             eloop: eloop,
-            web3: web3
+            web3: web3,
         };
         job_loop
     }
@@ -68,7 +68,7 @@ impl JobLoop {
                     Ok(_) => info!("Successful settlement!"),
                     Err(err) => warn!("Bad settlement! {:?}", err),
                 }
-            },
+            }
             JobRequest::SendEmail(request) => {
                 self.send_email(request).unwrap();
             }
@@ -78,7 +78,13 @@ impl JobLoop {
     fn send_email(&mut self, email_request: EmailRequest) -> Result<(), db::CambioError> {
         let email = email_request.to_email();
         let client = EmailClient::new(&self.server_config.get_email_noreply_config());
-        unimplemented!()
+        match client.send(&email) {
+            Ok(result) => (),
+            Err(err) => {
+                println!("Error: {:?}", err);
+            }
+        };
+        Ok(())
     }
 
     fn begin_settlement(

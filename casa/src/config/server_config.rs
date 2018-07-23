@@ -1,10 +1,10 @@
-use payment::poli::*;
-use url::Url;
-use serde_derive;
-use toml;
-use std::io;
 use config::EmailConfig;
 use lettre::EmailAddress;
+use payment::poli::*;
+use serde_derive;
+use std::io;
+use toml;
+use url::Url;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct ServerConfig {
@@ -28,7 +28,7 @@ pub struct ServerConfig {
     web3_address: String,
     noreply_email_address: String,
     noreply_password: String,
-    email_server_host: String
+    email_server_host: String,
 }
 
 impl ServerConfig {
@@ -55,7 +55,7 @@ impl ServerConfig {
             login: EmailAddress::new(self.noreply_email_address.clone()).unwrap(),
             email_address: EmailAddress::new(self.noreply_email_address.clone()).unwrap(),
             password: EmailAddress::new(self.noreply_password.clone()).unwrap(),
-            server_host: EmailAddress::new(self.email_server_host.clone()).unwrap()
+            server_host: EmailAddress::new(self.email_server_host.clone()).unwrap(),
         }
     }
 

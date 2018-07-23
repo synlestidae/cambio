@@ -4,20 +4,18 @@ use domain::{AssetType, Id, OrderSettlementId, User};
 use postgres::GenericConnection;
 use repository::{Creatable, Readable};
 use services;
-use web3::types::U256;
 use web3;
+use web3::types::U256;
 
 pub struct SettlementService {
-    web3: web3::Web3<web3::transports::Ipc>
+    web3: web3::Web3<web3::transports::Ipc>,
 }
 
 type SettleResult = Result<domain::OrderSettlement, db::CambioError>;
 
 impl SettlementService {
     pub fn new(web3: web3::Web3<web3::transports::Ipc>) -> Self {
-        Self {
-            web3: web3 
-        }
+        Self { web3: web3 }
     }
 
     pub fn create_settlement<C: GenericConnection>(

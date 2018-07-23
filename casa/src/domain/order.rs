@@ -89,7 +89,7 @@ struct OrderRow {
     pub sell_asset_units: i64,
     pub buy_asset_type: AssetType,
     pub buy_asset_units: i64,
-    pub expires_at: NaiveDateTime,//DateTime<Utc>,
+    pub expires_at: NaiveDateTime, //DateTime<Utc>,
     pub status: OrderStatus,
     pub max_wei: Option<Vec<u8>>,
 }

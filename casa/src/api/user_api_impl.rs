@@ -1,5 +1,6 @@
 use api;
 use api::{ApiError, ApiResult, ErrorType, LogIn, PersonalDetails, Registration};
+use config::EmailConfig;
 use db::{CambioError, ConnectionSource, PostgresHelper};
 use domain;
 use domain::{Registration as PendingRegistration, Session, User};
@@ -13,24 +14,34 @@ use serde_json;
 use services::UserService;
 use web3;
 // This shit shouldn't really be here
-use config::EmailConfig;
+/*use config::EmailConfig;
 use email::ConfirmationRequestEmail;
 use email::EmailClient;
 use email::ContactSpec;
+use email::ToEmailMessage;*/
+use jobs;
 use lettre::EmailAddress;
+use std::sync::mpsc::Sender;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
+    tx: Sender<jobs::JobRequest>,
     web3: web3::Web3<web3::transports::ipc::Ipc>,
-    email_config: EmailConfig
+    email_config: EmailConfig,
 }
 
 impl<C: GenericConnection> UserApi<C> {
-    pub fn new(db: C, web3: web3::Web3<web3::transports::ipc::Ipc>, email_config: &EmailConfig) -> Self {
+    pub fn new(
+        db: C,
+        tx: Sender<jobs::JobRequest>,
+        web3: web3::Web3<web3::transports::ipc::Ipc>,
+        email_config: &EmailConfig,
+    ) -> Self {
         Self {
+            tx: tx,
             db: db,
             web3: web3,
-            email_config: email_config.clone()
+            email_config: email_config.clone(),
         }
     }
 
@@ -47,21 +58,28 @@ impl<C: GenericConnection> UserApi<C> {
             Ok(r) => r,
             Err(err) => return err.into(),
         };
-
+        let email_address = created_reg.email_address;
         let result = api::RegistrationInfo {
-            email_address: created_reg.email_address,
+            email_address: email_address.clone(),
             identifier_code: created_reg.identifier_code,
         };
 
-        let email = ConfirmationRequestEmail::new(
+        /*let email = ConfirmationRequestEmail::new(
             &created_reg.confirmation_code, 
             "customer"
+        );*/
+        let request = jobs::EmailRequest::confirmation_email(
+            &self.email_config.email_address,
+            &EmailAddress::new(email_address).unwrap(),
+            "user",
+            &created_reg.confirmation_code,
         );
-        let contact = ContactSpec::new_from_to(
+        /*let contact = ContactSpec::new_from_to(
             &self.email_config.email_address, 
             &EmailAddress::new(result.email_address.clone()).unwrap()
-        );
-        EmailClient::new(&self.email_config).send(&contact, &email).unwrap();
+        );*/
+        //let msg = email.to_email_message(&contact);
+        //EmailClient::new(&self.email_config).send(&msg).unwrap();
 
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();
@@ -73,7 +91,7 @@ impl<C: GenericConnection> UserApi<C> {
         let registration_result = registration_confirm.identifier_code.get(&mut self.db);
         let reg: domain::Registration = match registration_result {
             Ok(reg) => reg,
-            Err(err) => return err.into()
+            Err(err) => return err.into(),
         };
         let result = api::RegistrationInfo {
             email_address: reg.email_address,
@@ -145,7 +163,7 @@ impl<C: GenericConnection> UserApi<C> {
     pub fn get_profile(&mut self, user: &User) -> Response {
         let profile: domain::Profile = match user.id.unwrap().get(&mut self.db) {
             Ok(p) => p,
-            Err(err) => return err.into()
+            Err(err) => return err.into(),
         };
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&profile).unwrap();

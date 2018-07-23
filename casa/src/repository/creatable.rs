@@ -287,7 +287,14 @@ impl Creatable for domain::OrderSettlement {
             ) VALUES (NULL, $1, $2, $3)
             RETURNING id
         ";
-        let settlement = try!(db.query(SQL, &[&self.starting_user, &self.buying_order.id, &self.selling_order.id]));
+        let settlement = try!(db.query(
+            SQL,
+            &[
+                &self.starting_user,
+                &self.buying_order.id,
+                &self.selling_order.id
+            ]
+        ));
         Ok(settlement)
     }
 }

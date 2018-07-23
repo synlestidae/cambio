@@ -156,7 +156,10 @@ mod test {
         assert_eq!(tx.currency_code.to_string(), "AUD");
         assert_eq!(tx.payment_amount.to_string(), "1.27");
         assert_eq!(tx.amount_paid.to_string(), "0.00");
-        assert_eq!(tx.transaction_status_code, TransactionStatusCode::EulaAccepted);
+        assert_eq!(
+            tx.transaction_status_code,
+            TransactionStatusCode::EulaAccepted
+        );
     }
 
     #[test]

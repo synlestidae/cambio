@@ -11,7 +11,7 @@ impl PoliErrorCode {
     pub fn get_type(&self) -> Option<PoliErrorCodeType> {
         let val = match u32::from_str(&self.0) {
             Ok(v) => v,
-            _ => return None
+            _ => return None,
         };
         let err_type = if 1001 <= val && val <= 1032 {
             PoliErrorCodeType::InitiateTransactionFailed
