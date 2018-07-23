@@ -1,4 +1,5 @@
 use bcrypt::verify;
+use config::ServerConfig;
 use db;
 use db::PostgresHelper;
 use domain;
@@ -16,8 +17,10 @@ use threadpool::ThreadPool;
 use web3::types::U256;
 use web3;
 use jobs::EmailRequest;
+use email::*;
 
 pub struct JobLoop {
+    server_config: ServerConfig,
     conn_str: String,
     threads: ThreadPool,
     rcv: Receiver<JobRequest>,
@@ -28,12 +31,14 @@ pub struct JobLoop {
 const NUM_JOBS: usize = 10;
 
 impl JobLoop {
-    pub fn new(conn_str: &str, web3_address: &str, rx: Receiver<JobRequest>) -> Self {
+    pub fn new(server_config: &ServerConfig, rx: Receiver<JobRequest>) -> Self {
         let threadpool = ThreadPool::new(NUM_JOBS);
-        let (eloop, transport) = web3::transports::ipc::Ipc::new(web3_address).unwrap();
+        let (eloop, transport) = 
+            web3::transports::ipc::Ipc::new(&server_config.get_web3_address()).unwrap();
         let web3 = web3::Web3::new(transport);    
         let job_loop = Self {
-            conn_str: conn_str.to_owned(),
+            server_config: server_config.clone(),
+            conn_str: server_config.get_connection_string(),
             threads: threadpool,
             rcv: rx,
             eloop: eloop,
@@ -71,6 +76,8 @@ impl JobLoop {
     }
 
     fn send_email(&mut self, email_request: EmailRequest) -> Result<(), db::CambioError> {
+        let email = email_request.to_email();
+        let client = EmailClient::new(&self.server_config.get_email_noreply_config());
         unimplemented!()
     }
 

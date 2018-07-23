@@ -93,7 +93,7 @@ fn main() {
 
 fn start_job_loop(config: &ServerConfig) -> Sender<jobs::JobRequest> {
     let (tx, rx) = channel();
-    let mut job_loop = JobLoop::new(&config.get_connection_string(), &config.get_web3_address(), rx);
+    let mut job_loop = JobLoop::new(&config, rx);
     thread::spawn(move || {
         job_loop.run();
     });
