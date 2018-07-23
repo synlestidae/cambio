@@ -1,5 +1,7 @@
 use config::EmailConfig;
 use email::email_message::EmailMessage;
+use email::smtp_response::SMTPResponse;
+use email::smtp_error::SMTPError;
 
 pub struct EmailClient {
     server_host: String,
