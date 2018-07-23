@@ -7,9 +7,13 @@ pub struct SMTPResponse {
 }
 
 impl SMTPResponse {
-    fn from_code(code: &Code) -> Self {
+    pub fn from_code(code: &Code) -> Self {
         Self {
             was_successful: code.severity == Severity::PositiveCompletion
         }
+    }
+
+    pub fn success(&self) -> bool {
+        self.was_successful
     }
 }

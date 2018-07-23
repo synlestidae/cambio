@@ -6,3 +6,4 @@ mod message_body;
 mod email_client;
 mod smtp_response;
 mod smtp_error;
+mod email_client_error;
