@@ -48,7 +48,7 @@ impl ServerConfig {
         }
     }
 
-    pub fn get_email_config(&self) -> EmailConfig {
+    pub fn get_email_noreply_config(&self) -> EmailConfig {
         unimplemented!()
     }
 
