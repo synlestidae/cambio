@@ -1,5 +1,4 @@
 use lettre::EmailAddress;
-//use email::ToEmailMessage;
 use email::*;
 
 #[derive(Debug)]
@@ -26,7 +25,18 @@ impl EmailRequest {
             confirmation_code: code.to_owned(),
         }
     }
+
     pub fn to_email(&self) -> EmailMessage {
-        unimplemented!()
+        match self {
+            &EmailRequest::ConfirmationCode {
+                from: ref from,
+                to: ref to,
+                name: ref name,
+                confirmation_code: ref code,
+            } => {
+                let confirm = ConfirmationRequestEmail::new(code, name);
+                confirm.to_email_message(&ContactSpec::new_from_to(from, to))
+            }
+        }
     }
 }
