@@ -61,7 +61,6 @@ impl<C: GenericConnection> UserApi<C> {
         let request = jobs::EmailRequest::confirmation_email(
             &self.email_config.email_address,
             &EmailAddress::new(email_address).unwrap(),
-            "user",
             &created_reg.confirmation_code,
         );
         self.tx.send(jobs::JobRequest::SendEmail(request));

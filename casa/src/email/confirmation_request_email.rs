@@ -5,14 +5,12 @@ use email::to_email_message::ToEmailMessage;
 
 pub struct ConfirmationRequestEmail {
     confirmation_code: String,
-    given_name: String,
 }
 
 impl ConfirmationRequestEmail {
-    pub fn new(confirmation_code: &str, given_name: &str) -> Self {
+    pub fn new(confirmation_code: &str) -> Self {
         Self {
-            confirmation_code: confirmation_code.to_string(),
-            given_name: given_name.to_string(),
+            confirmation_code: confirmation_code.to_string()
         }
     }
 
@@ -24,8 +22,8 @@ impl ConfirmationRequestEmail {
     }
 
     fn get_body(&self) -> String {
-        format!("Hi {given_name},\n\nYour Cambio registration is almost confirmed. Just enter {confirmation_code} on the signup page to continue. If you didn't request this email, please ignore it as no action is required on your part.\n\nThe Cambio team
-", given_name=self.given_name, confirmation_code=self.confirmation_code)
+        format!("Welcome to Cambio!,\n\nYour registration is almost confirmed. Enter {confirmation_code} as your confirmation code on the signup form. If you didn't request this email, please ignore it as no action is required on your part.\n\nThe Cambio team
+", confirmation_code=self.confirmation_code)
     }
 }
 
