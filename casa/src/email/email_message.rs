@@ -4,6 +4,7 @@ use lettre::SimpleSendableEmail;
 use lettre_email::Email;
 use lettre_email::EmailBuilder;
 
+#[derive(Debug)]
 pub struct EmailMessage {
     pub from: EmailAddress,
     pub from_name: Option<String>,
