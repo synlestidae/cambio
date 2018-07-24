@@ -87,6 +87,5 @@ fn test_creates_new_user_and_password_works() {
         }"#,
         &handler,
     ).unwrap();
-    println!("The response {:?}", login_response);
     assert_eq!(Status::Ok, login_response.status.unwrap());
 }
