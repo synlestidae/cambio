@@ -47,8 +47,7 @@ mod test {
     #[test]
     fn generates_subject_with_confirm_code() {
         let c = ConfirmationRequestEmail {
-            confirmation_code: "12001".to_owned(),
-            given_name: "Jhon Fernando".to_owned(),
+            confirmation_code: "12001".to_owned()
         };
         let contact = ContactSpec::new_from_to(
             &EmailAddress::new("noreply@cambio.co.nz".to_owned()).unwrap(),
