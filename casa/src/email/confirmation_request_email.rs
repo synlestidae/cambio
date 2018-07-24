@@ -24,11 +24,7 @@ impl ConfirmationRequestEmail {
     }
 
     fn get_body(&self) -> String {
-        format!("Hi {given_name},\r\n
-\r\n
-Your registration on Cambio.co.nz is almost confirmed. Just enter {confirmation_code} on the signup page to continue. If you didn't request this email, please ignore it as no action is required on your part.\r\n
-\r\n
-The Cambio team
+        format!("Hi {given_name},\n\nYour Cambio registration is almost confirmed. Just enter {confirmation_code} on the signup page to continue. If you didn't request this email, please ignore it as no action is required on your part.\n\nThe Cambio team
 ", given_name=self.given_name, confirmation_code=self.confirmation_code)
     }
 }
