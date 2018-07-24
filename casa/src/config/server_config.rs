@@ -26,6 +26,7 @@ pub struct ServerConfig {
     merchant_checkout_url: Option<Url>,
     connection_string: String,
     web3_address: String,
+    noreply_login: String,
     noreply_email_address: String,
     noreply_password: String,
     email_server_host: String,
@@ -52,7 +53,7 @@ impl ServerConfig {
 
     pub fn get_email_noreply_config(&self) -> EmailConfig {
         EmailConfig {
-            login: EmailAddress::new(self.noreply_email_address.clone()).unwrap(),
+            login: self.noreply_login.to_string(),
             email_address: EmailAddress::new(self.noreply_email_address.clone()).unwrap(),
             password: EmailAddress::new(self.noreply_password.clone()).unwrap(),
             server_host: EmailAddress::new(self.email_server_host.clone()).unwrap(),
