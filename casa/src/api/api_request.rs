@@ -97,7 +97,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
                 let s_req = SettlementRequest::PostSettlementEthAuth(order_id, cred);
                 ApiRequest::Settlement(s_req)
             }
-            &["payment", "poli"] => {
+            &["payment"] => {
                 let payment_request: PaymentRequest = try!(get_api_obj(request));
                 ApiRequest::Payment(payment_request)
             }

@@ -92,15 +92,18 @@ fn main() {
 }
 
 fn start_job_loop(config: &ServerConfig) -> Sender<jobs::JobRequest> {
+    info!("Starting job thread");
     let (tx, rx) = channel();
     let mut job_loop = JobLoop::new(&config, rx);
     thread::spawn(move || {
+        info!("Job thread active");
         job_loop.run();
     });
     tx
 }
 
 fn build_chain(config: &config::ServerConfig, sender: Sender<jobs::JobRequest>) -> iron::Chain {
+    debug!("Building chain");
     let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
     let web3 = web3::Web3::new(transport);
     let api_handler = api::ApiHandler::new(config, web3, sender);

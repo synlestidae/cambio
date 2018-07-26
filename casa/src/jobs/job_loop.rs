@@ -32,7 +32,9 @@ const NUM_JOBS: usize = 10;
 
 impl JobLoop {
     pub fn new(server_config: &ServerConfig, rx: Receiver<JobRequest>) -> Self {
+        debug!("Initialising job loop");
         let threadpool = ThreadPool::new(NUM_JOBS);
+        info!("Connecting to WEB3");
         let (eloop, transport) =
             web3::transports::ipc::Ipc::new(&server_config.get_web3_address()).unwrap();
         let web3 = web3::Web3::new(transport);
