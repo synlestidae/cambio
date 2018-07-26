@@ -17,9 +17,9 @@ pub struct PaymentApi<C: GenericConnection> {
 }
 
 impl<C: GenericConnection> PaymentApi<C> {
-    pub fn new(poli_config: PoliConfig, db: C) -> Self {
+    pub fn new(poli_config: &PoliConfig, db: C) -> Self {
         Self {
-            poli_config: poli_config,
+            poli_config: poli_config.clone(),
             db: db,
         }
     }

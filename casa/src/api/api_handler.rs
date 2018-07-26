@@ -137,7 +137,13 @@ impl Handler for ApiHandler {
                     }
                 }
             }
-            ApiRequest::Payment(payment_req) => unimplemented!(),
+            ApiRequest::Payment(payment_req) => {
+                let mut payment_api = PaymentApi::new(&self.server_config.get_poli_config(), db);
+                match payment_api.request_payment(&user, &payment_req) {
+                    Err(err) => err.into(),
+                    Ok(payment_response) => api::utils::to_response(Ok(payment_response)),
+                }
+            },
         };
 
         Ok(response)
