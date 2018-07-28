@@ -39,7 +39,8 @@ CREATE TABLE user_payment (
 CREATE TABLE poli_payment_request (
     id SERIAL PRIMARY KEY,
     user_id SERIAL REFERENCES users(id),
-    amount MONEY NOT NULL,
+    amount UINT NOT NULL,
+    amount_paid_cents UINT NOT NULL,
     unique_code VARCHAR(12) NOT NULL,
     started_at TIMESTAMP NOT NULL,
     payment_status payment_status_type NOT NULL,
