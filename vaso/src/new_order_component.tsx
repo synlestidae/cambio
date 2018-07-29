@@ -6,6 +6,7 @@ import {ActionCreators} from './flux/action_creators';
 import {SingleForm} from './form/single_form';
 import {Section} from './form/section';
 import {TextFieldElement} from './form/text_field_element';
+import {CurrencyFieldElement} from './form/currency_field_element';
 import {FormComponent} from './form_component';
 
 interface NewOrderComponentProps {
@@ -14,14 +15,24 @@ interface NewOrderComponentProps {
 }
 
 export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
+    let order = props.newOrder.order;
+    let ethField = new CurrencyFieldElement('sell_asset_units', order, 'ETH to buy');
+    ethField.decimalPlaces = 4;
+    let currencyField = new CurrencyFieldElement('buy_asset_units', order, 'NZD to sell');
+    currencyField.decimalPlaces = 2;
     let section = new Section([
-        new TextFieldElement('sell_asset_units', props.newOrder.order, 'ETH to buy'), 
-        new TextFieldElement('buy_asset_units', props.newOrder.order, 'NZD to sell'), 
+        ethField, 
+        currencyField 
     ]);
     let form = new SingleForm([section], 'Place a new order', function(){}, function(){});
-    console.log('formy', form);
+    form.onChange = function() {
+        props.actions.setOrderRequest(order);
+    };
     return <div className="order-modal">
-        <FormComponent form={form} onSubmit={() => {}} onCancel={() => {}}>
+        <FormComponent 
+          form={form} 
+          onCancel={() => props.actions.cancelNewOrder()}
+          onSubmit={() => props.actions.confirmNewOrder(order)}>
         </FormComponent>
     </div>;
 }

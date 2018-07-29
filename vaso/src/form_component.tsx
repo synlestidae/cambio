@@ -17,14 +17,14 @@ export function FormComponent(props: FormComponentProps) {
             </FieldSetComponent>;
     });
 
-    return <form>
+    return <form onChange={() => form.callOnChange()} onBlur={() => form.callOnChange()}>
       {title}
       <section className="form-fields">
         {fields}
       </section>
-      <section className="form-buttons">
-        <button className="form-control btn" onClick={() => props.onCancel()}>Cancel</button>
-        <button className="form-control btn btn-primary" onClick={() => props.onSubmit()}>Submit</button>
+      <section className="form-buttons side-by-side">
+        <button className="form-control btn non-touching-button" onClick={() => props.onCancel()}>Cancel</button>
+        <button className="form-control btn btn-primary non-touching-button" onClick={() => props.onSubmit()}>Submit</button>
       </section>
     </form>;
 }
@@ -48,10 +48,14 @@ function FieldInputComponent(props: {fieldElement: FieldElement}): JSX.Element {
     }
     return <div className="form-group">
         <label htmlFor={fieldElem.getName()}>{fieldElem.getLabel()}</label>
-        <input className="form-control" type={fieldElem.getType()} 
+        <input 
+            className="form-control" 
+            type={fieldElem.getType()} 
             name={fieldElem.getName()} 
             value={fieldElem.getValue()} 
-            onChange={(e: any) => fieldElem.setValue(e.target.value)}>
+            onChange={(e: any) => fieldElem.setValue(e.target.value)}
+            onFocus={() => fieldElem.onFocus()} 
+            onBlur={() => fieldElem.onBlur()}>
         </input>
         {validation}
     </div>;

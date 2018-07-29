@@ -46,7 +46,8 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     let sortCB = (field: string) => props.actions.sortOrders(field);
     orders = sortRows(orders, props.page.sortField);
     let newOrder = props.page.newOrder;
-    let newOrderComponent; //= newOrder? 
+    console.log('new order', newOrder);
+    let newOrderComponent; 
     if (!newOrder) {
         newOrderComponent = <NewOrderButton onClick={() => props.actions.newOrder()}>
         </NewOrderButton>;

@@ -25,6 +25,12 @@ export class TextFieldElement implements FieldElement {
         (<any>this.fieldObject)[this.property] = val;
     }
 
+    public onFocus(): void {
+    }
+
+    public onBlur(): void {
+    }
+
     public getLabel(): string {
         return this.label;
     }

@@ -5,6 +5,7 @@ import {LoginPage} from './state/login_page';
 import {BoardPage} from './state/board_page';
 import {Account} from '../domain/Account';
 import {UserOrder} from '../domain/user_order';
+import {OrderRequest} from '../domain/order_request';
 import {Transaction} from '../domain/transaction';
 import {NewOrder, OrderState} from './state/new_order';
 import {RegistrationInfo} from '../domain/registration_info';
@@ -236,6 +237,13 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 break;
             case 'CANCEL_NEW_ORDER':
                 page.newOrder = null;
+                break;
+            case 'SET_ORDER_REQUEST': 
+                if (action.payload instanceof OrderRequest) {
+                    page.newOrder.order = action.payload;
+                } else {
+                    throw new Error('SET_ORDER_REQUEST has incorrect payload type');
+                }
                 break;
             case 'SET_NEW_ORDER': 
                 (page.newOrder.order as any)[action.value] = action.payload;

@@ -119,7 +119,11 @@ export class ActionCreators {
         this.updateOrderBoard();
     }
 
-    public setNewOrderBuyCurrency(currency: CurrencyCode) {
+    public setOrderRequest(orderRequest: OrderRequest) {
+        this.dispatch(new BasicAction('SET_ORDER_REQUEST', null, orderRequest));
+    }
+
+    /*public setNewOrderBuyCurrency(currency: CurrencyCode) {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'buy_asset_type', currency));
     }
 
@@ -132,7 +136,7 @@ export class ActionCreators {
 
     public setNewOrderSellUnits(units: number) {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'sell_asset_units', units));
-    }
+    }*/
 
     public setNewOrderUniqueId(uniqueId: string) {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'unique_id', uniqueId));
