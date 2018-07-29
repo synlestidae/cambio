@@ -144,6 +144,11 @@ impl<C: GenericConnection> UserApi<C> {
         }
     }
 
+    pub fn set_profile(&mut self, user: &User) -> Result<domain::Profile, CambioError> {
+        let current_profile: domain::Profile = user.id.unwrap().get(&mut self.db)?;
+        unimplemented!()
+    }
+
     pub fn get_profile(&mut self, user: &User) -> Response {
         let profile: domain::Profile = match user.id.unwrap().get(&mut self.db) {
             Ok(p) => p,
