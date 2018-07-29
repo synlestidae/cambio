@@ -5,131 +5,32 @@ import {CurrencyDenom} from './domain/currency_denom';
 import {ActionCreators} from './flux/action_creators';
 
 interface NewOrderComponentProps {
-    newOrder: NewOrder|null,
+    newOrder: NewOrder,
     actions: ActionCreators
 }
 
 export function NewOrderComponent(props: NewOrderComponentProps) {
-    const onSelectBuy = (c: CurrencyCode) => props.actions.setNewOrderBuyCurrency(c);
-    const onSelectSell = (c: CurrencyCode) => props.actions.setNewOrderSellCurrency(c);
-    const onChangeBuyUnits = (v: number) => props.actions.setNewOrderBuyUnits(v);
-    const onChangeSellUnits = (v: number) => props.actions.setNewOrderSellUnits(v);
+    const onChangeBuyUnits = (v: any) => props.actions.setNewOrderBuyUnits(v.target.value);
+    const onChangeSellUnits = (v: any) => props.actions.setNewOrderSellUnits(v.target.value);
     const onSubmit = () => props.actions.startNewOrderConfirm();
     const onCancel = () => props.actions.cancelNewOrder();
-
-    let order = props.newOrder.order;
-
-    let showValidationError = props.newOrder.showValidation && !order.isValid();
-    let validationError = showValidationError? <div className="error-text">
-        Your order isn't valid. Check the fields and try again.
-    </div> : null;
-    return <div>
-      <div className="flex-horizontal">
-        <div className="flex-vertical order-entry">
-            <label>You want to buy</label>
-            <CurrencyDropdown selected={order.buy_asset_type} onSelect={onSelectBuy}>
-            </CurrencyDropdown>
-        </div>
-        <div className="flex-vertical order-entry">
-            <label>Units to buy ({order.buy_asset_denom})</label>
-            <CurrencyInput 
-              currencyCode={order.buy_asset_type} 
-              currencyDenom={order.buy_asset_denom} 
-              value={order.buy_asset_units} 
-              onChange={onChangeBuyUnits}>
-            </CurrencyInput>
-        </div>
-        <div className="flex-vertical order-entry">
-            <label>You want to sell</label>
-            <CurrencyDropdown selected={order.sell_asset_type} onSelect={onSelectSell}>
-            </CurrencyDropdown>
-        </div>
-        <div className="flex-vertical order-entry">
-            <label>Units to sell ({order.sell_asset_denom})</label>
-            <CurrencyInput 
-              currencyCode={order.sell_asset_type} 
-              currencyDenom={order.sell_asset_denom} 
-              value={order.sell_asset_units} 
-              onChange={onChangeSellUnits}>
-            </CurrencyInput>
-        </div>
-        <div className="flex-vertical order-entry">
-            <label>Ethereum Price</label>
-            <input value={order.formatPrice() || '--'} className="form-control"></input>
-        </div>
-    </div>
-        <div>
-            <button className="btn btn-primary" onClick={onCancel}>Cancel</button>
-        </div>
-        <div>
-            <button className="btn btn-primary" onClick={onSubmit}>Submit order</button>
-        </div>
-        <div>
-            {validationError}
-        </div>
-    </div>
-}
-
-interface CurrencyDropdownProps {
-    selected: CurrencyCode|null,
-    onSelect: (currency: CurrencyCode) => void 
-}
-
-function CurrencyDropdown(props: CurrencyDropdownProps) {
-    let options = getCurrencies()
-        .map((c: CurrencyCode, i: number) => {
-            return <option value={c} key={i}>{c}</option>;
-        });
-    return <select value={props.selected} className="form-control" onChange={(e: any) => props.onSelect(e.target.value as CurrencyCode)}>
-        {options}  
-    </select>;
-}
-
-function getCurrencies(): CurrencyCode[] {
-    return [
-        'NZD',
-        'ETH'
-    ];
-}
-
-interface CurrencyInputProps {
-    currencyCode: CurrencyCode,
-    currencyDenom: CurrencyDenom,
-    value: number,
-    onChange: (n: number) => void,
-}
-
-function CurrencyInput(props: CurrencyInputProps) {
-    return <div>
-        <input type="number" className="form-control" value={props.value} onChange={(e: any) => {
-            if (e.target.value === '') {
-                return;
-            }
-            let valNumber = parseFloat(e.target.value);
-            if (isNaN(valNumber) || !isFinite(valNumber)) {
-                throw new Error(`Failed to correct parse unit value '${e.target.value}'`);
-            }
-            props.onChange(valNumber)
-        }}>
-        </input>
-        <span> 
-          <i>{formatCurrency(props.value, props.currencyCode, props.currencyDenom)}</i>
-        </span>
-    </div>;
-}
-
-function formatCurrency(value: number, code: CurrencyCode, denom: CurrencyDenom) {
-    if (code === 'NZD') {
-        if (denom === 'Cent') {
-            value = value / 100;
-        }
-        return `$${value.toFixed(2)}`;
-    } else if (code === 'ETH') {
-        if (denom === 'Szabo') {
-            value = value / 1000000;
-        } else if (denom === 'Wei') {
-            throw new Error('Cannot format Wei as Eth'); 
-        }
-        return `ETH ${value}`;
-    }
+    return <div className="modal order-modal">
+		<div className="form-group">
+			<label>ETH to buy</label>
+			<input className="form-control" type="number" step="0.001" min="0" max="1000" onChange={onChangeBuyUnits}>
+			</input>
+		</div>
+		<div className="form-group">
+			<label>NZD to sell</label>
+			<input max="5000" min="0" step="0.01" type="number" className="form-control" onChange={onChangeSellUnits}>
+		</div>
+		<div className="form-group">
+			<label>ETH Price</label>
+			<input type="text" disabled className="form-control" value="3863.8462">
+		</div>
+		<div className="form-group">
+			<button className="non-touching-button btn btn-primary" onClick={onSubmit}>Cancel</button>
+			<button className="non-touching-button btn btn-primary" onClick={onCancel}>Submit order</button>
+		</div>
+	</div>;
 }

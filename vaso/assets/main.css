@@ -313,3 +313,12 @@ table.table-component tr.empty-row td {
     background-color: white;
 }
 
+.order-modal {
+		display: initial;
+		min-width: 50%;
+		background-color: var(--sub-color);
+		border-color: white;
+		border-width: 1px;
+		border-style: solid;
+		padding: 10px;
+}
