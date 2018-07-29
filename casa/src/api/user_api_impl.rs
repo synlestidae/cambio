@@ -9,7 +9,7 @@ use iron;
 use iron::headers::SetCookie;
 use iron::{Request, Response};
 use postgres::GenericConnection;
-use repository::{Creatable, Readable};
+use repository::{Creatable, Readable, Updateable};
 use serde_json;
 use services::UserService;
 use web3;
@@ -144,13 +144,13 @@ impl<C: GenericConnection> UserApi<C> {
         }
     }
 
-    pub fn update_personal_details(&mut self, user: &User, personal_details: domain::PersonalDetails) 
+    pub fn update_personal_details(&mut self, user: &User, personal_details: &PersonalDetails) 
         -> Result<domain::Profile, CambioError> {
         let user_id = user.id.unwrap();
-        let current_profile: domain::Profile = user_id.unwrap().get(&mut self.db)?;
-        let new_profile = personal_details.into_profile(user_id); 
+        let current_profile: domain::Profile = user_id.get(&mut self.db)?;
+        let mut new_profile = personal_details.clone().into_profile(user_id); 
         new_profile.id = current_profile.id;
-        Ok(new_profile.update(&mut self.db)?);
+        Ok(new_profile.update(&mut self.db)?)
     }
 
     pub fn get_profile(&mut self, user: &User) -> Response {

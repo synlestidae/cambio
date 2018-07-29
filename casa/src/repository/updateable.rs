@@ -1,7 +1,7 @@
 use db::{CambioError, PostgresHelper};
 use domain;
 use postgres::GenericConnection;
-use repository::Readable;
+use repository::{Readable, Creatable};
 use std;
 
 pub trait Updateable
@@ -113,5 +113,72 @@ impl Updateable for domain::Order {
                 "Order is missing ID field.",
             ))
         }
+    }
+}
+
+impl Updateable for domain::Address {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
+        const UPDATE_ADDRESS: &'static str = "
+            UPDATE address 
+            SET  
+               address_line_1 = $1, 
+               address_line_2 = $2, 
+               address_line_3 = $3, 
+               address_line_4 = $4, 
+               address_line_5 = $5, 
+               address_line_6 = $6, 
+               address_line_7 = $7, 
+               country_name = $8 
+            WHERE id = $9";
+        db.execute(UPDATE_ADDRESS, &[
+            &self.address_line_1,
+            &self.address_line_2,
+            &self.address_line_3,
+            &self.address_line_4,
+            &self.address_line_5,
+            &self.address_line_6,
+            &self.address_line_7,
+            &self.country_name,
+            &self.id],
+        )?;
+        Ok(self.id.unwrap().get(db)?)
+    }
+}
+
+impl Updateable for domain::PersonalIdentity {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
+        unimplemented!()
+    }
+}
+
+impl Updateable for domain::Profile {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
+        let new_address = self.address.create(db)?;
+        let new_personal_identity_id = match self.personal_identity {
+            Some(ref p_id) => p_id.create(db)?.id,
+            None => None
+        };
+        const UPDATE_PROFILE: &'static str = "
+            UPDATE personal_info 
+            SET
+                user_id = $1,
+                given_names = $2,
+                family_names = $3,
+                date_of_birth = $4,
+                address_id = $5,
+                personal_identity_id = $6
+            WHERE id = $7";
+        db.execute(
+            UPDATE_PROFILE,
+            &[
+                &self.user_id,
+                &self.given_names,
+                &self.family_names,
+                &self.date_of_birth,
+                &new_address.id,
+                &new_personal_identity_id
+            ]
+        )?;
+        Ok(self.id.unwrap().get(db)?)
     }
 }
