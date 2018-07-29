@@ -51,8 +51,10 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
         newOrderComponent = <NewOrderButton onClick={() => props.actions.newOrder()}>
         </NewOrderButton>;
     } else if (newOrder.orderState === 'Initial') {
-        newOrderComponent = <NewOrderComponent newOrder={newOrder} actions={props.actions}>
-        </NewOrderComponent>; 
+        newOrderComponent = <div className="modal-container">
+          <NewOrderComponent newOrder={newOrder} actions={props.actions}>
+          </NewOrderComponent>
+        </div>; 
     } else {
         newOrderComponent = <ConfirmOrderComponent actions={props.actions} newOrder={newOrder}>
             </ConfirmOrderComponent>;

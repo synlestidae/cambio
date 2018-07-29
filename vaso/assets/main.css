@@ -313,12 +313,26 @@ table.table-component tr.empty-row td {
     background-color: white;
 }
 
+.modal-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100;
+    display: flex;
+    justify-content: center;
+}
+
 .order-modal {
 		display: initial;
-		min-width: 50%;
 		background-color: var(--sub-color);
 		border-color: white;
 		border-width: 1px;
 		border-style: solid;
 		padding: 10px;
+    width: fit-content;
+}
+
+.order-modal input.form-control {
+    width: initial;
 }

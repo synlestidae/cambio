@@ -103,12 +103,12 @@ impl UserService {
         try!(wallet.create(&mut db_tx));
         try!(hold.create(&mut db_tx));
 
-        let account = match self.create_eth_accounts(&mut db_tx, email_address, eth_password) {
+        /*let account = match self.create_eth_accounts(&mut db_tx, email_address, eth_password) {
             Ok(a) => a,
             Err(err) => {
                 return Err(err);
             }
-        };
+        };*/
         let profile = personal_details.clone().into_profile(user.id.unwrap());
         let new_profile = try!(profile.create(&mut db_tx));
 
