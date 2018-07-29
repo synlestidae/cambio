@@ -153,13 +153,8 @@ impl<C: GenericConnection> UserApi<C> {
         Ok(new_profile.update(&mut self.db)?)
     }
 
-    pub fn get_profile(&mut self, user: &User) -> Response {
-        let profile: domain::Profile = match user.id.unwrap().get(&mut self.db) {
-            Ok(p) => p,
-            Err(err) => return err.into(),
-        };
-        let content_type = "application/json".parse::<Mime>().unwrap();
-        let content = serde_json::to_string(&profile).unwrap();
-        iron::Response::with((iron::status::Ok, content, content_type))
+    pub fn get_profile(&mut self, user: &User) -> Result<domain::Profile, CambioError> {
+        let profile: domain::Profile = user.id.unwrap().get(&mut self.db)?;
+        Ok(profile)
     }
 }

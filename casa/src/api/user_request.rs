@@ -6,4 +6,6 @@ pub enum UserRequest {
     ResendEmail(api::ResendEmail),
     Confirm(api::RegistrationConfirm),
     LogIn(api::LogIn),
+    SetPersonalDetails(api::PersonalDetails),
+    GetProfile
 }

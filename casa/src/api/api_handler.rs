@@ -98,6 +98,17 @@ impl Handler for ApiHandler {
                     }
                     UserRequest::Confirm(confirm) => user_api.post_confirm_register(&confirm),
                     UserRequest::LogIn(login) => user_api.post_log_in(&login),
+                    profile_request => {
+                        let result = match profile_request {
+                            UserRequest::SetPersonalDetails(ref details) => user_api.update_personal_details(&user, details),
+                            UserRequest::GetProfile => user_api.get_profile(&user),
+                            _ => unreachable!(),
+                        };
+                        match result {
+                            Err(err) => err.into(),
+                            ok_result => api::utils::to_response(Ok(ok_result)),
+                        }
+                    }
                 }
             }
             ApiRequest::Order(order_request) => {
