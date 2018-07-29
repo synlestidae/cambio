@@ -15,7 +15,7 @@ export class TextFieldElement implements FieldElement {
 
     public getValue(): string {
         let val: any = (<any>this.fieldObject)[this.property];
-        if (val) {
+        if (val !== 'undefined' && val !== null) {
             return val.toString();
         }
         return '';
