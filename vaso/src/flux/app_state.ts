@@ -2,8 +2,9 @@ import {Page} from './state/page';
 import {LoginPage} from './state/login_page';
 import {AccountPage} from './state/account_page';
 import {BoardPage} from './state/board_page';
+import {MyAccount} from './state/my_account';
 
-export type PageName = 'Login' | 'Accounts' | 'Board';
+export type PageName = 'Login' | 'Accounts' | 'Board' | 'MyAccount';
 
 export class AppState {
     public loggedInAs: string|null;

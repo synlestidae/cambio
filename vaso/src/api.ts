@@ -6,6 +6,7 @@ import {UserOrder} from './domain/user_order';
 import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
+import {PersonalDetails} from './domain/personal_details';
 import {RegistrationInfo} from './domain/registration_info';
 import {SignupInfo, PersonalInfo, IdentificationInfo} from './flux/state/signup_state';
 import * as bigInt from 'big-integer';
@@ -155,6 +156,14 @@ export class Api {
             return orders;
         }
         throw new Error(`Unexpected type for asyncGetActiveOrders ${body.constructor.name || typeof body}`);
+    }
+
+    public asyncGetPersonalDetails(): Promise<PersonalDetails> {
+        throw new Error('Not yet implemented');
+    }
+
+    public asyncPostPersonalDetails(personalDetails: PersonalDetails): Promise<PersonalDetails> {
+        throw new Error('Not yet implemented');
     }
 
     private async makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {

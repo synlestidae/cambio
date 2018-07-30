@@ -101,8 +101,6 @@ function SignupButton(props: SignupState & {actions: ActionCreators} & {formElem
         props.actions.prevSignupForm();
     };
 
-    //let validationMessage = props.formElems.reduce((elem: FormElem, msg: string|null) => msg || elem.validate(elem.value), null);
-
     return <div className="form-row">
         <button onClick={nextFn} className="btn btn-primary btn-block width-initial" disabled={!allValid}>
           {next}

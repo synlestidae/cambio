@@ -8,6 +8,7 @@ import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
 import {UserOrder} from '../domain/user_order';
+import {PersonalDetails} from '../domain/personal_details';
 import {SignupState, SignupInfo, PersonalInfo, IdentificationInfo} from './state/signup_state';
 
 export class ActionCreators {
@@ -123,21 +124,6 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_ORDER_REQUEST', null, orderRequest));
     }
 
-    /*public setNewOrderBuyCurrency(currency: CurrencyCode) {
-        this.dispatch(new BasicAction('SET_NEW_ORDER', 'buy_asset_type', currency));
-    }
-
-    public setNewOrderSellCurrency(currency: CurrencyCode) {
-        this.dispatch(new BasicAction('SET_NEW_ORDER', 'sell_asset_type', currency));
-    }
-    public setNewOrderBuyUnits(units: number) {
-        this.dispatch(new BasicAction('SET_NEW_ORDER', 'buy_asset_units', units));
-    }
-
-    public setNewOrderSellUnits(units: number) {
-        this.dispatch(new BasicAction('SET_NEW_ORDER', 'sell_asset_units', units));
-    }*/
-
     public setNewOrderUniqueId(uniqueId: string) {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'unique_id', uniqueId));
     }
@@ -240,7 +226,6 @@ export class ActionCreators {
 
     public sendPayment(amount: string) {
         this.api.asyncPostPayment(new DollarPayment(parseFloat(amount) * 100));
-        //this.dispatch(new BasicAction('CHANGE_CREDIT_AMOUNT', amount));
     }
 
     public sortOrders(field: string) {
@@ -268,6 +253,26 @@ export class ActionCreators {
             this.dispatch(new BasicAction('ERROR_LOADING_ACTIVE_ORDERS', null, e));
         }
     
+    }
+
+    public async loadPersonalDetails() {
+        this.dispatch(new BasicAction('START_LOADING_PERSONAL_DETAILS'));
+        try {
+            let personalDetails = await this.api.asyncGetPersonalDetails();
+            this.dispatch(new BasicAction('SUCCESS_LOADING_PERSONAL_DETAILS', null, personalDetails));
+        } catch (e) {
+            this.dispatch(new BasicAction('ERROR_LOADING_PERSONAL_DETAILS', null, e));
+        }
+    }
+
+    public async updatePersonalDetails(personalDetails: PersonalDetails) {
+        this.dispatch(new BasicAction('START_SUBMITTING_PERSONAL_DETAILS'));
+        try {
+            await this.api.asyncPostPersonalDetails(personalDetails);
+            this.dispatch(new BasicAction('SUCCESS_SUBMITTING_PERSONAL_DETAILS', null, personalDetails));
+        } catch (e) {
+            this.dispatch(new BasicAction('ERROR_SUBMITTING_PERSONAL_DETAILS', null, e));
+        }
     }
 
     public creditAccount(accountId: string) {

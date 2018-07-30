@@ -3,9 +3,11 @@ import {Action} from './action';
 import {AppState, PageName} from './app_state';
 import {LoginPage} from './state/login_page';
 import {BoardPage} from './state/board_page';
+import {MyAccount} from './state/my_account';
 import {Account} from '../domain/Account';
 import {UserOrder} from '../domain/user_order';
 import {OrderRequest} from '../domain/order_request';
+import {PersonalDetails} from '../domain/personal_details';
 import {Transaction} from '../domain/transaction';
 import {NewOrder, OrderState} from './state/new_order';
 import {RegistrationInfo} from '../domain/registration_info';
@@ -268,6 +270,46 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 break;
             case 'ORDER_SUBMIT_FAIL':
                 page.newOrder.orderState = 'Failed';
+                break;
+        }
+    }
+    return state;
+}
+
+function reducePersonalDetails(state: AppState, action: Action): AppState  {
+    if (state.page instanceof MyAccount) {
+        let page = <MyAccount>state.page;
+        switch (action.name) {
+            case 'START_LOADING_PERSONAL_DETAILS':
+                page.loadingState.startLoading();
+                break;
+            case 'SUCCESS_LOADING_PERSONAL_DETAILS':
+                page.loadingState.success();
+                break;
+            case 'ERROR_LOADING_PERSONAL_DETAILS':
+                if (action.payload instanceof Error) {
+                    page.loadingState.error(action.payload);
+                } else {
+                    page.loadingState.name = 'Error';
+                }
+                break;
+            case 'START_SUBMITTING_PERSONAL_DETAILS':
+                page.savingState.startLoading();
+                break;
+            case 'SUCCESS_SUBMITTING_PERSONAL_DETAILS':
+                if (action.payload instanceof PersonalDetails) {
+                    page.personalDetails = action.payload; 
+                    page.savingState.success();
+                } else {
+                    throw new Error('Loading details was successful, but did not get personal details obj');
+                }
+                break;
+            case 'ERROR_SUBMITTING_PERSONAL_DETAILS':
+                if (action.payload instanceof Error) {
+                    page.savingState.error(action.payload);
+                } else {
+                    page.savingState.name = 'Error';
+                }
                 break;
         }
     }
