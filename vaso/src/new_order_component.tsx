@@ -35,7 +35,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
         isNaN(price) || !isFinite(price)? '--' : price.toFixed(4), 
         'ETH price (4 dp)');
     let section = new Section(fields.concat([priceField]));
-    let form = new SingleForm([section], 'Place a new order', function(){}, function(){});
+    let form = new SingleForm([section], 'Place a new order');
     if (props.newOrder.orderState === 'Submitting') {
         form.state.startLoading();
     } else if (props.newOrder.orderState === 'Failed') {

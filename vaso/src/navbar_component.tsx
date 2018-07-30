@@ -8,7 +8,7 @@ interface Link {
 const links = [
     {title: 'Home', url: ''},
     {title: 'Board', url: '#board'},
-    {title: 'My account', url: '#my_account'}
+    {title: 'My account', url: '#myaccount'}
 ];
 
 function makeLink(link: Link, i: number) {

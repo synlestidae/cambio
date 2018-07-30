@@ -9,4 +9,8 @@ export class PersonalDetails {
     dob: string;
     id_type: string;
     id_number: string;
+
+    public static parse(json: any): PersonalDetails {
+        throw new Error('Not implemented');
+    }
 }

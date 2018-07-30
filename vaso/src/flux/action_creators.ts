@@ -99,6 +99,10 @@ export class ActionCreators {
             window.location.hash = '#board';
             this.openBoardPage();
         }
+        if (hash.startsWith('#myaccount')) {
+            window.location.hash = '#myaccount';
+            this.openMyAccountPage();
+        }
     }
 
     public async openAccountPage() {
@@ -118,6 +122,11 @@ export class ActionCreators {
     public openBoardPage() {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Board'));
         this.updateOrderBoard();
+    }
+
+    public openMyAccountPage() {
+        this.dispatch(new BasicAction('OPEN_PAGE', 'MyAccount'));
+        this.loadPersonalDetails();
     }
 
     public setOrderRequest(orderRequest: OrderRequest) {

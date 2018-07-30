@@ -158,12 +158,16 @@ export class Api {
         throw new Error(`Unexpected type for asyncGetActiveOrders ${body.constructor.name || typeof body}`);
     }
 
-    public asyncGetPersonalDetails(): Promise<PersonalDetails> {
-        throw new Error('Not yet implemented');
+    public async asyncGetPersonalDetails(): Promise<PersonalDetails> {
+        let result = await this.makeRequest('/user/details', 'GET');
+        let body = await result.json();
+        return PersonalDetails.parse(body);
     }
 
-    public asyncPostPersonalDetails(personalDetails: PersonalDetails): Promise<PersonalDetails> {
-        throw new Error('Not yet implemented');
+    public async asyncPostPersonalDetails(personalDetails: PersonalDetails): Promise<PersonalDetails> {
+        let result = await this.makeRequest('/user/details', 'POST', personalDetails);
+        let body = await result.json();
+        return PersonalDetails.parse(body);
     }
 
     private async makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {

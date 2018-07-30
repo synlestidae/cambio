@@ -34,6 +34,9 @@ export class AppState {
             case 'Board':
                 this.page = new BoardPage();
                 break;
+            case 'MyAccount':
+                this.page = new MyAccount();
+                break;
             default: 
                 throw new Error(`Unknown page name: ${pageName}`);
         }
