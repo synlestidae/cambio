@@ -12,11 +12,17 @@ interface FormComponentProps {
 export function FormComponent(props: FormComponentProps) {
     let form = props.form;
     let title = form.title? <div>{form.title}</div> : null; 
+    let formDisabled = form.state.name === 'Loading';
     let fields = form.getSections().map(function(section: Section, i: number) {
-        return <FieldSetComponent title={section.title} elements={section.getElements()} key={i}>
+        return <FieldSetComponent title={section.title} elements={section.getElements()} key={i} formDisabled={formDisabled}>
             </FieldSetComponent>;
     });
     const preventSubmit = () => false;
+
+    let error: JSX.Element|null;
+    if (form.state.name === 'Error') {
+        error = <div className="error-text">{form.state.message || 'An error occurred while submitting.'}</div>
+    }
 
     return <form onChange={() => form.callOnChange()} onBlur={() => form.callOnChange()} onSubmit={preventSubmit}>
       {title}
@@ -27,13 +33,14 @@ export function FormComponent(props: FormComponentProps) {
         <button className="form-control btn non-touching-button" onClick={() => props.onCancel()}>Cancel</button>
         <button className="form-control btn btn-primary non-touching-button" onClick={() => props.onSubmit()}>Submit</button>
       </section>
+      {error}
     </form>;
 }
 
-function FieldSetComponent(props: {title: string, elements: FieldElement[]}): JSX.Element {
+function FieldSetComponent(props: {title: string, elements: FieldElement[], formDisabled: boolean}): JSX.Element {
     let fields = props
         .elements
-        .map((f: FieldElement, i: number) => <FieldInputComponent key={i} fieldElement={f}></FieldInputComponent>);
+        .map((f: FieldElement, i: number) => <FieldInputComponent key={i} fieldElement={f} formDisabled={props.formDisabled}></FieldInputComponent>);
 
     return <fieldset>
         {props.title? <legend>{props.title}</legend>: null}
@@ -41,19 +48,23 @@ function FieldSetComponent(props: {title: string, elements: FieldElement[]}): JS
     </fieldset>;
 }
 
-function FieldInputComponent(props: {fieldElement: FieldElement}): JSX.Element {
+function FieldInputComponent(props: {fieldElement: FieldElement, formDisabled: boolean}): JSX.Element {
     let fieldElem = props.fieldElement;
     let validation: JSX.Element|null = null;
     if (fieldElem.getValidationMessage() !== null) {
         validation = <p className="validation-message">{fieldElem.getValidationMessage()}</p>;
     }
+    let val = fieldElem.getValue();
     return <div className="form-group">
         <label htmlFor={fieldElem.getName()}>{fieldElem.getLabel()}</label>
         <input 
             className="form-control" 
             type={fieldElem.getType()} 
             name={fieldElem.getName()} 
-            value={fieldElem.getValue()} 
+            disabled={fieldElem.isDisabled() || props.formDisabled}
+            value={val} 
+            min={0}
+            step={0.01}
             onChange={(e: any) => fieldElem.setValue(e.target.value)}
             onFocus={() => fieldElem.onFocus()} 
             onBlur={() => fieldElem.onBlur()}>

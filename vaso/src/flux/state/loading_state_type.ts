@@ -1,3 +1,2 @@
-export type LoadingStateType = 'Ready' | 'Loading' | 'Error' | 
-    'Success';
+export type LoadingStateType = 'Ready' | 'Loading' | 'Error' | 'Success';
 

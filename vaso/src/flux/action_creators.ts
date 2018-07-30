@@ -204,6 +204,10 @@ export class ActionCreators {
         }
     }
 
+    public clearOrder() {
+        this.dispatch(new BasicAction('ORDER_SUBMIT_CLEAR'));
+    }
+
     public async buyOrder(order: UserOrder, uniqueId: string) {
         await this.api.asyncBuyOrder(order, uniqueId);
         this.updateOrderBoard();

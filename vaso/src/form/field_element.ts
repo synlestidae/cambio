@@ -6,6 +6,7 @@ export interface FieldElement {
     onFocus(): void;
     onBlur(): void;
     isDisabled(): boolean;
+    isRequired(): boolean;
     getValidationMessage(): string|null;
     getType(): string;
 }

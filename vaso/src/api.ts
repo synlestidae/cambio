@@ -119,16 +119,16 @@ export class Api {
         let isBuy = order.buy_asset_type === 'ETH';
         let amountFiat: string;
         if (isBuy) {
-            amountFiat = (order.sell_asset_units / 100).toFixed(2);
+            amountFiat = order.sell_asset_units.toString();
         } else {
-            amountFiat = (order.buy_asset_units / 100).toFixed(2);
+            amountFiat = order.buy_asset_units.toString();
         }
-        let cryptoUnits = isBuy? order.buy_asset_units : order.sell_asset_units;
-        console.log('shitty units', cryptoUnits);
+        let ether = isBuy? order.buy_asset_units : order.sell_asset_units;
+        let milliEther = ether * 1000;
         let orderJSON: any = {
             unique_id: order.unique_id,
             amount_fiat: amountFiat,
-            amount_crypto: `0x${bigInt(cryptoUnits).multiply(WEI_FACTOR).toString(16)}`,
+            amount_crypto: `0x${bigInt(milliEther).multiply(WEI_FACTOR).toString(16)}`,
             is_buy: isBuy,
             minutes_active: 15, // TODO These numbers don't even make sense
             max_wei: isBuy? null : '0x0'

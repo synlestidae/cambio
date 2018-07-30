@@ -4,7 +4,6 @@ import {ActionCreators} from './flux/action_creators';
 import {BoardPage} from './flux/state/board_page';
 import {TableComponent, Column, OperationColumn, FieldColumn} from './table_component';
 import {NewOrderComponent} from './new_order_component';
-import {ConfirmOrderComponent} from './confirm_order_component';
 import {getUniqueID} from './flux/state/new_order';
 
 interface BoardPageComponentProps {

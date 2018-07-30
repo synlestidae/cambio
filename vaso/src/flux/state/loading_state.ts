@@ -1,7 +1,7 @@
 import {LoadingStateType} from './loading_state_type';
 
 export class LoadingState {
-    name: LoadingStateType = 'Ready';
+    public name: LoadingStateType = 'Ready';
     message: string|null = null;
 
     startLoading() {

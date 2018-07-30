@@ -5,6 +5,7 @@ export class TextFieldElement implements FieldElement {
     private fieldObject: Object;
     private label: string;
     private name: string;
+    public required: boolean = false;
 
     constructor(property: string, fieldObject: Object, label: string, name?: string) {
         this.property = property;
@@ -22,6 +23,7 @@ export class TextFieldElement implements FieldElement {
     }
 
     public setValue(val: string) {
+        console.log('the final value', val);
         (<any>this.fieldObject)[this.property] = val;
     }
 
@@ -49,5 +51,9 @@ export class TextFieldElement implements FieldElement {
 
     public isDisabled(): boolean {
         return false;
+    }
+
+    public isRequired(): boolean {
+        return this.required;
     }
 }

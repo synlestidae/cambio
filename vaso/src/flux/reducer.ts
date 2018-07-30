@@ -263,6 +263,9 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
             case 'ORDER_SUBMIT_SUCCESS':
                 page.newOrder.orderState = 'Success';
                 break;
+            case 'ORDER_SUBMIT_CLEAR':
+                page.newOrder = null;
+                break;
             case 'ORDER_SUBMIT_FAIL':
                 page.newOrder.orderState = 'Failed';
                 break;

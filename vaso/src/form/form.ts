@@ -1,24 +1,17 @@
 import {Section} from './section';
+import {LoadingState} from '../flux/state/loading_state';
 
 export abstract class Form {
     public readonly title: string|null;
     public readonly description: string|null;
+    public state: LoadingState = new LoadingState();
+
     private readonly sections: Section[];
     private _onChange: Function|null = null;
-    //private _onSubmit: Function|null = null;
-    //private _onCancel: Function|null = null;
 
     set onChange(func: Function) {
         this._onChange = func;
     }
-
-        /*set onSubmit(func: Function) {
-        this._onSubmit = func;
-    }
-
-    set onCancel(func: Function) {
-        this._onCancel = func;
-    }*/
 
     constructor(sections: Section[], title?: string, description?: string) {
         this.sections = sections;

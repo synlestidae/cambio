@@ -5,6 +5,7 @@ import {CurrencyDenom} from './domain/currency_denom';
 import {ActionCreators} from './flux/action_creators';
 import {SingleForm} from './form/single_form';
 import {Section} from './form/section';
+import {FieldElement} from './form/field_element';
 import {TextFieldElement} from './form/text_field_element';
 import {CurrencyFieldElement} from './form/currency_field_element';
 import {ReadonlyFieldElement} from './form/readonly_field_element';
@@ -17,27 +18,55 @@ interface NewOrderComponentProps {
 
 export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     let order = props.newOrder.order;
-    let ethField = new CurrencyFieldElement('buy_asset_units', order, 'ETH to buy');
-    let currencyField = new CurrencyFieldElement('sell_asset_units', order, 'NZD to sell');
+    let fields: FieldElement[];
+    if (props.newOrder.isBuy) {
+        fields = [
+            new CurrencyFieldElement('buy_asset_units', order, 'ETH to buy'),
+            new CurrencyFieldElement('sell_asset_units', order, 'NZD to sell')
+        ];
+    } else {
+        fields = [
+            new CurrencyFieldElement('buy_asset_units', order, 'NZD to buy'),
+            new CurrencyFieldElement('sell_asset_units', order, 'ETH to sell')
+        ];
+    }
+    let price = props.newOrder.isBuy? order.sell_asset_units / order.buy_asset_units : order.buy_asset_units / order.sell_asset_units;
     let priceField = new ReadonlyFieldElement(
-        (order.buy_asset_units / order.sell_asset_units).toFixed(4), 
-        'Price per ETH (4 dp)');
-    ethField.decimalPlaces = 4;
-    currencyField.decimalPlaces = 2;
-    let section = new Section([
-        ethField, 
-        currencyField,
-        priceField
-    ]);
+        isNaN(price) || !isFinite(price)? '--' : price.toFixed(4), 
+        'ETH price (4 dp)');
+    let section = new Section(fields.concat([priceField]));
     let form = new SingleForm([section], 'Place a new order', function(){}, function(){});
+    if (props.newOrder.orderState === 'Submitting') {
+        form.state.startLoading();
+    } else if (props.newOrder.orderState === 'Failed') {
+        form.state.name = 'Error';
+        form.state.message = 'There was an error submitting your order.';
+    }
     form.onChange = function() {
         props.actions.setOrderRequest(order);
     };
+    if (props.newOrder.orderState === 'Submitting') {
+        return <div className="order-modal">Submitting your order now...</div>
+    }
+    if (props.newOrder.orderState.toString() === 'Success') {
+        return <div className="order-modal">
+            <div>Your order submitted succcessfully!</div>
+            <div>
+              <button className="btn btn-primary" onClick={() => props.actions.clearOrder()}>
+                Close
+              </button>
+            </div>
+        </div>;
+    }
     return <div className="order-modal">
         <FormComponent 
           form={form} 
           onCancel={() => props.actions.cancelNewOrder()}
-          onSubmit={() => props.actions.confirmNewOrder(order)}>
+          onSubmit={() => {
+              props.actions.confirmNewOrder(order);
+              return false;
+            }
+          }>
         </FormComponent>
     </div>;
 }

@@ -70,40 +70,13 @@ export class Order {
 
     public getEthPrice(): number|null {
         let order = this;
-        let ratio: number;
-        let ethDenom: string;
-        let moneyDenom: string;
-        let numerator;
-        let denominator;
         if (order.buy_asset_type === 'NZD' && order.sell_asset_type === 'ETH') {
-            moneyDenom = order.buy_asset_denom;
-            ethDenom = order.sell_asset_denom;
-            numerator = order.buy_asset_units;
-            denominator = order.sell_asset_units;
+            return order.buy_asset_units / order.sell_asset_units;
         } else if (order.buy_asset_type === 'ETH' && order.sell_asset_type === 'NZD'){
-            moneyDenom = order.sell_asset_denom;
-            ethDenom = order.buy_asset_denom;
-            numerator = order.sell_asset_units;
-            denominator = order.buy_asset_units;
+            return order.sell_asset_units / order.buy_asset_units;
         } else {
-            return null;
+            throw new Error('Unknown order type');
         }
-
-        if (numerator === 0) {
-            return null;
-        }
-
-        if (ethDenom === 'Szabo') {
-            denominator /= 1000000; 
-        } else if (ethDenom === 'Wei') {
-            throw new Error('Cannot do arithmetic on Wei');
-        }
-
-        if (moneyDenom === 'Cent') {
-            numerator /= 100;
-        }
-
-        return numerator / denominator;
     }
 
     public formatPrice(): string|null {

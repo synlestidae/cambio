@@ -245,6 +245,18 @@ impl Creatable for domain::Order {
             None
         };
 
+        println!("Creating {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?}", 
+                &self.owner_id,
+                &self.unique_id,
+                &self.sell_asset_type,
+                &self.sell_asset_units,
+                &self.buy_asset_type,
+                &self.buy_asset_units,
+                &self.expires_at.naive_utc(),
+                &self.status,
+                &max_wei
+            );
+
         let rows = try!(db.query(
             SQL,
             &[

@@ -89,10 +89,10 @@ impl FromStr for Decimal {
         {
             &[ref dollars, ref cents] => match (i64::from_str(dollars), u64::from_str(cents)) {
                 (Ok(d), Ok(c)) => {
-                    if cents.len() != 2 {
-                        Err("Number of decimal places should be exactly 2")
-                    } else {
+                    if cents.len() > 0 && cents.len() <= 2 {
                         Ok(Self::from_cents(sign * ((d.abs() * 100) + c as i64)))
+                    } else {
+                        Err("Decimal should have one or two decimal places")
                     }
                 }
                 _ => Err("Could not parse the two figures"),

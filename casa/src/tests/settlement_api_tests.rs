@@ -8,7 +8,7 @@ use std::sync::mpsc::channel;
 use tests::order_utils::*;
 use tests::test_utils::*;
 use web3::types::U256;
-
+/*
 #[test]
 fn test_settlement_gets_saved() {
     const JERRY: &'static str = "jerry@jackson.com";
@@ -94,4 +94,4 @@ fn test_settlement_gets_saved() {
         }
     }
     panic!("Did not receive settlement job");
-}
+}*/

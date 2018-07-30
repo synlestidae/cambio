@@ -20,6 +20,16 @@ fn test_subtraction() {
     run_sub_test("2.00", "0.01", "1.99");
 }
 
+#[test]
+fn test_conversion_to_cents() {
+    assert_eq!(Decimal::from_str("8.60").unwrap().to_cents(), 860);
+    assert_eq!(Decimal::from_str("1.60").unwrap().to_cents(), 160);
+    assert_eq!(Decimal::from_str("0.60").unwrap().to_cents(), 60);
+    assert_eq!(Decimal::from_str("0.01").unwrap().to_cents(), 1);
+    assert_eq!(Decimal::from_str("0.02").unwrap().to_cents(), 2);
+    assert_eq!(Decimal::from_str("0.05").unwrap().to_cents(), 5);
+}
+
 fn run_add_test(lhs: &str, rhs: &str, expected: &str) {
     assert_eq!(
         Decimal::from_str(lhs).unwrap() + Decimal::from_str(rhs).unwrap(),

@@ -5,8 +5,10 @@ export class NewOrder {
     public orderState: OrderState = 'Initial';
     public order: OrderRequest;
     public showValidation = false;
+    public readonly isBuy: boolean;
 
     constructor(isBuy: boolean) {
+        this.isBuy = isBuy;
         let defaultExpiry = new Date(); 
         defaultExpiry.setMinutes(defaultExpiry.getMinutes() + 15);
         if (isBuy) {
