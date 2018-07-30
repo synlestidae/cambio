@@ -7,6 +7,7 @@ import {SingleForm} from './form/single_form';
 import {Section} from './form/section';
 import {TextFieldElement} from './form/text_field_element';
 import {CurrencyFieldElement} from './form/currency_field_element';
+import {ReadonlyFieldElement} from './form/readonly_field_element';
 import {FormComponent} from './form_component';
 
 interface NewOrderComponentProps {
@@ -17,12 +18,16 @@ interface NewOrderComponentProps {
 export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     let order = props.newOrder.order;
     let ethField = new CurrencyFieldElement('sell_asset_units', order, 'ETH to buy');
-    ethField.decimalPlaces = 4;
     let currencyField = new CurrencyFieldElement('buy_asset_units', order, 'NZD to sell');
+    let priceField = new ReadonlyFieldElement(
+        (order.buy_asset_units / order.sell_asset_units).toFixed(4), 
+        'Price per ETH (4 dp)');
+    ethField.decimalPlaces = 4;
     currencyField.decimalPlaces = 2;
     let section = new Section([
         ethField, 
-        currencyField 
+        currencyField,
+        priceField
     ]);
     let form = new SingleForm([section], 'Place a new order', function(){}, function(){});
     form.onChange = function() {

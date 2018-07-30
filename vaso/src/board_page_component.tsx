@@ -46,32 +46,29 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     let sortCB = (field: string) => props.actions.sortOrders(field);
     orders = sortRows(orders, props.page.sortField);
     let newOrder = props.page.newOrder;
-    console.log('new order', newOrder);
-    let newOrderComponent; 
-    if (!newOrder) {
-        newOrderComponent = <NewOrderButton onClick={() => props.actions.newOrder()}>
-        </NewOrderButton>;
-    } else if (newOrder.orderState === 'Initial') {
-        newOrderComponent = <div className="modal-container">
+    let placeOrderModal; 
+    if (newOrder) {
+        placeOrderModal = <div className="modal-container">
           <NewOrderComponent newOrder={newOrder} actions={props.actions}>
           </NewOrderComponent>
         </div>; 
     } else {
-        newOrderComponent = <ConfirmOrderComponent actions={props.actions} newOrder={newOrder}>
-            </ConfirmOrderComponent>;
+        placeOrderModal = null;
     }
     const emptyMessage = 'No orders to show.';
+    console.log('new order yo', props.page, newOrder);
     return <div>
         <div>
-          {newOrderComponent}
+          <NewOrderButton onClick={() => props.actions.newOrder()} disabled={Boolean(newOrder)}></NewOrderButton>
+          {placeOrderModal}
         </div>
         <TableComponent columns={columns} rows={orders} sortCB={sortCB} emptyMessage={emptyMessage}>
         </TableComponent>
     </div>;
 }
 
-function NewOrderButton(props: {onClick: () => void}) {
-    return <button className="btn btn-primary" type="submit" onClick={props.onClick}>
+function NewOrderButton(props: {onClick: () => void, disabled: boolean}) {
+    return <button className="btn btn-primary" type="submit" onClick={props.onClick} disabled={props.disabled}>
         Place order
     </button>;
 }

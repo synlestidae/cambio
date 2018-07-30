@@ -16,4 +16,5 @@ export class CurrencyFieldElement extends TextFieldElement {
     public getType() {
         return 'number';
     }
+
 }

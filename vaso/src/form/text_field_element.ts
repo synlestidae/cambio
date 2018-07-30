@@ -46,4 +46,8 @@ export class TextFieldElement implements FieldElement {
     public getType(): string {
         return 'text';
     }
+
+    public isDisabled(): boolean {
+        return false;
+    }
 }

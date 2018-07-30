@@ -16,8 +16,9 @@ export function FormComponent(props: FormComponentProps) {
         return <FieldSetComponent title={section.title} elements={section.getElements()} key={i}>
             </FieldSetComponent>;
     });
+    const preventSubmit = () => false;
 
-    return <form onChange={() => form.callOnChange()} onBlur={() => form.callOnChange()}>
+    return <form onChange={() => form.callOnChange()} onBlur={() => form.callOnChange()} onSubmit={preventSubmit}>
       {title}
       <section className="form-fields">
         {fields}
