@@ -168,7 +168,7 @@ impl From<CambioError> for ApiError {
 
 impl From<SerdeError> for ApiError {
     fn from(err: SerdeError) -> Self {
-        ApiError::bad_format(err.description())
+        ApiError::bad_format(&format!("{:?}", err))
     }
 }
 

@@ -40,10 +40,10 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             db,
             email_address,
             &order.unique_id,
-            order.sell_asset_units as u64,
-            order.sell_asset_type,
-            order.buy_asset_units as u64,
-            order.buy_asset_type,
+            order.get_sell_asset_units(),
+            order.get_sell_asset_type(),
+            order.get_buy_asset_units(),
+            order.get_buy_asset_type(),
             order.max_wei,
         );
         match order_result {
@@ -83,7 +83,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         order: &api::OrderRequest,
     ) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
-        if order.sell_asset_type.is_crypto() && order.max_wei.is_none() {
+        if order.get_sell_asset_type().is_crypto() && order.max_wei.is_none() {
             const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
             return api::ApiError::missing_field_or_param(WEI_MSG).into();
         }
@@ -124,10 +124,10 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                 return api::ApiError::from(err).into();
             }
             let request_copy = order.order_request.clone();
-            if target_order.sell_asset_type != request_copy.buy_asset_type {
+            if target_order.sell_asset_type != request_copy.get_buy_asset_type() {
                 info!(
                     "Target order {:?} has sell type {:?}, but request buy type is {:?}",
-                    target_order.id, target_order.sell_asset_type, request_copy.buy_asset_type
+                    target_order.id, target_order.sell_asset_type, request_copy.get_buy_asset_type()
                 );
                 return db::CambioError::unfair_operation(
                     "Request sell_asset_type does not match target buy_asset_type",
@@ -135,19 +135,19 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                 ).into();
             }
             info!("Checking that the buy and sell asset types match");
-            if target_order.buy_asset_type != request_copy.sell_asset_type {
+            if target_order.buy_asset_type != request_copy.get_sell_asset_type() {
                 return db::CambioError::unfair_operation(
                     "Request buy_asset_type does not match target sell_asset_type",
                     "Target order.is_fair() returned false",
                 ).into();
             }
-            if target_order.sell_asset_units != request_copy.buy_asset_units {
+            if target_order.sell_asset_units != request_copy.get_buy_asset_units() as i64 {
                 return db::CambioError::unfair_operation(
                     "Request sell_asset_units does not match target buy_asset_units",
                     "Target order.is_fair() returned false",
                 ).into();
             }
-            if target_order.buy_asset_units != request_copy.sell_asset_units {
+            if target_order.buy_asset_units != request_copy.get_sell_asset_units() as i64{
                 return db::CambioError::unfair_operation(
                     "Request sell_asset_units does not match target buy_asset_units",
                     "Target order.is_fair() returned false",
