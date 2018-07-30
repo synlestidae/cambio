@@ -27,6 +27,7 @@ impl OrderService {
         buy_currency: AssetType,
         wei_cost: Option<U256>,
     ) -> Result<Order, CambioError> {
+        println!("placing {} {:?} {} {:?}", sell_units, sell_currency, buy_units, buy_currency);
         let user: User = try!(Readable::get(email, db));
         let user_owner_id = user.owner_id.unwrap();
         let order = Order {

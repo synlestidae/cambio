@@ -8,6 +8,7 @@ import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
 import {RegistrationInfo} from './domain/registration_info';
 import {SignupInfo, PersonalInfo, IdentificationInfo} from './flux/state/signup_state';
+import * as bigInt from 'big-integer';
 
 export class Api {
     baseUrl = "http://localhost:3000";
@@ -112,43 +113,34 @@ export class Api {
         return <Payment>body;
     }
 
-    public async asyncPostOrder(order: OrderRequest): Promise<UserOrder> {
-        let orderJSON = {
+    public asyncPostOrder(order: OrderRequest): Promise<UserOrder> {
+        const WEI_FACTOR = bigInt('1000000000000000000');
+        console.log('WEI', WEI_FACTOR);
+        let isBuy = order.buy_asset_type === 'ETH';
+        let amountFiat: string;
+        if (isBuy) {
+            amountFiat = (order.sell_asset_units / 100).toFixed(2);
+        } else {
+            amountFiat = (order.buy_asset_units / 100).toFixed(2);
+        }
+        let cryptoUnits = isBuy? order.buy_asset_units : order.sell_asset_units;
+        console.log('shitty units', cryptoUnits);
+        let orderJSON: any = {
             unique_id: order.unique_id,
-            sell_asset_type: order.sell_asset_type,
-            sell_asset_denom: order.sell_asset_denom,
-            sell_asset_units: order.sell_asset_units,
-            buy_asset_type: order.buy_asset_type,
-            buy_asset_denom: order.buy_asset_denom,
-            buy_asset_units: order.buy_asset_units,
-            expires_at: order.expiry.toISOString()
+            amount_fiat: amountFiat,
+            amount_crypto: `0x${bigInt(cryptoUnits).multiply(WEI_FACTOR).toString(16)}`,
+            is_buy: isBuy,
+            minutes_active: 15, // TODO These numbers don't even make sense
+            max_wei: isBuy? null : '0x0'
         };
-        let orderResult = await this.makeRequest('/orders/new', 'POST', orderJSON); 
-        let resultJSON = await orderResult.json();
-        return parseUserOrder(resultJSON);
+        console.log('fucking json', orderJSON);
+        return this.makeRequest('/orders/new', 'POST', orderJSON)
+            .then((r: Response) => r.json()) 
+            .then((json: any) => parseUserOrder(json));
     }
 
     public async asyncBuyOrder(order: UserOrder, uniqueId: string): Promise<any> {
-        let id = parseInt(order.id);
-        if (id.toString() !== order.id) {
-            throw new Error('Failed to convert order ID to integer');
-        }
-        let date = new Date();
-        date.setMinutes(date.getMinutes() + 10);
-        let orderJSON: any = {
-            order_id: id,
-            order_request: {
-                unique_id: uniqueId,
-                sell_asset_type: order.buy_asset_type,
-                sell_asset_denom: order.buy_asset_denom,
-                sell_asset_units: order.buy_asset_units,
-                buy_asset_type: order.sell_asset_type,
-                buy_asset_denom: order.sell_asset_denom,
-                buy_asset_units: order.sell_asset_units,
-                expires_at: date
-            }
-        };
-        let result = await this.makeRequest(`/orders/buy`, 'POST', orderJSON);
+        throw new Error('Not implemented!');
     }
 
     public async asyncGetActiveOrders(): Promise<UserOrder[]> {

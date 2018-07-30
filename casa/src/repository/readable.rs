@@ -85,7 +85,7 @@ impl Readable<domain::Order> for domain::All {
             FROM asset_order orders,
                  account_owner owners 
             WHERE orders.owner_id = owners.id AND
-                  orders.status = active";
+                  orders.status = 'active'";
         PostgresHelperImpl::query(db, SELECT_ALL, &[])
     }
 }

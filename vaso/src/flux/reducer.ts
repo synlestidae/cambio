@@ -223,9 +223,8 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 }
                 page.sortField = action.value;
                 break;
-
             case 'NEW_ORDER':
-                page.newOrder = new NewOrder();
+                page.newOrder = new NewOrder(Boolean(action.payload));
                 break;
             case 'EDIT_NEW_ORDER':
                 if (page.newOrder.orderState === 'ReadyToConfirm') {

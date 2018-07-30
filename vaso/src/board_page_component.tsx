@@ -59,7 +59,7 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     console.log('new order yo', props.page, newOrder);
     return <div>
         <div>
-          <NewOrderButton onClick={() => props.actions.newOrder()} disabled={Boolean(newOrder)}></NewOrderButton>
+          <NewOrderButton onClick={(isBuy: boolean) => props.actions.newOrder(isBuy)} disabled={Boolean(newOrder)}></NewOrderButton>
           {placeOrderModal}
         </div>
         <TableComponent columns={columns} rows={orders} sortCB={sortCB} emptyMessage={emptyMessage}>
@@ -67,10 +67,15 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     </div>;
 }
 
-function NewOrderButton(props: {onClick: () => void, disabled: boolean}) {
-    return <button className="btn btn-primary" type="submit" onClick={props.onClick} disabled={props.disabled}>
-        Place order
-    </button>;
+function NewOrderButton(props: {onClick: (isBuy: boolean) => void, disabled: boolean}) {
+    return <div>
+      <button className="btn btn-primary" type="submit" onClick={() => props.onClick(true)} disabled={props.disabled}>
+        Buy ETH
+      </button>
+      <button className="btn btn-primary" type="submit" onClick={() => props.onClick(false)} disabled={props.disabled}>
+        Sell ETH
+      </button>
+    </div>;
 }
 
 function sortRows(orders: UserOrder[], field: string): UserOrder[]{

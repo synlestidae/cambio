@@ -6,10 +6,15 @@ export class NewOrder {
     public order: OrderRequest;
     public showValidation = false;
 
-    constructor() {
+    constructor(isBuy: boolean) {
         let defaultExpiry = new Date(); 
         defaultExpiry.setMinutes(defaultExpiry.getMinutes() + 15);
-        this.order = new OrderRequest('', defaultExpiry, 'Active', 'NZD', 'Cent', 0, 'ETH', 'Szabo', 0);
+        if (isBuy) {
+            this.order = new OrderRequest('', defaultExpiry, 'Active', 'NZD', 'Cent', 0, 'ETH', 'Szabo', 0);
+        } else {
+            this.order = new OrderRequest('', defaultExpiry, 'Active', 'ETH', 'Szabo', 0, 'NZD', 'Cent', 0);
+        }
+        this.order.unique_id = getUniqueID(12);
     }
 }
 

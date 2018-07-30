@@ -17,8 +17,8 @@ interface NewOrderComponentProps {
 
 export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     let order = props.newOrder.order;
-    let ethField = new CurrencyFieldElement('sell_asset_units', order, 'ETH to buy');
-    let currencyField = new CurrencyFieldElement('buy_asset_units', order, 'NZD to sell');
+    let ethField = new CurrencyFieldElement('buy_asset_units', order, 'ETH to buy');
+    let currencyField = new CurrencyFieldElement('sell_asset_units', order, 'NZD to sell');
     let priceField = new ReadonlyFieldElement(
         (order.buy_asset_units / order.sell_asset_units).toFixed(4), 
         'Price per ETH (4 dp)');

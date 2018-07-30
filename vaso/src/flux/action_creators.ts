@@ -194,7 +194,8 @@ export class ActionCreators {
             let orderResult = await this.api.asyncPostOrder(order);
             this.updateOrderBoard();
             this.dispatch(new BasicAction('ORDER_SUBMIT_SUCCESS'));
-        } catch {
+        } catch (e) {
+            console.error('Error posting order', e);
             this.dispatch(new BasicAction('ORDER_SUBMIT_FAIL'));
             // TODO
             // result is bad. check if the order appears in the board. 
@@ -212,8 +213,8 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_NEW_ORDER_STATE', 'ReadyToConfirm'));
     }
 
-    public newOrder() {
-        this.dispatch(new BasicAction('NEW_ORDER'));
+    public newOrder(isBuy: boolean) {
+        this.dispatch(new BasicAction('NEW_ORDER', null, isBuy));
     }
 
     public toggleCreditAccount(account: Account) {
