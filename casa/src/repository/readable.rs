@@ -177,7 +177,7 @@ impl Readable<domain::Transaction> for domain::AccountId {
                 journal journal_from,
                 journal journal_to
             WHERE 
-                journal_to.account_id = $1
+                journal_to.account_id = $1 AND
                 journal_from.correspondence_id = journal_to.correspondence_id AND
                 journal_from.correspondence_id = $1 AND 
                 journal_from.debit >= 0 AND 
