@@ -13,3 +13,5 @@ CREATE TYPE currency_code AS ENUM (
     'nzd',
     'aud'
 );
+
+CREATE DOMAIN money_cents AS BIGINT;

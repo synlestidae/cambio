@@ -9,6 +9,7 @@ use std::error; //::Error as StdError;
 use std::fmt;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
+use std::convert::Into;
 
 type ToSqlResult = Result<IsNull, Box<error::Error + 'static + Send + Sync>>;
 
@@ -140,7 +141,7 @@ impl<'de> Deserialize<'de> for Decimal {
 
 impl ToSql for Decimal {
     fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
-        self.to_string().to_sql(ty, out)
+        self.to_cents().to_sql(ty, out)
     }
 
     fn accepts(ty: &Type) -> bool
@@ -151,14 +152,14 @@ impl ToSql for Decimal {
     }
 
     fn to_sql_checked(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
-        self.to_string().to_sql_checked(ty, out)
+        self.to_cents().to_sql_checked(ty, out)
     }
 }
 
 impl FromSql for Decimal {
     fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        let string = String::from_sql(ty, raw)?;
-        Ok(Self::from_str(&string)?)
+        let numeric_val = i64::from_sql(ty, raw)?;
+        Ok(Self::from_cents(numeric_val))
     }
 
     fn accepts(ty: &Type) -> bool {
@@ -166,16 +167,16 @@ impl FromSql for Decimal {
     }
 
     fn from_sql_null(ty: &Type) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        let value = try!(String::from_sql_null(ty));
-        Decimal::from_str(&value).map_err(err_currency_format)
+        let numeric_val = i64::from_sql_null(ty)?;
+        Ok(Self::from_cents(numeric_val))
     }
 
     fn from_sql_nullable(
         ty: &Type,
         raw: Option<&[u8]>,
     ) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        let value = try!(String::from_sql_nullable(ty, raw));
-        Decimal::from_str(&value).map_err(err_format_obj)
+        let numeric_val = i64::from_sql_nullable(ty, raw)?;
+        Ok(Self::from_cents(numeric_val))
     }
 }
 

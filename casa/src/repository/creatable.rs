@@ -246,7 +246,7 @@ impl Creatable for domain::Order {
                 &self.trade_type,
                 &self.fiat_type,
                 &self.crypto_type,
-                &self.expires_at,
+                &self.expires_at.naive_utc(),
                 &self.status,
             ]
         ));
