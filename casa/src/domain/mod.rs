@@ -1,5 +1,6 @@
 mod account;
 mod trade_type;
+mod crypto_type;
 mod big_integer;
 mod account_business_type;
 mod account_id;
@@ -119,3 +120,4 @@ pub use self::user_id::UserId;
 pub use self::user_payment::UserPayment;
 pub use self::big_integer::BigInteger;
 pub use self::trade_type::TradeType;
+pub use self::crypto_type::CryptoType;

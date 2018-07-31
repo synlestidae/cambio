@@ -1,7 +1,8 @@
 use chrono::prelude::*;
+use api::OrderRequest;
 use db::{CambioError, PostgresHelper};
 use domain;
-use domain::{All, AssetType, Order, OrderId, OrderStatus, User};
+use domain::*;
 use postgres::GenericConnection;
 use repository::{Creatable, Readable, Updateable};
 use web3::types::U256;
@@ -19,28 +20,12 @@ impl OrderService {
     pub fn place_order<C: GenericConnection>(
         &self,
         db: &mut C,
-        email: &str,
-        unique_id: &str,
-        sell_units: u64,
-        sell_currency: AssetType,
-        buy_units: u64,
-        buy_currency: AssetType,
-        wei_cost: Option<U256>,
-    ) -> Result<Order, CambioError> {
-        let user: User = try!(Readable::get(email, db));
+        email_address: &str,
+        order_request: &OrderRequest) -> Result<Order, CambioError> {
+        let user: User = try!(Readable::get(email_address, db));
+        // TODO check balance and move money into hold account 
         let user_owner_id = user.owner_id.unwrap();
-        let order = Order {
-            id: None,
-            owner_id: user_owner_id,
-            unique_id: unique_id.to_owned(),
-            sell_asset_units: sell_units as i64,
-            buy_asset_units: buy_units as i64,
-            sell_asset_type: sell_currency,
-            buy_asset_type: buy_currency,
-            expires_at: self.get_order_expiry(),
-            status: OrderStatus::Active,
-            max_wei: wei_cost,
-        };
+        let order = order_request.clone().into_order(user.owner_id.unwrap());
         order.create(db)
     }
 

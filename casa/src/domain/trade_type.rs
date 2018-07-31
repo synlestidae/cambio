@@ -6,3 +6,9 @@ pub enum TradeType {
     #[postgres(name = "sell_crypto")]
     SellCrypto
 }
+
+impl TradeType {
+    pub fn is_compatible(&self, other: &TradeType) -> bool {
+        return self != other;
+    }
+}

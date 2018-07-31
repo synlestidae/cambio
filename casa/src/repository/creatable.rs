@@ -225,38 +225,29 @@ impl Creatable for domain::Order {
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const SQL: &'static str = "INSERT INTO asset_order(
-            owner_id, 
+            owner_id,
             unique_id,
-            sell_asset_type,
-            sell_asset_units,
-            buy_asset_type,
-            buy_asset_units,
+            amount_fiat,
+            amount_crypto,
+            trade_type,
+            fiat_type,
+            crypto_type,
             expires_at,
-            status,
-            max_wei) 
+            status)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id";
-
-        let max_wei: Option<Vec<u8>> = if let Some(ref w) = &self.max_wei {
-            let mut b = Vec::new();
-            b.resize(4 * 8, 0);
-            w.to_big_endian(&mut b);
-            Some(b)
-        } else {
-            None
-        };
 
         let rows = try!(db.query(
             SQL,
             &[
                 &self.owner_id,
                 &self.unique_id,
-                &self.sell_asset_type,
-                &self.sell_asset_units,
-                &self.buy_asset_type,
-                &self.buy_asset_units,
-                &self.expires_at.naive_utc(),
+                &self.amount_fiat,
+                &self.amount_crypto,
+                &self.trade_type,
+                &self.fiat_type,
+                &self.crypto_type,
+                &self.expires_at,
                 &self.status,
-                &max_wei
             ]
         ));
         Ok(rows)

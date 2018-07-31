@@ -1,10 +1,13 @@
 use domain::AssetType;
 use std::fmt;
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, ToSql, FromSql, Debug, Eq, PartialEq, Clone)]
+#[postgres(name = "currency_code")]
 pub enum CurrencyCode {
+    #[postgres(name = "nzd")]
     NZD,
-    AUD,
+    #[postgres(name = "aud")]
+    AUD
 }
 
 impl CurrencyCode {

@@ -95,7 +95,8 @@ impl JobLoop {
         sid: OrderSettlementId,
         password: String,
     ) -> Result<(), db::CambioError> {
-        let conn_str: &str = &self.conn_str;
+        unimplemented!()
+        /*let conn_str: &str = &self.conn_str;
         let mut db = try!(Connection::connect(conn_str, TlsMode::None));
         let mut settlement = try!(sid.get(&mut db));
         let mut eth_service = EthereumService::new(self.web3.clone());
@@ -188,6 +189,6 @@ impl JobLoop {
             }
         }
 
-        settlement.update(&mut db).map(|_| ())
+        settlement.update(&mut db).map(|_| ())*/
     }
 }
