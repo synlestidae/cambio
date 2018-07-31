@@ -140,7 +140,7 @@ impl<'de> Deserialize<'de> for Decimal {
 
 impl ToSql for Decimal {
     fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
-        self.cents.to_string().to_sql(ty, out)
+        self.to_string().to_sql(ty, out)
     }
 
     fn accepts(ty: &Type) -> bool
@@ -157,8 +157,8 @@ impl ToSql for Decimal {
 
 impl FromSql for Decimal {
     fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        let value = try!(i64::from_sql(ty, raw));
-        Ok(Decimal::from_cents(value))
+        let string = String::from_sql(ty, raw)?;
+        Ok(Self::from_str(&string)?)
     }
 
     fn accepts(ty: &Type) -> bool {
