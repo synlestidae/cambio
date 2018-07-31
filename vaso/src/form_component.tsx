@@ -5,8 +5,8 @@ import {FieldElement} from './form/field_element';
 
 interface FormComponentProps {
     form: Form;
-    onSubmit: () => void;
-    onCancel: () => void;
+    onSubmit?: () => void;
+    onCancel?: () => void;
 }
 
 export function FormComponent(props: FormComponentProps) {
@@ -24,15 +24,27 @@ export function FormComponent(props: FormComponentProps) {
         error = <div className="error-text">{form.state.message || 'An error occurred while submitting.'}</div>
     }
 
+    const onClickSubmit = function() {
+        props.onSubmit();
+        return false;
+    };
+
+    const onClickCancel = function() {
+        props.onCancel();
+        return false;
+    };
+
+    let buttons = <section className="form-buttons side-by-side">
+      {props.onCancel? <button className="form-control btn non-touching-button" onClick={onClickCancel}>Cancel</button> : null}
+      {props.onSubmit? <button className="form-control btn btn-primary non-touching-button" onClick={onClickSubmit}>Submit</button> : null}
+    </section>;
+
     return <form onChange={() => form.callOnChange()} onBlur={() => form.callOnChange()} onSubmit={preventSubmit}>
       {title}
       <section className="form-fields">
         {fields}
       </section>
-      <section className="form-buttons side-by-side">
-        <button className="form-control btn non-touching-button" onClick={() => props.onCancel()}>Cancel</button>
-        <button className="form-control btn btn-primary non-touching-button" onClick={() => props.onSubmit()}>Submit</button>
-      </section>
+      {buttons}
       {error}
     </form>;
 }

@@ -17,6 +17,7 @@ export function reduce(state: AppState, action: Action): AppState {
     state = reduceLogin(state, action);
     state = reduceAccounts(state, action);
     state = reduceOrderBoard(state, action);
+    state = reducePersonalDetails(state, action);
     return state;
 }
 
@@ -277,6 +278,8 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
 }
 
 function reducePersonalDetails(state: AppState, action: Action): AppState  {
+    console.log('reducing personal details', action);
+    console.log(state);
     if (state.page instanceof MyAccount) {
         let page = <MyAccount>state.page;
         switch (action.name) {
@@ -285,6 +288,13 @@ function reducePersonalDetails(state: AppState, action: Action): AppState  {
                 break;
             case 'SUCCESS_LOADING_PERSONAL_DETAILS':
                 page.loadingState.success();
+                break;
+            case 'SET_PERSONAL_DETAILS':
+                if (action.payload instanceof PersonalDetails) {
+                    page.personalDetails = action.payload; 
+                } else {
+                    throw new Error('Saving details was successful, but did not get personal details obj');
+                }
                 break;
             case 'ERROR_LOADING_PERSONAL_DETAILS':
                 if (action.payload instanceof Error) {
@@ -301,7 +311,7 @@ function reducePersonalDetails(state: AppState, action: Action): AppState  {
                     page.personalDetails = action.payload; 
                     page.savingState.success();
                 } else {
-                    throw new Error('Loading details was successful, but did not get personal details obj');
+                    throw new Error('Saving details was successful, but did not get personal details obj');
                 }
                 break;
             case 'ERROR_SUBMITTING_PERSONAL_DETAILS':

@@ -159,13 +159,14 @@ export class Api {
     }
 
     public async asyncGetPersonalDetails(): Promise<PersonalDetails> {
-        let result = await this.makeRequest('/user/details', 'GET');
+        let result = await this.makeRequest('/users/personal/details', 'GET');
+        console.log('result yo', result);
         let body = await result.json();
         return PersonalDetails.parse(body);
     }
 
     public async asyncPostPersonalDetails(personalDetails: PersonalDetails): Promise<PersonalDetails> {
-        let result = await this.makeRequest('/user/details', 'POST', personalDetails);
+        let result = await this.makeRequest('/users/personal/details', 'POST', personalDetails);
         let body = await result.json();
         return PersonalDetails.parse(body);
     }

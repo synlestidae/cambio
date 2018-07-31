@@ -30,5 +30,8 @@ export function MyAccountPageComponent(props: MyAccountPageComponentProps) {
     ];
     let section = new Section(elements);
     let form = new SingleForm([section], 'Your details');
-    return <FormComponent form={form} onSubmit={() => {}} onCancel={() => {}}/>
+    form.onChange = function() {
+        props.actions.setPersonalDetails(details);
+    };
+    return <FormComponent form={form} onSubmit={() => props.actions.updatePersonalDetails(details)}/>
 }

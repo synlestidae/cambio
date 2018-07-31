@@ -37,4 +37,19 @@ impl PersonalDetails {
             personal_identity: None,
         }
     }
+
+    pub fn from_profile(user_id: UserId, profile: Profile) -> Self {
+        Self {
+            first_names: profile.given_names,
+            family_name: profile.family_names,
+            address_line_1: profile.address.address_line_1.unwrap(),
+            address_line_2: profile.address.address_line_2,
+            post_code: profile.address.address_line_3.unwrap(),
+            city: profile.address.address_line_4.unwrap(),
+            country: profile.address.country_name,
+            dob: profile.date_of_birth,
+            id_type: "".to_owned(),
+            id_number: "".to_owned()
+        }
+    }
 }

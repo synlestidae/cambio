@@ -176,7 +176,8 @@ impl Updateable for domain::Profile {
                 &self.family_names,
                 &self.date_of_birth,
                 &new_address.id,
-                &new_personal_identity_id
+                &new_personal_identity_id,
+                &self.id
             ]
         )?;
         Ok(self.id.unwrap().get(db)?)

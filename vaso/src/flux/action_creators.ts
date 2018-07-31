@@ -268,17 +268,25 @@ export class ActionCreators {
         this.dispatch(new BasicAction('START_LOADING_PERSONAL_DETAILS'));
         try {
             let personalDetails = await this.api.asyncGetPersonalDetails();
-            this.dispatch(new BasicAction('SUCCESS_LOADING_PERSONAL_DETAILS', null, personalDetails));
+            this.dispatch(new BasicAction('SUCCESS_LOADING_PERSONAL_DETAILS'));
+            this.dispatch(new BasicAction('SET_PERSONAL_DETAILS', null, personalDetails));
         } catch (e) {
+            console.error('There was an error!');
+            console.error(e);
             this.dispatch(new BasicAction('ERROR_LOADING_PERSONAL_DETAILS', null, e));
         }
+    }
+
+    public setPersonalDetails(personalDetails: PersonalDetails) {
+        this.dispatch(new BasicAction('SET_PERSONAL_DETAILS', null, personalDetails));
     }
 
     public async updatePersonalDetails(personalDetails: PersonalDetails) {
         this.dispatch(new BasicAction('START_SUBMITTING_PERSONAL_DETAILS'));
         try {
             await this.api.asyncPostPersonalDetails(personalDetails);
-            this.dispatch(new BasicAction('SUCCESS_SUBMITTING_PERSONAL_DETAILS', null, personalDetails));
+            this.dispatch(new BasicAction('SUCCESS_SUBMITTING_PERSONAL_DETAILS'));
+            this.dispatch(new BasicAction('SET_PERSONAL_DETAILS', null, personalDetails));
         } catch (e) {
             this.dispatch(new BasicAction('ERROR_SUBMITTING_PERSONAL_DETAILS', null, e));
         }

@@ -30,6 +30,8 @@ pub enum ApiRequest {
 impl ApiRequest {
     fn get_method(&self) -> Method {
         match self {
+            ApiRequest::User(UserRequest::GetPersonalDetails) => Method::Get,
+            ApiRequest::User(UserRequest::SetPersonalDetails(..)) => Method::Post,
             ApiRequest::User(..) => Method::Post,
             ApiRequest::Account(..) => Method::Get,
             ApiRequest::Order(OrderApiRequest::GetActiveOrders) => Method::Get,
@@ -57,6 +59,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
         if path.len() > 0 && path[path.len() - 1] == "" {
             drop(path.pop());
         }
+        println!("Path slice {:?}", path.as_slice());
         let request_obj = match path.as_slice() {
             &["users", "register"] => {
                 ApiRequest::User(UserRequest::Register(try!(get_api_obj(request))))
@@ -70,6 +73,19 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["users", "confirm"] => {
                 ApiRequest::User(UserRequest::Confirm(try!(get_api_obj(request))))
             }
+            &["users", "personal", "details"] => {
+                println!("Request method {:?}", request.method);
+                if (request.method == Method::Get) {
+                    println!("Get personal details");
+                    ApiRequest::User(UserRequest::GetPersonalDetails)
+                } else if (request.method == Method::Post) {
+                    println!("post personal details");
+                    ApiRequest::User(UserRequest::SetPersonalDetails(get_api_obj(request)?))
+                } else {
+                    println!("Bad method you!");
+                    return Err(api::ApiError::bad_method(Method::Get));
+                }
+            },
             &["orders", "active"] => ApiRequest::Order(OrderApiRequest::GetActiveOrders),
             &["orders", "me"] => ApiRequest::Order(OrderApiRequest::GetUserOrders),
             &["orders", "new"] => {
@@ -100,7 +116,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["payment"] => {
                 let payment_request: PaymentRequest = try!(get_api_obj(request));
                 ApiRequest::Payment(payment_request)
-            }
+            },
             _ => {
                 return Err(api::ApiError::not_found_path(&path
                     .into_iter()

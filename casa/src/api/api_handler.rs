@@ -101,12 +101,12 @@ impl Handler for ApiHandler {
                     profile_request => {
                         let result = match profile_request {
                             UserRequest::SetPersonalDetails(ref details) => user_api.update_personal_details(&user, details),
-                            UserRequest::GetProfile => user_api.get_profile(&user),
+                            UserRequest::GetPersonalDetails => user_api.get_profile(&user),
                             _ => unreachable!(),
                         };
                         match result {
                             Err(err) => err.into(),
-                            ok_result => api::utils::to_response(Ok(ok_result)),
+                            ok_result => api::utils::to_response(ok_result),
                         }
                     }
                 }

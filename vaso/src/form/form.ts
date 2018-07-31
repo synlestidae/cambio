@@ -37,16 +37,4 @@ export abstract class Form {
             this._onChange.call(this);
         }
     }
-
-    /*public callOnSubmit() {
-        if (this._onSubmit) {
-            this._onSubmit.call(this);
-        }
-    }
-
-    public callOnCancel() {
-        if (this._onSubmit) {
-            this._onCancel.call(this);
-        }
-    }*/
 }

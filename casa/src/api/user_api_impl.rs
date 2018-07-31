@@ -145,16 +145,17 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn update_personal_details(&mut self, user: &User, personal_details: &PersonalDetails) 
-        -> Result<domain::Profile, CambioError> {
+        -> Result<api::PersonalDetails, CambioError> {
         let user_id = user.id.unwrap();
         let current_profile: domain::Profile = user_id.get(&mut self.db)?;
         let mut new_profile = personal_details.clone().into_profile(user_id); 
         new_profile.id = current_profile.id;
-        Ok(new_profile.update(&mut self.db)?)
+        Ok(api::PersonalDetails::from_profile(user_id, new_profile.update(&mut self.db)?))
     }
 
-    pub fn get_profile(&mut self, user: &User) -> Result<domain::Profile, CambioError> {
-        let profile: domain::Profile = user.id.unwrap().get(&mut self.db)?;
-        Ok(profile)
+    pub fn get_profile(&mut self, user: &User) -> Result<api::PersonalDetails, CambioError> {
+        let user_id = user.id.unwrap();
+        let profile: domain::Profile = user_id.get(&mut self.db)?;
+        Ok(api::PersonalDetails::from_profile(user_id, profile))
     }
 }

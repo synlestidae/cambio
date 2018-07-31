@@ -7,5 +7,5 @@ pub enum UserRequest {
     Confirm(api::RegistrationConfirm),
     LogIn(api::LogIn),
     SetPersonalDetails(api::PersonalDetails),
-    GetProfile
+    GetPersonalDetails
 }
