@@ -1,4 +1,6 @@
 mod account;
+mod trade_type;
+mod big_integer;
 mod account_business_type;
 mod account_id;
 mod account_role;
@@ -115,3 +117,5 @@ pub use self::unique_id::UniqueId;
 pub use self::user::User;
 pub use self::user_id::UserId;
 pub use self::user_payment::UserPayment;
+pub use self::big_integer::BigInteger;
+pub use self::trade_type::TradeType;

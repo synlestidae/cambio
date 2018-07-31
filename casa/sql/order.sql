@@ -9,6 +9,11 @@ CREATE TYPE order_status AS ENUM (
     'deleted'
 );
 
+CREATE TYPE trade_type AS ENUM (
+    'buy_crypto',
+    'sell_crypto',
+);
+
 CREATE TYPE settlement_status AS ENUM (
     'waiting_eth',
     'waiting_eth_credentials',
@@ -25,13 +30,14 @@ CREATE TABLE eth_transactions (
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
-    unique_id VARCHAR(32) NOT NULL UNIQUE,
-    sell_asset_units BIGINT NOT NULL,
-    buy_asset_units BIGINT NOT NULL,
-    sell_asset_type ASSET_TYPE NOT NULL,
-    buy_asset_type ASSET_TYPE NOT NULL,
-    status order_status NOT NULL DEFAULT 'active',
+    unique_id VARCHAR(32) NOT NULL,
+    amount_fiat MONEY NOT NULL,
+    amount_crypto BYTEA NOT NULL,
+    trade_type trade_type NOT NULL
+    fiat_type currency_code NOT NULL,
+    crypto_type crypto_type NOT NULL,
     expires_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
+    status order_status NOT NULL DEFAULT 'active',
     max_wei BYTEA,
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
 );
