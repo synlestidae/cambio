@@ -11,7 +11,7 @@ CREATE TYPE order_status AS ENUM (
 
 CREATE TYPE trade_type AS ENUM (
     'buy_crypto',
-    'sell_crypto',
+    'sell_crypto'
 );
 
 CREATE TYPE settlement_status AS ENUM (
@@ -33,7 +33,7 @@ CREATE TABLE asset_order (
     unique_id VARCHAR(32) NOT NULL,
     amount_fiat MONEY NOT NULL,
     amount_crypto BYTEA NOT NULL,
-    trade_type trade_type NOT NULL
+    trade_type trade_type NOT NULL,
     fiat_type currency_code NOT NULL,
     crypto_type crypto_type NOT NULL,
     expires_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),

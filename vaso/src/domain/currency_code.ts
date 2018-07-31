@@ -1,1 +1,1 @@
-export type CurrencyCode = 'NZD' | 'AUD';
+export type CurrencyCode = 'NZD' | 'AUD' | 'ETH';
