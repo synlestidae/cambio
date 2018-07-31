@@ -37,7 +37,8 @@ impl SettlementService {
         starting_user_password: String,
         max_cost_wei: U256,
     ) -> Result<domain::EthereumOutboundTransaction, db::CambioError> {
-        let mut eth_service = services::EthereumService::new(self.web3.clone());
+        unimplemented!()
+        /*let mut eth_service = services::EthereumService::new(self.web3.clone());
         let mut settlement = try!(settlement_id.get(db));
         if settlement.settlement_status != domain::SettlementStatus::WaitingEth {
             return Err(db::CambioError::unfair_operation(
@@ -63,7 +64,7 @@ impl SettlementService {
             wei,
             U256::from(max_cost_wei),
             unique_id,
-        )
+        )*/
     }
 
     fn get_eth_account<C: GenericConnection>(

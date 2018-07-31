@@ -36,16 +36,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         order: &api::OrderRequest,
         email_address: &str,
     ) -> Result<domain::Order, iron::Response> {
-        let order_result = self.order_service.place_order(
-            db,
-            email_address,
-            &order.unique_id,
-            order.get_sell_asset_units(),
-            order.get_sell_asset_type(),
-            order.get_buy_asset_units(),
-            order.get_buy_asset_type(),
-            order.max_wei,
-        );
+        let order_result = self.order_service.place_order(db, email_address, order);
         match order_result {
             Ok(result) => Ok(result),
             err => Err(utils::to_response(err)),
@@ -73,7 +64,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         let orders: Result<Vec<Order>, _> = owner_id.get_vec(&mut self.db);
         match orders {
             Ok(orders) => utils::to_response(Ok(orders)),
-            Err(err) => err.into(), //api::ApiError::from(err).into()
+            Err(err) => err.into(), 
         }
     }
 
@@ -83,10 +74,10 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         order: &api::OrderRequest,
     ) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
-        if order.get_sell_asset_type().is_crypto() && order.max_wei.is_none() {
+        /*if order.get_sell_asset_type().is_crypto() && order.max_wei.is_none() {
             const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
             return api::ApiError::missing_field_or_param(WEI_MSG).into();
-        }
+        }*/
         let mut db_tx = self.db.transaction().unwrap();
         match self.create_order(&mut db_tx, &order, &user.email_address) {
             Ok(order) => {
@@ -98,7 +89,8 @@ impl<C: GenericConnection> OrderApiImpl<C> {
     }
 
     pub fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
-        info!(
+        unimplemented!("We are going to change how buying an order works");
+        /*info!(
             "User {} is completing order {:?}",
             user.email_address, order.order_id
         );
@@ -122,9 +114,9 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                     "Target order is expired or is not active",
                 );
                 return api::ApiError::from(err).into();
-            }
-            let request_copy = order.order_request.clone();
-            if target_order.sell_asset_type != request_copy.get_buy_asset_type() {
+            }*/
+            //let request_copy = order.order_request.clone();
+            /*if target_order.sell_asset_type != request_copy.get_buy_asset_type() {
                 info!(
                     "Target order {:?} has sell type {:?}, but request buy type is {:?}",
                     target_order.id, target_order.sell_asset_type, request_copy.get_buy_asset_type()
@@ -152,8 +144,8 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                     "Request sell_asset_units does not match target buy_asset_units",
                     "Target order.is_fair() returned false",
                 ).into();
-            }
-
+            }*/
+            /*
             info!("Creating order from request for order {:?}", order.order_id);
             let our_order =
                 match self.create_order(&mut db_tx, &order.order_request, &email_address) {
@@ -188,6 +180,6 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             };
             response
         };
-        response
+        response*/
     }
 }

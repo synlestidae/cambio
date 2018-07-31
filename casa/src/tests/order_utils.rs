@@ -1,6 +1,7 @@
 use api::PersonalDetails;
 use chrono::prelude::*;
 use db;
+use domain::*;
 use domain;
 use repository::{Creatable, Readable};
 use services;
@@ -38,8 +39,8 @@ pub fn quick_order(
         .register_user(&mut db, seller, "dohnut123", &fake_details())
         .unwrap();
 
-    let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
-    let mut order2 = domain::Order::sell_szabo(user2.owner_id.unwrap(), buy_money, sell_szabo, 10);
+    let mut order1 = make_buy(user1.owner_id.unwrap(), buy_szabo, sell_money);
+    let mut order2 = make_sell(user2.owner_id.unwrap(), sell_szabo, buy_money);
 
     (
         order1.create(&mut db).unwrap(),
@@ -59,8 +60,8 @@ pub fn just_order(
     let user1 = Readable::get(buyer, &mut db).unwrap();
     let user2 = Readable::get(seller, &mut db).unwrap();
 
-    let mut order1 = domain::Order::buy_szabo(user1.owner_id.unwrap(), buy_szabo, sell_money, 10);
-    let mut order2 = domain::Order::sell_szabo(user1.owner_id.unwrap(), buy_money, sell_szabo, 10);
+    let mut order1 = make_buy(user1.owner_id.unwrap(), buy_szabo, sell_money);
+    let mut order2 = make_sell(user1.owner_id.unwrap(), sell_szabo, buy_money);
 
     order1 = order1.create(&mut db).unwrap();
     order2 = order2.create(&mut db).unwrap();
@@ -99,4 +100,12 @@ pub fn fake_details() -> PersonalDetails {
         id_type: "NZ_Passport".to_owned(),
         id_number: "LM123309".to_owned(),
     }
+}
+
+fn make_buy(owner_id: OwnerId, szabo: u64, dollars: u32) -> Order {
+    unimplemented!()
+}
+
+fn make_sell(owner_id: OwnerId, szabo: u64, dollars: u32) -> Order {
+    unimplemented!()
 }
