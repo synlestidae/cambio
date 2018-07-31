@@ -278,8 +278,6 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
 }
 
 function reducePersonalDetails(state: AppState, action: Action): AppState  {
-    console.log('reducing personal details', action);
-    console.log(state);
     if (state.page instanceof MyAccount) {
         let page = <MyAccount>state.page;
         switch (action.name) {

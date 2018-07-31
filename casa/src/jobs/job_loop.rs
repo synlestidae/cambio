@@ -78,13 +78,13 @@ impl JobLoop {
     }
 
     fn send_email(&mut self, email_request: EmailRequest) -> Result<(), db::CambioError> {
-        println!("Sending email: {:?}", email_request);
+        info!("Sending email: {:?}", email_request);
         let email = email_request.to_email();
         let client = EmailClient::new(&self.server_config.get_email_noreply_config());
         match client.send(&email) {
             Ok(result) => (),
             Err(err) => {
-                println!("Error: {:?}", err);
+                error!("Error: {:?}", err);
             }
         };
         Ok(())

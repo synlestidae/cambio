@@ -55,7 +55,7 @@ impl Handler for ApiHandler {
                 if let Ok(Some(mut s)) = session {
                     s.renew();
                     match s.update(&mut db) {
-                        Err(err) => println!("Failed to renew session: {:?}", err),
+                        Err(err) => error!("Failed to renew session: {:?}", err),
                         _ => (),
                     }
                 }

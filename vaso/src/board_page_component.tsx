@@ -55,7 +55,6 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
         placeOrderModal = null;
     }
     const emptyMessage = 'No orders to show.';
-    console.log('new order yo', props.page, newOrder);
     return <div>
         <div>
           <NewOrderButton onClick={(isBuy: boolean) => props.actions.newOrder(isBuy)} disabled={Boolean(newOrder)}></NewOrderButton>

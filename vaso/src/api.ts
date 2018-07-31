@@ -116,7 +116,6 @@ export class Api {
 
     public asyncPostOrder(order: OrderRequest): Promise<UserOrder> {
         const WEI_FACTOR = bigInt('1000000000000000000');
-        console.log('WEI', WEI_FACTOR);
         let isBuy = order.buy_asset_type === 'ETH';
         let amountFiat: string;
         if (isBuy) {
@@ -134,7 +133,6 @@ export class Api {
             minutes_active: 15, // TODO These numbers don't even make sense
             max_wei: isBuy? null : '0x0'
         };
-        console.log('fucking json', orderJSON);
         return this.makeRequest('/orders/new', 'POST', orderJSON)
             .then((r: Response) => r.json()) 
             .then((json: any) => parseUserOrder(json));
@@ -160,7 +158,6 @@ export class Api {
 
     public async asyncGetPersonalDetails(): Promise<PersonalDetails> {
         let result = await this.makeRequest('/users/personal/details', 'GET');
-        console.log('result yo', result);
         let body = await result.json();
         return PersonalDetails.parse(body);
     }

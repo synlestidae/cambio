@@ -59,7 +59,6 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
         if path.len() > 0 && path[path.len() - 1] == "" {
             drop(path.pop());
         }
-        println!("Path slice {:?}", path.as_slice());
         let request_obj = match path.as_slice() {
             &["users", "register"] => {
                 ApiRequest::User(UserRequest::Register(try!(get_api_obj(request))))
@@ -74,15 +73,11 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
                 ApiRequest::User(UserRequest::Confirm(try!(get_api_obj(request))))
             }
             &["users", "personal", "details"] => {
-                println!("Request method {:?}", request.method);
                 if (request.method == Method::Get) {
-                    println!("Get personal details");
                     ApiRequest::User(UserRequest::GetPersonalDetails)
                 } else if (request.method == Method::Post) {
-                    println!("post personal details");
                     ApiRequest::User(UserRequest::SetPersonalDetails(get_api_obj(request)?))
                 } else {
-                    println!("Bad method you!");
                     return Err(api::ApiError::bad_method(Method::Get));
                 }
             },

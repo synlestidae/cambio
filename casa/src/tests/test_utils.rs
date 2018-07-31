@@ -40,15 +40,6 @@ pub fn setup() {
 }
 
 #[allow(dead_code)]
-pub fn teardown() {
-    let conn = Connection::connect("postgresql://mate@localhost:5432", TlsMode::None).unwrap();
-    match conn.execute("DROP DATABASE test_database_only;", &[]) {
-        Ok(_) => {}
-        Err(err) => println!("Failed to drop database: {}", err),
-    }
-}
-
-#[allow(dead_code)]
 pub fn run_test<T: std::panic::UnwindSafe>(test: T) -> ()
 where
     T: FnOnce() -> (),

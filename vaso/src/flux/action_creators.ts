@@ -22,16 +22,12 @@ export class ActionCreators {
 
     public async initialise(hash: string) {
         let sessionToken = localStorage.getItem('session_token');
-        console.log('Session is', sessionToken);
         if (!sessionToken) {
-            console.log('No session');
             return;
         }
-        console.log('Trying to get accounts');
         try {
             await this.api.asyncGetAccounts();
         } catch (e) {
-            console.log('Error getting accounts!', e);
             this.api.sessionToken = null;
             this.changeURL('');
             return;

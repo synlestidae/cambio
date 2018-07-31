@@ -23,7 +23,6 @@ export class TextFieldElement implements FieldElement {
     }
 
     public setValue(val: string) {
-        console.log('the final value', val);
         (<any>this.fieldObject)[this.property] = val;
     }
 
