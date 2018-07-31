@@ -1,5 +1,5 @@
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, PartialEq, FromSql, ToSql)]
-#[postgres(name = "asset_type")]
+#[postgres(name = "trade_type")]
 pub enum TradeType {
     #[postgres(name = "buy_crypto")]
     BuyCrypto,

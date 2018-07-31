@@ -39,7 +39,10 @@ type ToSqlResult = Result<IsNull, Box<error::Error + 'static + Send + Sync>>;
 
 impl ToSql for BigInteger {
     fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
-        unimplemented!()
+        let mut buf = Vec::new();
+        buf.resize(32usize, 0u8);
+        self.0.to_little_endian(&mut buf);
+        buf.to_sql(ty, out)
     }
 
     fn accepts(ty: &Type) -> bool
@@ -50,13 +53,18 @@ impl ToSql for BigInteger {
     }
 
     fn to_sql_checked(&self, ty: &Type, out: &mut Vec<u8>) -> ToSqlResult {
-        unimplemented!()
+        let mut buf = Vec::new();
+        buf.resize(32usize, 0u8);
+        self.0.to_little_endian(&mut buf);
+        buf.to_sql_checked(ty, out)
     }
 }
 
 impl FromSql for BigInteger {
     fn from_sql(ty: &Type, raw: &[u8]) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        unimplemented!()
+        let buf = Vec::from_sql(ty, raw)?;
+        Ok(BigInteger(U256::from_little_endian(&buf)))
+        
     }
 
     fn accepts(ty: &Type) -> bool {
@@ -64,13 +72,15 @@ impl FromSql for BigInteger {
     }
 
     fn from_sql_null(ty: &Type) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        unimplemented!()
+        let buf = Vec::from_sql_null(ty)?;
+        Ok(BigInteger(U256::from_little_endian(&buf)))
     }
 
     fn from_sql_nullable(
         ty: &Type,
         raw: Option<&[u8]>,
     ) -> Result<Self, Box<error::Error + 'static + Send + Sync>> {
-        unimplemented!()
+        let buf = Vec::from_sql_nullable(ty, raw)?;
+        Ok(BigInteger(U256::from_little_endian(&buf)))
     }
 }

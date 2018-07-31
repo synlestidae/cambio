@@ -76,9 +76,9 @@ CREATE TABLE journal (
     asset_type ASSET_TYPE NOT NULL,  
     transaction_time TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     correspondence_id SERIAL NOT NULL,
-    credit INT8,
-    debit INT8,
-    balance INT8,
+    credit bigint,
+    debit bigint,
+    balance bigint,
     authorship_id INTEGER REFERENCES authorship(id) DEFAULT NULL,
     CHECK((credit IS NOT NULL AND debit IS NULL) OR (credit IS NULL AND debit IS NOT NULL)),
     CHECK(credit >= 0 OR debit >= 0)

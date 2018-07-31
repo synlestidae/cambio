@@ -31,7 +31,7 @@ CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
     unique_id VARCHAR(32) NOT NULL,
-    amount_fiat MONEY NOT NULL,
+    amount_fiat bigint NOT NULL,
     amount_crypto BYTEA NOT NULL,
     trade_type trade_type NOT NULL,
     fiat_type currency_code NOT NULL,

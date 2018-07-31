@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION transfer_asset(
     account_period_end DATE,
     debit_account INTEGER,
     credit_account INTEGER,
-    units INT8
+    units bigint
 )
 RETURNS INTEGER AS $$
 DECLARE 
