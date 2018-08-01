@@ -1,6 +1,7 @@
 import * as React from "react";
 import {LoadingState} from './flux/state/loading_state';
 import {Transaction} from './domain/transaction';
+import {padZeroes} from './pad_zeroes';
 //import {ActionCreators} from './flux/action_creators';
 
 export interface TransactionListProps {
@@ -63,14 +64,6 @@ function formatUTC(time: string) {
 
 function formatTime(time: Date) {
     let date = `${time.getFullYear()}-${time.getMonth() + 1}-${time.getDate()}`;
-    let hoursMinutes = `${pad(time.getHours())}:${pad(time.getMinutes())}`;
+    let hoursMinutes = `${padZeroes(2, time.getHours())}:${padZeroes(2, time.getMinutes())}`;
     return `${date} ${hoursMinutes}`;
-}
-
-function pad(thing: any) {
-    let str = String(thing);
-    if (str.length < 2) {
-        return '0' + str;
-    }
-    return str;
 }

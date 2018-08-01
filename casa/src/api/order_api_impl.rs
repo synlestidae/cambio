@@ -56,10 +56,10 @@ impl<C: GenericConnection> OrderApiImpl<C> {
 
     pub fn get_changed_orders(&mut self, datetime: &DateTime<Utc>) -> Result<OrderChanges, db::CambioError> {
         const SQL: &'static str = "
-            SELECT asset_order.*, order_change.*,
+            SELECT asset_order.*, order_changes.*, order_changes.id as order_change_id
             FROM asset_order
             JOIN order_changes ON order_changes.order_id = asset_order.id
-            WHERE order_changes.changed_at >= $1
+            WHERE order_changes.changed_at > $1
             ORDER BY order_changes.changed_at";
         let mut orders = Vec::new();
         let mut changes: Vec<OrderChange> = Vec::new();

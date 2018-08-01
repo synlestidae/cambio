@@ -47,8 +47,8 @@ CREATE TABLE order_changes (
     order_id SERIAL REFERENCES asset_order(id) NOT NULL,
     changed_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     field_name VARCHAR NOT NULL,
-    old_value VARCHAR NOT NULL,
-    new_value VARCHAR NOT NULL
+    old_value VARCHAR,
+    new_value VARCHAR 
 );
 
 CREATE TABLE order_settlement (
@@ -57,14 +57,11 @@ CREATE TABLE order_settlement (
     settled_at TIMESTAMP,
     starting_user SERIAL REFERENCES users(id) NOT NULL,
     status settlement_status NOT NULL DEFAULT 'waiting_eth_credentials',
-    transaction_id SERIAL REFERENCES eth_transactions(id),
+    transaction_id INTEGER REFERENCES eth_transactions(id),
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
-
--- TODO Find out why the FUCK I have to do this
-ALTER TABLE order_settlement ALTER COLUMN transaction_id DROP NOT NULL;
 
 CREATE OR REPLACE FUNCTION place_order(
     buy_asset_type_var ASSET_TYPE,

@@ -111,7 +111,7 @@ impl Updateable for domain::Order {
         if let Some(id) = self.id {
             let old_order: Self = id.get(db)?;
             db.execute(SQL, &[&id, &self.status])?;
-            db.execute(SQL_ORDER_CHANGE, &[&id, &old_order.status, &self.status])?;
+            db.execute(SQL_ORDER_CHANGE, &[&id, &old_order.status.to_string(), &self.status.to_string()])?;
             id.get(db)
         } else {
             Err(CambioError::format_obj(

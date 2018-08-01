@@ -236,7 +236,11 @@ impl Creatable for domain::Order {
             status)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id";
 
-        let rows = try!(db.query(
+        const SQL_ORDER_CHANGE: &'static str = 
+            "INSERT INTO order_changes(order_id, field_name, old_value, new_value) 
+            VALUES ($1, 'status', NULL, $2)";
+
+        let rows = db.query(
             SQL,
             &[
                 &self.owner_id,
@@ -249,7 +253,9 @@ impl Creatable for domain::Order {
                 &self.expires_at.naive_utc(),
                 &self.status,
             ]
-        ));
+        )?;
+        let order_id: domain::OrderId = rows.get(0).get("id");
+        db.execute(SQL_ORDER_CHANGE, &[&order_id, &self.status.to_string()])?;
         Ok(rows)
     }
 }

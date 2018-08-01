@@ -8,12 +8,15 @@ import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
 import {Order} from '../domain/order';
+import {BoardUpdate} from '../domain/board_update';
 import {PersonalDetails} from '../domain/personal_details';
 import {SignupState, SignupInfo, PersonalInfo, IdentificationInfo} from './state/signup_state';
 
 export class ActionCreators {
     private readonly api: Api;
     private readonly dispatch: (action: Action) => void;
+    private isSubscribed = true;
+    private lastOrderQueryTime = new Date();
 
     constructor(api: Api, dispatch: (action: Action) => void) {
         this.api = api;
@@ -84,6 +87,8 @@ export class ActionCreators {
     }
 
     public changeURL(hash: string) {
+        this.unsubscribeOrderUpdates();
+
         if (hash === '') {
             this.openLandingPage();
         }
@@ -118,6 +123,7 @@ export class ActionCreators {
     public openBoardPage() {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Board'));
         this.updateOrderBoard();
+        this.subscribeOrderUpdates();
     }
 
     public openMyAccountPage() {
@@ -282,6 +288,39 @@ export class ActionCreators {
             this.dispatch(new BasicAction('SET_PERSONAL_DETAILS', null, personalDetails));
         } catch (e) {
             this.dispatch(new BasicAction('ERROR_SUBMITTING_PERSONAL_DETAILS', null, e));
+        }
+    }
+
+    public subscribeOrderUpdates() {
+        this.dispatch(new BasicAction('BEGIN_ORDER_UPDATES'));
+        this.isSubscribed = true;
+        this.orderUpdates(new Date());
+    }
+
+    public unsubscribeOrderUpdates() {
+        this.dispatch(new BasicAction('CANCEL_ORDER_UPDATES'));
+        this.isSubscribed = false;
+    }
+
+    public orderUpdates(date: Date) {
+        const QUERY_DELAY = 1500;
+        try {
+            let that = this;
+            let updatePromise = this.api.asyncGetOrderUpdates(date);
+            let lastCheckedDelta = new Date().getTime() - this.lastOrderQueryTime.getTime();
+            updatePromise.then((updates: BoardUpdate) => {
+                this.dispatch(new BasicAction('HANDLE_ORDER_UPDATES', null, updates));
+                if (that.isSubscribed) {
+                    if (lastCheckedDelta > QUERY_DELAY) {
+                        this.lastOrderQueryTime = new Date();
+                        that.orderUpdates(updates.to_datetime);
+                    } else {
+                        setTimeout(() => this.orderUpdates(date), QUERY_DELAY - lastCheckedDelta);
+                    }
+                }
+            });
+        } catch (e) {
+            console.error('Error getting updates', e);
         }
     }
 

@@ -18,3 +18,21 @@ pub enum OrderStatus {
     #[postgres(name = "deleted")]
     Deleted,
 }
+
+use std::fmt;
+
+impl fmt::Display for OrderStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let val = match self {
+            &OrderStatus::Active => "active",
+            &OrderStatus::Settling => "settling",
+            &OrderStatus::Settled => "settled",
+            &OrderStatus::SettlementFailed => "settlement_failed",
+            &OrderStatus::UserCancelled => "user_cancelled",
+            &OrderStatus::AdminCancelled => "admin_cancelled",
+            &OrderStatus::Expired => "expired",
+            &OrderStatus::Deleted => "deleted",
+        };
+        write!(f, "{}", val)
+    }
+}

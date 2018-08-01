@@ -3,12 +3,14 @@ import {Account} from './domain/account';
 import {Payment} from './domain/Payment';
 import {Transaction} from './domain/transaction';
 import {Order} from './domain/order';
+import {BoardUpdate} from './domain/board_update';
 import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
 import {PersonalDetails} from './domain/personal_details';
 import {RegistrationInfo} from './domain/registration_info';
 import {SignupInfo, PersonalInfo, IdentificationInfo} from './flux/state/signup_state';
+import {padZeroes} from './pad_zeroes';
 import * as bigInt from 'big-integer';
 
 export class Api {
@@ -20,6 +22,7 @@ export class Api {
         if (item) {
             this.sessionToken = item;
         }
+        console.log('Here is the API for debugging', this);
     }
 
     public asyncLogInUser(email_address: string, password: string): Promise<void> {
@@ -148,6 +151,18 @@ export class Api {
         throw new Error(`Unexpected type for asyncGetActiveOrders ${body.constructor.name || typeof body}`);
     }
 
+    public async asyncGetOrderUpdates(lastChecked: Date): Promise<BoardUpdate> {
+        const pad = (x: any) => padZeroes(2, x);
+        let date = `${lastChecked.getUTCFullYear()}${pad(lastChecked.getUTCMonth() + 1)}${pad(lastChecked.getUTCDate())}`
+        let time = `${pad(lastChecked.getUTCHours())}${pad(lastChecked.getUTCMinutes())}${pad(lastChecked.getUTCSeconds())}.${pad(lastChecked.getUTCMilliseconds())}`;
+        let lastCheckedString = `${date}${time}`;
+        let response = await this.makeRequest('/orders/changed', 'GET', {
+            last_change: lastCheckedString
+        });
+        let body = await response.json();
+        return BoardUpdate.parse(body);
+    }
+
     public async asyncGetPersonalDetails(): Promise<PersonalDetails> {
         let result = await this.makeRequest('/users/personal/details', 'GET');
         let body = await result.json();
@@ -160,35 +175,9 @@ export class Api {
         return PersonalDetails.parse(body);
     }
 
-    private async makeRequest(url: string, method: string, jsonBody?: any|null): Promise<Response> {
-        let urlObj = new URL(this.baseUrl);
-        urlObj.pathname = url;
-        url = urlObj.toString();
-        let headers = new Headers();
-        headers.set('Accept', 'application/json, text/plain, */*');
-        headers.set('Content-Type', 'application/json');
-        if (this.sessionToken) {
-            headers.set('Authorization', `Bearer ${this.sessionToken}`)
-        }
-        let body: string|null = null;
-        let params = {
-            method: method,
-            headers: headers,
-            body: body
-        };
-
-        if (jsonBody) {
-            let bodyString: string;
-            if (typeof jsonBody !== 'string') {
-                bodyString = JSON.stringify(jsonBody);
-            } else {
-                bodyString = jsonBody;
-            }
-            params.body = bodyString;
-        }
-
-        (<any>params).credentials = 'include';
-
+    private async makeRequest(path: string, method: string, jsonBody?: any|null): Promise<Response> {
+        let url = this.getURL(path, method, jsonBody);
+        let params = this.getParams(method, jsonBody);
         let response: Response;
         try {
             response = await fetch(url, params);
@@ -200,5 +189,46 @@ export class Api {
         } else {
             throw response;
         }
+    }
+
+    private getURL(url: string, method: string, body: any|null) {
+        let urlObj = new URL(this.baseUrl);
+        //let queryString = '';
+        urlObj.pathname = url;
+        if (body && method === 'GET') {
+            //queryString = '?'
+            for (let key in body) {
+                urlObj.searchParams.append(key, body[key]);
+            //    queryString += `${encodeURIComponent(key)}=${encodeURIComponent(body[key])}`;
+            }
+        }
+        return urlObj.toString();// + queryString;
+    }
+
+    private getParams(method: string, body: any|null): RequestInit {
+        let headers = new Headers();
+        headers.set('Accept', 'application/json, text/plain, */*');
+        if (this.sessionToken) {
+            headers.set('Authorization', `Bearer ${this.sessionToken}`)
+        }
+        if (method === 'POST' || method === 'POST') {
+            headers.set('Content-Type', 'application/json');
+        }
+        let params: RequestInit = {
+            method: method,
+            headers: headers
+        };
+        if (body && method !== 'GET') {
+            let bodyString: string;
+            if (typeof body !== 'string') {
+                bodyString = JSON.stringify(body);
+            } else {
+                bodyString = body;
+            }
+            params.body = bodyString;
+        }
+
+        (<any>params).credentials = 'include';
+        return params;
     }
 }
