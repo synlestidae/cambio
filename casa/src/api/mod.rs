@@ -1,4 +1,5 @@
 mod account_api_impl;
+mod order_changes;
 mod last_change;
 mod account_request;
 mod api_error;
@@ -52,3 +53,4 @@ pub use self::settlement_request::SettlementRequest;
 pub use self::user_api_impl::*;
 pub use self::user_request::UserRequest;
 pub use self::last_change::LastChange;
+pub use self::order_changes::OrderChanges;

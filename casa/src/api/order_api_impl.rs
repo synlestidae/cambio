@@ -5,6 +5,8 @@ use db;
 use db::ConnectionSource;
 use db::PostgresHelper;
 use domain;
+use domain::OrderChange;
+use api::OrderChanges;
 use domain::Order;
 use hyper::mime::Mime;
 use iron;
@@ -52,17 +54,20 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    pub fn get_changed_orders(&mut self, datetime: DateTime<Utc>) -> Result<Vec<Order>, db::CambioError> {
+    pub fn get_changed_orders(&mut self, datetime: &DateTime<Utc>) -> Result<OrderChanges, db::CambioError> {
         const SQL: &'static str = "
-            SELECT asset_order.*, asset_order.id as order_id 
+            SELECT asset_order.*, order_change.*,
             FROM asset_order
             JOIN order_changes ON order_changes.order_id = asset_order.id
-            WHERE order_changes.changed_at >= $1";
+            WHERE order_changes.changed_at >= $1
+            ORDER BY order_changes.changed_at";
         let mut orders = Vec::new();
+        let mut changes: Vec<OrderChange> = Vec::new();
         for row in self.db.query(SQL, &[&datetime.naive_utc()])?.iter() {
             orders.push(db::TryFromRow::try_from_row(&row)?);
+            changes.push(db::TryFromRow::try_from_row(&row)?);
         }
-        Ok(orders)
+        Ok(OrderChanges::new(datetime.clone(), changes, orders))
     }
 
     pub fn get_user_orders(&mut self, user: &domain::User) -> iron::Response {

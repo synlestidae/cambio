@@ -1,4 +1,5 @@
 mod account;
+mod order_change;
 mod trade_type;
 mod crypto_type;
 mod big_integer;
@@ -121,3 +122,4 @@ pub use self::user_payment::UserPayment;
 pub use self::big_integer::BigInteger;
 pub use self::trade_type::TradeType;
 pub use self::crypto_type::CryptoType;
+pub use self::order_change::OrderChange;
