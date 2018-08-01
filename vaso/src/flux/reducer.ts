@@ -5,8 +5,8 @@ import {LoginPage} from './state/login_page';
 import {BoardPage} from './state/board_page';
 import {MyAccount} from './state/my_account';
 import {Account} from '../domain/Account';
-import {UserOrder} from '../domain/user_order';
 import {OrderRequest} from '../domain/order_request';
+import {Order} from '../domain/order';
 import {PersonalDetails} from '../domain/personal_details';
 import {Transaction} from '../domain/transaction';
 import {NewOrder, OrderState} from './state/new_order';
@@ -204,9 +204,13 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 page.loadingState.startLoading();
                 break;
             case 'SET_ACTIVE_ORDERS':
-                page.active_orders = <UserOrder[]>action.payload;
-                page.loadingState.success();
-                break;
+                if (action.payload instanceof Array) {
+                    page.active_orders = <Order[]>action.payload;
+                    page.loadingState.success();
+                    break;
+                } else {
+                    throw new Error('Type of payload was not Array');
+                }
             case 'ERROR_LOADING_ACTIVE_ORDERS':
                 page.loadingState.error(action.payload);
                 break;
@@ -252,12 +256,6 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 break;
             case 'SET_NEW_ORDER_STATE':
                 let order = page.newOrder.order;
-                if (page.newOrder.orderState === 'Initial' && action.value === 'ReadyToConfirm') {
-                    if (!order.isValid()) {
-                        page.newOrder.showValidation = true;
-                        return state;
-                    }
-                }
                 page.newOrder.orderState = <OrderState>action.value;
                 break;
             case 'BEGIN_SUBMITTING_ORDER':

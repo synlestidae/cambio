@@ -3,23 +3,25 @@ import * as React from "react";
 type SortCallback = (field: string) => void;
 
 export abstract class Column<E> {
-    public title: string;
+    public readonly title: string;
     public sortable: boolean = true;
+    public field: string;
 
     constructor(title: string) {
         this.title = title;
+        this.field = title;
     }
 
     public abstract cell(item: E): string;
 }
 
 export class OperationColumn<E> extends Column<E> {
-    public readonly field: string;
     public readonly cb: (o: E) => void;
     public readonly name: string;
 
     constructor(name: string, field: string, cb: (o: E) => void) {
-        super('');
+        super(name);
+        this.field = field;
         this.sortable = false;
         this.field = field;
         this.cb = cb;
@@ -33,7 +35,6 @@ export class OperationColumn<E> extends Column<E> {
 
 export class FieldColumn<E> extends Column<E> {
     private cellFn: (c: E) => string;
-    private field: string;
 
     constructor(title: string, field: string, cell: (c: E) => string) {
         super(title);
@@ -60,7 +61,7 @@ function getColumnHeader<E>(h: Column<E>, i: number, sortCB?: (field: string) =>
      </span>
         &nbsp;
      <span>
-        {h.sortable? <i className="fas fa-sort clickable" onClick={() => sortCB && sortCB(h.title)}></i> : null}
+        {h.sortable? <i className="fas fa-sort clickable" onClick={() => sortCB && sortCB(h.field)}></i> : null}
       </span>
     </th>;
 }
