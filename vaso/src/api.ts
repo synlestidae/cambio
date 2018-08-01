@@ -2,7 +2,7 @@ import {Session} from './session';
 import {Account} from './domain/account';
 import {Payment} from './domain/Payment';
 import {Transaction} from './domain/transaction';
-import {UserOrder} from './domain/user_order';
+import {Order} from './domain/order';
 import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
@@ -114,42 +114,34 @@ export class Api {
         return <Payment>body;
     }
 
-    public asyncPostOrder(order: OrderRequest): Promise<UserOrder> {
-        const WEI_FACTOR = bigInt('1000000000000000000');
-        let isBuy = order.buy_asset_type === 'ETH';
-        let amountFiat: string;
-        if (isBuy) {
-            amountFiat = order.sell_asset_units.toString();
-        } else {
-            amountFiat = order.buy_asset_units.toString();
-        }
-        let ether = isBuy? order.buy_asset_units : order.sell_asset_units;
-        let milliEther = ether * 1000;
+    public asyncPostOrder(order: OrderRequest): Promise<Order> {
+        const WEI_FACTOR = bigInt('1000000000000000000000');
+        let milliEther = order.ether * 1000;
+        let wei = bigInt(milliEther).multiply(WEI_FACTOR);
+        let amountFiat = order.dollars.toString();
         let orderJSON: any = {
-            unique_id: order.unique_id,
+            unique_id: order.uniqueId,
             amount_fiat: amountFiat,
-            amount_crypto: `0x${bigInt(milliEther).multiply(WEI_FACTOR).toString(16)}`,
-            is_buy: isBuy,
-            minutes_active: 15, // TODO These numbers don't even make sense
-            max_wei: isBuy? null : '0x0'
+            amount_crypto: `0x${wei.toString(16)}`,
+            is_buy: order.isBuy,
+            minutes_active: order.minutesActive
         };
         return this.makeRequest('/orders/new', 'POST', orderJSON)
             .then((r: Response) => r.json()) 
-            .then((json: any) => parseUserOrder(json));
+            .then((json: any) => Order.parse(json));
     }
 
-    public async asyncBuyOrder(order: UserOrder, uniqueId: string): Promise<any> {
+    public async asyncBuyOrder(order: Order, uniqueId: string): Promise<any> {
         throw new Error('Not implemented!');
     }
 
-    public async asyncGetActiveOrders(): Promise<UserOrder[]> {
+    public async asyncGetActiveOrders(): Promise<Order[]> {
         let result = await this.makeRequest('/orders/active/', 'GET');
         let body = await result.json();
         if (body instanceof Array) {
             let orders = [];
             for (let order of body) {
-                let userOrder = parseUserOrder(order);
-                orders.push(userOrder);
+                orders.push(Order.parse(order));
             }
             return orders;
         }
@@ -209,18 +201,4 @@ export class Api {
             throw response;
         }
     }
-}
-
-function parseUserOrder(order: any) {
-    return new UserOrder(
-        <string>order.id.toString(),
-        new Date(order.expires_at),
-        <string>order.status,
-        <CurrencyCode>order.sell_asset_type,
-        <CurrencyDenom>order.sell_asset_denom,
-        <number>order.sell_asset_units,
-        <CurrencyCode>order.buy_asset_type,
-        <CurrencyDenom>order.buy_asset_denom,
-        <number>order.buy_asset_units
-    );
 }

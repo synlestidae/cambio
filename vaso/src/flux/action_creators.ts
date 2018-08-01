@@ -7,7 +7,7 @@ import {Account} from '../domain/account';
 import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
-import {UserOrder} from '../domain/user_order';
+import {Order} from '../domain/order';
 import {PersonalDetails} from '../domain/personal_details';
 import {SignupState, SignupInfo, PersonalInfo, IdentificationInfo} from './state/signup_state';
 
@@ -177,9 +177,6 @@ export class ActionCreators {
     }
 
     public async confirmNewOrder(order: OrderRequest) {
-        if (!order.isValid()) {
-            throw new Error('Order is invalid and cannot be sent');
-        }
         this.dispatch(new BasicAction('BEGIN_SUBMITTING_ORDER'));
         try {
             let orderResult = await this.api.asyncPostOrder(order);
@@ -199,7 +196,7 @@ export class ActionCreators {
         this.dispatch(new BasicAction('ORDER_SUBMIT_CLEAR'));
     }
 
-    public async buyOrder(order: UserOrder, uniqueId: string) {
+    public async buyOrder(order: Order, uniqueId: string) {
         await this.api.asyncBuyOrder(order, uniqueId);
         this.updateOrderBoard();
     }

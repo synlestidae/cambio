@@ -5,18 +5,11 @@ export class NewOrder {
     public orderState: OrderState = 'Initial';
     public order: OrderRequest;
     public showValidation = false;
-    public readonly isBuy: boolean;
 
     constructor(isBuy: boolean) {
-        this.isBuy = isBuy;
-        let defaultExpiry = new Date(); 
-        defaultExpiry.setMinutes(defaultExpiry.getMinutes() + 15);
-        if (isBuy) {
-            this.order = new OrderRequest('', defaultExpiry, 'Active', 'NZD', 'Cent', 0, 'ETH', 'Szabo', 0);
-        } else {
-            this.order = new OrderRequest('', defaultExpiry, 'Active', 'ETH', 'Szabo', 0, 'NZD', 'Cent', 0);
-        }
-        this.order.unique_id = getUniqueID(12);
+        this.order = new OrderRequest();
+        this.order.isBuy = isBuy;
+        this.order.uniqueId = getUniqueID(12);
     }
 }
 

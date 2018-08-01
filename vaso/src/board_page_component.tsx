@@ -1,5 +1,5 @@
 import * as React from "react";
-import {UserOrder} from './domain/user_order';
+import {Order} from './domain/order';
 import {ActionCreators} from './flux/action_creators';
 import {BoardPage} from './flux/state/board_page';
 import {TableComponent, Column, OperationColumn, FieldColumn} from './table_component';
@@ -13,17 +13,15 @@ interface BoardPageComponentProps {
 
 function getColumns(props: BoardPageComponentProps) {
     let actions = props.actions;
-    let headers: Column<UserOrder>[] = [];
+    let headers: Column<Order>[] = [];
 
-    let sellHeader = new FieldColumn<UserOrder>('Wants to sell', 'sell_asset_type', (o: UserOrder) => o.sell_asset_type);
-    let buyHeader = new FieldColumn<UserOrder>('Wants to buy', 'buy_asset_type', (o: UserOrder) => o.buy_asset_type);
-    let priceHeader = new FieldColumn<UserOrder>('Ether unit price', 'price', (o: UserOrder) => o.formatPrice() || '--');
-    let expiryHeader = new FieldColumn<UserOrder>('Expiry', 'expiry', (o: UserOrder) => o.formatExpiryMinutes());
-    let statusHeader = new FieldColumn<UserOrder>('Status', 'status', (o: UserOrder) => getStatus(o));
-    let operationHeader = new OperationColumn<UserOrder>('Buy', 'buy', (o: UserOrder) => actions.buyOrder(o, getUniqueID(10)));
+    let tradeType = new FieldColumn<Order>('Trade type', 'isBuy', (o: Order) => o.isBuy? 'BUY' : 'SELL');
+    let priceHeader = new FieldColumn<Order>('Ether unit price', 'price', (o: Order) => o.formatPrice() || '--');
+    let expiryHeader = new FieldColumn<Order>('Expiry', 'expiresAt', (o: Order) => formatMinutes(o.expiresAt, new Date()));
+    let statusHeader = new FieldColumn<Order>('Status', 'status', (o: Order) => getStatus(o));
+    let operationHeader = new OperationColumn<Order>('Buy', 'buy', (o: Order) => {});
 
-    headers.push(sellHeader);
-    headers.push(buyHeader);
+    headers.push(tradeType);
     headers.push(priceHeader);
     headers.push(expiryHeader);
     headers.push(statusHeader);
@@ -32,11 +30,19 @@ function getColumns(props: BoardPageComponentProps) {
     return headers;
 }
 
-function getStatus(o: UserOrder) {
-    if (o.expiry < new Date()) {
+function formatMinutes(date1: Date, date2: Date): string {
+    let diffMilliseconds: number = date1.getTime() - date2.getTime();
+    if (diffMilliseconds < 60000) {
+        return 'Less than a minute';
+    }
+    return `${(diffMilliseconds / (1000 * 60)).toFixed(0)} minutes`;
+}
+
+function getStatus(o: Order) {
+    if (o.expiresAt < new Date()) {
         return 'Expired';
     }
-    return o.status;
+    return o.orderStatus;
 }
 
 export function BoardPageComponent(props: BoardPageComponentProps) {
@@ -76,17 +82,17 @@ function NewOrderButton(props: {onClick: (isBuy: boolean) => void, disabled: boo
     </div>;
 }
 
-function sortRows(orders: UserOrder[], field: string): UserOrder[]{
+function sortRows(orders: Order[], field: string): Order[]{
     orders = orders.filter(() => true);
-    return orders.sort(function(o1: UserOrder, o2: UserOrder) {
-        if (!field) {
+    return orders.sort(function(o1: Order, o2: Order) {
+        if (field === null || field === undefined) {
             return 0;
         }
         if (field === 'price') {
             return o1.getEthPrice() - o2.getEthPrice();
         }
-        let val1 = (o1 as any);
-        let val2 = (o2 as any);
+        let val1 = (o1 as any)[field];
+        let val2 = (o2 as any)[field];
         if (typeof val1 === 'string') {
             return val1.localeCompare(val2);
         }

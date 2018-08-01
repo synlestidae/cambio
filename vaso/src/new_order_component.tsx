@@ -19,21 +19,20 @@ interface NewOrderComponentProps {
 export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     let order = props.newOrder.order;
     let fields: FieldElement[];
-    if (props.newOrder.isBuy) {
+    if (order.isBuy) {
         fields = [
-            new CurrencyFieldElement('buy_asset_units', order, 'ETH to buy'),
-            new CurrencyFieldElement('sell_asset_units', order, 'NZD to sell')
+            new CurrencyFieldElement('ether', order, 'ETH to buy'),
+            new CurrencyFieldElement('dollars', order, 'NZD to sell')
         ];
     } else {
         fields = [
-            new CurrencyFieldElement('buy_asset_units', order, 'NZD to buy'),
-            new CurrencyFieldElement('sell_asset_units', order, 'ETH to sell')
+            new CurrencyFieldElement('dollars', order, 'NZD to buy'),
+            new CurrencyFieldElement('ether', order, 'ETH to sell')
         ];
     }
-    let price = props.newOrder.isBuy? order.sell_asset_units / order.buy_asset_units : order.buy_asset_units / order.sell_asset_units;
-    let priceField = new ReadonlyFieldElement(
-        isNaN(price) || !isFinite(price)? '--' : price.toFixed(4), 
-        'ETH price (4 dp)');
+    let price = order.getPrice();
+    let formattedPrice = isNaN(price) || !isFinite(price)? '--' : price.toFixed(4);
+    let priceField = new ReadonlyFieldElement(formattedPrice, 'ETH price (4 dp)');
     let section = new Section(fields.concat([priceField]));
     let form = new SingleForm([section], 'Place a new order');
     if (props.newOrder.orderState === 'Submitting') {
