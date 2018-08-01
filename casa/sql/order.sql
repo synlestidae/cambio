@@ -23,10 +23,6 @@ CREATE TYPE settlement_status AS ENUM (
     'eth_failed'
 );
 
-CREATE TABLE eth_transactions (
-    id SERIAL PRIMARY KEY
-);
-
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
@@ -38,7 +34,6 @@ CREATE TABLE asset_order (
     crypto_type crypto_type NOT NULL,
     expires_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     status order_status NOT NULL DEFAULT 'active',
-    max_wei BYTEA,
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
 );
 
@@ -51,13 +46,21 @@ CREATE TABLE order_changes (
     new_value VARCHAR 
 );
 
+CREATE TABLE settlement_criteria (
+    id SERIAL PRIMARY KEY,
+    order_id SERIAL REFERENCES asset_order(id) NOT NULL,
+    time_limit_minutes INT NOT NULL,
+    min_pledge_amount_cents BIGINT NOT NULL, 
+    destination_account SERIAL REFERENCES ethereum_account_details(id) 
+);
+
 CREATE TABLE order_settlement (
     id SERIAL PRIMARY KEY,
     started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     settled_at TIMESTAMP,
     starting_user SERIAL REFERENCES users(id) NOT NULL,
-    status settlement_status NOT NULL DEFAULT 'waiting_eth_credentials',
-    transaction_id INTEGER REFERENCES eth_transactions(id),
+    status settlement_status NOT NULL,
+    --transaction_id INTEGER REFERENCES eth_transactions(id),
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)

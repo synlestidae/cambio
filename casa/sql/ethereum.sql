@@ -22,9 +22,21 @@ CREATE TABLE ethereum_outbound_transaction (
     unique_id VARCHAR NOT NULL
 );
 
+CREATE TABLE eth_transaction (
+    id SERIAL PRIMARY KEY,
+    blockchain_timestamp TIMESTAMP NOT NULL,
+    to_address TX_ADDRESS NOT NULL,
+    from_address TX_ADDRESS NOT NULL,
+    hash HASH NOT NULL,
+    value BYTEA NOT NULL,
+    data BYTEA NOT NULL
+);
+
+
 CREATE TABLE ethereum_account_details (
     id SERIAL PRIMARY KEY,
+    alias TEXT,
     address BYTEA UNIQUE,
-    password_hash_bcrypt VARCHAR(128) NOT NULL,
+    password_hash_bcrypt VARCHAR(128),
     owner_id SERIAL NOT NULL REFERENCES account_owner(id)
 );
