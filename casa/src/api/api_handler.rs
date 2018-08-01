@@ -115,6 +115,12 @@ impl Handler for ApiHandler {
                 let mut order_api = OrderApiImpl::new(db);
                 match order_request {
                     OrderApiRequest::GetActiveOrders => order_api.get_active_orders(),
+                    OrderApiRequest::GetChangedOrders(last_change) => {
+                        match order_api.get_changed_orders(last_change.last_change) {
+                            Err(err) => err.into(),
+                            success => api::utils::to_response(success)
+                        }
+                    },
                     OrderApiRequest::GetUserOrders => order_api.get_user_orders(&user),
                     OrderApiRequest::PostNewOrder(new_order) => {
                         order_api.post_new_order(&user, &new_order)

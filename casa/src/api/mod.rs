@@ -1,4 +1,5 @@
 mod account_api_impl;
+mod last_change;
 mod account_request;
 mod api_error;
 mod api_handler;
@@ -50,3 +51,4 @@ pub use self::settlement_eth_credentials::*;
 pub use self::settlement_request::SettlementRequest;
 pub use self::user_api_impl::*;
 pub use self::user_request::UserRequest;
+pub use self::last_change::LastChange;

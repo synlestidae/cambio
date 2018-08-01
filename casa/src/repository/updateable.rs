@@ -103,9 +103,15 @@ impl Updateable for domain::PoliPaymentRequest {
 
 impl Updateable for domain::Order {
     fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
+        const SQL: &'static str = "UPDATE asset_order SET order_status = $2 WHERE id = $1;";
+        const SQL_ORDER_CHANGE: &'static str = 
+            "INSERT INTO order_changes(order_id, field_name, old_value, new_value) 
+            VALUES ($1, 'status', $2, $3)";
+
         if let Some(id) = self.id {
-            const SQL: &'static str = "UPDATE asset_order SET order_status = $2 WHERE id = $1;";
-            try!(db.execute(SQL, &[&self.id, &self.status]));
+            let old_order: Self = id.get(db)?;
+            db.execute(SQL, &[&id, &self.status])?;
+            db.execute(SQL_ORDER_CHANGE, &[&id, &old_order.status, &self.status])?;
             id.get(db)
         } else {
             Err(CambioError::format_obj(

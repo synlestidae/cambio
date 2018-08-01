@@ -1,4 +1,5 @@
 use api;
+use chrono::prelude::*;
 use api::utils;
 use db;
 use db::ConnectionSource;
@@ -49,6 +50,19 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             Ok(orders) => utils::to_response(Ok(orders)),
             err => utils::to_response(err),
         }
+    }
+
+    pub fn get_changed_orders(&mut self, datetime: DateTime<Utc>) -> Result<Vec<Order>, db::CambioError> {
+        const SQL: &'static str = "
+            SELECT asset_order.*, asset_order.id as order_id 
+            FROM asset_order
+            JOIN order_changes ON order_changes.order_id = asset_order.id
+            WHERE order_changes.changed_at >= $1";
+        let mut orders = Vec::new();
+        for row in self.db.query(SQL, &[&datetime.naive_utc()])?.iter() {
+            orders.push(db::TryFromRow::try_from_row(&row)?);
+        }
+        Ok(orders)
     }
 
     pub fn get_user_orders(&mut self, user: &domain::User) -> iron::Response {

@@ -42,6 +42,15 @@ CREATE TABLE asset_order (
     CONSTRAINT Unique_asset_order UNIQUE(owner_id, unique_id)
 );
 
+CREATE TABLE order_changes (
+    id SERIAL PRIMARY KEY,
+    order_id SERIAL REFERENCES asset_order(id) NOT NULL,
+    changed_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
+    field_name VARCHAR NOT NULL,
+    old_value VARCHAR NOT NULL,
+    new_value VARCHAR NOT NULL
+);
+
 CREATE TABLE order_settlement (
     id SERIAL PRIMARY KEY,
     started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),

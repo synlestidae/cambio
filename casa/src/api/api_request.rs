@@ -2,7 +2,6 @@ use api;
 use api::{
     AccountRequest, ApiError, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest,
 };
-//use bodyparser;
 use db;
 use domain;
 use hyper::header::ContentType;
@@ -35,6 +34,7 @@ impl ApiRequest {
             ApiRequest::User(..) => Method::Post,
             ApiRequest::Account(..) => Method::Get,
             ApiRequest::Order(OrderApiRequest::GetActiveOrders) => Method::Get,
+            ApiRequest::Order(OrderApiRequest::GetChangedOrders(..)) => Method::Get,
             ApiRequest::Order(OrderApiRequest::GetUserOrders) => Method::Get,
             ApiRequest::Order(OrderApiRequest::PostNewOrder(..)) => Method::Post,
             ApiRequest::Order(OrderApiRequest::PostBuyOrder(..)) => Method::Post,
@@ -82,6 +82,7 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
                 }
             },
             &["orders", "active"] => ApiRequest::Order(OrderApiRequest::GetActiveOrders),
+            &["orders", "changed"] => ApiRequest::Order(OrderApiRequest::GetChangedOrders(get_url_obj(request)?)),
             &["orders", "me"] => ApiRequest::Order(OrderApiRequest::GetUserOrders),
             &["orders", "new"] => {
                 ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request))))
@@ -178,5 +179,18 @@ where
     let mut bytes = Vec::new();
     try!(request.body.read_to_end(&mut bytes));
     let obj: T = try!(serde_urlencoded::from_bytes(&bytes));
+    Ok(obj)
+}
+
+fn get_url_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError>
+where
+    for<'a> T: Deserialize<'a>,
+{
+    let bytes = if let Some(query_str) = request.url.query() {
+        query_str.to_string().into_bytes()
+    } else {
+        vec![]
+    };
+    let obj: T = serde_urlencoded::from_bytes(&bytes)?;
     Ok(obj)
 }
