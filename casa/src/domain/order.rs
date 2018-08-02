@@ -41,4 +41,8 @@ impl Order {
     pub fn is_active(&self) -> bool {
         !self.is_expired() && self.status == OrderStatus::Active
     }
+
+    pub fn is_buy(&self) -> bool {
+        self.trade_type == TradeType::BuyCrypto
+    }
 }

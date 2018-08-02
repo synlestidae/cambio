@@ -126,7 +126,8 @@ impl Handler for ApiHandler {
                         order_api.post_new_order(&user, &new_order)
                     }
                     OrderApiRequest::PostBuyOrder(order_buy) => {
-                        order_api.post_buy_order(&user, &order_buy)
+                        unimplemented!()
+                        //order_api.post_buy_order(&user, &order_buy)
                     }
                 }
             }
