@@ -59,7 +59,8 @@ impl Sub for Decimal {
 
 impl fmt::Display for Decimal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.cents)
+        let val = (self.cents as f64) / 100.00;
+        write!(f, "{:.2}", val)
     }
 }
 
@@ -80,7 +81,7 @@ impl FromStr for Decimal {
             &[ref dollars, ref cents] => match (i64::from_str(dollars), u64::from_str(cents)) {
                 (Ok(d), Ok(c)) => {
                     if cents.len() > 0 && cents.len() <= 2 {
-                        Ok(Self::from_cents(sign * ((d.abs() * 100) + c as i64)))
+                        Ok(Self::from_dollars(d) + Self::from_cents(c as i64))
                     } else {
                         Err("Decimal should have one or two decimal places")
                     }
@@ -88,7 +89,7 @@ impl FromStr for Decimal {
                 _ => Err("Could not parse the two figures"),
             },
             &[ref dollars] => match i64::from_str(dollars) {
-                Ok(d) => Ok(Self::from_cents(sign * ((d.abs() * 100)))),
+                Ok(d) => Ok(Self::from_dollars(d)),
                 _ => Err("Dollar amount without decimal places is not valid"),
             },
             _ => Err("Figure appears to have multiple decimal places"),
@@ -112,15 +113,16 @@ impl<'de> Deserialize<'de> for Decimal {
     {
         // TODO Unwrap is unnacceptable!
         let currency_val = Value::deserialize(deserializer)?;
-        let decimal_string: String = if let Value::Number(num) = currency_val {
-            num.to_string()
-        } else if let Value::String(s) = currency_val {
-            s.to_string()
-        } else {
-            return Err(D::Error::custom(format!(
-                "Can only deserialize Decimal from string or number"
-            )));
-        };
+        let decimal_string: String = 
+            if let Value::Number(num) = currency_val {
+                num.to_string()
+            } else if let Value::String(s) = currency_val {
+                s.to_string()
+            } else {
+                return Err(D::Error::custom(format!(
+                    "Can only deserialize Decimal from string or number"
+                )));
+            };
         match Self::from_str(&decimal_string) {
             Err(err) => Err(D::Error::custom(err)),
             Ok(val) => Ok(val),
