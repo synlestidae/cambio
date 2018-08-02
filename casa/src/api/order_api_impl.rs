@@ -34,7 +34,6 @@ pub struct OrderApiImpl<C: GenericConnection> {
 
 impl<C: GenericConnection> OrderApiImpl<C> {
     pub fn new(db: C) -> Self {
-        let eth_path = "http://localhost:303030";
         Self {
             db: db,
             order_service: OrderService::new(),

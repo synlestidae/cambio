@@ -28,6 +28,7 @@ fn test_conversion_to_cents() {
     assert_eq!(Decimal::from_str("0.01").unwrap().to_cents(), 1);
     assert_eq!(Decimal::from_str("0.02").unwrap().to_cents(), 2);
     assert_eq!(Decimal::from_str("0.05").unwrap().to_cents(), 5);
+    assert_eq!(Decimal::from_str("1.27").unwrap().to_cents(), 127);
 }
 
 fn run_add_test(lhs: &str, rhs: &str, expected: &str) {
