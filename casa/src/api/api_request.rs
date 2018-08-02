@@ -36,8 +36,7 @@ impl ApiRequest {
             ApiRequest::Order(OrderApiRequest::GetActiveOrders) => Method::Get,
             ApiRequest::Order(OrderApiRequest::GetChangedOrders(..)) => Method::Get,
             ApiRequest::Order(OrderApiRequest::GetUserOrders) => Method::Get,
-            ApiRequest::Order(OrderApiRequest::PostNewOrder(..)) => Method::Post,
-            ApiRequest::Order(OrderApiRequest::PostBuyOrder(..)) => Method::Post,
+            ApiRequest::Order(..) => Method::Post,
             ApiRequest::Settlement(..) => Method::Post,
             ApiRequest::Payment(..) => Method::Post,
         }
@@ -87,8 +86,11 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["orders", "new"] => {
                 ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request))))
             }
-            &["orders", "buy"] => {
+            &["orders", "sells", "trade"] => {
                 ApiRequest::Order(OrderApiRequest::PostBuyOrder(try!(get_api_obj(request))))
+            }
+            &["orders", "buys", "trade"] => {
+                ApiRequest::Order(OrderApiRequest::PostSellOrder(try!(get_api_obj(request))))
             }
             &["accounts"] => ApiRequest::Account(AccountRequest::GetAccounts),
             &["account", id] => {
