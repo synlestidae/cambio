@@ -318,3 +318,11 @@ impl Creatable for domain::PoliPaymentRequest {
         )))
     }
 }
+
+impl Creatable for domain::SettlementCriteria {
+    type Id = domain::OrderId;
+
+    fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        unimplemented!()
+    }
+}

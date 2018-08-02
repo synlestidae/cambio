@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use domain::CurrencyCode;
 use api::OrderRequest;
 use db::{CambioError, PostgresHelper};
 use domain;
@@ -6,27 +7,43 @@ use domain::*;
 use postgres::GenericConnection;
 use repository::{Creatable, Readable, Updateable};
 use web3::types::U256;
+use services::LedgerService;
 
-#[derive(Clone)]
-pub struct OrderService {}
+pub struct OrderService {
+    ledger_service: LedgerService
+}
 
 const ORDER_TIME_MINUTES: i64 = 10;
 
 impl OrderService {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            ledger_service: LedgerService::new()
+        }
     }
 
     pub fn place_order<C: GenericConnection>(
         &self,
         db: &mut C,
-        email_address: &str,
+        user_id: UserId,
         order_request: &OrderRequest) -> Result<Order, CambioError> {
-        let user: User = try!(Readable::get(email_address, db));
-        // TODO check balance and move money into hold account 
-        let user_owner_id = user.owner_id.unwrap();
-        let order = order_request.clone().into_order(user.owner_id.unwrap());
-        order.create(db)
+        let mut tx = db.transaction()?;
+
+        let user: User = user_id.get(&mut tx)?;
+        let owner_id = user.owner_id.unwrap();
+        let accounts = AccountSet::from(owner_id.get_vec(&mut tx)?)?;
+
+        // hold the money on behalf of the user
+        self.ledger_service.transfer_money_positive_deduction(&mut tx, 
+            accounts.nzd_wallet(), 
+            accounts.nzd_hold(),
+            CurrencyCode::NZD.asset_type(),
+            order_request.amount_fiat
+        )?;
+
+        let created_order = order_request.clone().into_order(owner_id).create(&mut tx)?;
+        tx.commit()?;
+        Ok(created_order)
     }
 
     fn get_order_expiry(&self) -> DateTime<Utc> {
@@ -50,20 +67,6 @@ impl OrderService {
                 "Can only change order status if status = 'active'",
             ))
         }
-    }
-
-    pub fn get_orders<C: GenericConnection>(
-        &self,
-        db: &mut C,
-        user: Option<&str>,
-        only_active: bool,
-    ) -> Result<Vec<Order>, CambioError> {
-        let orders: Vec<Order> = try!(All.get_vec(db))
-            .into_iter()
-            .filter(|order| !only_active || order.status == domain::OrderStatus::Active)
-            .collect();
-
-        Ok(orders)
     }
 }
 

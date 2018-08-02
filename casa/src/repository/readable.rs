@@ -477,6 +477,15 @@ impl Readable<domain::AccountId> for domain::PaymentVendor {
     }
 }
 
+impl Readable<domain::SettlementCriteria> for domain::OrderId {
+    fn get_vec<T: GenericConnection>(
+        &self,
+        db: &mut T,
+    ) -> Result<Vec<domain::SettlementCriteria>, CambioError> {
+        unimplemented!()
+    }
+}
+
 const SELECT_BY_OWNER: &'static str = "
     SELECT *, users.id as user_id, account_owner.id as owner_id
     FROM users 

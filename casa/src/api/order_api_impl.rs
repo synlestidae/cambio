@@ -2,6 +2,7 @@ use api;
 use chrono::prelude::*;
 use api::utils;
 use db;
+use db::CambioError;
 use db::ConnectionSource;
 use db::PostgresHelper;
 use domain;
@@ -17,11 +18,12 @@ use repository::Creatable;
 use repository::Readable;
 use repository::RepoRead;
 use serde_json;
-use services;
+use services::OrderService;
+use services::SettlementService;
 
 pub struct OrderApiImpl<C: GenericConnection> {
     db: C,
-    order_service: services::OrderService,
+    order_service: OrderService,
 }
 
 impl<C: GenericConnection> OrderApiImpl<C> {
@@ -29,7 +31,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         let eth_path = "http://localhost:303030";
         Self {
             db: db,
-            order_service: services::OrderService::new(),
+            order_service: OrderService::new(),
         }
     }
 
@@ -38,12 +40,11 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         db: &mut D,
         order: &api::OrderRequest,
         email_address: &str,
-    ) -> Result<domain::Order, iron::Response> {
-        let order_result = self.order_service.place_order(db, email_address, order);
-        match order_result {
-            Ok(result) => Ok(result),
-            err => Err(utils::to_response(err)),
-        }
+    ) -> Result<domain::Order, CambioError> {
+        let user: domain::User = Readable::get(email_address, db)?;
+        let user_id = user.id.unwrap();
+        let placed_order = self.order_service.place_order(db, user_id, order)?;
+        Ok(placed_order)
     }
 
     pub fn get_active_orders(&mut self) -> iron::Response {
@@ -93,21 +94,45 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         order: &api::OrderRequest,
     ) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
-        /*if order.get_sell_asset_type().is_crypto() && order.max_wei.is_none() {
-            const WEI_MSG: &'static str = "To sell Ethereum, please specify your transaction cost";
-            return api::ApiError::missing_field_or_param(WEI_MSG).into();
-        }*/
         let mut db_tx = self.db.transaction().unwrap();
         match self.create_order(&mut db_tx, &order, &user.email_address) {
             Ok(order) => {
                 db_tx.commit();
                 utils::to_response(Ok(order))
             }
-            Err(err_resp) => return err_resp,
+            Err(err) => return err.into(),
         }
     }
 
-    pub fn post_buy_order(&mut self, user: &domain::User, order: &api::OrderBuy) -> iron::Response {
+    pub fn post_buy_order(&mut self, user: &domain::User, trade_request: &api::OrderBuy) -> Result<(), CambioError> {
+        let settlement_service = SettlementService::new();
+        let owner_id = user.owner_id.unwrap();
+        
+        let counterparty_order: Order = trade_request.order_id.get(&mut self.db)?;
+        if counterparty_order.is_expired() || !counterparty_order.is_active() {
+            panic!("This order is no longer available for settlement.");
+        }
+        if counterparty_order.owner_id == owner_id {
+            panic!("Refuse to trade orders from same person!");
+        }
+        let trade_request_order = trade_request.order_request.clone();
+        let new_order = trade_request.order_request.clone().into_order(owner_id);
+        if !new_order.is_fair(&counterparty_order) {
+            panic!("Offer is not fair");
+        }
+
+        if counterparty_order.is_buy() {
+            settlement_service.init_settlement_of_buy(&mut self.db, 
+                &counterparty_order,
+                &user, 
+                &trade_request_order)?;
+        } else {
+            settlement_service.init_settlement_of_sell(&mut self.db,
+                &counterparty_order,
+                &user,
+                &trade_request_order)?;
+        }
+
         unimplemented!("We are going to change how buying an order works");
         /*info!(
             "User {} is completing order {:?}",
@@ -116,17 +141,17 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         let email_address = &user.email_address;
         let mut db_tx = self.db.transaction().unwrap();
         let response = {
-            let target_order: Order = order.order_id.get(&mut db_tx).unwrap();
+            let counterparty_order: Order = order.order_id.get(&mut db_tx).unwrap();
             info!("Found order {:?}", order.order_id);
             // check the orders are valid and compatible with each other
             let unfair_err = db::CambioError::unfair_operation(
                 "The order you chose is either incompatible or no longer active",
                 "Target order.is_fair() returned false",
             );
-            if !target_order.is_active() {
+            if !counterparty_order.is_active() {
                 info!(
                     "Order {:?} has expired, can't complete settlement",
-                    target_order.id
+                    counterparty_order.id
                 );
                 let err = db::CambioError::not_permitted(
                     "The order you chose is expired or no longer active",
@@ -135,10 +160,10 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                 return api::ApiError::from(err).into();
             }*/
             //let request_copy = order.order_request.clone();
-            /*if target_order.sell_asset_type != request_copy.get_buy_asset_type() {
+            /*if counterparty_order.sell_asset_type != request_copy.get_buy_asset_type() {
                 info!(
                     "Target order {:?} has sell type {:?}, but request buy type is {:?}",
-                    target_order.id, target_order.sell_asset_type, request_copy.get_buy_asset_type()
+                    counterparty_order.id, counterparty_order.sell_asset_type, request_copy.get_buy_asset_type()
                 );
                 return db::CambioError::unfair_operation(
                     "Request sell_asset_type does not match target buy_asset_type",
@@ -146,19 +171,19 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                 ).into();
             }
             info!("Checking that the buy and sell asset types match");
-            if target_order.buy_asset_type != request_copy.get_sell_asset_type() {
+            if counterparty_order.buy_asset_type != request_copy.get_sell_asset_type() {
                 return db::CambioError::unfair_operation(
                     "Request buy_asset_type does not match target sell_asset_type",
                     "Target order.is_fair() returned false",
                 ).into();
             }
-            if target_order.sell_asset_units != request_copy.get_buy_asset_units() as i64 {
+            if counterparty_order.sell_asset_units != request_copy.get_buy_asset_units() as i64 {
                 return db::CambioError::unfair_operation(
                     "Request sell_asset_units does not match target buy_asset_units",
                     "Target order.is_fair() returned false",
                 ).into();
             }
-            if target_order.buy_asset_units != request_copy.get_sell_asset_units() as i64{
+            if counterparty_order.buy_asset_units != request_copy.get_sell_asset_units() as i64{
                 return db::CambioError::unfair_operation(
                     "Request sell_asset_units does not match target buy_asset_units",
                     "Target order.is_fair() returned false",
@@ -177,11 +202,11 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                 order.order_id, our_order.id
             );
             // save the settlement
-            let settlement = if target_order.buy_asset_type.is_crypto() {
-                // target_order is the buying order
-                domain::OrderSettlement::from(user.id.unwrap(), &target_order, &our_order)
+            let settlement = if counterparty_order.buy_asset_type.is_crypto() {
+                // counterparty_order is the buying order
+                domain::OrderSettlement::from(user.id.unwrap(), &counterparty_order, &our_order)
             } else {
-                domain::OrderSettlement::from(user.id.unwrap(), &our_order, &target_order)
+                domain::OrderSettlement::from(user.id.unwrap(), &our_order, &counterparty_order)
             };
 
             let settlement_result = settlement.create(&mut db_tx);

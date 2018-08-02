@@ -60,4 +60,28 @@ impl LedgerService {
             err
         }
     }
+
+    pub fn transfer_money_positive_deduction<C: GenericConnection>(
+        &self,
+        db: &mut C,
+        deduct_account: AccountId,
+        credit_account: AccountId,
+        asset_type: AssetType,
+        amount: Decimal,
+    ) -> Result<Transaction, CambioError> {
+        let mut tx = db.transaction()?;
+        let transaction = 
+            self.transfer_money(&mut tx, deduct_account, credit_account, asset_type, amount)?;
+        // double check the balance
+        if transaction.balance_from_account < 0 {
+            tx.set_rollback();
+            return Err(CambioError::unfair_operation(
+                "Insufficient funds to complete the order.", 
+                "Balance of wallet too low.")
+            );
+        }
+
+        tx.commit();
+        Ok(transaction)
+    }
 }

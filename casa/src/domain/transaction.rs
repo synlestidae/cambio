@@ -16,4 +16,5 @@ pub struct Transaction {
     pub transaction_time: DateTime<Utc>,
     pub accounting_period_id: Id,
     pub balance_to_account: i64,
+    pub balance_from_account: i64,
 }

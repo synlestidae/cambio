@@ -1,4 +1,5 @@
 mod account;
+mod settlement_criteria;
 mod order_change;
 mod trade_type;
 mod crypto_type;
@@ -123,3 +124,4 @@ pub use self::big_integer::BigInteger;
 pub use self::trade_type::TradeType;
 pub use self::crypto_type::CryptoType;
 pub use self::order_change::OrderChange;
+pub use self::settlement_criteria::SettlementCriteria;
