@@ -1,9 +1,11 @@
 use db::CambioError;
+use domain::Decimal;
 use api::OrderRequest;
 use domain::{User, Order, OrderSettlement};
 use postgres::GenericConnection;
 use repository::{Creatable, Readable};
 use services::{LedgerService, OrderService};
+use web3::types::H160;
 
 pub struct SettlementService { 
     order_service: OrderService
@@ -42,7 +44,9 @@ impl SettlementService {
         db: &mut C,
         buying_order: &Order,
         selling_user: &User,
-        order_request: &OrderRequest) -> SettleResult {
+        order_request: &OrderRequest,
+        pledge: Decimal,
+        source_eth_account_address: H160) -> SettleResult {
         unimplemented!()
     }
 }
