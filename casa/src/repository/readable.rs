@@ -482,7 +482,16 @@ impl Readable<domain::SettlementCriteria> for domain::OrderId {
         &self,
         db: &mut T,
     ) -> Result<Vec<domain::SettlementCriteria>, CambioError> {
-        unimplemented!()
+        unimplemented!("Readable<SettlementCriteria>")
+    }
+}
+
+impl Readable<domain::SettlementTransaction> for domain::OrderSettlementId {
+    fn get_vec<T: GenericConnection>(
+        &self,
+        db: &mut T,
+    ) -> Result<Vec<domain::SettlementTransaction>, CambioError> {
+        unimplemented!("Readable<SettlementTransaction>")
     }
 }
 

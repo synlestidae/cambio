@@ -27,7 +27,8 @@ impl EthereumService {
         user_email: &str,
         account_password: &str,
     ) -> Result<EthAccount, CambioError> {
-        let user = try!(Readable::get(user_email, db));
+        unimplemented!()
+        /*let user = try!(Readable::get(user_email, db));
         let owner_id = user.owner_id.unwrap();
         // TODO comment out when web3 decides to work
         let account_result = self.web3.personal().new_account(account_password).wait();
@@ -36,14 +37,15 @@ impl EthereumService {
             &address,
             account_password.to_owned(),
             owner_id,
-        ))
+        ))*/
     }
 
     fn get_request(
         &self,
         transfer: &EthTransferRequest,
     ) -> Result<TransactionRequest, CambioError> {
-        const BLOCK_CONFIRMATIONS: u64 = 4;
+        unimplemented!()
+        /*const BLOCK_CONFIRMATIONS: u64 = 4;
         const GAS_TRANSFER: u64 = 21000;
         let personal = self.web3.personal();
         let eth = self.web3.eth();
@@ -68,14 +70,15 @@ impl EthereumService {
             data: None,
             nonce: None,
             condition: Some(web3::types::TransactionCondition::Block(confirmations)),
-        })
+        })*/
     }
 
     pub fn send_transaction(
         &mut self,
         request: TransactionRequest,
     ) -> Result<web3::types::Transaction, CambioError> {
-        let eth = self.web3.eth();
+        unimplemented!()
+        /*let eth = self.web3.eth();
 
         let hash = try!(eth.send_transaction(request).wait());
         let transaction = try!(
@@ -90,7 +93,7 @@ impl EthereumService {
         match transaction {
             Some(tx) => Ok(tx),
             None => Err(not_found_err),
-        }
+        }*/
     }
 
     pub fn register_transaction(
@@ -102,7 +105,8 @@ impl EthereumService {
         max_fee: U256,
         unique_id: &str,
     ) -> Result<EthereumOutboundTransaction, CambioError> {
-        let personal = self.web3.personal();
+        unimplemented!()
+        /*let personal = self.web3.personal();
         try!(
             personal
                 .unlock_account(source_account.address, &password, None)
@@ -121,7 +125,7 @@ impl EthereumService {
         Ok(EthereumOutboundTransaction {
             id: None,
             eth_transaction: eth_transaction,
-        })
+        })*/
     }
 }
 

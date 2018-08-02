@@ -6,8 +6,10 @@ use db::CambioError;
 use db::ConnectionSource;
 use db::PostgresHelper;
 use db;
+use domain::SettlementCriteria;
 use domain::Order;
 use domain::OrderChange;
+use domain::AssetType;
 use domain::OwnerId;
 use domain;
 use hyper::mime::Mime;
@@ -21,11 +23,13 @@ use repository;
 use serde_json;
 use services::OrderService;
 use services::SettlementService;
+use services::LedgerService;
 
 pub struct OrderApiImpl<C: GenericConnection> {
     db: C,
     order_service: OrderService,
-    settlement_service: SettlementService
+    settlement_service: SettlementService,
+    ledger_service: LedgerService
 }
 
 impl<C: GenericConnection> OrderApiImpl<C> {
@@ -34,7 +38,8 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         Self {
             db: db,
             order_service: OrderService::new(),
-            settlement_service: SettlementService::new()
+            settlement_service: SettlementService::new(),
+            ledger_service: LedgerService::new()
         }
     }
 
@@ -128,7 +133,32 @@ impl<C: GenericConnection> OrderApiImpl<C> {
 
 
     pub fn complete_buy_order(&mut self, user: &domain::User, trade_request: &api::CryptoTradeRequest) -> Result<(), CambioError> {
-        unimplemented!()
+        let tx = &mut self.db.transaction()?;
+
+        let owner_id = user.owner_id.unwrap();
+        let order_id = &trade_request.trade_request.counterparty_order;
+
+        let our_order = trade_request.trade_request.order_request.clone().into_order(owner_id);
+        let counterparty_order: Order = order_id.get(tx)?;
+
+        self.check_order(owner_id, &counterparty_order, &our_order)?;
+
+        let settlement_criteria: SettlementCriteria = order_id.get(tx)?;
+        let required_pledge = settlement_criteria.min_pledge_amount;
+        if trade_request.pledge_amount < required_pledge {
+            return Err(CambioError::unfair_operation(
+                    "The amount you have pledged for settlement is too low.", 
+                    "Request pledge is less than criteria pledge."));
+        }
+        self.settlement_service.init_settlement_of_buy(tx,
+            &counterparty_order,
+            user,
+            &trade_request.trade_request.order_request,
+            required_pledge,
+            trade_request.source_eth_account_address
+        )?;
+
+        Ok(())
     }
 
     fn check_order(&self, owner_id: OwnerId, counterparty_order: &Order, request_order: &Order) -> Result<(), CambioError> {

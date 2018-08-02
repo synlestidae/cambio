@@ -3,6 +3,7 @@ use chrono::prelude::*;
 use chrono::NaiveDate;
 use domain::OrderId;
 use domain::Decimal;
+use domain::ByteAddress;
 use api::TradeRequest;
 use web3::types::H160;
 
@@ -10,5 +11,5 @@ use web3::types::H160;
 pub struct CryptoTradeRequest {
     pub trade_request: TradeRequest,
     pub pledge_amount: Decimal,
-    pub source_eth_account_address: H160
+    pub source_eth_account_address: ByteAddress 
 }

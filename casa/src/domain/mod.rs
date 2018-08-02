@@ -1,4 +1,6 @@
 mod account;
+mod byte_address;
+mod settlement_transaction;
 mod settlement_criteria;
 mod order_change;
 mod trade_type;
@@ -125,3 +127,5 @@ pub use self::trade_type::TradeType;
 pub use self::crypto_type::CryptoType;
 pub use self::order_change::OrderChange;
 pub use self::settlement_criteria::SettlementCriteria;
+pub use self::settlement_transaction::SettlementTransaction;
+pub use self::byte_address::ByteAddress;

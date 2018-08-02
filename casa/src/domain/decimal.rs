@@ -13,11 +13,9 @@ use std::convert::Into;
 
 type ToSqlResult = Result<IsNull, Box<error::Error + 'static + Send + Sync>>;
 
-#[derive(Eq, PartialEq, Debug, Clone, Copy)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy, PartialOrd, Ord)]
 pub struct Decimal {
-    is_positive: bool,
-    dollars: u64,
-    cents: u64,
+    cents: i64,
 }
 
 impl Decimal {
@@ -26,26 +24,18 @@ impl Decimal {
     }
     pub fn from_dollars(dollars: i64) -> Self {
         Self {
-            dollars: dollars.abs() as u64,
-            is_positive: dollars >= 0,
-            cents: 0,
+            cents: dollars * 100,
         }
     }
 
     pub fn from_cents(cents: i64) -> Self {
-        let cents_100 = cents.abs() % 100;
-        let dollars = cents.abs() / 100;
         Self {
-            is_positive: cents >= 0,
-            dollars: dollars as u64,
-            cents: cents_100 as u64,
+            cents: cents
         }
     }
 
     pub fn to_cents(&self) -> i64 {
-        let d = self.dollars as i64;
-        let c = self.cents as i64;
-        (d * 100) + c * if self.is_positive { 1 } else { -1 }
+        self.cents
     }
 }
 
@@ -69,8 +59,7 @@ impl Sub for Decimal {
 
 impl fmt::Display for Decimal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let sign = if self.is_positive { "" } else { "-" };
-        write!(f, "{}{}.{:02}", sign, self.dollars, self.cents)
+        write!(f, "{}", self.cents)
     }
 }
 
