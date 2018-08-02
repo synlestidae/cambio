@@ -1,7 +1,7 @@
 use db::CambioError;
 use domain::Decimal;
 use api::OrderRequest;
-use domain::{User, Order, OrderSettlement};
+use domain::{User, Order, OrderSettlement, SettlementCriteria};
 use postgres::GenericConnection;
 use repository::{Creatable, Readable};
 use services::{LedgerService, OrderService};
@@ -42,11 +42,22 @@ impl SettlementService {
     pub fn init_settlement_of_buy<C: GenericConnection>(
         &self,
         db: &mut C,
-        buying_order: &Order,
+        counterparty_order: &Order,
         selling_user: &User,
         order_request: &OrderRequest,
         pledge: Decimal,
         source_eth_account_address: H160) -> SettleResult {
+        let counterparty_order_id = counterparty_order.id.unwrap();
+        let criteria: SettlementCriteria = counterparty_order_id.get(db)?;
+        if criteria.min_pledge_amount != pledge {
+            return Err(CambioError::not_permitted(
+                "Pledged sum must equal the minimum pledge in counterparty order", 
+                "Pledge in settlement proposal does not match counterparty criteria")
+            );
+        }
+
+        // move the pledge to the pledge holding account
+
         unimplemented!()
     }
 }

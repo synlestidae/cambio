@@ -43,6 +43,10 @@ impl AccountSet {
     pub fn nzd_hold(&self) -> domain::AccountId {
         self.nzd_holding_account.id.unwrap() //TODO Remove unwrap()
     }
+
+    pub fn nzd_pledge_hold(&self) -> domain::AccountId {
+        self.nzd_holding_account.id.unwrap() //TODO Remove unwrap()
+    }
 }
 
 fn is_nzd_wallet(a: &domain::Account) -> bool {

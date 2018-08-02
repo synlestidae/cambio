@@ -127,7 +127,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
     }
 
 
-    pub fn post_buy_order(&mut self, user: &domain::User, trade_request: &api::CryptoTradeRequest) -> Result<(), CambioError> {
+    pub fn complete_buy_order(&mut self, user: &domain::User, trade_request: &api::CryptoTradeRequest) -> Result<(), CambioError> {
         unimplemented!()
     }
 
