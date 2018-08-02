@@ -9,6 +9,21 @@ use byteorder;
 #[derive(Serialize, Deserialize, Eq, PartialEq, Clone, Copy, Debug)]
 pub struct BigInteger(U256);
 
+impl BigInteger {
+}
+
+impl Into<U256> for BigInteger {
+    fn into(self) -> U256 {
+        self.0.clone()
+    }
+}
+
+impl From<U256> for BigInteger {
+    fn from(u: U256) -> Self {
+        BigInteger(u)
+    }
+}
+
 /*impl<'de> Deserialize<'de> for BigInteger {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

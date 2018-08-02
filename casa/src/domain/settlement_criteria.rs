@@ -8,7 +8,7 @@ use db::TryFromRowError;
 #[derive(TryFromRow)]
 pub struct SettlementCriteria {
     pub order_id: OrderId,
-    pub time_limit: i32,
+    pub time_limit_minutes: i32,
     pub min_pledge_amount: Decimal,
     pub destination_account: EthAccountId
 }

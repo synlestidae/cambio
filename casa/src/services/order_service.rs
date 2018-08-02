@@ -48,12 +48,6 @@ impl OrderService {
         Ok(created_order)
     }
 
-    fn get_order_expiry(&self) -> DateTime<Utc> {
-        use time::Duration;
-        let now = Utc::now();
-        now + Duration::minutes(ORDER_TIME_MINUTES)
-    }
-
     pub fn cancel_order<C: GenericConnection>(
         &self,
         db: &mut C,

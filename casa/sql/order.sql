@@ -68,6 +68,15 @@ CREATE TABLE order_settlement (
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
 
+CREATE TABLE settlement_transaction (
+    id SERIAL PRIMARY KEY,
+    settlement_id SERIAL REFERENCES order_settlement(id), 
+    from_address BYTEA NOT NULL,
+    to_address BYTEA NOT NULL,
+    amount_wei BYTEA NOT NULL,
+    blockchain_due_datetime TIMESTAMP NOT NULL
+);
+
 CREATE OR REPLACE FUNCTION place_order(
     buy_asset_type_var ASSET_TYPE,
     sell_asset_type_var ASSET_TYPE,

@@ -51,12 +51,11 @@ impl Creatable for domain::EthAccount {
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const QUERY: &'static str =
-            "INSERT INTO ethereum_account_details(address, owner_id) 
+            "INSERT INTO ethereum_account_details(address, name, owner_id) 
              VALUES ($1, $2, $3) RETURNING id";
-        let address = self.address.iter().map(|&x| x).collect::<Vec<u8>>();
         Ok(try!(db.query(
             QUERY,
-            &[&address, &self.owner_id]
+            &[&self.address, &self.name, &self.owner_id]
         )))
     }
 }
@@ -323,6 +322,14 @@ impl Creatable for domain::SettlementCriteria {
     type Id = domain::OrderId;
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        unimplemented!()
+        unimplemented!("Creatable<SettlementCriteria>")
+    }
+}
+
+impl Creatable for domain::SettlementTransaction {
+    type Id = domain::OrderSettlementId;
+
+    fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
+        unimplemented!("Creatable<SettlementTransaction>")
     }
 }
