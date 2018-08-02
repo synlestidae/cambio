@@ -33,13 +33,15 @@ impl OrderService {
         let owner_id = user.owner_id.unwrap();
         let accounts = AccountSet::from(owner_id.get_vec(&mut tx)?)?;
 
-        // hold the money on behalf of the user
-        self.ledger_service.transfer_money_positive_deduction(&mut tx, 
-            accounts.nzd_wallet(), 
-            accounts.nzd_hold(),
-            CurrencyCode::NZD.asset_type(),
-            order_request.amount_fiat
-        )?;
+        // hold the money on behalf of the user if they are buying eth
+        if order_request.is_buy {
+            self.ledger_service.transfer_money_positive_deduction(&mut tx, 
+                accounts.nzd_wallet(), 
+                accounts.nzd_hold(),
+                CurrencyCode::NZD.asset_type(),
+                order_request.amount_fiat
+            )?;
+        }
 
         let created_order = order_request.clone().into_order(owner_id).create(&mut tx)?;
         tx.commit()?;

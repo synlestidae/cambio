@@ -20,7 +20,6 @@ const BCRYPT_COST: u32 = 8;
 pub struct EthAccount {
     pub id: Option<EthAccountId>,
     pub address: H160,
-    pub password_hash_bcrypt: String,
     pub owner_id: OwnerId,
 }
 
@@ -28,7 +27,7 @@ pub struct EthAccount {
 pub struct EthAccountRow {
     pub id: Option<EthAccountId>,
     pub address: Vec<u8>,
-    pub password_hash_bcrypt: String,
+    //pub password_hash_bcrypt: String,
     pub owner_id: OwnerId,
 }
 
@@ -40,7 +39,7 @@ impl TryFromRow for EthAccount {
         Ok(EthAccount {
             id: eth.id,
             address: H160(bytes),
-            password_hash_bcrypt: eth.password_hash_bcrypt,
+            //password_hash_bcrypt: eth.password_hash_bcrypt,
             owner_id: eth.owner_id,
         })
     }
@@ -48,11 +47,11 @@ impl TryFromRow for EthAccount {
 
 impl EthAccount {
     pub fn new(address: &H160, password: String, owner_id: OwnerId) -> Self {
-        let bcrypted_password = hash(&password, BCRYPT_COST).unwrap();
+        //let bcrypted_password = hash(&password, BCRYPT_COST).unwrap();
         Self {
             id: None,
             address: *address,
-            password_hash_bcrypt: bcrypted_password,
+            //password_hash_bcrypt: bcrypted_password,
             owner_id: owner_id,
         }
     }

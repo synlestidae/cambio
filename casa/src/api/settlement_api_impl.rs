@@ -38,7 +38,8 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
         order_id: domain::OrderId,
         credentials: &api::SettlementEthCredentials,
     ) -> iron::Response {
-        let mut transaction = self.db.transaction().unwrap();
+        unimplemented!()
+        /*let mut transaction = self.db.transaction().unwrap();
         info!("Processing credentials for order {:?}", order_id);
         let order: domain::Order = match order_id.get(&mut transaction) {
             Ok(o) => o,
@@ -112,7 +113,7 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
             }
         } else {
             db::CambioError::invalid_password().into()
-        }
+        }*/
     }
 
     pub fn get_settlement_status(&mut self, order_id: &domain::OrderId) -> iron::Response {

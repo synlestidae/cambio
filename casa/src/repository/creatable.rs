@@ -51,12 +51,12 @@ impl Creatable for domain::EthAccount {
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const QUERY: &'static str =
-            "INSERT INTO ethereum_account_details(address, password_hash_bcrypt, owner_id) 
+            "INSERT INTO ethereum_account_details(address, owner_id) 
              VALUES ($1, $2, $3) RETURNING id";
         let address = self.address.iter().map(|&x| x).collect::<Vec<u8>>();
         Ok(try!(db.query(
             QUERY,
-            &[&address, &self.password_hash_bcrypt, &self.owner_id]
+            &[&address, &self.owner_id]
         )))
     }
 }
