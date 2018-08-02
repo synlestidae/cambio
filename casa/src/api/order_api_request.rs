@@ -7,4 +7,5 @@ pub enum OrderApiRequest {
     GetUserOrders,
     PostNewOrder(api::OrderRequest),
     PostBuyOrder(api::TradeRequest),
+    PostSellOrder(api::CryptoTradeRequest),
 }

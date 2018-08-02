@@ -125,9 +125,17 @@ impl Handler for ApiHandler {
                     OrderApiRequest::PostNewOrder(new_order) => {
                         order_api.post_new_order(&user, &new_order)
                     }
-                    OrderApiRequest::PostBuyOrder(order_buy) => {
-                        unimplemented!()
-                        //order_api.post_buy_order(&user, &order_buy)
+                    OrderApiRequest::PostBuyOrder(trade_request) => {
+                        match order_api.complete_sell_order(&user, &trade_request) {
+                            Err(err) => err.into(),
+                            ok_resp => api::utils::to_response(ok_resp),
+                        }
+                    }
+                    OrderApiRequest::PostSellOrder(crypto_trade_request) => {
+                        match order_api.complete_buy_order(&user, &crypto_trade_request) {
+                            Err(err) => err.into(),
+                            ok_resp => api::utils::to_response(ok_resp)
+                        }
                     }
                 }
             }
