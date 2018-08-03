@@ -16,7 +16,6 @@ CREATE TYPE trade_type AS ENUM (
 
 CREATE TYPE settlement_status AS ENUM (
     'waiting_eth',
-    'waiting_eth_credentials',
     'settled',
     'cancelled',
     'invalid',
@@ -26,7 +25,7 @@ CREATE TYPE settlement_status AS ENUM (
 CREATE TABLE asset_order (
     id SERIAL PRIMARY KEY,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id) ,
-    unique_id VARCHAR(32) NOT NULL,
+    unique_id VARCHAR(256) NOT NULL,
     amount_fiat bigint NOT NULL,
     amount_crypto BYTEA NOT NULL,
     trade_type trade_type NOT NULL,
@@ -61,8 +60,7 @@ CREATE TABLE order_settlement (
     started_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc'),
     settled_at TIMESTAMP,
     starting_user SERIAL REFERENCES users(id) NOT NULL,
-    status settlement_status NOT NULL,
-    --transaction_id INTEGER REFERENCES eth_transactions(id),
+    status settlement_status NOT NULL DEFAULT 'waiting_eth',
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
