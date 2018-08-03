@@ -47,9 +47,13 @@ fn place_order(who: &str, wei: u64, dollars: u64, is_buy: bool) -> Order {
         amount_fiat: Decimal::from_dollars(dollars as i64),
         amount_crypto: wei.into(),
         is_buy: is_buy,
-        minutes_active: 15
+        minutes_active: 15,
+        minutes_to_settle: 60 * 2,
+        pledge: Decimal::from_dollars(5),
+        address: unimplemented!()
     };
-    order_api.create_order(&request, who).unwrap()
+    //order_api.post_new_order(&request, who).unwrap()
+    unimplemented!()
 }
 
 fn create_user(email: &str, dollars: i64) -> User {

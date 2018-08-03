@@ -6,6 +6,6 @@ pub enum OrderApiRequest {
     GetChangedOrders(api::LastChange),
     GetUserOrders,
     PostNewOrder(api::OrderRequest),
-    PostBuyOrder(api::TradeRequest),
-    PostSellOrder(api::CryptoTradeRequest),
+    PostBuyOrder(api::OrderCompletionRequest),
+    PostSellOrder(api::OrderCompletionRequest),
 }

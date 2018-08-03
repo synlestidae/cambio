@@ -262,19 +262,6 @@ impl Creatable for domain::Order {
 impl Creatable for domain::OrderSettlement {
     type Id = domain::OrderSettlementId;
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        const SQL_SETTLEMENT: &'static str = "SELECT * 
-            FROM order_settlement 
-            WHERE buying_crypto_id in ($1, $2) OR buying_fiat_id in ($1, $2)";
-        let rows = try!(db.query(
-            SQL_SETTLEMENT,
-            &[&self.buying_order.id, &self.selling_order.id]
-        ));
-        if rows.len() > 0 {
-            return Err(CambioError::not_permitted(
-                "Orders can only be in one settlement at a time",
-                "At least one settlement uses that order.",
-            ));
-        }
         const SQL: &'static str = "INSERT INTO order_settlement(
                 starting_user,
                 buying_crypto_id,
@@ -282,15 +269,15 @@ impl Creatable for domain::OrderSettlement {
             ) VALUES ($1, $2, $3)
             RETURNING id
         ";
-        let settlement = try!(db.query(
+        let rows = db.query(
             SQL,
             &[
                 &self.starting_user,
-                &self.buying_order.id,
-                &self.selling_order.id
+                &self.buying_crypto_id,
+                &self.buying_fiat_id
             ]
-        ));
-        Ok(settlement)
+        )?;
+        Ok(rows)
     }
 }
 
