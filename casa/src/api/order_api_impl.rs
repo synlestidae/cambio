@@ -11,6 +11,7 @@ use domain::Order;
 use domain::OrderChange;
 use domain::AssetType;
 use domain::OwnerId;
+use api::OrderRequest;
 use domain;
 use hyper::mime::Mime;
 use iron;
@@ -42,9 +43,9 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    pub fn create_order(
+    fn create_order(
         &self,
-        //db: &mut D,
+        db: &mut C,
         order: &api::OrderRequest,
         email_address: &str,
     ) -> Result<domain::Order, CambioError> {
@@ -100,71 +101,50 @@ impl<C: GenericConnection> OrderApiImpl<C> {
     pub fn post_new_order(
         &mut self,
         user: &domain::User,
-        order: &api::OrderRequest,
-    ) -> iron::Response {
-        let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
-        let mut db_tx = self.db.transaction().unwrap();
-        match self.create_order(&order, &user.email_address) {
-            Ok(order) => {
-                db_tx.commit();
-                utils::to_response(Ok(order))
-            }
-            Err(err) => return err.into(),
-        }
-    }
-
-    pub fn complete_sell_order(&mut self, user: &domain::User, trade_request: &api::TradeRequest) -> Result<(), CambioError> {
-        let owner_id = user.owner_id.unwrap();
-        let counterparty_order: Order = trade_request.counterparty_order.get(&mut self.db)?;
-        let trade_request_order = trade_request.order_request.clone().into_order(owner_id);
-        if !counterparty_order.is_buy() {
-            self.check_order(owner_id, &counterparty_order, &trade_request_order)?;
+        order_request: &api::OrderRequest,
+    ) -> Result<Order, CambioError> {
+        let mut db_tx = self.db.transaction()?;
+        let order = self.create_order(&mut db_tx, &order_request, &user.email_address)?;
+        let eth_account_id = order_request.address.get(&mut db_tx)?.id.unwrap(); // TODO VERY VERY STUPID
+        let criteria = if order.is_buy() {
+            SettlementCriteria::criteria_for_buy(order.id.unwrap(), 
+                order_request.minutes_to_settle,
+                order_request.pledge,
+                eth_account_id)
         } else {
-            return Err(CambioError::not_permitted(
-                "A sell order must be completed with a buy order", 
-                "Counterparty order retrieved in complete_sell_order is a buy order"));
-        }
-        let settlement = self.settlement_service.init_settlement_of_sell(&mut self.db,
-            &counterparty_order,
-            &user,
-            &trade_request.order_request)?;
+            SettlementCriteria::criteria_for_sell(order.id.unwrap(), 
+                order_request.minutes_to_settle,
+                order_request.pledge,
+                eth_account_id)
+        };
+        criteria.create(&mut db_tx)?;
+        db_tx.commit()?;
+        Ok(order)
+    }
 
-        println!("Is settled {:?}", settlement);
-
+    pub fn complete_sell_order(&mut self, 
+        user: &domain::User, 
+        completion_request: &api::OrderCompletionRequest) -> Result<(), CambioError> {
+        self.complete_buy_order(user, completion_request)?;
         Ok(())
     }
 
 
-    pub fn complete_buy_order(&mut self, user: &domain::User, trade_request: &api::CryptoTradeRequest) -> Result<(), CambioError> {
+    pub fn complete_buy_order(&mut self, user: &domain::User, completion_request: &api::OrderCompletionRequest) -> Result<(), CambioError> {
         let tx = &mut self.db.transaction()?;
-
-        let owner_id = user.owner_id.unwrap();
-        let order_id = &trade_request.trade_request.counterparty_order;
-
-        let our_order = trade_request.trade_request.order_request.clone().into_order(owner_id);
-        let counterparty_order: Order = order_id.get(tx)?;
-
-        self.check_order(owner_id, &counterparty_order, &our_order)?;
-
-        let settlement_criteria: SettlementCriteria = order_id.get(tx)?;
-        let required_pledge = settlement_criteria.min_pledge_amount;
-        if trade_request.pledge_amount < required_pledge {
-            return Err(CambioError::unfair_operation(
-                    "The amount you have pledged for settlement is too low.", 
-                    "Request pledge is less than criteria pledge."));
-        }
-        self.settlement_service.init_settlement_of_buy(tx,
-            &counterparty_order,
+        let counterparty_order: Order = completion_request.counterparty_order.get(tx)?;
+        self.check_order(user.owner_id.unwrap(), 
+            &counterparty_order, 
+            &completion_request.order_request)?;
+        self.settlement_service.init_settlement(tx,
             user,
-            &trade_request.trade_request.order_request,
-            required_pledge,
-            trade_request.source_eth_account_address
+            &counterparty_order,
+            &completion_request.order_request
         )?;
-
         Ok(())
     }
 
-    fn check_order(&self, owner_id: OwnerId, counterparty_order: &Order, request_order: &Order) -> Result<(), CambioError> {
+    fn check_order(&self, owner_id: OwnerId, counterparty_order: &Order, request: &OrderRequest) -> Result<(), CambioError> {
         if counterparty_order.is_expired() || !counterparty_order.is_active() {
             panic!("This order is no longer available for settlement.");
         }
@@ -172,7 +152,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             panic!("Refuse to trade orders from same person!");
         }
         //let new_order = trade_request.order_request.clone().into_order(owner_id);
-        if !request_order.is_fair(&counterparty_order) {
+        if !request.is_fair(&counterparty_order) {
             panic!("Offer is not fair");
         }
         Ok(()) 

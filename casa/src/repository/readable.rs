@@ -198,53 +198,14 @@ impl Readable<domain::EthAccount> for domain::EthAccountId {
     }
 }
 
-/*impl<E> Readable<E> for Selectable<E>
-where
-    E: TryFromRow,
-{
-    fn get_vec<H: GenericConnection>(&self, db: &mut H) -> Result<Vec<E>, CambioError> {
-        let sql = self.get_specifier().get_sql_query();
-        PostgresHelperImpl::query(db, &sql, &[])
-    }
-}*/
-
-impl Readable<domain::OrderSettlement> for domain::OrderId {
+impl Readable<domain::EthAccount> for domain::ByteAddress {
     fn get_vec<H: GenericConnection>(
         &self,
         db: &mut H,
-    ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
-        let not_found = Err(CambioError::not_found_search(
-            "Item could not be found.",
-            "No results for query.",
-        ));
-        const SQL: &'static str = "SELECT id 
-            FROM order_settlement 
-            WHERE buying_crypto_id = $1 OR buying_fiat_id = $1";
-        let rows = try!(db.query(SQL, &[&self]));
-        if rows.is_empty() {
-            return not_found;
-        };
-        let row = rows.get(0);
-        let id: Option<domain::OrderSettlementId> = row.get("id");
-        match id {
-            Some(s_id) => s_id.get_vec(db),
-            None => Err(CambioError::format_obj(
-                "Failed to load settlement from DB",
-                "Settlement query has no ID field",
-            )),
-        }
+    ) -> Result<Vec<domain::EthAccount>, CambioError> {
+        const SELECT_BY_ADDRESS: &'static str = "SELECT * FROM ethereum_account_details WHERE address = $1";
+        PostgresHelperImpl::query(db, SELECT_BY_ADDRESS, &[self])
     }
-}
-
-#[derive(TryFromRow)]
-struct SettlementRow {
-    pub id: Option<domain::OrderSettlementId>,
-    pub started_at: NaiveDateTime,
-    pub settled_at: Option<NaiveDateTime>,
-    pub starting_user: domain::UserId,
-    pub status: domain::SettlementStatus,
-    pub buying_crypto_id: domain::OrderId,
-    pub buying_fiat_id: domain::OrderId,
 }
 
 impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
@@ -252,62 +213,24 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
         &self,
         db: &mut H,
     ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
-        let orders: Vec<SettlementRow> = try!(PostgresHelperImpl::query(
-            db,
-            "SELECT * FROM order_settlement WHERE id = $1",
-            &[&self]
-        ));
-        let mut settlements = Vec::new();
-        for o in orders.into_iter() {
-            let buy = try!(o.buying_crypto_id.get(db));
-            let sell = try!(o.buying_fiat_id.get(db));
-            settlements.push(domain::OrderSettlement {
-                id: o.id,
-                started_at: DateTime::from_utc(o.started_at, Utc),
-                settled_at: o.settled_at.map(|d| DateTime::from_utc(o.started_at, Utc)),
-                starting_user: o.starting_user,
-                settlement_status: o.status,
-                buying_order: buy,
-                selling_order: sell,
-            });
-        }
-        Ok(settlements)
+        const SQL: &'static str = "
+            SELECT *, id as order_settlement_id
+            FROM order_settlement 
+            WHERE id = $1";
+        PostgresHelperImpl::query(db, SQL, &[&self])
     }
+}
 
-    /*fn get<H: GenericConnection>(&self, db: &mut H) -> Result<domain::OrderSettlement, CambioError> {
-        match self.get_option(db) {
-            Ok(Some(order_settlement)) => Ok(order_settlement),
-            Ok(None) => Err(CambioError::not_found_search(
-                "Settlement with that ID could not be found.",
-                "No matches for a settlement with that ID.",
-            )),
-            Err(err) => Err(err),
-        }
-    }
-
-    fn get_option<H: GenericConnection>(
+impl Readable<domain::OrderSettlement> for domain::OrderId {
+    fn get_vec<H: GenericConnection>(
         &self,
         db: &mut H,
-    ) -> Result<Option<domain::OrderSettlement>, CambioError> {
-        const SELECT: &'static str = "SELECT * FROM order_settlement WHERE id = $1";
-        let result: Option<SettlementRow> = try!(PostgresHelperImpl::query(db, SELECT, &[&self.0])).pop();
-        match result {
-            Some(row) => {
-                let buying_crypto: domain::Order = try!(row.buying_crypto_id.get(db));
-                let selling_crypto: domain::Order = try!(row.selling_crypto_id.get(db));
-                Ok(Some(domain::OrderSettlement {
-                    id: Some(self.clone()),
-                    started_at: row.started_at,
-                    settled_at: row.settled_at,
-                    starting_user: row.starting_user,
-                    settlement_status: row.settlement_status,
-                    buying_order: buying_crypto,
-                    selling_order: selling_crypto,
-                }))
-            }
-            None => Ok(None),
-        }
-    }*/
+    ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+        const SQL: &'static str = "SELECT id 
+            FROM order_settlement 
+            WHERE buying_crypto_id = $1 OR buying_fiat_id = $1";
+        PostgresHelperImpl::query(db, SQL, &[&self])
+    }
 }
 
 impl Readable<domain::Registration> for domain::RegistrationId {

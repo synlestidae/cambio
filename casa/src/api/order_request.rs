@@ -2,6 +2,7 @@ use chrono::Duration;
 use chrono::prelude::*;
 use domain::BigInteger;
 use domain::CryptoType;
+use domain::ByteAddress;
 use domain::CurrencyCode;
 use domain::Decimal;
 use domain::Order;
@@ -16,10 +17,17 @@ pub struct OrderRequest {
     pub amount_fiat: Decimal,
     pub amount_crypto: BigInteger,
     pub is_buy: bool,
-    pub minutes_active: u32
+    pub minutes_active: u32,
+    pub minutes_to_settle: u32,
+    pub pledge: Decimal,
+    pub address: ByteAddress
 }
 
 impl OrderRequest {
+    pub fn is_fair(&self, other: &Order) -> bool {
+        self.clone().into_order(OwnerId(0)).is_fair(other)
+    }
+
     pub fn into_order(self, owner_id: OwnerId) -> Order {
         let trade_type = if self.is_buy {
             TradeType::BuyCrypto
