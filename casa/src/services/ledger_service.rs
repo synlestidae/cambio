@@ -39,7 +39,8 @@ impl LedgerService {
                         journal_from.debit as value, 
                         journal_from.transaction_time, 
                         journal_from.accounting_period as accounting_period_id,
-                        journal_to.balance as balance_to_account
+                        journal_to.balance as balance_to_account,
+                        journal_from.balance as balance_from_account
                     FROM 
                         journal journal_from,
                         journal journal_to

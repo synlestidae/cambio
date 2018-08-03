@@ -24,15 +24,11 @@ impl From<U256> for BigInteger {
     }
 }
 
-/*impl<'de> Deserialize<'de> for BigInteger {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let data = U256::deserialize(deserializer)?;
-        Ok(BigInteger(data))
+impl From<u64> for BigInteger {
+    fn from(u: u64) -> Self {
+        BigInteger(U256::from(u))
     }
-}*/
+}
 
 impl Add for BigInteger {
     type Output = Self;

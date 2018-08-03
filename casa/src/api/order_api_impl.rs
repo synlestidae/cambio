@@ -42,15 +42,17 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    pub fn create_order<D: GenericConnection>(
+    pub fn create_order(
         &self,
-        db: &mut D,
+        //db: &mut D,
         order: &api::OrderRequest,
         email_address: &str,
     ) -> Result<domain::Order, CambioError> {
-        let user: domain::User = Readable::get(email_address, db)?;
+        let mut tx = self.db.transaction()?;
+        let user: domain::User = Readable::get(email_address, &mut tx)?;
         let user_id = user.id.unwrap();
-        let placed_order = self.order_service.place_order(db, user_id, order)?;
+        let placed_order = self.order_service.place_order(&mut tx, user_id, order)?;
+        tx.commit()?;
         Ok(placed_order)
     }
 
@@ -102,7 +104,7 @@ impl<C: GenericConnection> OrderApiImpl<C> {
     ) -> iron::Response {
         let unauth_resp = api::ApiError::from(db::CambioError::unauthorised());
         let mut db_tx = self.db.transaction().unwrap();
-        match self.create_order(&mut db_tx, &order, &user.email_address) {
+        match self.create_order(&order, &user.email_address) {
             Ok(order) => {
                 db_tx.commit();
                 utils::to_response(Ok(order))
@@ -122,10 +124,12 @@ impl<C: GenericConnection> OrderApiImpl<C> {
                 "A sell order must be completed with a buy order", 
                 "Counterparty order retrieved in complete_sell_order is a buy order"));
         }
-        self.settlement_service.init_settlement_of_sell(&mut self.db,
+        let settlement = self.settlement_service.init_settlement_of_sell(&mut self.db,
             &counterparty_order,
             &user,
             &trade_request.order_request)?;
+
+        println!("Is settled {:?}", settlement);
 
         Ok(())
     }

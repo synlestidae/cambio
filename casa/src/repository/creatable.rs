@@ -276,11 +276,10 @@ impl Creatable for domain::OrderSettlement {
             ));
         }
         const SQL: &'static str = "INSERT INTO order_settlement(
-                transaction_id,
                 starting_user,
                 buying_crypto_id,
                 buying_fiat_id
-            ) VALUES (NULL, $1, $2, $3)
+            ) VALUES ($1, $2, $3)
             RETURNING id
         ";
         let settlement = try!(db.query(
