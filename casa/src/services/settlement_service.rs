@@ -35,7 +35,7 @@ impl SettlementService {
         user: &User,
         counterparty_order: &Order,
         request: &OrderRequest) -> Result<OrderSettlement, CambioError> {
-        let tx = &mut db.transaction()?;
+        let mut tx = db.transaction()?;
         if !request.is_fair(counterparty_order) {
             return Err(CambioError::unfair_operation(
                 "Order request is not compatible with counterparty's order", 
@@ -44,7 +44,7 @@ impl SettlementService {
         }
 
         let user_id = user.id.unwrap();
-        let criteria: SettlementCriteria = counterparty_order.id.unwrap().get(tx)?;
+        let criteria: SettlementCriteria = counterparty_order.id.unwrap().get(&mut tx)?;
 
         // check request meets criteria
         if criteria.pledge_amount != request.pledge {
@@ -61,30 +61,28 @@ impl SettlementService {
 
         // update criteria to point to the correct eth account
         
-        let eth_account_id = request.address.get_vec(tx)?
+        let eth_account_id = request.address.get_vec(&mut tx)?
             .into_iter()
             .filter(|a| a.owner_id == user.owner_id.unwrap())
             .map(|a| a.id.unwrap())
             .collect::<Vec<EthAccountId>>()
             .pop()
             .ok_or(find_err)?;
-            //.id
-            //.unwrap();
 
-        let account_set = AccountSet::from(user.owner_id.unwrap().get_vec(db)?)?;
+        let account_set = AccountSet::from(user.owner_id.unwrap().get_vec(&mut tx)?)?;
         let (hold_account, amount) = if request.is_buy {
             (account_set.nzd_hold(), counterparty_order.amount_fiat)
         } else {
             (account_set.nzd_pledge_hold(), request.pledge)
         };
-        self.ledger_service.transfer_money(tx, 
+        self.ledger_service.transfer_money(&mut tx, 
             account_set.nzd_wallet(), 
             hold_account,
             AssetType::NZD,
             amount)?;
-        let order = self.order_service.place_order(db, user_id, request)?;
+        let order = self.order_service.place_order(&mut tx, user_id, request)?;
         let settlement = 
-            OrderSettlement::from(user_id, &order, counterparty_order, eth_account_id).create(db)?;
+            OrderSettlement::from(user_id, &order, counterparty_order, eth_account_id).create(&mut tx)?;
         tx.commit()?;
         Ok(settlement)
     }

@@ -123,7 +123,10 @@ impl Handler for ApiHandler {
                     },
                     OrderApiRequest::GetUserOrders => order_api.get_user_orders(&user),
                     OrderApiRequest::PostNewOrder(new_order) => {
-                        order_api.post_new_order(&user, &new_order)
+                        match order_api.post_new_order(&user, &new_order) {
+                            Err(err) => err.into(),
+                            ok_resp => api::utils::to_response(ok_resp),
+                        }
                     }
                     OrderApiRequest::PostBuyOrder(completion_request) => {
                         match order_api.complete_sell_order(&user, &completion_request) {
