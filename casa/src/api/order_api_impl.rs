@@ -43,9 +43,9 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    fn create_order(
+    fn create_order<Co: GenericConnection>(
         &self,
-        db: &mut C,
+        db: &mut Co,
         order: &api::OrderRequest,
         email_address: &str,
     ) -> Result<domain::Order, CambioError> {
