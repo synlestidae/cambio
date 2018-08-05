@@ -122,12 +122,19 @@ export class Api {
         let milliEther = order.ether * 1000;
         let wei = bigInt(milliEther).multiply(WEI_FACTOR);
         let amountFiat = order.dollars.toString();
-        let orderJSON: any = {
+        let address = '0x';
+        for (let i = 0; i < 40; i++) {
+            address = `${address}0`;
+        }
+        let orderJSON = {
             unique_id: order.uniqueId,
-            amount_fiat: amountFiat,
+            amount_fiat: order.dollars,
             amount_crypto: `0x${wei.toString(16)}`,
             is_buy: order.isBuy,
-            minutes_active: order.minutesActive
+            minutes_active: order.minutesActive,
+            minutes_to_settle: 24 * 60,
+            pledge: '5.00',
+            address: address
         };
         return this.makeRequest('/orders/new', 'POST', orderJSON)
             .then((r: Response) => r.json()) 
@@ -135,7 +142,26 @@ export class Api {
     }
 
     public async asyncBuyOrder(order: Order, uniqueId: string): Promise<any> {
-        throw new Error('Not implemented!');
+        let address = '0x';
+        for (let i = 0; i < 40; i++) {
+            address = `${address}0`;
+        }
+        let json = {
+            counterparty_order: order.id,
+            order_request: {
+                unique_id: uniqueId,
+                amount_fiat: order.amountFiat,
+                amount_crypto: order.amountCrypto,
+                is_buy: !order.isBuy,
+                minutes_active: 15,
+                minutes_to_settle: 24 * 60,
+                pledge: '5.00',
+                address: address
+            }
+        };
+        let result = await
+            this.makeRequest(`orders/${order.isBuy? 'buys' : 'sells'}/complete`, 'POST', json);
+        return await result.json();
     }
 
     public async asyncGetActiveOrders(): Promise<Order[]> {
@@ -221,7 +247,7 @@ export class Api {
         if (body && method !== 'GET') {
             let bodyString: string;
             if (typeof body !== 'string') {
-                bodyString = JSON.stringify(body);
+                bodyString = JSON.stringify(body, null, 2);
             } else {
                 bodyString = body;
             }
