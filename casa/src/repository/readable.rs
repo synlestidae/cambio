@@ -128,7 +128,8 @@ impl Readable<domain::EthAccount> for domain::OwnerId {
             SELECT *
             FROM ethereum_account_details
             WHERE owner_id = $1";
-        PostgresHelperImpl::query(db, SELECT_BY_OWNER, &[self])
+        let result = PostgresHelperImpl::query(db, SELECT_BY_OWNER, &[self])?;
+        Ok(result)
     }
 }
 
@@ -203,8 +204,9 @@ impl Readable<domain::EthAccount> for domain::ByteAddress {
         &self,
         db: &mut H,
     ) -> Result<Vec<domain::EthAccount>, CambioError> {
-        const SELECT_BY_ADDRESS: &'static str = "SELECT * FROM ethereum_account_details WHERE address = $1";
-        PostgresHelperImpl::query(db, SELECT_BY_ADDRESS, &[self])
+        const SELECT_BY_ADDRESS: &'static str = "SELECT * FROM ethereum_account_details";// WHERE encode(address, 'escape') = encode($1, 'escape')";
+        let result = PostgresHelperImpl::query(db, SELECT_BY_ADDRESS, &[])?;
+        Ok(result)
     }
 }
 
