@@ -86,10 +86,10 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["orders", "new"] => {
                 ApiRequest::Order(OrderApiRequest::PostNewOrder(try!(get_api_obj(request))))
             }
-            &["orders", "sells", "trade"] => {
+            &["orders", "sells", "complete"] => {
                 ApiRequest::Order(OrderApiRequest::PostBuyOrder(try!(get_api_obj(request))))
             }
-            &["orders", "buys", "trade"] => {
+            &["orders", "buys", "complete"] => {
                 ApiRequest::Order(OrderApiRequest::PostSellOrder(try!(get_api_obj(request))))
             }
             &["accounts"] => ApiRequest::Account(AccountRequest::GetAccounts),
