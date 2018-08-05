@@ -228,7 +228,7 @@ impl Readable<domain::OrderSettlement> for domain::OrderId {
         &self,
         db: &mut H,
     ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
-        const SQL: &'static str = "SELECT id 
+        const SQL: &'static str = "SELECT * 
             FROM order_settlement 
             WHERE buying_crypto_id = $1 OR buying_fiat_id = $1";
         PostgresHelperImpl::query(db, SQL, &[&self])
