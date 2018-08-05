@@ -405,7 +405,10 @@ impl Readable<domain::SettlementCriteria> for domain::OrderId {
         &self,
         db: &mut T,
     ) -> Result<Vec<domain::SettlementCriteria>, CambioError> {
-        unimplemented!("Readable<SettlementCriteria>")
+        const SQL: &'static str = 
+            "SELECT * FROM settlement_criteria WHERE order_id = $1";
+        PostgresHelperImpl::query(db, SQL, &[self])
+
     }
 }
 
@@ -414,7 +417,9 @@ impl Readable<domain::SettlementTransaction> for domain::OrderSettlementId {
         &self,
         db: &mut T,
     ) -> Result<Vec<domain::SettlementTransaction>, CambioError> {
-        unimplemented!("Readable<SettlementTransaction>")
+        const SQL: &'static str = 
+            "SELECT * FROM settlement_criteria WHERE id = $1";
+        PostgresHelperImpl::query(db, SQL, &[self])
     }
 }
 

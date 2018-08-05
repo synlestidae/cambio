@@ -15,8 +15,8 @@ impl Updateable for domain::OrderSettlement {
     fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
         if let Some(id) = self.id {
             const UPDATE_SETTLEMENT: &'static str =
-                "UPDATE order_settlement SET status = $2 WHERE id = $1;";
-            try!(db.execute(UPDATE_SETTLEMENT, &[&self.id, &self.settlement_status]));
+                "UPDATE order_settlement SET status = $2, eth_account = $3 WHERE id = $1;";
+            try!(db.execute(UPDATE_SETTLEMENT, &[&self.id, &self.status, &self.eth_account]));
             id.get(db)
         } else {
             Err(CambioError::format_obj(

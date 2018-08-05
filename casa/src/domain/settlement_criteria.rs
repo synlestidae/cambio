@@ -9,6 +9,7 @@ use db::TryFromRowError;
 pub struct SettlementCriteria {
     pub order_id: OrderId,
     pub time_limit_minutes: i32,
+    #[column_id(pledge_amount_cents)]
     pub pledge_amount: Decimal,
     pub from_account: Option<EthAccountId>,
     pub to_account: Option<EthAccountId>

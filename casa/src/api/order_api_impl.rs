@@ -43,20 +43,6 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         }
     }
 
-    fn create_order<Co: GenericConnection>(
-        &self,
-        db: &mut Co,
-        order: &api::OrderRequest,
-        email_address: &str,
-    ) -> Result<domain::Order, CambioError> {
-        let mut tx = self.db.transaction()?;
-        let user: domain::User = Readable::get(email_address, &mut tx)?;
-        let user_id = user.id.unwrap();
-        let placed_order = self.order_service.place_order(&mut tx, user_id, order)?;
-        tx.commit()?;
-        Ok(placed_order)
-    }
-
     pub fn get_active_orders(&mut self) -> iron::Response {
         let order_result = domain::All.get_vec(&mut self.db);
         match order_result {
@@ -131,16 +117,17 @@ impl<C: GenericConnection> OrderApiImpl<C> {
 
 
     pub fn complete_buy_order(&mut self, user: &domain::User, completion_request: &api::OrderCompletionRequest) -> Result<(), CambioError> {
-        let tx = &mut self.db.transaction()?;
-        let counterparty_order: Order = completion_request.counterparty_order.get(tx)?;
+        let mut tx = self.db.transaction()?;
+        let counterparty_order: Order = completion_request.counterparty_order.get(&mut tx)?;
         self.check_order(user.owner_id.unwrap(), 
             &counterparty_order, 
             &completion_request.order_request)?;
-        self.settlement_service.init_settlement(tx,
+        self.settlement_service.init_settlement(&mut tx,
             user,
             &counterparty_order,
             &completion_request.order_request
         )?;
+        tx.commit()?;
         Ok(())
     }
 
@@ -156,5 +143,19 @@ impl<C: GenericConnection> OrderApiImpl<C> {
             panic!("Offer is not fair");
         }
         Ok(()) 
+    }
+
+    fn create_order<Co: GenericConnection>(
+        &self,
+        db: &mut Co,
+        order: &api::OrderRequest,
+        email_address: &str,
+    ) -> Result<domain::Order, CambioError> {
+        let mut tx = db.transaction()?;
+        let user: domain::User = Readable::get(email_address, &mut tx)?;
+        let user_id = user.id.unwrap();
+        let placed_order = self.order_service.place_order(&mut tx, user_id, order)?;
+        tx.commit()?;
+        Ok(placed_order)
     }
 }

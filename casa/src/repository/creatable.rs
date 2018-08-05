@@ -308,7 +308,16 @@ impl Creatable for domain::SettlementCriteria {
     type Id = domain::OrderId;
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        unimplemented!("Creatable<SettlementCriteria>")
+        const SQL: &'static str = "INSERT INTO settlement_criteria
+            (order_id, time_limit_minutes, pledge_amount_cents, from_account, to_account)
+            VALUES ($1, $2, $3, $4, $5) RETURNING order_id";
+        Ok(db.query(SQL, &[
+            &self.order_id,
+            &self.time_limit_minutes,
+            &self.pledge_amount,
+            &self.from_account,
+            &self.to_account
+        ])?)
     }
 }
 
@@ -316,6 +325,20 @@ impl Creatable for domain::SettlementTransaction {
     type Id = domain::OrderSettlementId;
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
-        unimplemented!("Creatable<SettlementTransaction>")
+        const SQL: &'static str = "INSERT INTO settlement_transaction(
+            settlement_id,
+            from_address, 
+            to_address,
+            amount_wei,
+            blockchain_due_datetime)
+        VALUES ($1, $2, $3, $5, $5)
+        RETURNING id";
+        Ok(db.query(SQL, &[
+            &self.settlement_id,
+            &self.from_address,
+            &self.to_address,
+            &self.amount_wei,
+            &self.blockchain_due_datetime
+        ])?)
     }
 }
