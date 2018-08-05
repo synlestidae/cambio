@@ -21,27 +21,50 @@ fn test_places_sell_order() {
 
 #[test]
 fn test_creates_settlement_for_sell() {
+    use web3::types::H160;
     const JACK: &'static str = "jack@theoffice.com";
     const JOHN: &'static str = "john@theoffice.com";
     let jack = create_user(JACK, 2000);
     let john = create_user(JOHN, 2000);
+    let jack_test_address = ByteAddress::from(H160::random());
+    let john_test_address = ByteAddress::from(H160::random());
+    let john_eth_account = EthAccount {
+        id: None,
+        address: john_test_address.clone(),
+        name: "Test Eth Account".to_owned(),
+        owner_id: john.owner_id.unwrap()
+    };
+    let jack_eth_account = EthAccount {
+        id: None,
+        address: jack_test_address.clone(),
+        name: "Test Eth Account".to_owned(),
+        owner_id: jack.owner_id.unwrap()
+    };
+    let mut db = get_db_connection();
+    john_eth_account.create(&mut db).unwrap();
+    jack_eth_account.create(&mut db).unwrap();
     let jack_order = place_order(JACK, 0xFFFFFFFF, 20, false);
     let mut order_api = OrderApiImpl::new(get_db_connection());
-    order_api.complete_sell_order(&john, &TradeRequest {
+    order_api.complete_sell_order(&john, &OrderCompletionRequest{
         counterparty_order: jack_order.id.unwrap(),
         order_request: OrderRequest {
             unique_id: format!("jack_order"),
             amount_fiat: Decimal::from_dollars(20),
             amount_crypto: (0xFFFFFFFF).into(),
             is_buy: true,
-            minutes_active: 15
+            minutes_active: 15,
+            minutes_to_settle: 60 * 24,
+            pledge: Decimal::from_dollars(5),
+            address: john_test_address.clone()
         }
     }).unwrap();
 }
 
 fn place_order(who: &str, wei: u64, dollars: u64, is_buy: bool) -> Order {
+    use web3::types::H160;
     let mut order_api = OrderApiImpl::new(get_db_connection());
     let mut db = get_db_connection();
+    let user = Readable::get(who, &mut db).unwrap(); 
     let request = OrderRequest {
         unique_id: format!("test_{}_{}_{}_{}", who, wei, dollars, is_buy), 
         amount_fiat: Decimal::from_dollars(dollars as i64),
@@ -50,10 +73,9 @@ fn place_order(who: &str, wei: u64, dollars: u64, is_buy: bool) -> Order {
         minutes_active: 15,
         minutes_to_settle: 60 * 2,
         pledge: Decimal::from_dollars(5),
-        address: unimplemented!()
+        address: ByteAddress::from(H160::random())
     };
-    //order_api.post_new_order(&request, who).unwrap()
-    unimplemented!()
+    order_api.post_new_order(&user, &request).unwrap()
 }
 
 fn create_user(email: &str, dollars: i64) -> User {

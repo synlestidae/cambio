@@ -49,9 +49,9 @@ CREATE TABLE settlement_criteria (
     id SERIAL PRIMARY KEY,
     order_id SERIAL REFERENCES asset_order(id) NOT NULL UNIQUE,
     time_limit_minutes INT NOT NULL,
-    min_pledge_amount_cents BIGINT NOT NULL, 
-    destination_account SERIAL REFERENCES ethereum_account_details(id),
-    source_account SERIAL REFERENCES ethereum_account_details(id),
+    pledge_amount_cents BIGINT NOT NULL, 
+    from_account INTEGER REFERENCES ethereum_account_details(id),
+    to_account INTEGER REFERENCES ethereum_account_details(id),
     CHECK(time_limit_minutes >= 60 AND time_limit_minutes <= 1440)
 );
 
@@ -63,6 +63,7 @@ CREATE TABLE order_settlement (
     status settlement_status NOT NULL DEFAULT 'waiting_eth',
     buying_crypto_id SERIAL NOT NULL REFERENCES asset_order(id),
     buying_fiat_id SERIAL NOT NULL REFERENCES asset_order(id),
+    eth_account SERIAL NOT NULL REFERENCES ethereum_account_details(id),
     CONSTRAINT Settle_only_two_orders UNIQUE(buying_crypto_id, buying_fiat_id)
 );
 

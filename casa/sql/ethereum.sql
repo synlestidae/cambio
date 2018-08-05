@@ -35,7 +35,7 @@ CREATE TABLE eth_transaction (
 
 CREATE TABLE ethereum_account_details (
     id SERIAL PRIMARY KEY,
-    address BYTEA UNIQUE,
+    address BYTEA,
     name TEXT,
     owner_id SERIAL NOT NULL REFERENCES account_owner(id)
 );
