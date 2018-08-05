@@ -4,6 +4,7 @@ use tests::test_utils::*;
 use repository::*;
 use domain::*;
 use api::*;
+use web3::types::H160;
 
 #[test]
 fn test_places_buy_order() {
@@ -26,23 +27,7 @@ fn test_creates_settlement_for_sell() {
     const JOHN: &'static str = "john@theoffice.com";
     let jack = create_user(JACK, 2000);
     let john = create_user(JOHN, 2000);
-    let jack_test_address = ByteAddress::from(H160::random());
-    let john_test_address = ByteAddress::from(H160::random());
-    let john_eth_account = EthAccount {
-        id: None,
-        address: john_test_address.clone(),
-        name: "Test Eth Account".to_owned(),
-        owner_id: john.owner_id.unwrap()
-    };
-    let jack_eth_account = EthAccount {
-        id: None,
-        address: jack_test_address.clone(),
-        name: "Test Eth Account".to_owned(),
-        owner_id: jack.owner_id.unwrap()
-    };
     let mut db = get_db_connection();
-    john_eth_account.create(&mut db).unwrap();
-    jack_eth_account.create(&mut db).unwrap();
     let jack_order = place_order(JACK, 0xFFFFFFFF, 20, false);
     let mut order_api = OrderApiImpl::new(get_db_connection());
     order_api.complete_sell_order(&john, &OrderCompletionRequest{
@@ -55,7 +40,7 @@ fn test_creates_settlement_for_sell() {
             minutes_active: 15,
             minutes_to_settle: 60 * 24,
             pledge: Decimal::from_dollars(5),
-            address: john_test_address.clone()
+            address: get_test_address()
         }
     }).unwrap();
 }
@@ -81,10 +66,22 @@ fn place_order(who: &str, wei: u64, dollars: u64, is_buy: bool) -> Order {
 fn create_user(email: &str, dollars: i64) -> User {
     let mut db = get_db_connection();
     log_in(email, "password123");
+    let test_address = get_test_address();
     let user = Readable::get(email, &mut db).unwrap();
+    let eth_account = EthAccount {
+        id: None,
+        address: test_address.clone(),
+        name: "Test Eth Account".to_owned(),
+        owner_id: user.owner_id.unwrap()
+    };
+    eth_account.create(&mut db).unwrap();
     let ledger_service = LedgerService::new();
     let account_set = AccountSet::from(user.owner_id.unwrap().get_vec(&mut db).unwrap()).unwrap();
     let poli = PaymentVendor::Poli.get(&mut db).unwrap();
     ledger_service.transfer_money(&mut db, poli, account_set.nzd_wallet(), AssetType::NZD, Decimal::from_dollars(dollars)).unwrap();
     user
+}
+
+fn get_test_address() -> ByteAddress {
+    ByteAddress::from(H160::from_slice(&[0; 40]))
 }
