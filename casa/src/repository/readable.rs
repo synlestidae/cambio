@@ -10,6 +10,7 @@ use postgres::GenericConnection;
 use repository;
 use repository::RepoRead;
 use repository::UserClause;
+use base64;
 
 // suppose I just want an easy way to retrieve the owner id from the user
 // then i implement retrievable where the Item is a User, the c
@@ -204,8 +205,14 @@ impl Readable<domain::EthAccount> for domain::ByteAddress {
         &self,
         db: &mut H,
     ) -> Result<Vec<domain::EthAccount>, CambioError> {
-        const SELECT_BY_ADDRESS: &'static str = "SELECT * FROM ethereum_account_details";// WHERE encode(address, 'escape') = encode($1, 'escape')";
-        let result = PostgresHelperImpl::query(db, SELECT_BY_ADDRESS, &[])?;
+        use web3::types::H160;
+        const SELECT_BY_ADDRESS: &'static str = "SELECT * FROM ethereum_account_details WHERE encode(address, 'base64') = $1";
+        let h160: H160 = self.clone().into();
+        let mut vec = Vec::new();
+        vec.resize(20usize, 0u8); 
+        h160.copy_to(&mut vec);
+        let encoded = base64::encode(&vec);
+        let result = PostgresHelperImpl::query(db, SELECT_BY_ADDRESS, &[&encoded])?;
         Ok(result)
     }
 }

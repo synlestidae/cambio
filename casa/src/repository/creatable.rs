@@ -265,8 +265,9 @@ impl Creatable for domain::OrderSettlement {
         const SQL: &'static str = "INSERT INTO order_settlement(
                 starting_user,
                 buying_crypto_id,
-                buying_fiat_id
-            ) VALUES ($1, $2, $3)
+                buying_fiat_id,
+                eth_account
+            ) VALUES ($1, $2, $3, $4)
             RETURNING id
         ";
         let rows = db.query(
@@ -274,7 +275,8 @@ impl Creatable for domain::OrderSettlement {
             &[
                 &self.starting_user,
                 &self.buying_crypto_id,
-                &self.buying_fiat_id
+                &self.buying_fiat_id,
+                &self.eth_account
             ]
         )?;
         Ok(rows)

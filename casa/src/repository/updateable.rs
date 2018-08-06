@@ -103,7 +103,7 @@ impl Updateable for domain::PoliPaymentRequest {
 
 impl Updateable for domain::Order {
     fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
-        const SQL: &'static str = "UPDATE asset_order SET order_status = $2 WHERE id = $1;";
+        const SQL: &'static str = "UPDATE asset_order SET status = $2 WHERE id = $1;";
         const SQL_ORDER_CHANGE: &'static str = 
             "INSERT INTO order_changes(order_id, field_name, old_value, new_value) 
             VALUES ($1, 'status', $2, $3)";

@@ -82,7 +82,7 @@ impl LedgerService {
             );
         }
 
-        tx.commit();
+        tx.commit()?;
         Ok(transaction)
     }
 }

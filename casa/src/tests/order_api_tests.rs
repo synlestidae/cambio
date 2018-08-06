@@ -33,20 +33,51 @@ fn test_creates_settlement_for_sell() {
 
 #[test]
 fn test_settlement_state() {
-    const JERRY: &'static str = "jerry@theoffice.com";
+    make_and_test_settlement("jerry@theoffice.com", "jesus@theoffice.com", true);
+    make_and_test_settlement("dwight@theoffice.com", "janet@theoffice.com", false);
+    /*const JERRY: &'static str = "jerry@theoffice.com";
     const JESUS: &'static str = "jesus@theoffice.com";
-    let jack = create_user(JERRY, 2000);
-    let john = create_user(JESUS, 2000);
+    let jerry = create_user(JERRY, 2000);
+    let jesus = create_user(JESUS, 2000);
     let mut db = get_db_connection();
     let jerry_order = place_order(JERRY, 0xFFFFFFFF, 20, false);
     make_settlement(JESUS, jerry_order.id.unwrap());
     let settlement: OrderSettlement = jerry_order.id.unwrap().get(&mut db).unwrap();
     let updated_order: Order = jerry_order.id.unwrap().get(&mut db).unwrap();
     let eth_account: EthAccount = settlement.eth_account.get(&mut db).unwrap();
-    let h160: H160 = eth_account.address.into();
+
     assert_eq!(SettlementStatus::WaitingEth, settlement.status);
+    assert_eq!(None, settlement.settled_at);
+    assert_eq!(user.id, Some(settlement.starting_user));
+    assert_eq!(jerry_order.id, Some(buying_crpyto_id);
+    assert_eq!(jesus.owner_id, Some(eth_account.owner_id));
+
     assert_eq!(OrderStatus::Settling, updated_order.status);
-    assert_eq!(h160.low_u64(), Readable::get(JESUS, &mut db).unwrap().id.unwrap().0 as u64);
+
+    let h160: H160 = eth_account.address.into();
+    assert_eq!(Some(h160.low_u64()), jesus.owner_id.map(|o| o as u64));*/
+}
+
+fn make_and_test_settlement(person1: &str, person2: &str, is_buy: bool) {
+    let jerry = create_user(person1, 2000);
+    let jesus = create_user(person2, 2000);
+    let mut db = get_db_connection();
+    let jerry_order = place_order(person1, 0xFFFFFFFF, 20, false);
+    make_settlement(person2, jerry_order.id.unwrap());
+    let settlement: OrderSettlement = jerry_order.id.unwrap().get(&mut db).unwrap();
+    let updated_order: Order = jerry_order.id.unwrap().get(&mut db).unwrap();
+    let eth_account: EthAccount = settlement.eth_account.get(&mut db).unwrap();
+
+    assert_eq!(SettlementStatus::WaitingEth, settlement.status);
+    assert_eq!(None, settlement.settled_at);
+    assert_eq!(jesus.id, Some(settlement.starting_user));
+    //assert_eq!(jerry_order.id, Some(buying_crpyto_id));
+    assert_eq!(jesus.owner_id, Some(eth_account.owner_id));
+
+    assert_eq!(OrderStatus::Settling, updated_order.status);
+
+    let h160: H160 = eth_account.address.into();
+    assert_eq!(Some(h160.low_u64()), jesus.owner_id.map(|o| o.0 as u64));
 }
 
 fn make_settlement(settler: &str, order_id: OrderId) {
@@ -87,7 +118,7 @@ fn place_order(who: &str, wei: u64, dollars: u64, is_buy: bool) -> Order {
         minutes_active: 15,
         minutes_to_settle: 60 * 2,
         pledge: Decimal::from_dollars(5),
-        address: ByteAddress::from(H160::random())
+        address: get_test_address(user.id.unwrap())
     };
     order_api.post_new_order(&user, &request).unwrap()
 }
@@ -100,7 +131,7 @@ fn create_user(email: &str, dollars: i64) -> User {
     let eth_account = EthAccount {
         id: None,
         address: test_address.clone(),
-        name: "Test Eth Account".to_owned(),
+        name: format!("Test Eth Account for {}", email),
         owner_id: user.owner_id.unwrap()
     };
     eth_account.create(&mut db).unwrap();

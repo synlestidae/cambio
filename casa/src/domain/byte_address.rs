@@ -41,6 +41,7 @@ impl FromSql for ByteAddress {
 impl ToSql for ByteAddress {
     fn to_sql(&self, ty: &Type, out: &mut Vec<u8>) -> Result<IsNull, Box<Error + 'static + Send + Sync>> {
         let mut sql_array = Vec::new();
+        sql_array.resize(20usize, 0u8);
         self.0.copy_to(&mut sql_array);
         let val = sql_array.to_sql(ty, out);
         val
@@ -52,6 +53,7 @@ impl ToSql for ByteAddress {
 
     fn to_sql_checked(&self, ty: &Type, out: &mut Vec<u8>) -> Result<IsNull, Box<Error + 'static + Send + Sync>> {
         let mut sql_array = Vec::new();
+        sql_array.resize(20usize, 0u8);
         self.0.copy_to(&mut sql_array);
         sql_array.to_sql_checked(ty, out)
     }
