@@ -18,7 +18,7 @@ pub struct OrderSettlement {
 }
 
 impl OrderSettlement {
-    pub fn from(user_id: UserId, buy_order: &Order, sell_order: &Order, eth_account: EthAccountId) -> Self {
+    pub fn from(user_id: UserId, buy_order: &Order, sell_order: &Order, eth_account_id: EthAccountId) -> Self {
         OrderSettlement {
             id: None,
             started_at: Utc::now(),
@@ -27,7 +27,7 @@ impl OrderSettlement {
             status: SettlementStatus::WaitingEth,
             buying_crypto_id: buy_order.id.unwrap(),
             buying_fiat_id: sell_order.id.unwrap(),
-            eth_account: eth_account
+            eth_account: eth_account_id.clone()
         }
     }
 }

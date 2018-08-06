@@ -60,14 +60,14 @@ impl SettlementService {
         );
 
         // update criteria to point to the correct eth account
-        
-        let eth_account_id = request.address.get_vec(&mut tx)?
+        let eth_account = request.address.get_vec(&mut tx)?
             .into_iter()
             .filter(|a| a.owner_id == user.owner_id.unwrap())
-            .map(|a| a.id.unwrap())
-            .collect::<Vec<EthAccountId>>()
+            //.map(|a| a.id.unwrap())
+            .collect::<Vec<EthAccount>>()
             .pop()
             .ok_or(find_err)?;
+        let eth_account_id = eth_account.id.unwrap();
 
         let account_set = AccountSet::from(user.owner_id.unwrap().get_vec(&mut tx)?)?;
         let (hold_account, amount) = if request.is_buy {
@@ -80,9 +80,16 @@ impl SettlementService {
             hold_account,
             AssetType::NZD,
             amount)?;
-        let order = self.order_service.place_order(&mut tx, user_id, request)?;
-        let settlement = 
+
+        let mut order = self.order_service.place_order(&mut tx, user_id, request)?;
+        let mut updated_cp_order: Order = counterparty_order.id.unwrap().get(&mut tx)?;
+        order.begin_settling();
+        updated_cp_order.begin_settling();
+        order.update(&mut tx)?;
+        updated_cp_order.update(&mut tx)?;
+        let mut settlement = 
             OrderSettlement::from(user_id, &order, counterparty_order, eth_account_id).create(&mut tx)?;
+        settlement.eth_account = eth_account_id;
         tx.commit()?;
         Ok(settlement)
     }

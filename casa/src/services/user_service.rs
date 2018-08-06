@@ -106,7 +106,7 @@ impl UserService {
         let profile = personal_details.clone().into_profile(user.id.unwrap());
         let new_profile = try!(profile.create(&mut db_tx));
 
-        db_tx.commit();
+        db_tx.commit()?;
         Ok(user)
     }
 

@@ -45,4 +45,10 @@ impl Order {
     pub fn is_buy(&self) -> bool {
         self.trade_type == TradeType::BuyCrypto
     }
+
+    pub fn begin_settling(&mut self) {
+        if self.status == OrderStatus::Active {
+            self.status = OrderStatus::Settling;
+        }
+    }
 }
