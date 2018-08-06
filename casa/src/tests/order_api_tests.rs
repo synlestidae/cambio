@@ -35,27 +35,29 @@ fn test_creates_settlement_for_sell() {
 fn test_settlement_state() {
     make_and_test_settlement("jerry@theoffice.com", "jesus@theoffice.com", true);
     make_and_test_settlement("dwight@theoffice.com", "janet@theoffice.com", false);
-    /*const JERRY: &'static str = "jerry@theoffice.com";
-    const JESUS: &'static str = "jesus@theoffice.com";
-    let jerry = create_user(JERRY, 2000);
-    let jesus = create_user(JESUS, 2000);
-    let mut db = get_db_connection();
-    let jerry_order = place_order(JERRY, 0xFFFFFFFF, 20, false);
-    make_settlement(JESUS, jerry_order.id.unwrap());
-    let settlement: OrderSettlement = jerry_order.id.unwrap().get(&mut db).unwrap();
-    let updated_order: Order = jerry_order.id.unwrap().get(&mut db).unwrap();
-    let eth_account: EthAccount = settlement.eth_account.get(&mut db).unwrap();
+}
 
-    assert_eq!(SettlementStatus::WaitingEth, settlement.status);
-    assert_eq!(None, settlement.settled_at);
-    assert_eq!(user.id, Some(settlement.starting_user));
-    assert_eq!(jerry_order.id, Some(buying_crpyto_id);
-    assert_eq!(jesus.owner_id, Some(eth_account.owner_id));
+#[test]
+fn test_denied_account_not_exist() {
+    let user = create_user("nathan@theoffice.com", 2000);
+    let mut order_api = OrderApiImpl::new(get_db_connection());
+    let address = ByteAddress::from(H160::random());
+    let eth_account = EthAccount::new("Test Nathan", &address, user.owner_id.unwrap()); 
 
-    assert_eq!(OrderStatus::Settling, updated_order.status);
+    let request = OrderRequest {
+        unique_id: "empty_wei_order".to_owned(),
+        amount_fiat: Decimal::from_dollars(10),
+        amount_crypto: (0xFFFFFFFFFFFF).into(),
+        is_buy: true,
+        minutes_active: 15,
+        minutes_to_settle: 60 * 2,
+        pledge: Decimal::from_dollars(5),
+        address: eth_account.address.clone()
+    };
 
-    let h160: H160 = eth_account.address.into();
-    assert_eq!(Some(h160.low_u64()), jesus.owner_id.map(|o| o as u64));*/
+    assert!(order_api.post_new_order(&user, &request).is_err());
+    eth_account.create(&mut get_db_connection()).unwrap();
+    assert!(order_api.post_new_order(&user, &request).is_ok());
 }
 
 fn make_and_test_settlement(person1: &str, person2: &str, is_buy: bool) {

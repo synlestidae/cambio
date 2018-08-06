@@ -14,3 +14,14 @@ pub struct EthAccount {
     pub name: String,
     pub owner_id: OwnerId,
 }
+
+impl EthAccount {
+    pub fn new(name: &str, address: &ByteAddress, owner_id: OwnerId) -> Self {
+        Self {
+            id: None,
+            address: address.clone(),
+            name: name.to_string(),
+            owner_id: owner_id,
+        }
+    }
+}
