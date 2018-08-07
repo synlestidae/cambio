@@ -22,7 +22,7 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
     let formState = props.signupState.formState;
 
     if (formState == 'LoginInfo') {
-        header = 'Enter your login credentials';
+        header = 'Choose your login credentials';
         elems = [
             new TextFieldElement('emailAddress', signupState, 'Email Address', 'email'),
             new TextFieldElement('password', signupState, 'Password', 'password'),

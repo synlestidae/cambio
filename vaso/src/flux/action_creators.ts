@@ -139,8 +139,8 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'unique_id', uniqueId));
     }
 
-    public setSignupFormValue(field: string, value: string) {
-        this.dispatch(new BasicAction('SET_SIGNUP_FORM_VALUE', field, value));
+    public setSignupState(signupState: SignupState) {
+        this.dispatch(new BasicAction('SET_SIGNUP_STATE', null, signupState));
     }
 
     public clearDirtyValue(field: string) {

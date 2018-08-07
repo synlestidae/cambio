@@ -68,7 +68,7 @@ function FieldInputComponent(props: {fieldElement: FieldElement, formDisabled: b
     }
     let val = fieldElem.getValue();
     return <div className="form-group">
-        <label htmlFor={fieldElem.getName()}>{fieldElem.getLabel()}</label>
+        <label className="form-label" htmlFor={fieldElem.getName()}>{fieldElem.getLabel()}</label>
         <input 
             className="form-control" 
             type={fieldElem.getType()} 

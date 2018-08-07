@@ -3,7 +3,7 @@ import {CalendarDate} from '../../domain/calendar_date';
 export type FormState = 'LoginInfo' | 'PersonalDetails' | 'ConfirmationCode';
 
 export class SignupState {
-    formState: FormState;
+    formState: FormState = 'LoginInfo';
     // Signup info
     emailAddress: string = '';
     password: string = '';

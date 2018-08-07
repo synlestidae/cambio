@@ -2,8 +2,10 @@ import * as React from "react";
 import {LoginPage} from './flux/state/login_page';
 import {Action} from './flux/action';
 import {ActionCreators} from './flux/action_creators';
-import {buildSignupForm} from './build_signup_form';
 import {SignupState} from './flux/state/signup_state';
+import {buildSignupForm} from './build_signup_form';
+import {Form} from './form/form';
+import {FormComponent} from './form_component';
 
 interface LoginPageProps {
     page: LoginPage,
@@ -12,13 +14,21 @@ interface LoginPageProps {
 
 export function SignupPage(props: LoginPageProps): JSX.Element {
     return <div className="signup-form">
-        <PageForm {...props}></PageForm>;
+        <PageForm {...props}></PageForm>
     </div>
 }
 
 function PageForm(props: LoginPageProps): JSX.Element {
     if (props.page.isSignup) {
-        return null;
+        console.log('Signup state', props.page);
+        let form = buildSignupForm({
+            signupState: props.page.signupState,
+            actions: props.actions
+        });
+        form.onChange = function() {
+            props.actions.setSignupState(props.page.signupState);
+        };
+        return <FormComponent form={form}/>
     }
     return <LoginForm {...props}></LoginForm>;
 }
@@ -50,3 +60,143 @@ function LoginForm(props: LoginPageProps): JSX.Element {
           </form>
       </div>;
 }
+
+// poop 
+
+function SignupButton(props: SignupState & {actions: ActionCreators} & {form: Form}) {
+    let next = ''
+    let prev = 'Back';
+    let nextPage = '';
+    let allValid = props.form.isValid();
+
+    if (props.formState === 'LoginInfo') {
+        next = 'Add personal details';
+    }
+
+    if (props.formState === 'PersonalDetails') {
+        next = 'Confirm email';
+    }
+
+    if (props.formState === 'ConfirmationCode') {
+        next = 'Finish';
+    }
+
+    const nextFn = function(e: any) { 
+        if (props.formState === 'LoginInfo') {
+            props.actions.sendRegistration(props);
+        }
+        props.actions.nextSignupForm();
+    };
+
+    const prevFn = function(e: any) { 
+        e.preventDefault();
+        props.actions.prevSignupForm();
+    };
+
+    return <div className="form-row">
+        <button onClick={nextFn} className="btn btn-primary btn-block width-initial" disabled={!allValid}>
+          {next}
+        </button>
+        <a href="javascript: void" onClick={prevFn}>{prev}</a> 
+    </div>;
+}
+
+interface LoginButtonProps {
+    isSignup: boolean,
+    emailAddress: string,
+    password: string,
+    actions: ActionCreators
+}
+
+function LoginButton(props: LoginButtonProps) {
+    let text: string;
+    const callback = (e: any) => {
+        e.preventDefault();
+        if (props.isSignup) {
+            props.actions.submitSignup(props.emailAddress, props.password);
+        } else {
+            props.actions.submitLogin(props.emailAddress, props.password);
+        }
+    };
+    if (props.isSignup) {
+        text = 'Create account';
+    } else {
+        text = 'Sign in';
+    }
+    return <button className="btn btn-lg btn-primary btn-block" type="submit" onClick={callback}>
+        {text}
+        </button>;
+}
+
+interface LoginMessageProps {
+    page: LoginPage
+}
+
+function LoginMessage(props: LoginMessageProps) {
+    let loginFailed = props.page.loadingState.name === 'Error';
+    if (loginFailed) {
+        return <div className="form-row error-text">
+            <em>Logging in failed. Check your email address and password and try again.</em>
+        </div>;
+    }
+    return null;
+}
+
+
+interface LoginOptionsProps {
+    actions: ActionCreators,
+    isSignup: boolean
+}
+
+function LoginOptions(props: LoginOptionsProps) {
+    if (props.isSignup) {
+        return <div className="form-row">
+          <a href="javascript: void" onClick={() => props.actions.loginMode()}>I already have an account.</a> 
+        </div>;
+    } else {
+        return <div className="form-row">
+          <span>Don't have an account?</span>
+          <span>
+            <a href="javascript: void" onClick={() => props.actions.signupMode()}>Create one</a>
+          </span>
+        </div>;
+    }
+}
+
+/*function ConfirmEmail(props: LoginPageProps): JSX.Element {
+    let actions = props.actions; 
+    let state = props.page.signupState;
+
+    return (<div className="form-signin"> 
+        <div className="form-row">
+          <div>Enter the 5-digit confirmation code that was emailed to {props.page.signupState.emailAddress}.</div>
+        </div>
+        <div className="form-row">
+          <input 
+              type="text" 
+              maxLength={5} 
+              className="pin-input form-control" 
+              onChange={(e: any) => actions.setConfirmationCode(e.target.value as string)}
+              value={props.page.signupState.confirmationCode} >
+          </input>
+        </div>
+        <div className="form-row side-by-side">
+            <button className="btn width-initial" onClick={() => 
+                actions.resendEmail(state.loginInfo.email_address, state.registrationInfo.identifierCode)
+            }>
+                Resend email
+            </button>
+            <button
+                className="btn btn-primary btn-block width-initial" 
+                onClick={async function() {
+                    await props.actions.confirmRegistration(state);
+                    props.actions.submitLogin(state.signupState.emailAddress, state.signupState.password);
+                }}>
+                Confirm email
+            </button>
+        </div>
+        <div className="form-row">
+            <a href="javascript: void(0)" onClick={() => actions.prevSignupForm()}>Back</a>
+        </div>
+    </div>);
+}*/
