@@ -5,7 +5,7 @@ import {ActionCreators} from './flux/action_creators';
 import {SignupState} from './flux/state/signup_state';
 import {buildSignupForm} from './build_signup_form';
 import {Form} from './form/form';
-import {FormComponent} from './form_component';
+import {SuperFormComponent} from './super_form_component';
 
 interface LoginPageProps {
     page: LoginPage,
@@ -24,13 +24,12 @@ function PageForm(props: LoginPageProps): JSX.Element {
         let form = buildSignupForm({
             signupState: props.page.signupState,
             actions: props.actions
-        });
-        form.onChange = function() {
-            props.actions.setSignupState(props.page.signupState);
-        };
-        return <FormComponent form={form}/>
+        }, () => props.actions.setSignupState(props.page.signupState));
+        return <SuperFormComponent form={form}/>
     }
-    return <LoginForm {...props}></LoginForm>;
+    return <div className="form-signin">
+        <LoginForm {...props}></LoginForm>
+    </div>;
 }
 
 function LoginForm(props: LoginPageProps): JSX.Element {
@@ -63,7 +62,7 @@ function LoginForm(props: LoginPageProps): JSX.Element {
 
 // poop 
 
-function SignupButton(props: SignupState & {actions: ActionCreators} & {form: Form}) {
+/*function SignupButton(props: SignupState & {actions: ActionCreators} & {form: Form}) {
     let next = ''
     let prev = 'Back';
     let nextPage = '';
@@ -99,7 +98,7 @@ function SignupButton(props: SignupState & {actions: ActionCreators} & {form: Fo
         </button>
         <a href="javascript: void" onClick={prevFn}>{prev}</a> 
     </div>;
-}
+}*/
 
 interface LoginButtonProps {
     isSignup: boolean,

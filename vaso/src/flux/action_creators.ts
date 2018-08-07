@@ -11,6 +11,7 @@ import {Order} from '../domain/order';
 import {BoardUpdate} from '../domain/board_update';
 import {PersonalDetails} from '../domain/personal_details';
 import {SignupState} from './state/signup_state';
+import {SignupStateName} from './state/signup_state_name';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -138,6 +139,11 @@ export class ActionCreators {
     public setNewOrderUniqueId(uniqueId: string) {
         this.dispatch(new BasicAction('SET_NEW_ORDER', 'unique_id', uniqueId));
     }
+
+    public setSignupStatePage(formState: SignupStateName) {
+        this.dispatch(new BasicAction('SET_SIGNUP_STATE_PAGE', formState));
+    }
+
 
     public setSignupState(signupState: SignupState) {
         this.dispatch(new BasicAction('SET_SIGNUP_STATE', null, signupState));
