@@ -6,6 +6,7 @@ import {Form} from './form/form';
 import {Section} from './form/section';
 import {SingleForm} from './form/single_form';
 import {TextFieldElement} from './form/text_field_element';
+import {PasswordFieldElement} from './form/password_field_element';
 import {ReadonlyFieldElement} from './form/readonly_field_element';
 import {FieldElement} from './form/field_element';
 import {SuperForm} from './form/super_form';
@@ -65,15 +66,15 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
 function getLoginInfoForm(signupState: SignupState) {
     let loginInfoSection = new Section([
         new TextFieldElement('emailAddress', signupState, 'Email Address', 'email'),
-        new TextFieldElement('password', signupState, 'Password', 'password'),
-        new TextFieldElement('confirmedPassword', signupState, 'Confirm password', 'password'),
+        new PasswordFieldElement('password', signupState, 'Password', 'password'),
+        new PasswordFieldElement('confirmedPassword', signupState, 'Confirm password', 'password'),
     ]);
     return new SingleForm([loginInfoSection], 'Choose your login credentials');
 }
 
 function getPersonalDetailsForm(signupState: SignupState) {
     let personalDetailsSection = new Section([
-        new TextFieldElement('givenName', signupState, 'Given name', 'given-name'),
+        new TextFieldElement('firstName', signupState, 'Given name', 'given-name'),
         new TextFieldElement('familyName', signupState, 'Family name', 'family-name'),
         new TextFieldElement('addressLine1', signupState, 'Address line 1', 'address-line-1'),
         new TextFieldElement('addressLine2', signupState, 'Address line 2', 'address-line-2'),

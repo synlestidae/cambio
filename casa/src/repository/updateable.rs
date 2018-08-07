@@ -39,8 +39,8 @@ impl Updateable for domain::Registration {
                 SET password_hash = $2,
                 SET confirmation_code = $3,
                 SET identifier_code = $4,
-                SET requested_at = $5,
-                SET confirmed_at = $6,
+                SET confirmed_at = $5,
+                SET is_active = $6
             WHERE id = $7
         ";
         let update_result = db.execute(
@@ -50,8 +50,8 @@ impl Updateable for domain::Registration {
                 &self.password_hash,
                 &self.confirmation_code,
                 &self.identifier_code,
-                &self.requested_at,
-                &self.confirmed_at,
+                &self.confirmed_at.map(|d| d.naive_utc()),
+                &self.is_active,
                 &id,
             ],
         );

@@ -97,8 +97,8 @@ pub fn fake_details() -> PersonalDetails {
         city: "Wellington".to_owned(),
         country: "NEW ZEALAND".to_owned(),
         dob: NaiveDate::from_ymd(1990, 11, 11),
-        id_type: "NZ_Passport".to_owned(),
-        id_number: "LM123309".to_owned(),
+        //id_type: "NZ_Passport".to_owned(),
+        //id_number: "LM123309".to_owned(),
     }
 }
 

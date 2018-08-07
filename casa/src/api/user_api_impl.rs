@@ -40,6 +40,14 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn put_register(&mut self, registration: &api::Registration) -> Response {
+        let existing_user_match = match registration.email_address.get_option(&mut self.db) {
+            Ok(op) => op,
+            Err(err) => return err.into()
+        };
+        if let Some(existing_user) = existing_user_match {
+            let entity_name = &format!("User with email {}", existing_user.email_address);
+            return ApiError::already_exists(entity_name).into();
+        }
         // test password requirements
         if registration.password.len() < 8 {
             return ApiError::bad_format("Password needs to be at least 8 characters").into();

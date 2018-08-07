@@ -93,8 +93,8 @@ pub fn log_in(username: &str, password: &str) -> String {
             city: "Newville".to_string(),
             country: "NEW ZEALAND".to_string(),
             dob: NaiveDate::from_ymd(1990, 1, 1),
-            id_type: "NZ_Passport".to_string(),
-            id_number: "LM008381".to_string(),
+            //id_type: "NZ_Passport".to_string(),
+            //id_number: "LM008381".to_string(),
         },
         password,
     );

@@ -72,6 +72,7 @@ export class Api {
                 address_line_2: signupState.addressLine2,
                 post_code: signupState.postCode,
                 city: signupState.city,
+                dob: signupState.dob.getDateString(),
                 country: 'NEW ZEALAND'
             },
             eth_account_password: ''
@@ -212,7 +213,8 @@ export class Api {
         if (!(response.status >= 400)) {
             return response;
         } else {
-            throw response;
+            let errorObj = await response.json();
+            throw new Error(errorObj.desc);
         }
     }
 

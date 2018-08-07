@@ -82,9 +82,9 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 break;
             case 'SET_REGISTRATION_INFO':
                 let regInfo = action.payload;
-                if (regInfo && regInfo.email_address === signupState.emailAddress) { 
-                    if (regInfo.identifier_code) {
-                        signupState.identifierCode = regInfo.identifier_code;
+                if (regInfo && regInfo.emailAddress === signupState.emailAddress) { 
+                    if (regInfo.identifierCode) {
+                        signupState.identifierCode = regInfo.identifierCode;
                     } else {
                         throw new Error('Payload on SET_REGISTRATION_INFO did not haved identifier_code');
                     }

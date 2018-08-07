@@ -93,7 +93,7 @@ impl Creatable for domain::Registration {
 
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const QUERY: &'static str = "
-            INSERT INTO registration(email_address, password_hash, confirmation_code, identifier_code, requested_at, confirmed_at)
+            INSERT INTO registration(email_address, password_hash, confirmation_code, identifier_code, requested_at, expires_at)
             VALUES($1, $2, $3, $4, $5, $6)
             RETURNING id
         ";
@@ -104,8 +104,8 @@ impl Creatable for domain::Registration {
                 &self.password_hash,
                 &self.confirmation_code,
                 &self.identifier_code,
-                &self.requested_at,
-                &self.confirmed_at,
+                &self.requested_at.naive_utc(),
+                &self.expires_at.naive_utc(),
             ],
         );
         match result {

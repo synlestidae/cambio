@@ -169,16 +169,25 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().startLoading()));
         try {
             let registration = await this.api.asyncRegisterUser(signupState.emailAddress, signupState.password);
+            this.dispatch(new BasicAction('SET_REGISTRATION_INFO', null, registration));
         } catch (e) {
-            this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().success()));
+            let errState = new LoadingState().error(e);
+            this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, errState));
+            return;
         }
         this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState()));
-        this.dispatch(new BasicAction('REGISTRATION_STATE', 'Ready'));
         this.setSignupStatePage('PersonalDetails');
     }
 
-    public confirmRegistration(signupState: SignupState) {
-        this.api.asyncConfirmRegistration(signupState);
+    public async confirmRegistration(signupState: SignupState) {
+        this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().startLoading()));
+        try {
+            await this.api.asyncConfirmRegistration(signupState);
+        } catch (e) {
+            this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().error(e)));
+        }
+        this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().success()));
+        this.submitLogin(signupState.emailAddress, signupState.password);
     }
 
     public editNewOrder() {

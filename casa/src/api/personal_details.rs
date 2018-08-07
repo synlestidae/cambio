@@ -11,8 +11,6 @@ pub struct PersonalDetails {
     pub city: String,
     pub country: String,
     pub dob: NaiveDate,
-    pub id_type: String,
-    pub id_number: String,
 }
 
 impl PersonalDetails {
@@ -47,9 +45,7 @@ impl PersonalDetails {
             post_code: profile.address.address_line_3.unwrap(),
             city: profile.address.address_line_4.unwrap(),
             country: profile.address.country_name,
-            dob: profile.date_of_birth,
-            id_type: "".to_owned(),
-            id_number: "".to_owned()
+            dob: profile.date_of_birth
         }
     }
 }

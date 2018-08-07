@@ -23,7 +23,7 @@ export function SuperFormComponent(props: SuperFormComponentProps): JSX.Element 
 }
 
 function FormButtonComponent(props: FormButton) {
-    return <button onClick={() => props.action()} className="btn btn-primary width-initial non-touching-button" disabled={props.disabled}>
+    return <button onClick={() => props.action()} className="btn btn-primary width-initial non-touching-button" disabled={props.disabled || props.loading}>
       {props.loading? <i className="fa fa-spinner fa-spin"></i>  : props.text}
     </button>
 }

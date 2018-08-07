@@ -38,7 +38,9 @@ CREATE TABLE registration (
     confirmation_code VARCHAR(5) NOT NULL,
     identifier_code VARCHAR(20) NOT NULL UNIQUE,
     requested_at TIMESTAMP NOT NULL,
-    confirmed_at TIMESTAMP
+    expires_at TIMESTAMP NOT NULL,
+    confirmed_at TIMESTAMP,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE registration_confirm_email (

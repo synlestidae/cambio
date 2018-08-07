@@ -92,6 +92,10 @@ impl ApiError {
         Self::new(format!("{} not found.", object_name), ErrorType::NotFound)
     }
 
+    pub fn already_exists(object_name: &str) -> Self {
+        Self::new(format!("{} already exists.", object_name), ErrorType::AlreadyExists)
+    }
+
     pub fn not_found_path(path: &str) -> Self {
         Self::new(
             format!("The API path '{}' does not exist.", path),
@@ -136,6 +140,7 @@ pub enum ErrorType {
     MissingFieldOrParam,
     NotFound,
     NotLoggedIn,
+    AlreadyExists,
     QueryResultFormat,
     Unauthorised,
     Unknown,
@@ -144,6 +149,7 @@ pub enum ErrorType {
 impl Into<Status> for ErrorType {
     fn into(self) -> Status {
         match self {
+            ErrorType::AlreadyExists => Status::BadRequest,
             ErrorType::BadFormat => Status::BadRequest,
             ErrorType::BadMethod => Status::MethodNotAllowed,
             ErrorType::DatabaseDriver => Status::InternalServerError,

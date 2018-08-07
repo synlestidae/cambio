@@ -75,21 +75,6 @@ fn get_column_name(field: &syn::Field) -> String {
                 }
             }
         }
-        //println!("ATTO {:?}", attr);
-        /*match attr.path.segments.first() {
-            Some(ref path_segment) => {
-                match path_segment.first() {
-                    Some(ref segment) => {
-                        let path_string = path_segment.ident.clone().to_string();
-                        if path_string == "column_id" {
-                            return path_segment.tts.clone().to_string();
-                        }
-                    },
-                    None = {}
-                }
-            },
-            None => {}
-        }*/
     }
     for attribute in field.attrs.iter() {
         let path_string = attribute.path.clone().into_tokens().to_string();
@@ -133,6 +118,11 @@ fn is_optional(field: &syn::Field) -> bool {
 }
 
 fn get_var_declaration(field_name: &str, column_name: &str, type_name: &str, is_option: bool) -> String {
+    if type_name == "Option < DateTime < Utc > >" {
+        return format!("let {0}_match: Option<NaiveDateTime> = row.get(\"{1}\");
+            let {0} = {0}_match.map(|d| DateTime::from_utc(d, Utc));", 
+            field_name, column_name);
+    }
     if is_option {
         return format!("let {0}: {2} = row.get(\"{1}\");", field_name, column_name, type_name);
     }
