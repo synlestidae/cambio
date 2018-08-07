@@ -33,5 +33,5 @@ export function MyAccountPageComponent(props: MyAccountPageComponentProps) {
     form.onChange = function() {
         props.actions.setPersonalDetails(details);
     };
-    return <FormComponent form={form} onSubmit={() => props.actions.updatePersonalDetails(details)}/>
+    return <FormComponent form={form} state={form.loadingState} onSubmit={() => props.actions.updatePersonalDetails(details)}/>
 }

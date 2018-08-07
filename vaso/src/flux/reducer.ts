@@ -12,6 +12,8 @@ import {Transaction} from '../domain/transaction';
 import {NewOrder, OrderState} from './state/new_order';
 import {RegistrationInfo} from '../domain/registration_info';
 import {SignupState} from './state/signup_state';
+import {SignupStateName} from './state/signup_state_name';
+import {LoadingState} from './state/loading_state';
 
 export function reduce(state: AppState, action: Action): AppState {
     state = reducePage(state, action);
@@ -62,6 +64,20 @@ function reduceLogin(state: AppState, action: Action): AppState {
                     page.signupState = action.payload;
                 } else {
                     throw new Error('Unknown payload type for SET_SIGNUP_STATE');
+                }
+                break;
+            case 'SET_SIGNUP_LOADING_STATE':
+                if (action.payload instanceof LoadingState) {
+                    page.signupState.loadingState = action.payload;
+                } else {
+                    throw new Error('Unknown payload type for SET_SIGNUP_LOADING_STATE');
+                }
+                break;
+            case 'SET_SIGNUP_STATE_PAGE':
+                if (action.value) {
+                    page.signupState.formState = <SignupStateName> action.value;
+                } else {
+                    throw new Error('SET_SIGNUP_STATE_PAGE payload was invalid');
                 }
                 break;
             case 'SET_REGISTRATION_INFO':

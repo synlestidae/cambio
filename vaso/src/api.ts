@@ -61,7 +61,22 @@ export class Api {
 
 
     public asyncConfirmRegistration(signupState: SignupState): Promise<void> {
-        return this.makeRequest('/users/confirm/', 'POST', signupState)
+        let json = {
+            email_address: signupState.emailAddress,
+            confirmation_code: signupState.confirmationCode,
+            identifier_code: signupState.identifierCode,
+            personal_details: {
+                first_names: signupState.firstName,
+                family_name: signupState.familyName,
+                address_line_1: signupState.addressLine1,
+                address_line_2: signupState.addressLine2,
+                post_code: signupState.postCode,
+                city: signupState.city,
+                country: 'NEW ZEALAND'
+            },
+            eth_account_password: ''
+        };
+        return this.makeRequest('/users/confirm/', 'POST', json)
             .then((r: Response) => r.json());
     }
 

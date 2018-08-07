@@ -32,22 +32,33 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
 
     superForm.addScreen(loginInfoForm, 'LoginInfo',  {
         text: 'Add personal details',
-        action: () => props.actions.submitSignup(signupState.emailAddress, signupState.password),
+        action: () => props.actions.sendRegistration(signupState),
         disabled: !loginInfoForm.isValid()
+    }, {
+        text: 'Back',
+        action: () => props.actions.loginMode(),
     });
 
     superForm.addScreen(personalDetailsForm, 'PersonalDetails', {
         text: 'Confirm email',
-        action: () => props.actions.setSignupStatePage('PersonalDetails'),
+        action: () => props.actions.setSignupStatePage('ConfirmationCode'),
         disabled: !personalDetailsForm.isValid()
+    }, {
+        text: 'Back',
+        action: () => props.actions.setSignupStatePage('LoginInfo'),
     });
 
     superForm.addScreen(confirmationForm, 'ConfirmationCode', {
         text: 'Create account',
         action: () => props.actions.confirmRegistration(props.signupState),
         disabled: !confirmationForm.isValid()
+    }, {
+        text: 'Back',
+        action: () => props.actions.setSignupStatePage('PersonalDetails'),
     });
 
+    superForm.loadingState = props.signupState.loadingState;
+    //superForm.setLoadingState(signupState.formState, signupState.loadingState);
     return superForm;
 }
 
@@ -55,7 +66,7 @@ function getLoginInfoForm(signupState: SignupState) {
     let loginInfoSection = new Section([
         new TextFieldElement('emailAddress', signupState, 'Email Address', 'email'),
         new TextFieldElement('password', signupState, 'Password', 'password'),
-        new TextFieldElement('confirmedPassword', signupState, 'Password', 'password'),
+        new TextFieldElement('confirmedPassword', signupState, 'Confirm password', 'password'),
     ]);
     return new SingleForm([loginInfoSection], 'Choose your login credentials');
 }
@@ -64,12 +75,11 @@ function getPersonalDetailsForm(signupState: SignupState) {
     let personalDetailsSection = new Section([
         new TextFieldElement('givenName', signupState, 'Given name', 'given-name'),
         new TextFieldElement('familyName', signupState, 'Family name', 'family-name'),
-        new TextFieldElement('familyName', signupState, 'Family name', 'family-name'),
         new TextFieldElement('addressLine1', signupState, 'Address line 1', 'address-line-1'),
         new TextFieldElement('addressLine2', signupState, 'Address line 2', 'address-line-2'),
         new TextFieldElement('postCode', signupState, 'Post code', 'postal-code'),
         new TextFieldElement('city', signupState, 'City or town', 'city'),
-        new ReadonlyFieldElement('country', 'Country', 'country'),
+        new ReadonlyFieldElement('New Zealand', 'Country', 'country'),
     ]);
     return new SingleForm([personalDetailsSection], 'Enter your personal details');
 }

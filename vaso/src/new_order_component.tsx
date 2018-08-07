@@ -10,6 +10,7 @@ import {TextFieldElement} from './form/text_field_element';
 import {CurrencyFieldElement} from './form/currency_field_element';
 import {ReadonlyFieldElement} from './form/readonly_field_element';
 import {FormComponent} from './form_component';
+import {LoadingState} from './flux/state/loading_state';
 
 interface NewOrderComponentProps {
     newOrder: NewOrder,
@@ -35,11 +36,12 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     let priceField = new ReadonlyFieldElement(formattedPrice, 'ETH price (4 dp)');
     let section = new Section(fields.concat([priceField]));
     let form = new SingleForm([section], 'Place a new order');
+    let loadingState = new LoadingState();
     if (props.newOrder.orderState === 'Submitting') {
-        form.state.startLoading();
+        loadingState.startLoading();
     } else if (props.newOrder.orderState === 'Failed') {
-        form.state.name = 'Error';
-        form.state.message = 'There was an error submitting your order.';
+        loadingState.name = 'Error';
+        loadingState.message = 'There was an error submitting your order.';
     }
     form.onChange = function() {
         props.actions.setOrderRequest(order);
@@ -60,6 +62,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     return <div className="order-modal">
         <FormComponent 
           form={form} 
+          state={loadingState}
           onCancel={() => props.actions.cancelNewOrder()}
           onSubmit={() => {
               props.actions.confirmNewOrder(order);

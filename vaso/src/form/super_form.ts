@@ -1,9 +1,11 @@
 import {Form} from './form';
 import {FormButton} from './form_button';
+import {LoadingState} from '../flux/state/loading_state';
 
 export class SuperForm<E> {
     private currentForm: E;
     private screens: FormScreen<E>[] = [];
+    public loadingState = new LoadingState();
 
     constructor(currentForm: E) {
         this.currentForm = currentForm;
@@ -25,7 +27,12 @@ export class SuperForm<E> {
 
     public getNextButton(): FormButton|null {
         let s = this.getScreen();
-        return s && s.next;
+        if (!(s && s.next)) {
+            return null;
+        }
+        let button = s.next; 
+        button.disabled = !s.form.isValid();
+        return button;
     }
 
     public getPreviousButton(): FormButton|null {

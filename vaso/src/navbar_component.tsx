@@ -12,9 +12,11 @@ const links = [
 ];
 
 function makeLink(link: Link, i: number) {
-    return <div key={i} className="nav-element clickable">
-        <a href={link.url}>{link.title}</a>
-    </div>;
+    return <a href={link.url} className="nav-link">
+        <div key={i} className="nav-element clickable">
+          {link.title}
+        </div>
+    </a>;
 }
 
 export function NavbarComponent() {

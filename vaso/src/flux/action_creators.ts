@@ -12,6 +12,7 @@ import {BoardUpdate} from '../domain/board_update';
 import {PersonalDetails} from '../domain/personal_details';
 import {SignupState} from './state/signup_state';
 import {SignupStateName} from './state/signup_state_name';
+import {LoadingState} from './state/loading_state';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -144,7 +145,6 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_SIGNUP_STATE_PAGE', formState));
     }
 
-
     public setSignupState(signupState: SignupState) {
         this.dispatch(new BasicAction('SET_SIGNUP_STATE', null, signupState));
     }
@@ -166,8 +166,15 @@ export class ActionCreators {
     }
 
     public async sendRegistration(signupState: SignupState) {
-        let registration = await this.api.asyncRegisterUser(signupState.emailAddress, signupState.password);
-        this.dispatch(new BasicAction('SET_REGISTRATION_INFO', null, registration));
+        this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().startLoading()));
+        try {
+            let registration = await this.api.asyncRegisterUser(signupState.emailAddress, signupState.password);
+        } catch (e) {
+            this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState().success()));
+        }
+        this.dispatch(new BasicAction('SET_SIGNUP_LOADING_STATE', null, new LoadingState()));
+        this.dispatch(new BasicAction('REGISTRATION_STATE', 'Ready'));
+        this.setSignupStatePage('PersonalDetails');
     }
 
     public confirmRegistration(signupState: SignupState) {

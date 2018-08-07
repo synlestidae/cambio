@@ -20,16 +20,15 @@ export function SignupPage(props: LoginPageProps): JSX.Element {
 
 function PageForm(props: LoginPageProps): JSX.Element {
     if (props.page.isSignup) {
-        console.log('Signup state', props.page);
         let form = buildSignupForm({
             signupState: props.page.signupState,
             actions: props.actions
         }, () => props.actions.setSignupState(props.page.signupState));
-        return <SuperFormComponent form={form}/>
+        return <div className="form-signin">
+            <SuperFormComponent form={form}/>
+        </div>;
     }
-    return <div className="form-signin">
-        <LoginForm {...props}></LoginForm>
-    </div>;
+    return <LoginForm {...props}></LoginForm>
 }
 
 function LoginForm(props: LoginPageProps): JSX.Element {
@@ -59,46 +58,6 @@ function LoginForm(props: LoginPageProps): JSX.Element {
           </form>
       </div>;
 }
-
-// poop 
-
-/*function SignupButton(props: SignupState & {actions: ActionCreators} & {form: Form}) {
-    let next = ''
-    let prev = 'Back';
-    let nextPage = '';
-    let allValid = props.form.isValid();
-
-    if (props.formState === 'LoginInfo') {
-        next = 'Add personal details';
-    }
-
-    if (props.formState === 'PersonalDetails') {
-        next = 'Confirm email';
-    }
-
-    if (props.formState === 'ConfirmationCode') {
-        next = 'Finish';
-    }
-
-    const nextFn = function(e: any) { 
-        if (props.formState === 'LoginInfo') {
-            props.actions.sendRegistration(props);
-        }
-        props.actions.nextSignupForm();
-    };
-
-    const prevFn = function(e: any) { 
-        e.preventDefault();
-        props.actions.prevSignupForm();
-    };
-
-    return <div className="form-row">
-        <button onClick={nextFn} className="btn btn-primary btn-block width-initial" disabled={!allValid}>
-          {next}
-        </button>
-        <a href="javascript: void" onClick={prevFn}>{prev}</a> 
-    </div>;
-}*/
 
 interface LoginButtonProps {
     isSignup: boolean,

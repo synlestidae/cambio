@@ -2,9 +2,11 @@ import * as React from "react";
 import {Form} from './form/form';
 import {Section} from './form/section';
 import {FieldElement} from './form/field_element';
+import {LoadingState} from './flux/state/loading_state';
 
 interface FormComponentProps {
     form: Form;
+    state: LoadingState;
     onSubmit?: () => void;
     onCancel?: () => void;
 }
@@ -12,7 +14,7 @@ interface FormComponentProps {
 export function FormComponent(props: FormComponentProps) {
     let form = props.form;
     let title = form.title? <div>{form.title}</div> : null; 
-    let formDisabled = form.state.name === 'Loading';
+    let formDisabled = props.state.name === 'Loading';
     let fields = form.getSections().map(function(section: Section, i: number) {
         return <FieldSetComponent title={section.title} elements={section.getElements()} key={i} formDisabled={formDisabled}>
             </FieldSetComponent>;
@@ -20,8 +22,8 @@ export function FormComponent(props: FormComponentProps) {
     const preventSubmit = () => false;
 
     let error: JSX.Element|null;
-    if (form.state.name === 'Error') {
-        error = <div className="error-text">{form.state.message || 'An error occurred while submitting.'}</div>
+    if (props.state.name === 'Error') {
+        error = <div className="error-text">{props.state.message || 'An error occurred while submitting.'}</div>
     }
 
     const onClickSubmit = function() {

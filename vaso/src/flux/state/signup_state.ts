@@ -1,9 +1,11 @@
 import {CalendarDate} from '../../domain/calendar_date';
+import {LoadingState} from './loading_state';
 
 export type FormState = 'LoginInfo' | 'PersonalDetails' | 'ConfirmationCode';
 
 export class SignupState {
     formState: FormState = 'LoginInfo';
+    loadingState: LoadingState = new LoadingState();
     // Signup info
     emailAddress: string = '';
     password: string = '';
