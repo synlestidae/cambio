@@ -10,7 +10,7 @@ import {OrderRequest} from '../domain/order_request';
 import {Order} from '../domain/order';
 import {BoardUpdate} from '../domain/board_update';
 import {PersonalDetails} from '../domain/personal_details';
-import {SignupState, SignupInfo, PersonalInfo, IdentificationInfo} from './state/signup_state';
+import {SignupState} from './state/signup_state';
 
 export class ActionCreators {
     private readonly api: Api;
@@ -159,19 +159,13 @@ export class ActionCreators {
         this.dispatch(new BasicAction('PREV_SIGNUP_FORM'));
     }
 
-    public async sendRegistration(login: SignupInfo, info: PersonalInfo) {
-        let registration = await this.api.asyncRegisterUser(login.email_address, login.password);
+    public async sendRegistration(signupState: SignupState) {
+        let registration = await this.api.asyncRegisterUser(signupState.emailAddress, signupState.password);
         this.dispatch(new BasicAction('SET_REGISTRATION_INFO', null, registration));
     }
 
-    public async confirmRegistration(signupState: SignupState) {
-        await this.api.asyncConfirmRegistration(
-            signupState.confirmationCode,
-            signupState.registrationInfo.identifierCode,
-            signupState.loginInfo, 
-            signupState.info, 
-            signupState.identification
-        );
+    public confirmRegistration(signupState: SignupState) {
+        this.api.asyncConfirmRegistration(signupState);
     }
 
     public editNewOrder() {

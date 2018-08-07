@@ -9,7 +9,7 @@ import {CurrencyCode} from './domain/currency_code';
 import {CurrencyDenom} from './domain/currency_denom';
 import {PersonalDetails} from './domain/personal_details';
 import {RegistrationInfo} from './domain/registration_info';
-import {SignupInfo, PersonalInfo, IdentificationInfo} from './flux/state/signup_state';
+import {SignupState} from './flux/state/signup_state';
 import {padZeroes} from './pad_zeroes';
 import * as bigInt from 'big-integer';
 
@@ -60,29 +60,9 @@ export class Api {
     }
 
 
-    public asyncConfirmRegistration(confirmationCode: string,
-        identifierCode: string,
-        signupInfo: SignupInfo,
-        personalInfo: PersonalInfo,
-        identificationInfo: IdentificationInfo): Promise<void> {
-        return this.makeRequest('/users/confirm/', 'POST', {
-            email_address: signupInfo.email_address,
-            eth_account_password: signupInfo.password,
-            confirmation_code: confirmationCode,
-            identifier_code: identifierCode,
-            personal_details: {
-                first_names: personalInfo.first_names,
-                family_name: personalInfo.family_name,
-                address_line_1: personalInfo.address_line_1,
-                address_line_2: personalInfo.address_line_2,
-                post_code: personalInfo.post_code,
-                city: personalInfo.city,
-                dob: personalInfo.dob.getDateString(),
-                country: 'NEW ZEALAND',
-                id_type: identificationInfo.id_type,
-                id_number: identificationInfo.id_number
-            }
-        }).then((r: Response) => r.json());
+    public asyncConfirmRegistration(signupState: SignupState): Promise<void> {
+        return this.makeRequest('/users/confirm/', 'POST', signupState)
+            .then((r: Response) => r.json());
     }
 
     public async asyncGetAccounts(): Promise<Account[]> {
@@ -186,7 +166,11 @@ export class Api {
             last_change: lastCheckedString
         });
         let body = await response.json();
-        return BoardUpdate.parse(body);
+        let boardUpdate = BoardUpdate.parse(body);
+        if (boardUpdate.orders.length) {
+            console.log('Changed orders yo!', boardUpdate);
+        }
+        return boardUpdate;
     }
 
     public async asyncGetPersonalDetails(): Promise<PersonalDetails> {

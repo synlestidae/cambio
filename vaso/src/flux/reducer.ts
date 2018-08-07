@@ -51,31 +51,23 @@ function reduceLogin(state: AppState, action: Action): AppState {
                 state.page.loadingState.name = 'Ready';
                 break;
             case 'NEXT_SIGNUP_FORM':
-                (page.signupState as any).form_state = nextPage(page.signupState.form_state);
+                (page.signupState as any).formState = nextPage(page.signupState.formState);
                 break;
             case 'PREV_SIGNUP_FORM':
-                (page.signupState as any).form_state = prevPage(page.signupState.form_state);
+                (page.signupState as any).formState = prevPage(page.signupState.formState);
                 break;
             case 'SET_SIGNUP_FORM_VALUE':
-                let formState = signupState.form_state;
-                if (formState === 'LoginInfo') {
-                    (signupState.loginInfo as any)[action.value] = action.payload; 
-                } else if (formState === 'Identification') {
-                    (signupState.identification as any)[action.value] = action.payload; 
-                } else if (formState === 'PersonalInfo') {
-                    (signupState.info as any)[action.value] = action.payload;
-                } else {
-                    throw new Error(`Unknown page state: ${page.signupState}`);
-                }
-                break;
-            case 'CLEAR_DIRTY_SIGNUP_VALUE':
-                signupState.dirtyFields.delete(action.value);
-                break;
-            case 'ADD_DIRTY_SIGNUP_VALUE':
-                signupState.dirtyFields.add(action.value);
+                page.signupState = action.payload;
                 break;
             case 'SET_REGISTRATION_INFO':
-                signupState.registrationInfo = <RegistrationInfo>action.payload;
+                let regInfo = action.payload;
+                if (regInfo && regInfo.email_address === signupState.emailAddress) { 
+                    if (regInfo.identifier_code) {
+                        signupState.identifierCode = regInfo.identifier_code;
+                    } else {
+                        throw new Error('Payload on SET_REGISTRATION_INFO did not haved identifier_code');
+                    }
+                }
                 break;
             case 'SET_CONFIRMATION_CODE':
                 let matches = /(\d{0,5})/.exec(action.value);
