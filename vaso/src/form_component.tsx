@@ -65,12 +65,15 @@ function FieldSetComponent(props: {title: string, elements: FieldElement[], form
 function FieldInputComponent(props: {fieldElement: FieldElement, formDisabled: boolean}): JSX.Element {
     let fieldElem = props.fieldElement;
     let validation: JSX.Element|null = null;
-    if (fieldElem.getValidationMessage() !== null) {
+    if (fieldElem.getValidationMessage() !== null && fieldElem.isDirty()) {
         validation = <p className="validation-message">{fieldElem.getValidationMessage()}</p>;
     }
     let val = fieldElem.getValue();
+    let required = fieldElem.isRequired()? <span className="required">*</span> : null;
+    let validationClass = (fieldElem.isRequired() && fieldElem.getValidationMessage() && fieldElem.isDirty() && 'invalid-input') || '';
+    let className = `form-control ${validationClass}`;
     return <div className="form-group">
-        <label className="form-label" htmlFor={fieldElem.getName()}>{fieldElem.getLabel()}</label>
+        <label className="form-label" htmlFor={fieldElem.getName()}>{fieldElem.getLabel()} {required}</label>
         <input 
             className="form-control" 
             type={fieldElem.getType()} 

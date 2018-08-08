@@ -5,6 +5,7 @@ export class TextFieldElement implements FieldElement {
     private fieldObject: Object;
     private label: string;
     private name: string;
+    private dirty = false;
     public required: boolean = false;
 
     constructor(property: string, fieldObject: Object, label: string, name?: string) {
@@ -23,6 +24,7 @@ export class TextFieldElement implements FieldElement {
     }
 
     public setValue(val: string) {
+        this.dirty = false;
         (<any>this.fieldObject)[this.property] = val;
     }
 
@@ -30,6 +32,7 @@ export class TextFieldElement implements FieldElement {
     }
 
     public onBlur(): void {
+        this.dirty = true;
     }
 
     public getLabel(): string {
@@ -54,5 +57,9 @@ export class TextFieldElement implements FieldElement {
 
     public isRequired(): boolean {
         return this.required;
+    }
+
+    public isDirty(): boolean {
+        return this.dirty;
     }
 }

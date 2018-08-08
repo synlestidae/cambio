@@ -8,6 +8,7 @@
     --main-color: #294595;
     --sub-color: #17284F;
     --error-color: #CA1823;
+    --required-color: #CA1823;
 }
 
 body {
@@ -344,4 +345,13 @@ table.table-component tr.empty-row td {
 
 .form-buttons {
     display: flex;
+}
+
+.required {
+    color: var(--required-color);
+}
+
+.invalid-input {
+    border-color: var(--error-color);
+    background-color: #fcbabf;
 }

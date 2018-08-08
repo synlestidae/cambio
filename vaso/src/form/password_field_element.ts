@@ -4,4 +4,8 @@ export class PasswordFieldElement extends TextFieldElement {
     public getType(): string {
         return 'password';
     }
+
+    public isValid(): boolean {
+        return this.getValue().length >= 8;
+    }
 }
