@@ -5,7 +5,7 @@ import {LoadingState} from '../flux/state/loading_state';
 export class SingleForm extends Form {
     public loadingState = new LoadingState();
 
-    constructor(sections: Section[], title: string) {
-        super(sections, title);
+    constructor(sections: Section[], onSubmit: Function, title: string) {
+        super(sections, onSubmit, title);
     }
 }

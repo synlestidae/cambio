@@ -1,38 +1,33 @@
 import {Section} from './section';
+import {FormVisitor} from './form_visitor';
 
 export abstract class Form {
     public readonly title: string|null;
     public readonly description: string|null;
-
     private readonly sections: Section[];
-    private _onChange: Function|null = null;
+    private onSubmit: Function;
 
-    set onChange(func: Function) {
-        this._onChange = func;
-    }
-
-    constructor(sections: Section[], title?: string, description?: string) {
+    constructor(sections: Section[], onSubmit: Function, title?: string, description?: string) {
         this.sections = sections;
         this.title = title || null;
         this.description = description || null;
+        this.onSubmit = onSubmit;
     }
 
     public getSections(): Section[] {
         return this.sections;
     }
 
-    public isValid(): boolean {
+    public accept(visitor: FormVisitor) {
+        if (this.title) {
+            visitor.visitTitle(this.title);
+        }
+        if (this.description) {
+            visitor.visitDescription(this.description);
+        }
         for (let section of this.sections) {
-            if (!section.isValid()) {
-                return false;
-            }
+            visitor.visitSection(section);
         }
-        return true;
-    }
-
-    public callOnChange() {
-        if (this._onChange) {
-            this._onChange.call(this);
-        }
+        visitor.visitOnSubmit(this.onSubmit);
     }
 }

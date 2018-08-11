@@ -11,6 +11,9 @@ import {CurrencyFieldElement} from './form/currency_field_element';
 import {ReadonlyFieldElement} from './form/readonly_field_element';
 import {FormComponent} from './form_component';
 import {LoadingState} from './flux/state/loading_state';
+import {OrderRequest} from './domain/order_request';
+import {ReactFormVisitor} from './form/react_form_visitor';
+import {ReactSectionVisitor} from './form/react_section_visitor';
 
 interface NewOrderComponentProps {
     newOrder: NewOrder,
@@ -18,8 +21,42 @@ interface NewOrderComponentProps {
 }
 
 export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
+    let form = getForm(props);
+    let loadingState = new LoadingState();
+
+    if (props.newOrder.orderState === 'Submitting') {
+        loadingState.startLoading();
+    } else if (props.newOrder.orderState === 'Failed') {
+        loadingState.name = 'Error';
+        loadingState.message = 'There was an error submitting your order.';
+    }
+    if (props.newOrder.orderState === 'Submitting') {
+        return <div className="order-modal">Submitting your order now...</div>
+    }
+    if (props.newOrder.orderState.toString() === 'Success') {
+        return <div className="order-modal">
+            <div>Your order submitted succcessfully!</div>
+            <div>
+              <button className="btn btn-primary" onClick={() => props.actions.clearOrder()}>
+                Close
+              </button>
+            </div>
+        </div>;
+    }
+
+    let visitor = new ReactFormVisitor(new ReactSectionVisitor(), 
+        () => props.actions.setOrderRequest(props.newOrder.order)
+    );
+    form.accept(visitor);
+
+    return <div className="order-modal">
+        {visitor.render()}
+    </div>;
+}
+
+function getForm(props: NewOrderComponentProps) {
     let order = props.newOrder.order;
-    let fields: FieldElement[];
+    let fields: FieldElement[] = [];
     if (order.isBuy) {
         fields = [
             new CurrencyFieldElement('ether', order, 'ETH to buy'),
@@ -35,40 +72,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     let formattedPrice = isNaN(price) || !isFinite(price)? '--' : price.toFixed(4);
     let priceField = new ReadonlyFieldElement(formattedPrice, 'ETH price (4 dp)');
     let section = new Section(fields.concat([priceField]));
-    let form = new SingleForm([section], 'Place a new order');
-    let loadingState = new LoadingState();
-    if (props.newOrder.orderState === 'Submitting') {
-        loadingState.startLoading();
-    } else if (props.newOrder.orderState === 'Failed') {
-        loadingState.name = 'Error';
-        loadingState.message = 'There was an error submitting your order.';
-    }
-    form.onChange = function() {
-        props.actions.setOrderRequest(order);
-    };
-    if (props.newOrder.orderState === 'Submitting') {
-        return <div className="order-modal">Submitting your order now...</div>
-    }
-    if (props.newOrder.orderState.toString() === 'Success') {
-        return <div className="order-modal">
-            <div>Your order submitted succcessfully!</div>
-            <div>
-              <button className="btn btn-primary" onClick={() => props.actions.clearOrder()}>
-                Close
-              </button>
-            </div>
-        </div>;
-    }
-    return <div className="order-modal">
-        <FormComponent 
-          form={form} 
-          state={loadingState}
-          onCancel={() => props.actions.cancelNewOrder()}
-          onSubmit={() => {
-              props.actions.confirmNewOrder(order);
-              return false;
-            }
-          }>
-        </FormComponent>
-    </div>;
+    return new SingleForm([section], 
+        () => props.actions.confirmNewOrder(order), 
+        'Place a new order');
 }

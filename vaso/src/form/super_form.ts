@@ -6,6 +6,7 @@ export class SuperForm<E> {
     private currentForm: E;
     private screens: FormScreen<E>[] = [];
     public loadingState = new LoadingState();
+    public onChange: Function = () => {};
 
     constructor(currentForm: E) {
         this.currentForm = currentForm;
@@ -31,7 +32,6 @@ export class SuperForm<E> {
             return null;
         }
         let button = s.next; 
-        button.disabled = !s.form.isValid();
         return button;
     }
 

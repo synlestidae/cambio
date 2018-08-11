@@ -15,12 +15,12 @@ export class Form {
         return this.sections;
     }
 
-    public isValid(): boolean {
+    /*public isValid(): boolean {
         for (let section of this.sections) {
             if (!section.isValid()) {
                 return false;
             }
         }
         return true;
-    }
+    }*/
 }

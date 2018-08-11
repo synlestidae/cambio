@@ -17,25 +17,25 @@ interface PartialSignupFormProps {
     actions: ActionCreators;
 }
 
-export function buildSignupForm(props: {signupState: SignupState} & PartialSignupFormProps, onChange: Function): SuperForm<SignupStateName> {
+export function buildSignupForm(props: {signupState: SignupState} & PartialSignupFormProps): SuperForm<SignupStateName> {
     let elems: FieldElement[];
     let header: string;
     let signupState = props.signupState;
 
     let formState = props.signupState.formState;
 
-    let superForm = new SuperForm(formState);
-    let loginInfoForm = getLoginInfoForm(props.signupState);
-    loginInfoForm.onChange = onChange;
-    let personalDetailsForm = getPersonalDetailsForm(props.signupState);
-    personalDetailsForm.onChange = onChange;
-    let confirmationForm = getConfirmationForm(props.signupState);
-    confirmationForm.onChange = onChange;
+    let loginInfoForm = getLoginInfoForm(props.signupState, 
+        () => props.actions.submitSignup(signupState.emailAddress, signupState.password));
+    let personalDetailsForm = getPersonalDetailsForm(props.signupState, 
+        () => props.actions.setSignupStatePage('ConfirmationCode'));
+    let confirmationForm = getConfirmationForm(props.signupState, 
+        () => props.actions.sendRegistration(signupState));
 
+    let superForm = new SuperForm(formState);
+    superForm.onChange = () => props.actions.setSignupState(props.signupState);
     superForm.addScreen(loginInfoForm, 'LoginInfo',  {
         text: 'Add personal details',
         action: () => props.actions.sendRegistration(signupState),
-        disabled: !loginInfoForm.isValid()
     }, {
         text: 'Back',
         action: () => props.actions.loginMode(),
@@ -44,7 +44,6 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
     superForm.addScreen(personalDetailsForm, 'PersonalDetails', {
         text: 'Confirm email',
         action: () => props.actions.setSignupStatePage('ConfirmationCode'),
-        disabled: !personalDetailsForm.isValid()
     }, {
         text: 'Back',
         action: () => props.actions.setSignupStatePage('LoginInfo'),
@@ -53,27 +52,26 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
     superForm.addScreen(confirmationForm, 'ConfirmationCode', {
         text: 'Create account',
         action: () => props.actions.confirmRegistration(props.signupState),
-        disabled: !confirmationForm.isValid()
     }, {
         text: 'Back',
         action: () => props.actions.setSignupStatePage('PersonalDetails'),
     });
 
     superForm.loadingState = props.signupState.loadingState;
-    //superForm.setLoadingState(signupState.formState, signupState.loadingState);
+
     return superForm;
 }
 
-function getLoginInfoForm(signupState: SignupState) {
+function getLoginInfoForm(signupState: SignupState, onSubmit: Function) {
     let loginInfoSection = new Section([
         new RequiredTextFieldElement('emailAddress', signupState, 'Email Address', 'email'),
         new PasswordFieldElement('password', signupState, 'Password', 'password'),
         new PasswordFieldElement('confirmedPassword', signupState, 'Confirm password', 'password'),
     ]);
-    return new SingleForm([loginInfoSection], 'Choose your login credentials');
+    return new SingleForm([loginInfoSection], onSubmit, 'Choose your login credentials');
 }
 
-function getPersonalDetailsForm(signupState: SignupState) {
+function getPersonalDetailsForm(signupState: SignupState, onSubmit: Function) {
     let personalDetailsSection = new Section([
         new RequiredTextFieldElement('firstName', signupState, 'Given name', 'given-name'),
         new RequiredTextFieldElement('familyName', signupState, 'Family name', 'family-name'),
@@ -83,12 +81,12 @@ function getPersonalDetailsForm(signupState: SignupState) {
         new RequiredTextFieldElement('city', signupState, 'City or town', 'city'),
         new ReadonlyFieldElement('New Zealand', 'Country', 'country'),
     ]);
-    return new SingleForm([personalDetailsSection], 'Enter your personal details');
+    return new SingleForm([personalDetailsSection], onSubmit, 'Enter your personal details');
 }
 
-function getConfirmationForm(signupState: SignupState) {
+function getConfirmationForm(signupState: SignupState, onSubmit: Function) {
     let confirmationSection = new Section([
         new TextFieldElement('confirmationCode', signupState, 'Confirmation code')
     ]);
-    return new SingleForm([confirmationSection], `Enter the confirmation code that was emailed to ${signupState.emailAddress}.`);
+    return new SingleForm([confirmationSection], onSubmit, `Enter the confirmation code that was emailed to ${signupState.emailAddress}.`);
 }

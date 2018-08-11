@@ -1,24 +1,25 @@
 import {FieldElement} from './field_element';
+import {SectionVisitor} from './section_visitor';
 
 export class Section {
     public readonly title: string|null;    
-    private readonly elements: FieldElement[];
+    private readonly fields: FieldElement[];
     
-    constructor(elements: FieldElement[], title?: string) {
-        this.elements = elements;
+    constructor(fields: FieldElement[], title?: string) {
+        this.fields = fields;
         this.title = title || null;
     }
 
     public getElements(): FieldElement[] {
-        return this.elements;
+        return this.fields;
     }
 
-    public isValid(): boolean {
-        for (let element of this.elements) {
-            if (element.getValidationMessage() !== null) {
-                return false;
-            }
+    public accept(visitor: SectionVisitor) {
+        if (this.title) {
+            visitor.visitTitle(this.title);
         }
-        return true;
+        for (let field of this.fields) {
+            visitor.visitField(field);
+        }
     }
 }

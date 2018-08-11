@@ -23,7 +23,7 @@ function PageForm(props: LoginPageProps): JSX.Element {
         let form = buildSignupForm({
             signupState: props.page.signupState,
             actions: props.actions
-        }, () => props.actions.setSignupState(props.page.signupState));
+        });
         return <div className="form-signin">
             <SuperFormComponent form={form}/>
         </div>;

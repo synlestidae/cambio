@@ -41,7 +41,7 @@ export function FormComponent(props: FormComponentProps) {
       {props.onSubmit? <button className="form-control btn btn-primary non-touching-button" onClick={onClickSubmit}>Submit</button> : null}
     </section>;
 
-    return <form onChange={() => form.callOnChange()} onBlur={() => form.callOnChange()} onSubmit={preventSubmit}>
+    return <form onSubmit={preventSubmit}>
       {title}
       <section className="form-fields">
         {fields}
@@ -63,29 +63,5 @@ function FieldSetComponent(props: {title: string, elements: FieldElement[], form
 }
 
 function FieldInputComponent(props: {fieldElement: FieldElement, formDisabled: boolean}): JSX.Element {
-    let fieldElem = props.fieldElement;
-    let validation: JSX.Element|null = null;
-    if (fieldElem.getValidationMessage() !== null && fieldElem.isDirty()) {
-        validation = <p className="validation-message">{fieldElem.getValidationMessage()}</p>;
-    }
-    let val = fieldElem.getValue();
-    let required = fieldElem.isRequired()? <span className="required">*</span> : null;
-    let validationClass = (fieldElem.isRequired() && fieldElem.getValidationMessage() && fieldElem.isDirty() && 'invalid-input') || '';
-    let className = `form-control ${validationClass}`;
-    return <div className="form-group">
-        <label className="form-label" htmlFor={fieldElem.getName()}>{fieldElem.getLabel()} {required}</label>
-        <input 
-            className="form-control" 
-            type={fieldElem.getType()} 
-            name={fieldElem.getName()} 
-            disabled={fieldElem.isDisabled() || props.formDisabled}
-            value={val} 
-            min={0}
-            step={0.01}
-            onChange={(e: any) => fieldElem.setValue(e.target.value)}
-            onFocus={() => fieldElem.onFocus()} 
-            onBlur={() => fieldElem.onBlur()}>
-        </input>
-        {validation}
-    </div>;
+    return null;
 }

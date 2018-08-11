@@ -12,8 +12,9 @@ interface MyAccountPageComponentProps {
     page: MyAccount
 }
 
-export function MyAccountPageComponent(props: MyAccountPageComponentProps) {
-    if (props.page.loadingState.name === 'Loading') {
+export function MyAccountPageComponent(props: MyAccountPageComponentProps): JSX.Element {
+    return null;
+    /*if (props.page.loadingState.name === 'Loading') {
         return <div>Loading your details...</div>;
     }
     if (props.page.personalDetails === null) {
@@ -33,5 +34,5 @@ export function MyAccountPageComponent(props: MyAccountPageComponentProps) {
     form.onChange = function() {
         props.actions.setPersonalDetails(details);
     };
-    return <FormComponent form={form} state={form.loadingState} onSubmit={() => props.actions.updatePersonalDetails(details)}/>
+    return <FormComponent form={form} state={form.loadingState} onSubmit={() => props.actions.updatePersonalDetails(details)}/>*/
 }
