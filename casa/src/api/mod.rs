@@ -27,7 +27,10 @@ mod settlement_api_impl;
 mod settlement_eth_credentials;
 mod settlement_request;
 mod user_api_impl;
+mod crypto_account_api;
+mod crypto_account_request;
 mod user_request;
+mod crypto_account_api_request;
 mod utils;
 
 pub use self::account_api_impl::*;
@@ -60,3 +63,6 @@ pub use self::user_api_impl::*;
 pub use self::user_request::UserRequest;
 pub use self::last_change::LastChange;
 pub use self::order_changes::OrderChanges;
+pub use self::crypto_account_api::CryptoAccountApi;
+pub use self::crypto_account_request::CryptoAccountRequest;
+pub use self::crypto_account_api_request::CryptoAccountApiRequest;

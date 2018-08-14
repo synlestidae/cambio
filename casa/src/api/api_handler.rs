@@ -173,6 +173,7 @@ impl Handler for ApiHandler {
                     Ok(payment_response) => api::utils::to_response(Ok(payment_response)),
                 }
             },
+            ApiRequest::CryptoAccount(..) => unimplemented!()
         };
 
         Ok(response)

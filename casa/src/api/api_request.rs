@@ -1,7 +1,5 @@
 use api;
-use api::{
-    AccountRequest, ApiError, OrderApiRequest, PaymentRequest, SettlementRequest, UserRequest,
-};
+use api::*;
 use db;
 use domain;
 use hyper::header::ContentType;
@@ -24,6 +22,7 @@ pub enum ApiRequest {
     Account(AccountRequest),
     Settlement(SettlementRequest),
     Payment(PaymentRequest),
+    CryptoAccount(CryptoAccountApiRequest),
 }
 
 impl ApiRequest {
@@ -39,6 +38,7 @@ impl ApiRequest {
             ApiRequest::Order(..) => Method::Post,
             ApiRequest::Settlement(..) => Method::Post,
             ApiRequest::Payment(..) => Method::Post,
+            ApiRequest::CryptoAccount(..) => unimplemented!(),
         }
     }
 
@@ -167,11 +167,6 @@ where
         let val: T = serde_json::from_slice(&bytes)?;
         Ok(val)
     }
-    /*match request.get_ref::<bodyparser::Struct<T>>() {
-        Ok(&Some(ref body_obj)) => Ok(body_obj.clone()),
-        Ok(&None) => ,
-        Err(error) => Err(api::ApiError::bad_format(error.description())),
-    }*/
 }
 
 fn get_form_obj<T: Clone + 'static>(request: &mut Request) -> Result<T, api::ApiError>
