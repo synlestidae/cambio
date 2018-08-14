@@ -1,10 +1,10 @@
 use domain::ByteAddress;
 use domain::CryptoType;
-use domain::Id;
+use domain::EthAccountId;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct CryptoAccountRequest {
-    pub id: Option<Id>,
+    pub id: Option<EthAccountId>,
     pub address: ByteAddress,
     pub name: String,
     pub currency_type: CryptoType

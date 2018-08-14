@@ -115,7 +115,14 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
                 let payment_request: PaymentRequest = try!(get_api_obj(request));
                 ApiRequest::Payment(payment_request)
             },
+            &["crypto", "accounts"] => {
+                ApiRequest::CryptoAccount(CryptoAccountApiRequest::GetAccounts)
+            },
+            &["crypto", "accounts", "new"] => {
+                ApiRequest::CryptoAccount(CryptoAccountApiRequest::NewAccount(get_api_obj(request)?))
+            },
             _ => {
+
                 return Err(api::ApiError::not_found_path(&path
                     .into_iter()
                     .collect::<Vec<_>>()
