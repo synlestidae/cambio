@@ -173,7 +173,16 @@ impl Handler for ApiHandler {
                     Ok(payment_response) => api::utils::to_response(Ok(payment_response)),
                 }
             },
-            ApiRequest::CryptoAccount(..) => unimplemented!()
+            ApiRequest::CryptoAccount(crypto_api_request) => {
+                let mut crypto_account_api = CryptoAccountApi::new(db);
+                match crypto_api_request {
+                    CryptoAccountApiRequest::GetAccounts => {
+                        api::utils::to_response(crypto_account_api.get_accounts(&user))
+                    },
+                    CryptoAccountApiRequest::NewAccount(new_account) => unimplemented!(),
+                    CryptoAccountApiRequest::ModifyAccount(existing_account) => unimplemented!(),
+                }
+            }
         };
 
         Ok(response)

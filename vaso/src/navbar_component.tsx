@@ -12,7 +12,7 @@ const links = [
 ];
 
 function makeLink(link: Link, i: number) {
-    return <a href={link.url} className="nav-link">
+    return <a href={link.url} className="nav-link" key={i}>
         <div key={i} className="nav-element clickable">
           {link.title}
         </div>

@@ -14,8 +14,13 @@ export class Table<E> {
         for (let column of this.columns) {
             visitor.visitColumnHeader(column);
         }
+        visitor.visitBody(this.rows, this.columns);
         for (let row of this.rows) {
             visitor.visitRow(row, this.columns);
+            for (let column of this.columns) {
+                visitor.visitCell(row, column);
+            }
         }
+        visitor.visitFooter();
     }
 }

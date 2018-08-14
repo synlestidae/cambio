@@ -1,7 +1,7 @@
 import {Section} from './section';
 import {FormVisitor} from './form_visitor';
 
-export abstract class Form {
+export class Form {
     public readonly title: string|null;
     public readonly description: string|null;
     private readonly sections: Section[];

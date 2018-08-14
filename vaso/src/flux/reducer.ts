@@ -123,6 +123,11 @@ function reduceAccounts(state: AppState, action: Action): AppState {
                     throw new Error(`ADD_ACCOUNTS should have Account[] payload, but got ${objName}`);
                 }
                 break;
+            case 'ADD_CRYPTO_ACCOUNTS':
+                if (action.payload instanceof Array) {
+                    state.page.cryptoAccounts = action.payload
+                }
+                break;
             case 'TOGGLE_CREDIT_ACCOUNT':
                 let id = String(action.value);
                 if (state.page.openOptions) {

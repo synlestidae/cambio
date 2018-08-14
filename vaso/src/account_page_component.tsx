@@ -20,7 +20,7 @@ export function AccountPageComponent(props: AccountPageComponentProps) {
         <div>
           {accounts}
         </div>
-        <EthAccountPanel columns={[]} rows={[]}/>
+        <EthAccountPanel accounts={props.page.cryptoAccounts || []} />
     </div>;
 }
 

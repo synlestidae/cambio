@@ -10,6 +10,7 @@ import {CurrencyDenom} from './domain/currency_denom';
 import {PersonalDetails} from './domain/personal_details';
 import {RegistrationInfo} from './domain/registration_info';
 import {SignupState} from './flux/state/signup_state';
+import {CryptoAccount} from './domain/crypto_account';
 import {padZeroes} from './pad_zeroes';
 import * as bigInt from 'big-integer';
 
@@ -199,6 +200,16 @@ export class Api {
         let result = await this.makeRequest('/users/personal/details', 'POST', personalDetails);
         let body = await result.json();
         return PersonalDetails.parse(body);
+    }
+
+    public async asyncGetCryptoAccounts(): Promise<CryptoAccount[]> {
+        let result = await this.makeRequest('/crypto/accounts', 'GET')
+            .then((response: Response) => response.json());
+        let accounts = [];
+        for (let account of result) {
+            accounts.push(CryptoAccount.parse(account));
+        }
+        return accounts;
     }
 
     private async makeRequest(path: string, method: string, jsonBody?: any|null): Promise<Response> {

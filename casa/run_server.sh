@@ -6,13 +6,13 @@ set -e
 set -o pipefail
 
 clean_up () {
-    echo "Killing geth"
-    pkill geth
+    #echo "Killing geth"
+    #pkill geth
     echo "DROP DATABASE test_database_only" | psql
 }
 
 
-source run_eth.sh &
+#source run_eth.sh &
 
 trap clean_up EXIT
 

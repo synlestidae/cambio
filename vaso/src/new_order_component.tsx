@@ -12,7 +12,7 @@ import {ReadonlyFieldElement} from './form/readonly_field_element';
 import {FormComponent} from './form_component';
 import {LoadingState} from './flux/state/loading_state';
 import {OrderRequest} from './domain/order_request';
-import {ReactFormVisitor} from './form/react_form_visitor';
+import {SingleFormVisitor} from './form/single_form_visitor';
 import {ReactSectionVisitor} from './form/react_section_visitor';
 
 interface NewOrderComponentProps {
@@ -44,7 +44,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
         </div>;
     }
 
-    let visitor = new ReactFormVisitor(new ReactSectionVisitor(), 
+    let visitor = new SingleFormVisitor(new ReactSectionVisitor(), 
         () => props.actions.setOrderRequest(props.newOrder.order)
     );
     form.accept(visitor);

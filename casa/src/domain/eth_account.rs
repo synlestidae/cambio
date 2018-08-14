@@ -7,7 +7,7 @@ use db::{TryFromRow, TryFromRowError};
 
 const BCRYPT_COST: u32 = 8;
 
-#[derive(Debug, Clone, TryFromRow)]
+#[derive(Debug, Clone, Serialize, TryFromRow)]
 pub struct EthAccount {
     pub id: Option<EthAccountId>,
     pub address: ByteAddress,

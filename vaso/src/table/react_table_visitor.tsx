@@ -5,8 +5,12 @@ import {Column} from './column';
 export class ReactTableVisitor implements TableVisitor<any> {
     private headers: JSX.Element[] = [];
     private rows: JSX.Element[] = [];
+
     private currentRow: JSX.Element[] = [];
     private key = 0;
+
+    public visitBody() {
+    }
 
     public visitColumnHeader(h: Column<any>) {
         this.headers.push(<th key={h.field}>
@@ -22,11 +26,7 @@ export class ReactTableVisitor implements TableVisitor<any> {
     }
 
     public visitRow(rowValue: any, columns: Column<any>[]): void {
-        for (let column of columns) {
-            this.visitCell(rowValue, column);
-        }
-        this.rows.push(<tr key={this.key++}>{this.currentRow}</tr>);
-        this.currentRow = [];
+        this.flushRow();
     }
 
     public render(): JSX.Element {
@@ -39,17 +39,19 @@ export class ReactTableVisitor implements TableVisitor<any> {
           </tbody>
         </table>;
     }
-  
-    private visitCell(rowValue: any, column: Column<any>): void {
-        let cell = rowValue[column.field] || ''; //{column.cell(rowValue)}
+
+    public visitCell(rowValue: any, column: Column<any>): void {
+        let cell = rowValue[column.field] || '';
         this.currentRow.push(<td key={column.field}>{cell}</td>);
     }
 
-    private emptyRow(): JSX.Element {
-        return <tr className="empty-row">
-          <td colSpan={this.headers.length}>
-            <em>No rows yet.</em>
-          </td>
-        </tr>;
+    public visitFooter() {
+    }
+
+    private flushRow() {
+        if (this.currentRow.length) {
+            this.rows.push(<tr key={this.key++}>{this.currentRow}</tr>);
+        }
+        this.currentRow = [];
     }
 }

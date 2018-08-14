@@ -38,7 +38,8 @@ impl ApiRequest {
             ApiRequest::Order(..) => Method::Post,
             ApiRequest::Settlement(..) => Method::Post,
             ApiRequest::Payment(..) => Method::Post,
-            ApiRequest::CryptoAccount(..) => unimplemented!(),
+            ApiRequest::CryptoAccount(CryptoAccountApiRequest::GetAccounts) => Method::Get,
+            ApiRequest::CryptoAccount(..) => Method::Post,
         }
     }
 

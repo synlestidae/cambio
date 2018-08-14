@@ -110,12 +110,21 @@ export class ActionCreators {
 
     public async openAccountPage() {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Accounts'));
+        this.loadFiatAccounts();
+        this.loadCryptoAccounts();
+    }
+
+    public async loadFiatAccounts() {
         let accounts = await this.api.asyncGetAccounts()
         this.dispatch(new BasicAction('ADD_ACCOUNTS', null, accounts));
         for (let a of accounts) {
             this.getAccountTransactions(a);
         }
-        return accounts;
+    }
+
+    public async loadCryptoAccounts() {
+        let accounts = await this.api.asyncGetCryptoAccounts();
+        this.dispatch(new BasicAction('ADD_CRYPTO_ACCOUNTS', null, accounts));
     }
 
     public openLandingPage() {

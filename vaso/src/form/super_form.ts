@@ -1,4 +1,4 @@
-import {Form} from './form';
+import {SingleForm} from './single_form';
 import {FormButton} from './form_button';
 import {LoadingState} from '../flux/state/loading_state';
 
@@ -12,7 +12,7 @@ export class SuperForm<E> {
         this.currentForm = currentForm;
     }
 
-    public addScreen(form: Form, name: E, nextButton: FormButton, previousButton?: FormButton) {
+    public addScreen(form: SingleForm, name: E, nextButton: FormButton, previousButton?: FormButton) {
         this.screens.push({
             name: name,
             form: form,
@@ -21,7 +21,7 @@ export class SuperForm<E> {
         });
     }
 
-    public getCurrentForm(): Form|null {
+    public getCurrentForm(): SingleForm|null {
         let s = this.getScreen();
         return s && s.form;
     }
@@ -52,7 +52,7 @@ export class SuperForm<E> {
 
 interface FormScreen<E> {
     name: E;
-    form: Form;
+    form: SingleForm;
     next: FormButton;
     prev?: FormButton;
 }
