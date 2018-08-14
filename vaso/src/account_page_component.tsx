@@ -16,6 +16,11 @@ export function AccountPageComponent(props: AccountPageComponentProps) {
     let accounts = props.page.accounts.map((account: Account, i: number) => 
         <AccountLine key={i} actions={props.actions} account={account} isOpen={props.page.openAccount === String(account.id)} openOptions={props.page.openOptions}/>);
     return <div>
-        {accounts}
-        </div>;
+        <div>
+          {accounts}
+        </div>
+        <div className="account-container">
+          Eth accounts go here.
+        </div>
+    </div>;
 }

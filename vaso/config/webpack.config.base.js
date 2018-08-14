@@ -6,7 +6,8 @@ let config = {
   entry: helpers.root('src/index.tsx'),
   output: {
         filename: "bundle.js",
-        path: __dirname + "/dist"
+        path: __dirname + "/dist",
+        publicPath: "/dist/"
     //path: helpers.root('/dist'),
     //filename: 'js/[name].[hash].js',
     //chunkFilename: 'js/[name].[hash].js',
