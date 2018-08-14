@@ -28,6 +28,7 @@ export class ReactFormVisitor {
 
     public visitOnSubmit(onSubmit: Function) {
         this.onSubmit = onSubmit;
+        this.components.push(<input className="form-control" type="submit" value="Submit"></input>);
     }
 
     public render(): JSX.Element {

@@ -5,6 +5,7 @@ import * as React from "react";
 import {SignupStateName} from './flux/state/signup_state_name';
 import {LoadingState} from './flux/state/loading_state';
 import {ReactFormVisitor} from './form/react_form_visitor';
+import {ReactSuperFormVisitor} from './form/react_super_form_visitor';
 import {ReactSectionVisitor} from './form//react_section_visitor';
 
 interface SuperFormComponentProps {
@@ -15,7 +16,7 @@ export function SuperFormComponent(props: SuperFormComponentProps): JSX.Element 
     let nextButton = props.form.getNextButton();
     let prevButton = props.form.getPreviousButton();
     nextButton.loading = props.form.loadingState.name === 'Loading';
-    let formVisitor = new ReactFormVisitor(new ReactSectionVisitor(), props.form.onChange);
+    let formVisitor = new ReactSuperFormVisitor(new ReactSectionVisitor(), props.form.onChange);
     let currentForm = props.form.getCurrentForm();
     if (currentForm) {
         currentForm.accept(formVisitor);

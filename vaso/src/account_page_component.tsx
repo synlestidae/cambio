@@ -3,6 +3,7 @@ import {Account} from './domain/account';
 import {ActionCreators} from './flux/action_creators';
 import {AccountLine} from './account_line';
 import {AccountPage} from './flux/state/account_page';
+import {EthAccountPanel} from './eth_account_panel';
 
 interface AccountPageComponentProps {
     actions: ActionCreators,
@@ -19,8 +20,7 @@ export function AccountPageComponent(props: AccountPageComponentProps) {
         <div>
           {accounts}
         </div>
-        <div className="account-container">
-          Eth accounts go here.
-        </div>
+        <EthAccountPanel columns={[]} rows={[]}/>
     </div>;
 }
+

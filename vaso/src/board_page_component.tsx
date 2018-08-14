@@ -2,32 +2,17 @@ import * as React from "react";
 import {Order} from './domain/order';
 import {ActionCreators} from './flux/action_creators';
 import {BoardPage} from './flux/state/board_page';
-import {TableComponent, Column, OperationColumn, FieldColumn} from './table_component';
+import {Table} from './table/table';
+import {Column} from './table/column';
+import {FieldColumn} from './table/field_column';
+import {TableVisitor} from './table/table_visitor';
 import {NewOrderComponent} from './new_order_component';
 import {getUniqueID} from './flux/state/new_order';
+import {ReactTableVisitor} from './table/react_table_visitor';
 
 interface BoardPageComponentProps {
     actions: ActionCreators,
     page: BoardPage
-}
-
-function getColumns(props: BoardPageComponentProps) {
-    let actions = props.actions;
-    let headers: Column<Order>[] = [];
-
-    let tradeType = new FieldColumn<Order>('Trade type', 'isBuy', (o: Order) => o.isBuy? 'BUY' : 'SELL');
-    let priceHeader = new FieldColumn<Order>('Ether unit price', 'price', (o: Order) => o.formatPrice() || '--');
-    let expiryHeader = new FieldColumn<Order>('Expiry', 'expiresAt', (o: Order) => formatMinutes(o.expiresAt, new Date()));
-    let statusHeader = new FieldColumn<Order>('Status', 'status', (o: Order) => getStatus(o));
-    let operationHeader = new OperationColumn<Order>('Buy', 'buy', (o: Order) => {});
-
-    headers.push(tradeType);
-    headers.push(priceHeader);
-    headers.push(expiryHeader);
-    headers.push(statusHeader);
-    headers.push(operationHeader);
-
-    return headers;
 }
 
 function formatMinutes(date1: Date, date2: Date): string {
@@ -47,9 +32,6 @@ function getStatus(o: Order) {
 
 export function BoardPageComponent(props: BoardPageComponentProps) {
     let orders = props.page.active_orders;
-    let columns = getColumns(props);
-    let sortCB = (field: string) => props.actions.sortOrders(field);
-    orders = sortRows(orders, props.page.sortField);
     let newOrder = props.page.newOrder;
     let placeOrderModal; 
     if (newOrder) {
@@ -61,13 +43,18 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
         placeOrderModal = null;
     }
     const emptyMessage = 'No orders to show.';
+
+    let columns = getColumns(props);
+    let table = new Table(getColumns(props), orders);
+    let visitor = new ReactTableVisitor();
+    table.accept(visitor)
+
     return <div>
         <div>
           <NewOrderButton onClick={(isBuy: boolean) => props.actions.newOrder(isBuy)} disabled={Boolean(newOrder)}></NewOrderButton>
           {placeOrderModal}
         </div>
-        <TableComponent columns={columns} rows={orders} sortCB={sortCB} emptyMessage={emptyMessage}>
-        </TableComponent>
+        {visitor.render()}
     </div>;
 }
 
@@ -98,4 +85,23 @@ function sortRows(orders: Order[], field: string): Order[]{
         }
         return val1 - val2;
     });
+}
+
+function getColumns(props: BoardPageComponentProps) {
+    let actions = props.actions;
+    let headers: Column<Order>[] = [];
+
+    let tradeType = new FieldColumn<Order>('Trade type', 'isBuy', (o: Order) => o.isBuy? 'BUY' : 'SELL');
+    let priceHeader = new FieldColumn<Order>('Ether unit price', 'price', (o: Order) => o.formatPrice() || '--');
+    let expiryHeader = new FieldColumn<Order>('Expiry', 'expiresAt', (o: Order) => formatMinutes(o.expiresAt, new Date()));
+    let statusHeader = new FieldColumn<Order>('Status', 'status', (o: Order) => getStatus(o));
+    let operationHeader = new FieldColumn<Order>('Buy', 'buy', (o: Order) => 'Buy');
+
+    headers.push(tradeType);
+    headers.push(priceHeader);
+    headers.push(expiryHeader);
+    headers.push(statusHeader);
+    headers.push(operationHeader);
+
+    return headers;
 }
