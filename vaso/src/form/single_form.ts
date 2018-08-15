@@ -15,5 +15,6 @@ export class SingleForm {
     public accept(visitor: SingleFormVisitor) {
         this.form.accept(visitor);
         visitor.visitOnCancel(this.onCancel);
+        visitor.visitLoadingState(this.loadingState);
     }
 }

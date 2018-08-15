@@ -223,21 +223,27 @@ export class Api {
         return CryptoAccount.parse(result);
     }
 
-    private async makeRequest(path: string, method: string, jsonBody?: any|null): Promise<Response> {
+    private makeRequest(path: string, method: string, jsonBody?: any|null): Promise<Response> {
         let url = this.getURL(path, method, jsonBody);
         let params = this.getParams(method, jsonBody);
-        let response: Response;
+        let response: Promise<Response>;
         try {
-            response = await fetch(url, params);
+            response = fetch(url, params);
         } catch (e) {
             return Promise.reject(e);
         }
-        if (!(response.status >= 400)) {
-            return response;
-        } else {
-            let errorObj = await response.json();
-            throw new Error(errorObj.desc);
-        }
+        return response.then(async function (response: Response) {
+            if (!(response.status >= 400)) {
+                return response;
+            } else {
+                throw new Error((await response.json()).desc);
+            }
+
+                /*} else {
+                return response.json().then((r: any) => { throw new Error(r.desc) });
+                //throw new Error(); //response.json().then((r: any) => Promise.reject(r.desc));
+            }*/
+        });
     }
 
     private getURL(url: string, method: string, body: any|null) {

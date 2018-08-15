@@ -1,6 +1,6 @@
-import { ReactFormVisitor } from './react_form_visitor';
+import { SingleFormVisitor } from './single_form_visitor';
 
-export class ReactSuperFormVisitor extends ReactFormVisitor {
+export class ReactSuperFormVisitor extends SingleFormVisitor {
     public visitOnSubmit() {
     }
 
