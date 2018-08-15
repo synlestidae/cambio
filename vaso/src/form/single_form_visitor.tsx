@@ -8,6 +8,7 @@ export class SingleFormVisitor extends ReactFormVisitor {
     }
     
     public visitLoadingState(loadingState: LoadingState) {
+        console.log('visiting lovely loading state', loadingState);
         if (loadingState.name === 'Error') {
             let message: string;
             if (loadingState.message) {

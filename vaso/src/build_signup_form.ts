@@ -58,6 +58,9 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
     });
 
     superForm.loadingState = props.signupState.loadingState;
+    loginInfoForm.loadingState = props.signupState.loadingState;
+    personalDetailsForm.loadingState = superForm.loadingState;
+    confirmationForm.loadingState = superForm.loadingState;
 
     return superForm;
 }
