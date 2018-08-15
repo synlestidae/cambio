@@ -5,6 +5,8 @@ import {Column} from '../table/column';
 import {ClipboardCopy} from '../clipboard_copy';
 import {SingleForm} from '../form/single_form';
 import {SingleFormVisitor} from './../form/single_form_visitor';
+import {EditBox} from './edit_box';
+import {ActionCreators} from '../flux/action_creators';
 
 export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
     private headers: JSX.Element[] = [];
@@ -13,12 +15,14 @@ export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
     private footer: JSX.Element|null = null;
     private onEdit: () => void;
     private onChange: () => void;
+    private actions: ActionCreators;
 
     public newAccountForm: SingleForm|null;
 
-    constructor(onEdit: () => void, onChange: () => void) {
+    constructor(onEdit: () => void, onChange: () => void, actions: ActionCreators) {
         this.onEdit = onEdit;
         this.onChange = onChange;
+        this.actions = actions;
     }
 
     public visitColumnHeader(h: Column<CryptoAccount>) {
@@ -46,8 +50,10 @@ export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
                 value = value.substring(2);
             }
             cell = <div style={{fontFamily: 'monospace'}}>{value} <ClipboardCopy value={value}/></div>;
-        } else if (column.field == 'balance') {
+        } else if (column.field === 'balance') {
             cell = <span>--</span>;
+        } else if (column.field === 'name') {
+            cell = <EditBox value={value} onDone={(newName: string) => this.actions.changeCryptoAccountName(rowValue, newName)}/> 
         } else {
             cell = <span>{value}</span>;
         }

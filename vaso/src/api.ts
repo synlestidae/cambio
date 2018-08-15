@@ -209,6 +209,7 @@ export class Api {
         for (let account of result) {
             accounts.push(CryptoAccount.parse(account));
         }
+        accounts.sort((c1: CryptoAccount, c2: CryptoAccount) => c1.id.localeCompare(c2.id));
         return accounts;
     }
 
@@ -217,6 +218,17 @@ export class Api {
             id: null,
             address: account.address,
             name: account.name,
+            currency_type: 'Ether'
+        }).then((response: Response) => response.json());
+
+        return CryptoAccount.parse(result);
+    }
+
+    public async asyncPostModifiedCryptoAccount(account: CryptoAccount, newName: string): Promise<CryptoAccount> {
+        let result = await this.makeRequest('/crypto/accounts/edit', 'POST', {
+            id: account.id,
+            address: account.address,
+            name: newName,
             currency_type: 'Ether'
         }).then((response: Response) => response.json());
 

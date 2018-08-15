@@ -365,6 +365,12 @@ export class ActionCreators {
 
     }
 
+    public async changeCryptoAccountName(account: CryptoAccount, newName: string) {
+        await this.api.asyncPostModifiedCryptoAccount(account, newName);
+        this.loadCryptoAccounts();
+
+    }
+
     public discardNewCryptoAccount() {
         this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, null));
     }

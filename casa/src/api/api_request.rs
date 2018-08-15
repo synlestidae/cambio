@@ -119,6 +119,9 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
             &["crypto", "accounts"] => {
                 ApiRequest::CryptoAccount(CryptoAccountApiRequest::GetAccounts)
             },
+            &["crypto", "accounts", "edit"] => {
+                ApiRequest::CryptoAccount(CryptoAccountApiRequest::ModifyAccount(get_api_obj(request)?))
+            },
             &["crypto", "accounts", "new"] => {
                 ApiRequest::CryptoAccount(CryptoAccountApiRequest::NewAccount(get_api_obj(request)?))
             },

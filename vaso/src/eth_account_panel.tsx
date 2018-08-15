@@ -21,7 +21,8 @@ export function EthAccountPanel(props: EthAccountPanelProps) {
     let table = getTable(props.accounts);
     let visitor = new CryptoAccountTableVisitor(
         () => props.actions.beginNewCryptoAccount(),
-        () => props.actions.setNewCryptoAccount(props.editingAccount)
+        () => props.actions.setNewCryptoAccount(props.editingAccount),
+        props.actions
     );
     if (props.editingAccount) {
         visitor.newAccountForm = getForm(props.editingAccount, 

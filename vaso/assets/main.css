@@ -363,3 +363,8 @@ table.table-component tr.empty-row td {
 .crypto-account-footer {
     padding-top: 1em;
 }
+
+.little-input {
+    display: inline;
+    width: initial; 
+}
