@@ -3,13 +3,13 @@ import * as React from 'react';
 import {ReactSectionVisitor} from './react_section_visitor';
 
 export class ReactFormVisitor {
-    private components: JSX.Element[] = [];
+    protected components: JSX.Element[] = [];
     private sectionVisitor: ReactSectionVisitor;
     private onChange: Function;
     private onSubmit: Function = () => {};
 
-    constructor(sectionVisitor: ReactSectionVisitor, onChange: Function) {
-        this.sectionVisitor = sectionVisitor;
+    constructor(onChange: Function, sectionVisitor?: ReactSectionVisitor) {
+        this.sectionVisitor = sectionVisitor || new ReactSectionVisitor();
         this.onChange = onChange;
     }
 

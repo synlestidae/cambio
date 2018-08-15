@@ -355,3 +355,11 @@ table.table-component tr.empty-row td {
     border-color: var(--error-color);
     background-color: #fcbabf;
 }
+
+.clipboard-copy:hover {
+    cursor: pointer;
+}
+
+.crypto-account-footer {
+    padding-top: 1em;
+}

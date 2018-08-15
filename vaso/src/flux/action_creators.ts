@@ -8,6 +8,7 @@ import {DollarPayment} from '../domain/payment';
 import {CurrencyCode} from '../domain/currency_code';
 import {OrderRequest} from '../domain/order_request';
 import {Order} from '../domain/order';
+import {CryptoAccount} from '../domain/crypto_account';
 import {BoardUpdate} from '../domain/board_update';
 import {PersonalDetails} from '../domain/personal_details';
 import {SignupState} from './state/signup_state';
@@ -347,6 +348,22 @@ export class ActionCreators {
         } catch (e) {
             console.error('Error getting updates', e);
         }
+    }
+
+    public beginNewCryptoAccount() {
+        this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, new CryptoAccount()));
+    }
+
+    public setNewCryptoAccount(account: CryptoAccount) {
+        this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, account));
+    }
+
+    public saveNewCryptoAccount(account: CryptoAccount) {
+        this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, account));
+    }
+
+    public discardNewCryptoAccount() {
+        this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, null));
     }
 
     public creditAccount(accountId: string) {

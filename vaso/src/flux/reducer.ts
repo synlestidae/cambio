@@ -10,6 +10,7 @@ import {Order} from '../domain/order';
 import {PersonalDetails} from '../domain/personal_details';
 import {Transaction} from '../domain/transaction';
 import {NewOrder, OrderState} from './state/new_order';
+import {CryptoAccount} from '../domain/crypto_account';
 import {RegistrationInfo} from '../domain/registration_info';
 import {SignupState} from './state/signup_state';
 import {SignupStateName} from './state/signup_state_name';
@@ -144,6 +145,11 @@ function reduceAccounts(state: AppState, action: Action): AppState {
             case 'START_LOADING_TRANSACTIONS':
                 if (state.page.openOptions instanceof TransactionListOption) {
                     state.page.openOptions.loadingState.startLoading();
+                }
+                break;
+            case 'SET_NEW_CRYPTO_ACCOUNT':
+                if (action.payload === null || action.payload instanceof CryptoAccount) {
+                    state.page.editingCryptoAccount = action.payload;
                 }
                 break;
             case 'SUCCESS_LOADING_TRANSACTIONS':

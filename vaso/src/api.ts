@@ -212,6 +212,17 @@ export class Api {
         return accounts;
     }
 
+    public async asyncPostNewCryptoAccount(account: CryptoAccount): Promise<CryptoAccount> {
+        let result = await this.makeRequest('/crypto/accounts/new', 'POST', {
+            id: null,
+            address: account.address,
+            name: account.name,
+            currency_type: 'ETH'
+        }).then((response: Response) => response.json());
+
+        return CryptoAccount.parse(result);
+    }
+
     private async makeRequest(path: string, method: string, jsonBody?: any|null): Promise<Response> {
         let url = this.getURL(path, method, jsonBody);
         let params = this.getParams(method, jsonBody);

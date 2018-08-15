@@ -16,7 +16,7 @@ export function SuperFormComponent(props: SuperFormComponentProps): JSX.Element 
     let nextButton = props.form.getNextButton();
     let prevButton = props.form.getPreviousButton();
     nextButton.loading = props.form.loadingState.name === 'Loading';
-    let formVisitor = new ReactSuperFormVisitor(new ReactSectionVisitor(), props.form.onChange);
+    let formVisitor = new ReactSuperFormVisitor(props.form.onChange, new ReactSectionVisitor());
     let currentForm = props.form.getCurrentForm();
     if (currentForm) {
         currentForm.accept(formVisitor);

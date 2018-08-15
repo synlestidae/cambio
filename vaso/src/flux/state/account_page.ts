@@ -11,6 +11,7 @@ export class AccountPage implements Page {
     public loadingState: LoadingState = new LoadingState();
     public accounts: Account[]|null = null;
     public cryptoAccounts: CryptoAccount[]|null = null;
+    public editingCryptoAccount: CryptoAccount|null = null;
 
     public openAccount: string|null;
     public openOptions: AccountOption;

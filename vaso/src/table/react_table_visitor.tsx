@@ -41,7 +41,7 @@ export class ReactTableVisitor implements TableVisitor<any> {
     }
 
     public visitCell(rowValue: any, column: Column<any>): void {
-        let cell = rowValue[column.field] || '';
+        let cell: string = rowValue[column.field] || '';
         this.currentRow.push(<td key={column.field}>{cell}</td>);
     }
 
@@ -53,5 +53,13 @@ export class ReactTableVisitor implements TableVisitor<any> {
             this.rows.push(<tr key={this.key++}>{this.currentRow}</tr>);
         }
         this.currentRow = [];
+    }
+
+    private emptyRow(): JSX.Element {
+        return <tr className="empty-row">
+          <td colSpan={this.headers.length}>
+            <em>No rows yet.</em>
+          </td>
+        </tr>;
     }
 }

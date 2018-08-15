@@ -44,9 +44,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
         </div>;
     }
 
-    let visitor = new SingleFormVisitor(new ReactSectionVisitor(), 
-        () => props.actions.setOrderRequest(props.newOrder.order)
-    );
+    let visitor = new SingleFormVisitor(() => props.actions.setOrderRequest(props.newOrder.order), new ReactSectionVisitor());
     form.accept(visitor);
 
     return <div className="order-modal">

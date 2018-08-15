@@ -6,7 +6,7 @@ import {SingleFormVisitor} from './single_form_visitor';
 export class SingleForm {
     public form: Form;
     public loadingState = new LoadingState();
-    public onCancel: () => {};
+    public onCancel: () => void;
 
     constructor(sections: Section[], onSubmit: Function, title: string) {
         this.form = new Form(sections, onSubmit, title);
