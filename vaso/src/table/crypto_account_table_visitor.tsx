@@ -45,7 +45,7 @@ export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
             if (value.startsWith('0x')) {
                 value = value.substring(2);
             }
-            cell = <div>{value} <ClipboardCopy value={value}/></div>;
+            cell = <div style={{fontFamily: 'monospace'}}>{value} <ClipboardCopy value={value}/></div>;
         } else if (column.field == 'balance') {
             cell = <span>--</span>;
         } else {

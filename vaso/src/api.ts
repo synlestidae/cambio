@@ -217,7 +217,7 @@ export class Api {
             id: null,
             address: account.address,
             name: account.name,
-            currency_type: 'ETH'
+            currency_type: 'Ether'
         }).then((response: Response) => response.json());
 
         return CryptoAccount.parse(result);

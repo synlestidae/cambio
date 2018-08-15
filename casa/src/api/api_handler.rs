@@ -179,8 +179,8 @@ impl Handler for ApiHandler {
                     CryptoAccountApiRequest::GetAccounts => {
                         api::utils::to_response(crypto_account_api.get_accounts(&user))
                     },
-                    CryptoAccountApiRequest::NewAccount(new_account) => unimplemented!(),
-                    CryptoAccountApiRequest::ModifyAccount(existing_account) => unimplemented!(),
+                    CryptoAccountApiRequest::NewAccount(new_account) => api::utils::to_response(crypto_account_api.new_account(&user, &new_account)),
+                    CryptoAccountApiRequest::ModifyAccount(existing_account) => api::utils::to_response(crypto_account_api.edit_account(&user, &existing_account)),
                 }
             }
         };

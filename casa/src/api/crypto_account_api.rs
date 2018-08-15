@@ -24,9 +24,6 @@ impl<C: GenericConnection> CryptoAccountApi<C> {
     pub fn new_account(&mut self, user: &User, account_request: &CryptoAccountRequest) 
         -> Result<EthAccount, CambioError> {
             let mut tx = self.db.transaction()?;
-            if let Some(..) = account_request.id.unwrap().get_option(&mut tx)? {
-                unimplemented!()
-            }
             let req = account_request.clone();
             let eth_account = EthAccount {
                 id: None,
@@ -41,7 +38,17 @@ impl<C: GenericConnection> CryptoAccountApi<C> {
 
     pub fn edit_account(&mut self, user: &User, account_request: &CryptoAccountRequest) 
         -> Result<EthAccount, CambioError> {
-            unimplemented!()
+        let mut account = match account_request.id {
+            Some(id) => id.get(&mut self.db)?,
+            _ => return Err(CambioError::bad_input("Account request had no ID", "Account request had no ID"))
+        };
+        if account.owner_id != user.owner_id.unwrap() {
+            return Err(CambioError::not_found_search("Item could not found", 
+                "User tried to access unauthorised account"));
+        }
+        account.name = account_request.name.clone();
+        account = account.update(&mut self.db)?;
+        Ok(account)
     }
 
     pub fn delete_account(&mut self, user: &User, account_request: &CryptoAccountRequest) 

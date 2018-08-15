@@ -189,3 +189,11 @@ impl Updateable for domain::Profile {
         Ok(self.id.unwrap().get(db)?)
     }
 }
+
+impl Updateable for domain::EthAccount {
+    fn update<H: GenericConnection>(&self, db: &mut H) -> Result<Self, CambioError> {
+        const SQL: &'static str = "UPDATE ethereum_account_details SET name = $1 WHERE id = $2";
+        db.execute(SQL, &[&self.name, &self.id])?;
+        Ok(self.id.unwrap().get(db)?)
+    }
+}

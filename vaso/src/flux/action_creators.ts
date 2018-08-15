@@ -358,8 +358,11 @@ export class ActionCreators {
         this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, account));
     }
 
-    public saveNewCryptoAccount(account: CryptoAccount) {
-        this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, account));
+    public async saveNewCryptoAccount(account: CryptoAccount) {
+        await this.api.asyncPostNewCryptoAccount(account);
+        this.dispatch(new BasicAction('SET_NEW_CRYPTO_ACCOUNT', null, null));
+        this.loadCryptoAccounts();
+
     }
 
     public discardNewCryptoAccount() {
