@@ -36,7 +36,7 @@ impl ApiRequest {
             ApiRequest::Order(OrderApiRequest::GetChangedOrders(..)) => Method::Get,
             ApiRequest::Order(OrderApiRequest::GetUserOrders) => Method::Get,
             ApiRequest::Order(..) => Method::Post,
-            ApiRequest::Settlement(..) => Method::Post,
+            ApiRequest::Settlement(..) => Method::Get,
             ApiRequest::Payment(..) => Method::Post,
             ApiRequest::CryptoAccount(CryptoAccountApiRequest::GetAccounts) => Method::Get,
             ApiRequest::CryptoAccount(..) => Method::Post,
@@ -104,13 +104,15 @@ impl<'a, 'b, 'c> TryFrom<&'c mut Request<'a, 'b>> for ApiRequest {
                     domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
                 let tx_req = AccountRequest::GetAccountTransactions(account_id);
                 ApiRequest::Account(tx_req)
+            },
+            &["accounts", id, "statement"] => {
+                let account_id =
+                    domain::AccountId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
+                let tx_req = AccountRequest::GetAccountStatement(account_id);
+                ApiRequest::Account(tx_req)
             }
-            &["order", id, "settlement", "auth"] => {
-                let order_id =
-                    domain::OrderId::from_str(id).map_err(|_| ApiError::not_found("Account ID"))?;
-                let cred = try!(get_api_obj(request));
-                let s_req = SettlementRequest::PostSettlementEthAuth(order_id, cred);
-                ApiRequest::Settlement(s_req)
+            &["orders", "settlements"] => {
+                ApiRequest::Settlement(SettlementRequest::GetUserSettlements)
             }
             &["payment"] => {
                 let payment_request: PaymentRequest = try!(get_api_obj(request));

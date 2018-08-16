@@ -174,14 +174,14 @@ impl Readable<domain::Transaction> for domain::AccountId {
                 journal_from.debit as value, 
                 journal_from.transaction_time, 
                 journal_from.accounting_period as accounting_period_id,
-                journal_to.balance as balance_to_account
+                journal_to.balance as balance_to_account,
+                journal_from.balance as balance_from_account
             FROM 
                 journal journal_from,
                 journal journal_to
             WHERE 
-                journal_to.account_id = $1 AND
+                (journal_to.account_id = $1 OR journal_from.account_id = $1)AND
                 journal_from.correspondence_id = journal_to.correspondence_id AND
-                journal_from.correspondence_id = $1 AND 
                 journal_from.debit >= 0 AND 
                 journal_to.credit >= 0
             ORDER BY journal_to.correspondence_id
@@ -239,7 +239,7 @@ impl Readable<domain::OrderSettlement> for domain::UserId {
             SELECT order_settlement.*, order_settlement.id as order_settlement_id
             FROM order_settlement 
             JOIN users ON users.id = order_settlement.starting_user
-            WHERE id = $1";
+            WHERE users.id = $1";
         PostgresHelperImpl::query(db, SQL, &[&self])
     }
 }

@@ -7,5 +7,9 @@ export abstract class Column<E> {
         this.title = title;
         this.field = title;
     }
+
+    public format(val: E): string {
+        return String((<any>val)[this.field]);
+    }
 }
 

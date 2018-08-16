@@ -151,22 +151,18 @@ impl Handler for ApiHandler {
                     }
                     AccountRequest::GetAccountTransactions(account_id) => {
                         account_api.get_transactions(&user, account_id)
+                    },
+                    AccountRequest::GetAccountStatement(account_id) => {
+                        api::utils::to_response(account_api.get_statement(&user, account_id))
                     }
                 }
             }
             ApiRequest::Settlement(settlement_request) => {
-                unimplemented!();
-                /*let tx = self.job_tx.lock().unwrap();
-                let mut settlement_api = SettlementApiImpl::new(db, tx.clone());
-                match settlement_request {
-                    SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
-                        settlement_api.post_settlement_eth_auth(&user, order_id, &cred)
-                    }
-                    SettlementRequest::GetSettlementStatus(order_id) => {
-                        settlement_api.get_settlement_status(&order_id)
-                    }
-                }*/
-            }
+                let mut settlement_api = SettlementApiImpl::new(db);
+                api::utils::to_response(match settlement_request {
+                    SettlementRequest::GetUserSettlements => settlement_api.get_user_settlements(&user)
+                })
+            },
             ApiRequest::Payment(payment_req) => {
                 let mut payment_api = PaymentApi::new(&self.server_config.get_poli_config(), db);
                 match payment_api.request_payment(&user, &payment_req) {

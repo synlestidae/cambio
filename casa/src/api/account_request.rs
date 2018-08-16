@@ -5,4 +5,5 @@ pub enum AccountRequest {
     GetAccounts,
     GetAccount(domain::AccountId),
     GetAccountTransactions(domain::AccountId),
+    GetAccountStatement(domain::AccountId),
 }

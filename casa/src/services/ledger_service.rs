@@ -22,6 +22,7 @@ impl LedgerService {
         amount: Decimal,
     ) -> Result<Transaction, CambioError> {
         let amount_cents = amount.to_cents();
+        info!("Transferring {} cents from {:?} to {:?}", amount_cents, deduct_account, credit_account);
         let rows = try!(db.query(
             "SELECT transfer_asset($1, '2018-01-01', '2018-03-31', $2, $3, $4);",
             &[&asset_type, &deduct_account, &credit_account, &amount_cents]
@@ -73,14 +74,14 @@ impl LedgerService {
         let mut tx = db.transaction()?;
         let transaction = 
             self.transfer_money(&mut tx, deduct_account, credit_account, asset_type, amount)?;
-        // double check the balance
-        if transaction.balance_from_account < 0 {
+        // TODO: double check the balance where the account is a positive balance account
+        /*if transaction.balance_from_account < 0 {
             tx.set_rollback();
             return Err(CambioError::unfair_operation(
                 "Insufficient funds to complete the order.", 
                 "Balance of wallet too low.")
             );
-        }
+        }*/
 
         tx.commit()?;
         Ok(transaction)

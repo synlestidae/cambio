@@ -23,11 +23,13 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
         }
     }
 
-    pub fn get_settlements(&mut self, user: &User) -> Result<Vec<UserSettlement>, CambioError> {
+    pub fn get_user_settlements(&mut self, user: &User) -> Result<Vec<UserSettlement>, CambioError> {
+        info!("Getting settlements for user {:?}", user.id);
         let owner_id = user.owner_id.unwrap();
         let settlements: Vec<OrderSettlement> = user.id.unwrap().get_vec(&mut self.db)?; 
         let mut user_settlements = Vec::new();
         for settlement in settlements {
+            info!("Unpacking settlement {:?}", settlement.id);
             let buy_order: Order = settlement.buying_crypto_id.get(&mut self.db)?;
             let sell_order: Order = settlement.buying_fiat_id.get(&mut self.db)?;
             let (user_order, other_order) = if buy_order.owner_id == owner_id { 
@@ -50,6 +52,7 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
 
     pub fn get_blockchain_info(&mut self, settlement: &OrderSettlement, user_order: &Order, other_order: &Order) 
         -> Result<(ByteAddress, ByteAddress, DateTime<Utc>), CambioError> {
+        info!("Getting blockchain info for {:?}", settlement.id);
         let order_with_criteria_id = if user_order.is_buy() {
             user_order.id.unwrap()
         } else {
@@ -63,6 +66,7 @@ impl<C: GenericConnection> SettlementApiImpl<C> {
             _ => return Err(CambioError::shouldnt_happen("The status for the settlement unexpected.", 
                 "Settlement state incorrect with respect to criteria."))
         };
+        info!("Blockchain info {:?}: from={:?}, to={:?}, due={:?} ", settlement.id, from_id, to_id, due_on_blockchain_at);
         Ok((from_id.get(&mut self.db)?.address, to_id.get(&mut self.db)?.address, due_on_blockchain_at))
     }
 }

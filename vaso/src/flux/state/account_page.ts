@@ -3,6 +3,7 @@ import {LoadingState} from './loading_state';
 import {Account} from '../../domain/account';
 import {CryptoAccount} from '../../domain/crypto_account';
 import {Transaction} from '../../domain/transaction';
+import {UserSettlement} from '../../domain/user_settlement';
 
 export type AccountOption = CreditAccountOption | CashOutOption | TransactionListOption | null;
 
@@ -10,8 +11,11 @@ export class AccountPage implements Page {
     public readonly name: string = 'ACCOUNTS';
     public loadingState: LoadingState = new LoadingState();
     public accounts: Account[]|null = null;
+
     public cryptoAccounts: CryptoAccount[]|null = null;
     public editingCryptoAccount: CryptoAccount|null = null;
+
+    public userSettlements: UserSettlement[]|null = null;
 
     public openAccount: string|null;
     public openOptions: AccountOption;

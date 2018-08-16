@@ -152,6 +152,11 @@ impl<C: GenericConnection> OrderApiImpl<C> {
         email_address: &str,
     ) -> Result<domain::Order, CambioError> {
         let mut tx = db.transaction()?;
+        info!("User with email {} placing {} of fiat={:?}, crypto={:?}", 
+              email_address, 
+              if order.is_buy { "BUY" } else { "SELL" }, 
+              order.amount_fiat, 
+              order.amount_crypto);
         let user: domain::User = Readable::get(email_address, &mut tx)?;
         let user_id = user.id.unwrap();
         let placed_order = self.order_service.place_order(&mut tx, user_id, order)?;

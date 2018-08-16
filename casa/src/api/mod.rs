@@ -1,4 +1,5 @@
 mod account_api_impl;
+mod transaction_info;
 mod user_settlement;
 mod order_completion_request;
 mod order_changes;
@@ -68,3 +69,4 @@ pub use self::crypto_account_api::CryptoAccountApi;
 pub use self::crypto_account_request::CryptoAccountRequest;
 pub use self::crypto_account_api_request::CryptoAccountApiRequest;
 pub use self::user_settlement::UserSettlement;
+pub use self::transaction_info::TransactionInfo;

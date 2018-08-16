@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "DROP DATABASE test_database_only" | psql
+#echo "DROP DATABASE test_database_only" | psql
 
 set -e
 set -o pipefail
@@ -8,7 +8,7 @@ set -o pipefail
 clean_up () {
     #echo "Killing geth"
     #pkill geth
-    echo "DROP DATABASE test_database_only" | psql
+    #echo "DROP DATABASE test_database_only" | psql
 }
 
 

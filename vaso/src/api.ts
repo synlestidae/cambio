@@ -6,6 +6,7 @@ import {Order} from './domain/order';
 import {BoardUpdate} from './domain/board_update';
 import {OrderRequest} from './domain/order_request';
 import {CurrencyCode} from './domain/currency_code';
+import {UserSettlement} from './domain/user_settlement';
 import {CurrencyDenom} from './domain/currency_denom';
 import {PersonalDetails} from './domain/personal_details';
 import {RegistrationInfo} from './domain/registration_info';
@@ -102,10 +103,10 @@ export class Api {
         return accounts;
     }
 
-    public asyncGetAccountTransactions(accountId: string): Promise<Transaction[]> {
-        return this.makeRequest(`/accounts/${accountId}/transactions/`, 'GET')
-            .then((r: Response) => r.json())
-            .then((transactions: any) => (<Transaction[]>transactions));
+    public async asyncGetAccountTransactions(accountId: string): Promise<Transaction[]> {
+        let result = await this.makeRequest(`/accounts/${accountId}/transactions/`, 'GET')
+            .then((r: Response) => r.json());
+        return result.map((tx: any) => Transaction.parse(tx));
     }
 
     public async asyncPostPayment(payment: Payment): Promise<Payment> {
@@ -230,6 +231,12 @@ export class Api {
         }).then((response: Response) => response.json());
 
         return CryptoAccount.parse(result);
+    }
+
+    public async asyncGetUserSettlements(): Promise<UserSettlement> {
+        let result = await this.makeRequest('/orders/settlements', 'GET');
+        let json = await result.json();
+        return json.map((s: any) => UserSettlement.parse(s));
     }
 
     private makeRequest(path: string, method: string, jsonBody?: any|null): Promise<Response> {

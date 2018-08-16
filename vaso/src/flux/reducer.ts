@@ -129,6 +129,12 @@ function reduceAccounts(state: AppState, action: Action): AppState {
                     state.page.cryptoAccounts = action.payload
                 }
                 break;
+
+            case 'SET_USER_SETTLEMENTS':
+                if (action.payload instanceof Array) {
+                    state.page.userSettlements = action.payload
+                }
+                break;
             case 'TOGGLE_CREDIT_ACCOUNT':
                 let id = String(action.value);
                 if (state.page.openOptions) {

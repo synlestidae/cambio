@@ -1,9 +1,7 @@
 use api::utils::{get_session_token, to_response};
-use api::{ApiError, ApiResult, ErrorType};
+use api::{ApiError, ApiResult, ErrorType, TransactionInfo};
 use db::{CambioError, ConnectionSource, PostgresHelper};
-use domain::{
-    Account, AccountId, AccountStatement, Id, OwnerId, Session, Transaction, TransactionId, User,
-};
+use domain::*;
 use hyper::mime::Mime;
 use iron;
 use iron::headers::{Authorization, Bearer, Cookie};
@@ -33,22 +31,14 @@ impl<C: GenericConnection> AccountApiImpl<C> {
         &mut self,
         user: &User,
         account_id: AccountId,
-    ) -> Result<AccountStatement, iron::Response> {
+    ) -> Result<AccountStatement, CambioError> {
         let account_service = AccountService::new();
-        let account: Account = match account_id.get(&mut self.db) {
-            Ok(a) => a,
-            Err(err) => return Err(err.into()),
-        };
+        let account: Account = account_id.get(&mut self.db)?;;
         if user.owner_id != account.owner_user_id {
-            return Err(ApiError::not_found("Account").into());
+            return Err(CambioError::not_found_search("Account not found", "Could not find that account"));
         }
-        match self
-            .account_service
+        self.account_service
             .get_latest_statement(&mut self.db, account_id)
-        {
-            Ok(s) => Ok(s),
-            err => Err(to_response(err)),
-        }
     }
 
     pub fn get_accounts(&mut self, user: &User) -> iron::Response {
@@ -77,7 +67,7 @@ impl<C: GenericConnection> AccountApiImpl<C> {
     pub fn get_transactions(&mut self, user: &User, account_id: AccountId) -> iron::Response {
         match self.get_statement(user, account_id) {
             Ok(statement) => to_response(Ok(statement.transactions)),
-            Err(err) => err,
+            err => to_response(err)
         }
     }
 }

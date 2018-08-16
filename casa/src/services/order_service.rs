@@ -31,10 +31,12 @@ impl OrderService {
 
         let user: User = user_id.get(&mut tx)?;
         let owner_id = user.owner_id.unwrap();
+        info!("Loading accounts for user {:?}", user_id);
         let accounts = AccountSet::from(owner_id.get_vec(&mut tx)?)?;
 
         // hold the money on behalf of the user if they are buying eth
         if order_request.is_buy {
+            info!("User is buying so ${} will be put on hold", order_request.amount_fiat);
             self.ledger_service.transfer_money_positive_deduction(&mut tx, 
                 accounts.nzd_wallet(), 
                 accounts.nzd_hold(),

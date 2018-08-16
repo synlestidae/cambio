@@ -43,11 +43,12 @@ export class ReactTableVisitor<E> implements TableVisitor<E> {
     }
 
     public visitCell(rowValue: E, column: Column<E>): void {
-        let cell: string = (rowValue as any)[column.field] || '';
+        let cell: string = column.format(rowValue); //String((rowValue as any)[column.field]) || '';
         this.currentRow.push(<td key={column.field}>{cell}</td>);
     }
 
     public visitFooter() {
+        this.flushRow();
     }
 
     protected flushRow() {

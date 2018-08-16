@@ -1,4 +1,5 @@
 use db::{CambioError, ErrorKind, ErrorReccomendation, PostgresHelper};
+use api::TransactionInfo;
 use domain::{Account, AccountId, AccountStatement, Transaction};
 use postgres::GenericConnection;
 use repository::Readable;
@@ -17,17 +18,22 @@ impl AccountService {
         account_id: AccountId,
     ) -> Result<AccountStatement, CambioError> {
         let account = try!(account_id.get(db));
-        let mut transactions = try!(self.get_transactions_for_account(db, account_id));
+        let mut db_transactions = self.get_transactions_for_account(db, account_id)?;
+        db_transactions.sort_by_key(|t| t.correspondence_id);
+        info!("Got {} transactions for account {:?}", db_transactions.len(), account_id);
+        let transactions = db_transactions.into_iter()
+            .map(|tx| if tx.from_account == account_id { 
+                TransactionInfo::from_from_transaction(&tx) 
+            } else {  
+                TransactionInfo::from_to_transaction(&tx) 
+            })
+            .collect::<Vec<_>>();
 
-        transactions.sort_by_key(|t: &Transaction| t.correspondence_id);
-
-        let mut opening_balance = 0;
-        let mut closing_balance = 0;
-
-        if transactions.len() > 0 {
-            opening_balance = (&transactions[0]).balance_to_account;
-            closing_balance = (&transactions[transactions.len() - 1]).balance_to_account;
-        }
+        let (opening_balance, closing_balance) = if transactions.len() > 0 {
+            ((&transactions[0]).balance, (&transactions[transactions.len() - 1]).balance)
+        } else {
+            (0, 0)
+        };
 
         Ok(AccountStatement {
             account: account,

@@ -113,6 +113,7 @@ export class ActionCreators {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Accounts'));
         this.loadFiatAccounts();
         this.loadCryptoAccounts();
+        this.loadUserSettlements();
     }
 
     public async loadFiatAccounts() {
@@ -370,6 +371,13 @@ export class ActionCreators {
         await this.api.asyncPostModifiedCryptoAccount(account, newName);
         this.loadCryptoAccounts();
 
+    }
+
+    public async loadUserSettlements() {
+        this.dispatch(new BasicAction('SET_USER_SETTLEMENTS', 
+            null,
+            await this.api.asyncGetUserSettlements()
+        ));
     }
 
     public discardNewCryptoAccount() {
