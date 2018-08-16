@@ -14,6 +14,7 @@ use web3::types::U256;
 pub struct Order {
     #[column_id(order_id)]
     pub id: Option<OrderId>,
+    #[serde(skip_serializing)]
     pub owner_id: OwnerId,
     pub unique_id: String,
     pub amount_fiat: Decimal,

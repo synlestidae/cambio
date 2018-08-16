@@ -24,6 +24,7 @@ export function EthAccountPanel(props: EthAccountPanelProps) {
         () => props.actions.setNewCryptoAccount(props.editingAccount),
         props.actions
     );
+    visitor.emptyMessage = 'You don\'t have any Ethereum accounts yet.';
     if (props.editingAccount) {
         visitor.newAccountForm = getForm(props.editingAccount, 
             () => props.actions.saveNewCryptoAccount(props.editingAccount),

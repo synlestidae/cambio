@@ -155,7 +155,8 @@ impl Handler for ApiHandler {
                 }
             }
             ApiRequest::Settlement(settlement_request) => {
-                let tx = self.job_tx.lock().unwrap();
+                unimplemented!();
+                /*let tx = self.job_tx.lock().unwrap();
                 let mut settlement_api = SettlementApiImpl::new(db, tx.clone());
                 match settlement_request {
                     SettlementRequest::PostSettlementEthAuth(order_id, cred) => {
@@ -164,7 +165,7 @@ impl Handler for ApiHandler {
                     SettlementRequest::GetSettlementStatus(order_id) => {
                         settlement_api.get_settlement_status(&order_id)
                     }
-                }
+                }*/
             }
             ApiRequest::Payment(payment_req) => {
                 let mut payment_api = PaymentApi::new(&self.server_config.get_poli_config(), db);

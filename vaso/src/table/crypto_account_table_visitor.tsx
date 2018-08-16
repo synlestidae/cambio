@@ -1,5 +1,5 @@
 import {CryptoAccount} from '../domain/crypto_account';
-import {TableVisitor} from '../table/table_visitor';
+import {ReactTableVisitor} from '../table/react_table_visitor';
 import * as React from 'react';
 import {Column} from '../table/column';
 import {ClipboardCopy} from '../clipboard_copy';
@@ -8,11 +8,9 @@ import {SingleFormVisitor} from './../form/single_form_visitor';
 import {EditBox} from './edit_box';
 import {ActionCreators} from '../flux/action_creators';
 
-export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
-    private headers: JSX.Element[] = [];
-    private rows: JSX.Element[] = [];
-    private currentRow: JSX.Element[] = [];
+export class CryptoAccountTableVisitor extends ReactTableVisitor<CryptoAccount> {
     private footer: JSX.Element|null = null;
+
     private onEdit: () => void;
     private onChange: () => void;
     private actions: ActionCreators;
@@ -20,25 +18,10 @@ export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
     public newAccountForm: SingleForm|null;
 
     constructor(onEdit: () => void, onChange: () => void, actions: ActionCreators) {
+        super();
         this.onEdit = onEdit;
         this.onChange = onChange;
         this.actions = actions;
-    }
-
-    public visitColumnHeader(h: Column<CryptoAccount>) {
-        this.headers.push(<th key={h.field}>
-             <span>
-                {h.title}
-             </span>
-             &nbsp;
-            </th>);
-    }
-
-    public visitBody(rows: CryptoAccount[], columns: Column<CryptoAccount>[]) {
-    }
-
-    public visitRow(rowValue: CryptoAccount, columns: Column<CryptoAccount>[]) {
-        this.flushRow();
     }
 
     public visitCell(rowValue: CryptoAccount, column: Column<CryptoAccount>) {
@@ -88,18 +71,5 @@ export class CryptoAccountTableVisitor implements TableVisitor<CryptoAccount> {
             {this.rows.length? this.rows : [this.emptyRow()]}
           </tbody>
         </table>;
-    }
-
-    private flushRow() {
-        this.rows.push(<tr key={this.rows.length}>{this.currentRow}</tr>);
-        this.currentRow = [];
-    }
-
-    private emptyRow(): JSX.Element {
-        return <tr className="empty-row">
-          <td colSpan={this.headers.length}>
-            <em>No Ethereum accounts yet.</em>
-          </td>
-        </tr>;
     }
 }

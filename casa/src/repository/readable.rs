@@ -230,6 +230,20 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
     }
 }
 
+impl Readable<domain::OrderSettlement> for domain::UserId {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+        const SQL: &'static str = "
+            SELECT order_settlement.*, order_settlement.id as order_settlement_id
+            FROM order_settlement 
+            JOIN users ON users.id = order_settlement.starting_user
+            WHERE id = $1";
+        PostgresHelperImpl::query(db, SQL, &[&self])
+    }
+}
+
 impl Readable<domain::OrderSettlement> for domain::OrderId {
     fn get_vec<H: GenericConnection>(
         &self,

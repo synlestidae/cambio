@@ -2,17 +2,19 @@ import * as React from "react";
 import {TableVisitor} from './table_visitor';
 import {Column} from './column';
 
-export class ReactTableVisitor implements TableVisitor<any> {
-    private headers: JSX.Element[] = [];
-    private rows: JSX.Element[] = [];
+export class ReactTableVisitor<E> implements TableVisitor<E> {
+    public emptyMessage: string|null = '';
 
-    private currentRow: JSX.Element[] = [];
+    protected headers: JSX.Element[] = [];
+    protected rows: JSX.Element[] = [];
+    protected currentRow: JSX.Element[] = [];
+
     private key = 0;
 
     public visitBody() {
     }
 
-    public visitColumnHeader(h: Column<any>) {
+    public visitColumnHeader(h: Column<E>) {
         this.headers.push(<th key={h.field}>
              <span>
                 {h.title}
@@ -25,7 +27,7 @@ export class ReactTableVisitor implements TableVisitor<any> {
         );
     }
 
-    public visitRow(rowValue: any, columns: Column<any>[]): void {
+    public visitRow(rowValue: E, columns: Column<E>[]): void {
         this.flushRow();
     }
 
@@ -40,26 +42,29 @@ export class ReactTableVisitor implements TableVisitor<any> {
         </table>;
     }
 
-    public visitCell(rowValue: any, column: Column<any>): void {
-        let cell: string = rowValue[column.field] || '';
+    public visitCell(rowValue: E, column: Column<E>): void {
+        let cell: string = (rowValue as any)[column.field] || '';
         this.currentRow.push(<td key={column.field}>{cell}</td>);
     }
 
     public visitFooter() {
     }
 
-    private flushRow() {
+    protected flushRow() {
         if (this.currentRow.length) {
             this.rows.push(<tr key={this.key++}>{this.currentRow}</tr>);
         }
         this.currentRow = [];
     }
 
-    private emptyRow(): JSX.Element {
-        return <tr className="empty-row">
-          <td colSpan={this.headers.length}>
-            <em>No rows yet.</em>
-          </td>
-        </tr>;
+    protected emptyRow(): JSX.Element {
+        if (this.emptyMessage) {
+            return <tr className="empty-row">
+              <td colSpan={this.headers.length}>
+                <em>{this.emptyMessage}</em>
+              </td>
+            </tr>;
+        }
+        return null;
     }
 }

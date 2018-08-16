@@ -9,6 +9,6 @@ interface AccountBalanceProps {
 export function AccountBalance(props: AccountBalanceProps) {
     return <div>
         <div>Balance: ${props.balance}</div>
-        <div>Availabl: ${props.availableBalance}</div>
+        <div>Available: ${props.availableBalance}</div>
     </div>;
 }
