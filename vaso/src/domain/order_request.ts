@@ -5,6 +5,7 @@ export class OrderRequest {
     ether: number = 0;
     dollars: number = 0;
     uniqueId: string = '';
+    address: string = '';
     isBuy: boolean = true;
     minutesActive = 15;
 

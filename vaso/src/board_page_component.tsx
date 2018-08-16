@@ -36,7 +36,7 @@ export function BoardPageComponent(props: BoardPageComponentProps) {
     let placeOrderModal; 
     if (newOrder) {
         placeOrderModal = <div className="modal-container">
-          <NewOrderComponent newOrder={newOrder} actions={props.actions}>
+          <NewOrderComponent newOrder={newOrder} actions={props.actions} cryptoAccounts={props.page.cryptoAccounts}> 
           </NewOrderComponent>
         </div>; 
     } else {

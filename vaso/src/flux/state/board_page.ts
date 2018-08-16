@@ -1,4 +1,5 @@
 import {Page} from './page';
+import {CryptoAccount} from '../../domain/crypto_account';
 import {LoadingState} from './loading_state';
 import {NewOrder} from './new_order';
 import {Order} from '../../domain/order';
@@ -10,4 +11,5 @@ export class BoardPage implements Page {
     public sortField: string|null = null;
     public sortDir: 'asc'|'desc'|null;
     public newOrder: NewOrder|null = null;
+    public cryptoAccounts: CryptoAccount[]|null = null;
 }

@@ -136,6 +136,7 @@ export class ActionCreators {
         this.dispatch(new BasicAction('OPEN_PAGE', 'Board'));
         this.updateOrderBoard();
         this.subscribeOrderUpdates();
+        this.loadCryptoAccounts();
     }
 
     public openMyAccountPage() {

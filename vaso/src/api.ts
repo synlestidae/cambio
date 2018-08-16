@@ -119,10 +119,7 @@ export class Api {
         let milliEther = order.ether * 1000;
         let wei = bigInt(milliEther).multiply(WEI_FACTOR);
         let amountFiat = order.dollars.toString();
-        let address = '0x';
-        for (let i = 0; i < 40; i++) {
-            address = `${address}0`;
-        }
+        let address = `${order.address}`;
         let orderJSON = {
             unique_id: order.uniqueId,
             amount_fiat: order.dollars,

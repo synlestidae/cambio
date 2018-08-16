@@ -6,6 +6,8 @@ import {ActionCreators} from './flux/action_creators';
 import {SingleForm} from './form/single_form';
 import {Section} from './form/section';
 import {FieldElement} from './form/field_element';
+import {OptionFieldElement} from './form/option_field_element';
+import {CryptoAccount} from './domain/crypto_account';
 import {TextFieldElement} from './form/text_field_element';
 import {CurrencyFieldElement} from './form/currency_field_element';
 import {ReadonlyFieldElement} from './form/readonly_field_element';
@@ -17,6 +19,7 @@ import {ReactSectionVisitor} from './form/react_section_visitor';
 
 interface NewOrderComponentProps {
     newOrder: NewOrder,
+    cryptoAccounts: CryptoAccount[],
     actions: ActionCreators
 }
 
@@ -66,6 +69,15 @@ function getForm(props: NewOrderComponentProps) {
             new CurrencyFieldElement('ether', order, 'ETH to sell')
         ];
     }
+    fields.push(new OptionFieldElement(
+        'address', 
+        order, 
+        `You promise to make a transaction ${order.isBuy? 'from': 'to'}`, 
+        props.cryptoAccounts.map((account: CryptoAccount) => ({ 
+            label: `${account.name} (${account.address.substring(0, 8)}...)`, 
+            value: account.address
+        }))
+    ));
     let price = order.getPrice();
     let formattedPrice = isNaN(price) || !isFinite(price)? '--' : price.toFixed(4);
     let priceField = new ReadonlyFieldElement(formattedPrice, 'ETH price (4 dp)');
