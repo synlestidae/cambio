@@ -293,6 +293,11 @@ function reduceOrderBoard(state: AppState, action: Action): AppState  {
                 break;
             case 'ORDER_SUBMIT_FAIL':
                 page.newOrder.orderState = 'Failed';
+                if (action.payload instanceof Error) {
+                    page.newOrder.error = action.payload;
+                } else {
+                    page.newOrder.error = null;
+                }
                 break;
             case 'ADD_CRYPTO_ACCOUNTS':
                 if (action.payload instanceof Array) {

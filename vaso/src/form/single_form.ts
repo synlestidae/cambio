@@ -8,7 +8,7 @@ export class SingleForm {
     public loadingState = new LoadingState();
     public onCancel: () => void;
 
-    constructor(sections: Section[], onSubmit: Function, title: string) {
+    constructor(sections: Section[], onSubmit: () => void, title: string) {
         this.form = new Form(sections, onSubmit, title);
     }
 

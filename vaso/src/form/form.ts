@@ -5,9 +5,9 @@ export class Form {
     public readonly title: string|null;
     public readonly description: string|null;
     private readonly sections: Section[];
-    private onSubmit: Function;
+    private onSubmit: () => void;
 
-    constructor(sections: Section[], onSubmit: Function, title?: string, description?: string) {
+    constructor(sections: Section[], onSubmit: () => void, title?: string, description?: string) {
         this.sections = sections;
         this.title = title || null;
         this.description = description || null;

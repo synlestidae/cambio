@@ -36,6 +36,7 @@ export class ReactSectionVisitor implements SectionVisitor {
     private renderOptionField(fieldElem: OptionFieldElement): JSX.Element {
         let options = fieldElem.options.map((option: any) => <option value={option.value}>{option.label}</option>);
         return <select className="form-control" onChange={(e: any) => fieldElem.setValue(e.target.value)} value={fieldElem.getValue()}>
+            <option value="">--</option>
             {options}
         </select>;
     }

@@ -4,11 +4,11 @@ import {ReactSectionVisitor} from './react_section_visitor';
 
 export class ReactFormVisitor {
     protected components: JSX.Element[] = [];
+    protected buttons: JSX.Element[] = [];
     private sectionVisitor: ReactSectionVisitor;
-    private onChange: Function;
-    private onSubmit: Function = () => {};
+    private onChange: () => void;
 
-    constructor(onChange: Function, sectionVisitor?: ReactSectionVisitor) {
+    constructor(onChange: () => void, sectionVisitor?: ReactSectionVisitor) {
         this.sectionVisitor = sectionVisitor || new ReactSectionVisitor();
         this.onChange = onChange;
     }
@@ -26,18 +26,17 @@ export class ReactFormVisitor {
         this.components.push(this.sectionVisitor.render());
     }
 
-    public visitOnSubmit(onSubmit: Function) {
-        this.onSubmit = onSubmit;
-        this.components.push(<input className="form-control" type="submit" value="Submit"></input>);
+    public visitOnSubmit(onSubmit: () => void) {
+        let button = <input className="btn btn-primary width-initial non-touching-button" type="input" onClick={onSubmit} value="Submit"></input>
+        this.buttons.push(button);
     }
 
     public render(): JSX.Element {
-        const onSubmit = () => {
-            this.onSubmit();
-            return false;
-        };
-        return <form onChange={() => this.onChange()} onSubmit={onSubmit}>
+        return <form onChange={() => this.onChange()} onSubmit={() => false}>
           {this.components}    
+          <div className="form-row form-buttons">
+            {this.buttons}
+          </div>
         </form>;
     }
 }

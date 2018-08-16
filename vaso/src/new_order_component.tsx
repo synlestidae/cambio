@@ -30,8 +30,12 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     if (props.newOrder.orderState === 'Submitting') {
         loadingState.startLoading();
     } else if (props.newOrder.orderState === 'Failed') {
-        loadingState.name = 'Error';
-        loadingState.message = 'There was an error submitting your order.';
+        if (props.newOrder.error) {
+            loadingState.error(props.newOrder.error);
+        } else {
+            loadingState.name = 'Error';
+            loadingState.message = 'There was an error submitting your order.';
+        }
     }
     if (props.newOrder.orderState === 'Submitting') {
         return <div className="order-modal">Submitting your order now...</div>
@@ -48,6 +52,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
     }
 
     let visitor = new SingleFormVisitor(() => props.actions.setOrderRequest(props.newOrder.order), new ReactSectionVisitor());
+    form.loadingState = loadingState;
     form.accept(visitor);
 
     return <div className="order-modal">
@@ -57,7 +62,7 @@ export function NewOrderComponent(props: NewOrderComponentProps): JSX.Element {
 
 function getForm(props: NewOrderComponentProps) {
     let order = props.newOrder.order;
-    let fields: FieldElement[] = [];
+    let fields: TextFieldElement[] = [];
     if (order.isBuy) {
         fields = [
             new CurrencyFieldElement('ether', order, 'ETH to buy'),
@@ -69,7 +74,7 @@ function getForm(props: NewOrderComponentProps) {
             new CurrencyFieldElement('ether', order, 'ETH to sell')
         ];
     }
-    fields.push(new OptionFieldElement(
+    let optionField = new OptionFieldElement(
         'address', 
         order, 
         `You promise to make a transaction ${order.isBuy? 'from': 'to'}`, 
@@ -77,12 +82,18 @@ function getForm(props: NewOrderComponentProps) {
             label: `${account.name} (${account.address.substring(0, 8)}...)`, 
             value: account.address
         }))
-    ));
+    );
+    fields.push(optionField);
+    for (let f of fields) {
+        f.required = true;
+    }
     let price = order.getPrice();
     let formattedPrice = isNaN(price) || !isFinite(price)? '--' : price.toFixed(4);
     let priceField = new ReadonlyFieldElement(formattedPrice, 'ETH price (4 dp)');
     let section = new Section(fields.concat([priceField]));
-    return new SingleForm([section], 
+    let form = new SingleForm([section], 
         () => props.actions.confirmNewOrder(order), 
         'Place a new order');
+    form.onCancel = () => props.actions.clearOrder();
+    return form;
 }

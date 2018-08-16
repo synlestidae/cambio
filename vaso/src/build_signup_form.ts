@@ -65,7 +65,7 @@ export function buildSignupForm(props: {signupState: SignupState} & PartialSignu
     return superForm;
 }
 
-function getLoginInfoForm(signupState: SignupState, onSubmit: Function) {
+function getLoginInfoForm(signupState: SignupState, onSubmit: () => void) {
     let loginInfoSection = new Section([
         new RequiredTextFieldElement('emailAddress', signupState, 'Email Address', 'email'),
         new PasswordFieldElement('password', signupState, 'Password', 'password'),
@@ -74,7 +74,7 @@ function getLoginInfoForm(signupState: SignupState, onSubmit: Function) {
     return new SingleForm([loginInfoSection], onSubmit, 'Choose your login credentials');
 }
 
-function getPersonalDetailsForm(signupState: SignupState, onSubmit: Function) {
+function getPersonalDetailsForm(signupState: SignupState, onSubmit: () => void) {
     let personalDetailsSection = new Section([
         new RequiredTextFieldElement('firstName', signupState, 'Given name', 'given-name'),
         new RequiredTextFieldElement('familyName', signupState, 'Family name', 'family-name'),
@@ -87,7 +87,7 @@ function getPersonalDetailsForm(signupState: SignupState, onSubmit: Function) {
     return new SingleForm([personalDetailsSection], onSubmit, 'Enter your personal details');
 }
 
-function getConfirmationForm(signupState: SignupState, onSubmit: Function) {
+function getConfirmationForm(signupState: SignupState, onSubmit: () => void) {
     let confirmationSection = new Section([
         new TextFieldElement('confirmationCode', signupState, 'Confirmation code')
     ]);

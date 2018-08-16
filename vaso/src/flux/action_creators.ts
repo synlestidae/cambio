@@ -217,7 +217,7 @@ export class ActionCreators {
             this.dispatch(new BasicAction('ORDER_SUBMIT_SUCCESS'));
         } catch (e) {
             console.error('Error posting order', e);
-            this.dispatch(new BasicAction('ORDER_SUBMIT_FAIL'));
+            this.dispatch(new BasicAction('ORDER_SUBMIT_FAIL', null, e));
             // TODO
             // result is bad. check if the order appears in the board. 
             // if in the board, log the error in the console and go to step (2)
@@ -319,9 +319,9 @@ export class ActionCreators {
     }
 
     public subscribeOrderUpdates() {
-        this.dispatch(new BasicAction('BEGIN_ORDER_UPDATES'));
-        this.isSubscribed = true;
-        this.orderUpdates(new Date());
+        //this.dispatch(new BasicAction('BEGIN_ORDER_UPDATES'));
+        //this.isSubscribed = true;
+        //this.orderUpdates(new Date());
     }
 
     public unsubscribeOrderUpdates() {

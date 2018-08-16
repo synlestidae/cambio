@@ -6,7 +6,7 @@ export class SuperForm<E> {
     private currentForm: E;
     private screens: FormScreen<E>[] = [];
     public loadingState = new LoadingState();
-    public onChange: Function = () => {};
+    public onChange: () => void;
 
     constructor(currentForm: E) {
         this.currentForm = currentForm;

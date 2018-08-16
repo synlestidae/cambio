@@ -3,6 +3,7 @@ import {OrderRequest} from '../../domain/order_request';
 export class NewOrder {
     public unique_id: string = getUniqueID(10);
     public orderState: OrderState = 'Initial';
+    public error: Error|null = null;
     public order: OrderRequest;
     public showValidation = false;
 

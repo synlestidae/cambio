@@ -4,11 +4,10 @@ import * as React from 'react';
 
 export class SingleFormVisitor extends ReactFormVisitor {
     public visitOnCancel(onCancel: () => void) {
-        this.components.push(<input type="button" value="Cancel" onClick={onCancel} />);
+        this.buttons.push(<input className="btn btn-primary width-initial non-touching-button" type="button" value="Cancel" onClick={onCancel} />);
     }
     
     public visitLoadingState(loadingState: LoadingState) {
-        console.log('visiting lovely loading state', loadingState);
         if (loadingState.name === 'Error') {
             let message: string;
             if (loadingState.message) {
