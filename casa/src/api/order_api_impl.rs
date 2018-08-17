@@ -133,14 +133,17 @@ impl<C: GenericConnection> OrderApiImpl<C> {
 
     fn check_order(&self, owner_id: OwnerId, counterparty_order: &Order, request: &OrderRequest) -> Result<(), CambioError> {
         if counterparty_order.is_expired() || !counterparty_order.is_active() {
-            panic!("This order is no longer available for settlement.");
+            CambioError::not_permitted("This order is no longer available for settlement.", 
+                                       "Order has expired or is no longer active");
         }
         if counterparty_order.owner_id == owner_id {
-            panic!("Refuse to trade orders from same person!");
+            CambioError::not_permitted("You cannot complete orders you place yourself.", 
+                                       "Counterparty order has same owner.");
         }
         //let new_order = trade_request.order_request.clone().into_order(owner_id);
         if !request.is_fair(&counterparty_order) {
-            panic!("Offer is not fair");
+            CambioError::unfair_operation("The requested order is not fair to the counterparty.", 
+                "Counteryparty order and request order are not complementary.");
         }
         Ok(()) 
     }

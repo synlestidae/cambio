@@ -5,6 +5,7 @@ import {BoardPage} from './flux/state/board_page';
 import {Table} from './table/table';
 import {Column} from './table/column';
 import {FieldColumn} from './table/field_column';
+import {ButtonColumn} from './table/button_column';
 import {TableVisitor} from './table/table_visitor';
 import {NewOrderComponent} from './new_order_component';
 import {getUniqueID} from './flux/state/new_order';
@@ -95,7 +96,8 @@ function getColumns(props: BoardPageComponentProps) {
     let priceHeader = new FieldColumn<Order>('Ether unit price', 'price', (o: Order) => o.formatPrice() || '--');
     let expiryHeader = new FieldColumn<Order>('Expiry', 'expiresAt', (o: Order) => formatMinutes(o.expiresAt, new Date()));
     let statusHeader = new FieldColumn<Order>('Status', 'status', (o: Order) => getStatus(o));
-    let operationHeader = new FieldColumn<Order>('Buy', 'buy', (o: Order) => 'Buy');
+    let operationHeader = new ButtonColumn<Order>('Action', 
+        'Take order', (o: Order) => props.actions.asyncBuyOrder(o, new Date().toString()));
 
     headers.push(tradeType);
     headers.push(priceHeader);

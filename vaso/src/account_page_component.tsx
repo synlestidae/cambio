@@ -4,6 +4,7 @@ import {ActionCreators} from './flux/action_creators';
 import {AccountLine} from './account_line';
 import {AccountPage} from './flux/state/account_page';
 import {EthAccountPanel} from './eth_account_panel';
+import {SettlementPanel} from './settlement_panel';
 
 interface AccountPageComponentProps {
     actions: ActionCreators,
@@ -23,6 +24,7 @@ export function AccountPageComponent(props: AccountPageComponentProps) {
         <EthAccountPanel accounts={props.page.cryptoAccounts || []} 
             editingAccount={props.page.editingCryptoAccount} 
             actions={props.actions}/>
+        <SettlementPanel settlements={[]} />
     </div>;
 }
 

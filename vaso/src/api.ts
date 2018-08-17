@@ -137,6 +137,7 @@ export class Api {
     }
 
     public async asyncBuyOrder(order: Order, uniqueId: string): Promise<any> {
+        console.log('this bitch', order);
         let address = '0x';
         for (let i = 0; i < 40; i++) {
             address = `${address}0`;

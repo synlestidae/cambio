@@ -20,6 +20,7 @@ export class Order {
             throw new Error(msg)
         };
         let order = new Order();
+        order.id = json.id.toString();
         order.uniqueId = json.unique_id.toString();
         order.amountFiat = json.amount_fiat.toString();
         order.amountCrypto = json.amount_crypto.toString();

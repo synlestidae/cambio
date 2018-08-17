@@ -230,7 +230,7 @@ export class ActionCreators {
         this.dispatch(new BasicAction('ORDER_SUBMIT_CLEAR'));
     }
 
-    public async buyOrder(order: Order, uniqueId: string) {
+    public async asyncBuyOrder(order: Order, uniqueId: string) {
         await this.api.asyncBuyOrder(order, uniqueId);
         this.updateOrderBoard();
     }

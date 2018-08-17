@@ -1,6 +1,7 @@
 import * as React from "react";
 import {TableVisitor} from './table_visitor';
 import {Column} from './column';
+import {ButtonColumn} from './button_column';
 
 export class ReactTableVisitor<E> implements TableVisitor<E> {
     public emptyMessage: string|null = '';
@@ -43,8 +44,21 @@ export class ReactTableVisitor<E> implements TableVisitor<E> {
     }
 
     public visitCell(rowValue: E, column: Column<E>): void {
-        let cell: string = column.format(rowValue); //String((rowValue as any)[column.field]) || '';
-        this.currentRow.push(<td key={column.field}>{cell}</td>);
+        if (column instanceof ButtonColumn) {
+            this.visitButtonCell(rowValue, column);
+        } else {
+            let cell: string = column.format(rowValue); //String((rowValue as any)[column.field]) || '';
+            this.currentRow.push(<td key={column.field}>{cell}</td>);
+        }
+    }
+
+    private visitButtonCell(rowValue: E, column: ButtonColumn<E>): void {
+        let button = <td>
+          <button className="btn" onClick={() => column.onClick(rowValue)} key={column.title}>
+            {column.buttonText}
+          </button>
+        </td>;
+        this.currentRow.push(button);
     }
 
     public visitFooter() {
