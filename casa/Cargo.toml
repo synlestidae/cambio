@@ -51,3 +51,6 @@ branch ="drop_event_handle"
 [dependencies.params]
 git = "https://github.com/iron/params.git"
 tag = "0.7.1" 
+
+[dependencies.colectivo]
+git = "https://github.com/synlestidae/colectivo.git"

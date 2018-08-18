@@ -48,8 +48,10 @@ extern crate serde_urlencoded;
 extern crate threadpool;
 extern crate url;
 extern crate web3;
+extern crate colectivo;
 
 mod api;
+mod event;
 mod config;
 mod cors_middleware;
 mod db;
