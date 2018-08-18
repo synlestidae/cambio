@@ -104,3 +104,15 @@ fn build_chain(config: &config::ServerConfig, colectivo: colectivo::Colectivo) -
     chain.link_around(middleware);
     chain
 }
+
+fn build_clerks(colectivo: &mut colectivo::Colectivo, config: &ServerConfig) {
+    use event::EventHandler;
+    let mut email_clerk = clerks::EmailClerk::new(config.get_email_noreply_config());
+    let email_bus = event::Bus::from_colectivo("registration", colectivo); 
+    thread::spawn(move || {
+        loop {
+            let (e, t) = email_bus.recv().unwrap(); 
+            email_clerk.handle(e, t);
+        }
+    });
+}

@@ -12,6 +12,12 @@ pub struct EmailClerk {
 }
 
 impl EmailClerk {
+    pub fn new(config: EmailConfig) -> Self {
+        Self {
+            config: config
+        }
+    }
+
     fn send_confirmation_email(&self, registration: Registration) {
         let email_request = ConfirmationRequestEmail::new(&registration.confirmation_code);
         let recp = EmailAddress::new(registration.email_address).unwrap(); // TODO this might panic one day

@@ -4,6 +4,7 @@ use colectivo::ConsumerError;
 use colectivo::ConsumerTryError;
 use serde_json::Error as SerdeError;
 
+#[derive(Debug)]
 pub enum BusRecvError {
     TryRecvError(TryRecvError),
     RecvError(RecvError),

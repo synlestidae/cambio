@@ -22,6 +22,14 @@ impl Bus {
         }
     }
 
+    pub fn from_colectivo<T: Into<Topic>>(t: T, c: &mut Colectivo) -> Self {
+        let topic = t.into();
+        Self {
+            producer: c.producer(topic.clone()),
+            consumer: c.consumer(topic)
+        }
+    }
+
     pub fn from_topic<T: Into<Topic>>(t: T) -> Self {
         let colectivo = Colectivo::new();
         let topic = t.into();

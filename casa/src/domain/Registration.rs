@@ -6,6 +6,8 @@ use domain::{IdentifierCode, RegistrationId};
 use postgres;
 use postgres::rows::Row;
 use rand;
+use event::EventKey;
+use colectivo::MessageKey;
 
 use bcrypt::hash;
 use rand::distributions::Alphanumeric;
@@ -45,6 +47,16 @@ impl Registration {
 
     pub fn confirm(&mut self) {
         self.confirmed_at = Some(Utc::now());
+    }
+}
+
+impl EventKey for Registration {
+    fn key(&self) -> MessageKey {
+        /*use byteorder::{LittleEndian, WriteBytesExt};
+        let mut key_bytes = vec![];
+        key_bytes.write_u16::<LittleEndian>(self.id.0).unwrap();
+        MessageKey(key_bytes)*/
+        MessageKey(serde_json::to_string(&self.id).unwrap().into_bytes())
     }
 }
 
