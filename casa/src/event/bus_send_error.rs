@@ -1,5 +1,5 @@
 use std::sync::mpsc::SendError;
-use colectivo::producer_error::ProducerError;
+use colectivo::ProducerError;
 use serde_json::Error as SerdeError;
 
 pub enum BusSendError {

@@ -9,7 +9,7 @@ use std::fmt;
 use std::marker;
 
 #[derive(Debug)]
-struct PoliErrorInfo {
+pub struct PoliErrorInfo {
     description: String,
 }
 

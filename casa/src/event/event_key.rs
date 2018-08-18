@@ -1,4 +1,4 @@
-use colectivo::message_key::MessageKey;
+use colectivo::MessageKey;
 
 pub trait EventKey {
     fn key(&self) -> MessageKey;

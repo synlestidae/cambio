@@ -43,6 +43,7 @@ serde_urlencoded = "0.5.1"
 lettre = "0.8.2"
 lettre_email = "0.8.2"
 byteorder = "1.2.4"
+pub-sub = "2.0.0"
 
 [dependencies.web3]
 git = "https://github.com/synlestidae/rust-web3"
@@ -51,6 +52,3 @@ branch ="drop_event_handle"
 [dependencies.params]
 git = "https://github.com/iron/params.git"
 tag = "0.7.1" 
-
-[dependencies.colectivo]
-git = "https://github.com/synlestidae/colectivo.git"

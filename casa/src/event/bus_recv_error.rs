@@ -1,7 +1,7 @@
 use std::sync::mpsc::TryRecvError;
 use std::sync::mpsc::RecvError;
-use colectivo::consumer_error::ConsumerError;
-use colectivo::consumer_try_error::ConsumerTryError;
+use colectivo::ConsumerError;
+use colectivo::ConsumerTryError;
 use serde_json::Error as SerdeError;
 
 pub enum BusRecvError {

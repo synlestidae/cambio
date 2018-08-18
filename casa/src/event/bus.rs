@@ -1,8 +1,8 @@
 use serde::{Serialize};
 use serde::de::DeserializeOwned;
-use colectivo::producer::Producer;
-use colectivo::consumer::Consumer;
-use colectivo::message::Message;
+use colectivo::Producer;
+use colectivo::Consumer;
+use colectivo::Message;
 use event::*;
 use serde_json;
 

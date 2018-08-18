@@ -1,7 +1,7 @@
 use event::EventKey;
 use serde::{Serialize};
 use serde::de::DeserializeOwned;
-use colectivo::message::Message;
+use colectivo::Message;
 
 /*#[derive(Serialize, Deserialize)]
 pub struct ObjectEvent<E: EventKey + Serialize + DeserializeOwned, T: Serialize + DeserializeOwned>  {
