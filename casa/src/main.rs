@@ -62,6 +62,7 @@ mod repository;
 mod services;
 mod tests;
 mod colectivo;
+mod clerks;
 
 use api::ApiError;
 use bcrypt::{hash, verify, DEFAULT_COST};

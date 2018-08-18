@@ -1,2 +1,3 @@
-mod email_request;
-pub use self::job_request::JobRequest;
+mod email_clerk;
+
+pub use self::email_clerk::EmailClerk;

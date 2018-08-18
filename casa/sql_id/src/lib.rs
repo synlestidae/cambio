@@ -22,6 +22,7 @@ fn impl_sql_traits(ast: &syn::DeriveInput) -> quote::Tokens {
         use serde::ser::Serialize;
         use serde::de::Deserialize;
         use std::str::FromStr;
+        use event::EventKey;
 
         type ToSqlResult = Result<IsNull, Box<std::error::Error + 'static + Send + Sync>>;
 

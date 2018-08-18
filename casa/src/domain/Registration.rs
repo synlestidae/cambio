@@ -12,7 +12,7 @@ use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::iter;
 
-#[derive(TryFromRow, Debug, Clone)]
+#[derive(TryFromRow, Debug, Clone, Serialize, Deserialize)]
 pub struct Registration {
     pub id: Option<RegistrationId>,
     pub email_address: String,
