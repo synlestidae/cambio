@@ -19,6 +19,7 @@ use std::panic::catch_unwind;
 use std::process::Command;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Receiver, Sender};
+use event::Bus;
 use web3;
 
 //pub const WEB3_ADDRESS: &'static str = "../eth_test/data/geth.ipc";
@@ -79,7 +80,7 @@ pub fn get_db_helper() -> PostgresHelperImpl {
 pub fn log_in(username: &str, password: &str) -> String {
     let mut db = get_db_connection();
     let (eloop, web3) = get_web3();
-    let mut user_service = UserService::new(web3);
+    let mut user_service = UserService::new(Bus::from_topic("orders"));
     let user_result = user_service.create_user(
         &mut db,
         username,

@@ -12,27 +12,23 @@ use postgres::GenericConnection;
 use repository::{Creatable, Readable, Updateable};
 use serde_json;
 use services::UserService;
-use web3;
-//use jobs;
 use lettre::EmailAddress;
 use std::sync::mpsc::Sender;
+use event::Bus;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
-    web3: web3::Web3<web3::transports::ipc::Ipc>,
-    email_config: EmailConfig,
+    bus: Bus
 }
 
 impl<C: GenericConnection> UserApi<C> {
     pub fn new(
         db: C,
-        web3: web3::Web3<web3::transports::ipc::Ipc>,
-        email_config: &EmailConfig,
+        bus: Bus
     ) -> Self {
         Self {
             db: db,
-            web3: web3,
-            email_config: email_config.clone(),
+            bus: bus
         }
     }
 
@@ -63,12 +59,6 @@ impl<C: GenericConnection> UserApi<C> {
             identifier_code: created_reg.identifier_code,
         };
 
-        /*let request = jobs::EmailRequest::confirmation_email(
-            &self.email_config.email_address,
-            &EmailAddress::new(email_address).unwrap(),
-            &created_reg.confirmation_code,
-        );*/
-
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();
         iron::Response::with((iron::status::Ok, content, content_type))
@@ -95,7 +85,8 @@ impl<C: GenericConnection> UserApi<C> {
         registration_confirm: &api::RegistrationConfirm,
     ) -> Response {
         info!("Confirming registration");
-        let user_service = UserService::new(self.web3.clone());
+        let user_service = UserService::new(self.bus.clone());
+
         let registration = match registration_confirm.identifier_code.get(&mut self.db) {
             Ok(r) => r,
             Err(err) => return err.into(),
@@ -125,7 +116,7 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn post_log_in(&mut self, login: &api::LogIn) -> Response {
-        let user_service = UserService::new(self.web3.clone());
+        let user_service = UserService::new(self.bus.clone());
         let log_in_result =
             user_service.log_user_in(&mut self.db, &login.email_address, login.password.clone());
 

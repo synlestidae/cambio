@@ -10,17 +10,16 @@ use postgres::GenericConnection;
 use repository::*;
 use services;
 use std::error::Error;
-use web3;
+use event::Bus;
 
 pub struct UserService {
-    web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
 const BCRYPT_COST: u32 = 8;
 
 impl UserService {
-    pub fn new(web3: web3::Web3<web3::transports::ipc::Ipc>) -> Self {
-        Self { web3: web3 }
+    pub fn new(bus: Bus) -> Self {
+        Self {  }
     }
 
     pub fn confirm_registration<T: GenericConnection>(
@@ -108,18 +107,6 @@ impl UserService {
 
         db_tx.commit()?;
         Ok(user)
-    }
-
-    fn create_eth_accounts<T: GenericConnection>(
-        &self,
-        db: &mut T,
-        email_address: &str,
-        password: &str,
-    ) -> Result<EthAccount, CambioError> {
-        let eth_service = services::EthereumService::new(self.web3.clone());
-        let account = try!(eth_service.new_account(db, email_address, password));
-        let account_result = try!(account.create(db));
-        return Ok(account_result);
     }
 
     pub fn log_user_in<T: GenericConnection>(

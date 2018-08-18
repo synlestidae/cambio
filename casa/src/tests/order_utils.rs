@@ -9,6 +9,8 @@ use std::io::Read;
 use std::rc::Rc;
 use tests::get_db_connection;
 use tests::test_utils::*;
+use event::Bus;
+use colectivo::Colectivo;
 use uuid;
 use web3;
 
@@ -29,7 +31,9 @@ pub fn quick_order(
     use std::env;
     let path = env::current_dir().unwrap();
     let (eloop, web3) = get_web3();
-    let mut user_service = services::UserService::new(web3);
+    let bus = Bus::from_topic("orders");
+    let colectivo = Colectivo::new();
+    let mut user_service = services::UserService::new(Bus::from_topic("orders"));
 
     let user1 = user_service
         .register_user(&mut db, buyer, "excellent123", &fake_details())

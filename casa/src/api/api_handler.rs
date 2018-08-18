@@ -16,6 +16,8 @@ use std::convert::TryFrom;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
 use web3;
+use event::Bus;
+use colectivo::Topic;
 
 pub struct ApiHandler {
     server_config: ServerConfig,
@@ -34,6 +36,11 @@ impl ApiHandler {
             web3: web3,
             colectivo: colectivo
         }
+    }
+
+    fn get_bus(&self, topic: Topic) -> Bus {
+        let (p, c) = self.colectivo.channel(topic);
+        Bus::new(p, c)
     }
 }
 
@@ -84,11 +91,7 @@ impl Handler for ApiHandler {
 
         let response = match api_request {
             ApiRequest::User(user_request) => {
-                let mut user_api = UserApi::new(
-                    db,
-                    self.web3.clone(),
-                    &self.server_config.get_email_noreply_config(),
-                );
+                let mut user_api = UserApi::new(db, self.get_bus("users".into()));
                 match user_request {
                     UserRequest::Register(reg) => user_api.put_register(&reg),
                     UserRequest::ResendEmail(email_resend) => {

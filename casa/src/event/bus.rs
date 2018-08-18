@@ -1,11 +1,14 @@
 use serde::{Serialize};
 use serde::de::DeserializeOwned;
+use colectivo::Colectivo;
 use colectivo::Producer;
 use colectivo::Consumer;
 use colectivo::Message;
+use colectivo::Topic;
 use event::*;
 use serde_json;
 
+#[derive(Clone)]
 pub struct Bus {
     producer: Producer,
     consumer: Consumer
@@ -16,6 +19,15 @@ impl Bus {
         Self {
             producer: producer,
             consumer: consumer
+        }
+    }
+
+    pub fn from_topic<T: Into<Topic>>(t: T) -> Self {
+        let colectivo = Colectivo::new();
+        let topic = t.into();
+        Self {
+            producer: colectivo.producer(topic.clone()),
+            consumer: colectivo.consumer(topic)
         }
     }
 
