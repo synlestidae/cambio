@@ -7,10 +7,10 @@ use domain;
 use iron::middleware::Handler;
 use iron::prelude::*;
 use iron::IronResult;
-use jobs::JobRequest;
 use postgres::GenericConnection;
 use postgres::{Connection, TlsMode};
 use repository::Readable;
+use colectivo::Colectivo;
 use repository::Updateable;
 use std::convert::TryFrom;
 use std::sync::mpsc::Sender;
@@ -19,7 +19,6 @@ use web3;
 
 pub struct ApiHandler {
     server_config: ServerConfig,
-    job_tx: Mutex<Sender<JobRequest>>,
     web3: web3::Web3<web3::transports::ipc::Ipc>,
 }
 
@@ -27,11 +26,9 @@ impl ApiHandler {
     pub fn new(
         server_config: &ServerConfig,
         web3: web3::Web3<web3::transports::ipc::Ipc>,
-        job_tx: Sender<JobRequest>,
     ) -> Self {
         Self {
             server_config: server_config.clone(),
-            job_tx: Mutex::new(job_tx),
             web3: web3,
         }
     }
@@ -84,10 +81,8 @@ impl Handler for ApiHandler {
 
         let response = match api_request {
             ApiRequest::User(user_request) => {
-                let tx = self.job_tx.lock().unwrap();
                 let mut user_api = UserApi::new(
                     db,
-                    tx.clone(),
                     self.web3.clone(),
                     &self.server_config.get_email_noreply_config(),
                 );

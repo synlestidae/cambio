@@ -13,13 +13,12 @@ use repository::{Creatable, Readable, Updateable};
 use serde_json;
 use services::UserService;
 use web3;
-use jobs;
+//use jobs;
 use lettre::EmailAddress;
 use std::sync::mpsc::Sender;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
-    tx: Sender<jobs::JobRequest>,
     web3: web3::Web3<web3::transports::ipc::Ipc>,
     email_config: EmailConfig,
 }
@@ -27,12 +26,10 @@ pub struct UserApi<C: GenericConnection> {
 impl<C: GenericConnection> UserApi<C> {
     pub fn new(
         db: C,
-        tx: Sender<jobs::JobRequest>,
         web3: web3::Web3<web3::transports::ipc::Ipc>,
         email_config: &EmailConfig,
     ) -> Self {
         Self {
-            tx: tx,
             db: db,
             web3: web3,
             email_config: email_config.clone(),
@@ -66,12 +63,11 @@ impl<C: GenericConnection> UserApi<C> {
             identifier_code: created_reg.identifier_code,
         };
 
-        let request = jobs::EmailRequest::confirmation_email(
+        /*let request = jobs::EmailRequest::confirmation_email(
             &self.email_config.email_address,
             &EmailAddress::new(email_address).unwrap(),
             &created_reg.confirmation_code,
-        );
-        self.tx.send(jobs::JobRequest::SendEmail(request));
+        );*/
 
         let content_type = "application/json".parse::<Mime>().unwrap();
         let content = serde_json::to_string(&result).unwrap();

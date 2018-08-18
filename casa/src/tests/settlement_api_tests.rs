@@ -2,7 +2,6 @@ use api::*;
 use chrono::prelude::*;
 use chrono::Duration;
 use domain::*;
-use jobs::*;
 use serde_json;
 use std::sync::mpsc::channel;
 use tests::order_utils::*;

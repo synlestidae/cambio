@@ -57,7 +57,6 @@ mod cors_middleware;
 mod db;
 mod domain;
 mod email;
-mod jobs;
 mod payment;
 mod repository;
 mod services;
@@ -74,7 +73,6 @@ use iron::headers::AccessControlAllowOrigin;
 use iron::prelude::*;
 use iron::status;
 use iron::{AfterMiddleware, Iron, IronResult, Request, Response};
-use jobs::JobLoop;
 use persistent::Read;
 use postgres::{Connection, TlsMode};
 use std::collections::HashSet;
@@ -89,27 +87,17 @@ fn main() {
     env_logger::init().expect("Could not start logger");
     let config =
         config::ServerConfig::from_file(CONFIG_PATH).expect("could not open server config file");
-    let tx = start_job_loop(&config);
-    let chain = build_chain(&config, tx);
+    let colectivo = colectivo::Colectivo::new();
+    let chain = build_chain(&config, colectivo);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
 }
 
-fn start_job_loop(config: &ServerConfig) -> Sender<jobs::JobRequest> {
-    info!("Starting job thread");
-    let (tx, rx) = channel();
-    let mut job_loop = JobLoop::new(&config, rx);
-    thread::spawn(move || {
-        info!("Job thread active");
-        job_loop.run();
-    });
-    tx
-}
 
-fn build_chain(config: &config::ServerConfig, sender: Sender<jobs::JobRequest>) -> iron::Chain {
+fn build_chain(config: &config::ServerConfig, colectivo: colectivo::Colectivo) -> iron::Chain {
     debug!("Building chain");
     let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
     let web3 = web3::Web3::new(transport);
-    let api_handler = api::ApiHandler::new(config, web3, sender);
+    let api_handler = api::ApiHandler::new(config, web3);
     let mut chain = iron::Chain::new(api_handler);
     let middleware = CorsMiddleware {};
     chain.link_around(middleware);

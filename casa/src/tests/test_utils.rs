@@ -8,7 +8,6 @@ use db::{PostgresHelperImpl, PostgresSource};
 use iron::headers::Headers;
 use iron::status::Status;
 use iron_test::{request, response};
-use jobs::JobRequest;
 use postgres;
 use postgres::{Connection, TlsMode};
 use serde::{Deserialize, Serialize};
@@ -106,39 +105,26 @@ pub fn log_in(username: &str, password: &str) -> String {
         .0
 }
 
-pub fn post_channel<'a, E: Serialize>(
-    url: &str,
-    token: Option<&str>,
-    obj: Option<E>,
-    tx: Sender<JobRequest>,
-) -> String {
-    make_request(url, token, obj, false, tx)
-}
-
 pub fn post<'a, E: Serialize>(url: &str, token: Option<&str>, obj: Option<E>) -> String {
-    let (tx, rx) = channel();
-    make_request(url, token, obj, false, tx)
+    make_request(url, token, obj, false)
 }
 
 pub fn get<'a, E: Serialize>(url: &str, token: Option<&str>) -> String {
-    let (tx, rx) = channel();
-    make_request(url, token, None as Option<()>, true, tx)
+    make_request(url, token, None as Option<()>, true)
 }
 
 fn make_request<'a, E: Serialize>(
     url: &str,
     token: Option<&str>,
     obj: Option<E>,
-    is_get: bool,
-    tx: Sender<JobRequest>,
-) -> String {
+    is_get: bool) -> String {
     let mut headers = Headers::new();
     headers.set_raw("content-type", vec![b"application/json".to_vec()]);
     if let Some(t) = token {
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
     let (eloop, web3) = get_web3();
-    let handler = api::ApiHandler::new(&get_config(), web3, tx);
+    let handler = api::ApiHandler::new(&get_config(), web3);
     let response = if is_get {
         request::get(url, headers.clone(), &handler).unwrap()
     } else {
