@@ -1,6 +1,7 @@
 use api;
 use api::PersonalDetails;
 use bcrypt::hash;
+use colectivo::Colectivo;
 use chrono::NaiveDate;
 use config::ServerConfig;
 use db::ConnectionSource;
@@ -124,7 +125,7 @@ fn make_request<'a, E: Serialize>(
         headers.set_raw("Authorization", vec![format!("Bearer {}", t).into_bytes()])
     }
     let (eloop, web3) = get_web3();
-    let handler = api::ApiHandler::new(&get_config(), web3);
+    let handler = api::ApiHandler::new(&get_config(), web3, Colectivo::new());
     let response = if is_get {
         request::get(url, headers.clone(), &handler).unwrap()
     } else {

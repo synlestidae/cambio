@@ -97,7 +97,7 @@ fn build_chain(config: &config::ServerConfig, colectivo: colectivo::Colectivo) -
     debug!("Building chain");
     let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
     let web3 = web3::Web3::new(transport);
-    let api_handler = api::ApiHandler::new(config, web3);
+    let api_handler = api::ApiHandler::new(config, web3, colectivo);
     let mut chain = iron::Chain::new(api_handler);
     let middleware = CorsMiddleware {};
     chain.link_around(middleware);
