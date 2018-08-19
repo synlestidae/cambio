@@ -15,6 +15,7 @@ use services::UserService;
 use lettre::EmailAddress;
 use std::sync::mpsc::Sender;
 use event::Bus;
+use event::RegistrationEventType;
 
 pub struct UserApi<C: GenericConnection> {
     db: C,
@@ -33,6 +34,7 @@ impl<C: GenericConnection> UserApi<C> {
     }
 
     pub fn put_register(&mut self, registration: &api::Registration) -> Response {
+        info!("Checking if users exists");
         let existing_user_match = match registration.email_address.get_option(&mut self.db) {
             Ok(op) => op,
             Err(err) => return err.into()
@@ -41,11 +43,13 @@ impl<C: GenericConnection> UserApi<C> {
             let entity_name = &format!("User with email {}", existing_user.email_address);
             return ApiError::already_exists(entity_name).into();
         }
+        info!("Checking password length");
         // test password requirements
         if registration.password.len() < 8 {
             return ApiError::bad_format("Password needs to be at least 8 characters").into();
         }
 
+        info!("Creating a registration entry");
         let pending_registration =
             PendingRegistration::new(&registration.email_address, &registration.password);
 
@@ -53,6 +57,7 @@ impl<C: GenericConnection> UserApi<C> {
             Ok(r) => r,
             Err(err) => return err.into(),
         };
+        self.bus.send(&created_reg, &RegistrationEventType::NewRegistration);
         let email_address = created_reg.email_address;
         let result = api::RegistrationInfo {
             email_address: email_address.clone(),

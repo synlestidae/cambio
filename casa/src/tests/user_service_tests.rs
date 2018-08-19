@@ -1,4 +1,4 @@
-use api::PersonalDetails;
+/*use api::PersonalDetails;
 use chrono::prelude::*;
 use services::*;
 use tests::order_utils::*;
@@ -34,3 +34,4 @@ fn test_creates_eth_account() {
     drop(service);
     drop(eloop);
 }
+*/

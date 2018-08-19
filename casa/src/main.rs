@@ -88,7 +88,8 @@ fn main() {
     env_logger::init().expect("Could not start logger");
     let config =
         config::ServerConfig::from_file(CONFIG_PATH).expect("could not open server config file");
-    let colectivo = colectivo::Colectivo::new();
+    let mut colectivo = colectivo::Colectivo::new();
+    build_clerks(&mut colectivo, &config);
     let chain = build_chain(&config, colectivo);
     Iron::new(chain).http("0.0.0.0:3000").unwrap();
 }
@@ -96,9 +97,7 @@ fn main() {
 
 fn build_chain(config: &config::ServerConfig, colectivo: colectivo::Colectivo) -> iron::Chain {
     debug!("Building chain");
-    let (eloop, transport) = web3::transports::ipc::Ipc::new(config.get_web3_address()).unwrap();
-    let web3 = web3::Web3::new(transport);
-    let api_handler = api::ApiHandler::new(config, web3, colectivo);
+    let api_handler = api::ApiHandler::new(config, colectivo);
     let mut chain = iron::Chain::new(api_handler);
     let middleware = CorsMiddleware {};
     chain.link_around(middleware);
@@ -112,6 +111,7 @@ fn build_clerks(colectivo: &mut colectivo::Colectivo, config: &ServerConfig) {
     thread::spawn(move || {
         loop {
             let (e, t) = email_bus.recv().unwrap(); 
+            info!("Received email message");
             email_clerk.handle(e, t);
         }
     });

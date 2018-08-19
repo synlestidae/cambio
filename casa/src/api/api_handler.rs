@@ -15,25 +15,21 @@ use repository::Updateable;
 use std::convert::TryFrom;
 use std::sync::mpsc::Sender;
 use std::sync::Mutex;
-use web3;
 use event::Bus;
 use colectivo::Topic;
 
 pub struct ApiHandler {
     server_config: ServerConfig,
-    web3: web3::Web3<web3::transports::ipc::Ipc>,
     colectivo: Colectivo
 }
 
 impl ApiHandler {
     pub fn new(
         server_config: &ServerConfig,
-        web3: web3::Web3<web3::transports::ipc::Ipc>,
         colectivo: Colectivo
     ) -> Self {
         Self {
             server_config: server_config.clone(),
-            web3: web3,
             colectivo: colectivo
         }
     }

@@ -6,6 +6,7 @@ set -e
 set -o pipefail
 
 clean_up () {
+    echo "Cleaning up goes here"
     #echo "Killing geth"
     #pkill geth
     #echo "DROP DATABASE test_database_only" | psql

@@ -19,6 +19,7 @@ impl EmailClerk {
     }
 
     fn send_confirmation_email(&self, registration: Registration) {
+        info!("Sending an email to {}", registration.email_address);
         let email_request = ConfirmationRequestEmail::new(&registration.confirmation_code);
         let recp = EmailAddress::new(registration.email_address).unwrap(); // TODO this might panic one day
         let contact = ContactSpec::new_from_to(&self.config.email_address, &recp);
@@ -36,6 +37,7 @@ impl EventHandler for EmailClerk {
     type Ty = RegistrationEventType;
 
     fn handle(&mut self, registration: Self::E, event_type: Self::Ty) {
+        info!("Email clerk received {:?}", event_type);
         match event_type {
             RegistrationEventType::NewRegistration => {
                 self.send_confirmation_email(registration);
