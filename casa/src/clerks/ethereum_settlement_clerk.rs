@@ -42,7 +42,10 @@ impl<C: GenericConnection> EthereumSettlementClerk<C> {
                 criteria_addr: eth_account.address.into()
             };
 
-            self.handle_order_settlement(&mut tx, package);
+            if package.addresses_match() {
+                self.handle_order_settlement(&mut tx, package);
+            }
+
             tx.set_commit();
         }
 

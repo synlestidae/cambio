@@ -21,7 +21,7 @@ impl SettlementPackage {
         self.settlement.can_proceed()
     }
 
-    pub fn completes_settlement(&self) -> bool {
+    pub fn addresses_match(&self) -> bool {
         let (expected_from, expected_to) = if self.settlement.settles_buy {
             // if it settles a buy, a customer specified that the order amount goes into
             // criteria_addr
@@ -29,11 +29,14 @@ impl SettlementPackage {
         } else {
             (self.criteria_addr, self.settlement_addr)
         };
+
+        return self.eth_transfer.from == expected_from && 
+            self.eth_transfer.to == expected_to;
+    }
+
+    pub fn completes_settlement(&self) -> bool {
         let expected_value = self.original_order.amount_crypto.clone().into();
-        return 
-            self.eth_transfer.from == expected_from && 
-            self.eth_transfer.to == expected_to && 
-            self.eth_transfer.value == expected_value;
+        return self.addresses_match() && self.eth_transfer.value == expected_value;
 
     }
 
