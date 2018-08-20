@@ -52,4 +52,8 @@ impl Order {
             self.status = OrderStatus::Settling;
         }
     }
+
+    pub fn mark_settled(&mut self) {
+        self.status = OrderStatus::Settled;
+    }
 }

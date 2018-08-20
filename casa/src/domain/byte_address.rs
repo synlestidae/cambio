@@ -5,6 +5,12 @@ use std::error::Error;
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct ByteAddress(H160); 
 
+impl ByteAddress {
+    pub fn h160<'a>(&'a self) -> &'a H160 {
+        &self.0
+    }
+}
+
 impl From<H160> for ByteAddress {
     fn from(h: H160) -> Self {
         ByteAddress(h)

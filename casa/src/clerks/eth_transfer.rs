@@ -4,7 +4,7 @@ use chrono::prelude::*;
 use web3::types::*;
 use repository::Readable;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct EthTransfer {
     pub block_number: U256,
     pub hash: H256,

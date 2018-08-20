@@ -264,8 +264,8 @@ impl Creatable for domain::OrderSettlement {
     fn run_sql<H: GenericConnection>(&self, db: &mut H) -> Result<Rows, CambioError> {
         const SQL: &'static str = "INSERT INTO order_settlement(
                 starting_user,
-                buying_crypto_id,
-                buying_fiat_id,
+                original_order,
+                settling_order,
                 eth_account
             ) VALUES ($1, $2, $3, $4)
             RETURNING id
@@ -274,8 +274,8 @@ impl Creatable for domain::OrderSettlement {
             SQL,
             &[
                 &self.starting_user,
-                &self.buying_crypto_id,
-                &self.buying_fiat_id,
+                &self.original_order,
+                &self.settling_order,
                 &self.eth_account
             ]
         )?;

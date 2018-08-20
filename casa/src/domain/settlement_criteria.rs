@@ -41,4 +41,12 @@ impl SettlementCriteria {
             to_account: None
         }
     }
+
+    pub fn eth_account(&self) -> Option<EthAccountId> {
+        if self.from_account.is_some() {
+            self.from_account
+        } else {
+            self.to_account
+        }
+    }
 }
