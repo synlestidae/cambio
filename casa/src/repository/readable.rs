@@ -230,6 +230,20 @@ impl Readable<domain::OrderSettlement> for domain::OrderSettlementId {
     }
 }
 
+impl Readable<domain::OrderSettlement> for domain::ByteAddress {
+    fn get_vec<H: GenericConnection>(
+        &self,
+        db: &mut H,
+    ) -> Result<Vec<domain::OrderSettlement>, CambioError> {
+        const SQL: &'static str = "
+            SELECT order_settlement.*, order_settlement.id as order_settlement_id
+            FROM order_settlement 
+            JOIN ethereum_account_details ON order_settlement.eth_account = ethereum_account_details.id
+            WHERE ethereum_account_details.addrss = $1";
+        PostgresHelperImpl::query(db, SQL, &[&self])
+    }
+}
+
 impl Readable<domain::OrderSettlement> for domain::UserId {
     fn get_vec<H: GenericConnection>(
         &self,

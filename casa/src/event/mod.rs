@@ -1,4 +1,5 @@
 mod bus;
+mod ethereum_event_type;
 mod event_handler;
 mod bus_recv_error;
 mod bus_send_error;
@@ -17,3 +18,4 @@ pub use self::settlement_event_type::*;
 pub use self::user_event_type::*;
 pub use self::event_handler::*;
 pub use self::registration_event_type::*;
+pub use self::ethereum_event_type::*;

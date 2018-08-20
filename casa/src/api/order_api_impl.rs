@@ -11,6 +11,7 @@ use domain::Order;
 use domain::OrderChange;
 use domain::AssetType;
 use domain::OwnerId;
+use domain::EthAccount;
 use api::OrderRequest;
 use domain;
 use hyper::mime::Mime;
@@ -91,7 +92,15 @@ impl<C: GenericConnection> OrderApiImpl<C> {
     ) -> Result<Order, CambioError> {
         let mut db_tx = self.db.transaction()?;
         let order = self.create_order(&mut db_tx, &order_request, &user.email_address)?;
-        let eth_account_id = order_request.address.get(&mut db_tx)?.id.unwrap(); // TODO VERY VERY STUPID
+        let err = CambioError::not_found_search("Ethereum account for that address not found", 
+                                          "Eth account not found");
+        let eth_accounts: Vec<EthAccount> = order_request.address.get_vec(&mut db_tx)?;
+        let eth_account_id = eth_accounts
+            .into_iter()
+            .filter(|account: &EthAccount| account.owner_id == user.owner_id.unwrap())
+            .collect::<Vec<_>>()
+            .pop().ok_or(err)?.id.unwrap();
+
         let criteria = if order.is_buy() {
             SettlementCriteria::criteria_for_buy(order.id.unwrap(), 
                 order_request.minutes_to_settle,

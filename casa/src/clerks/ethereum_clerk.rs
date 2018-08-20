@@ -1,18 +1,19 @@
-use event::Bus;
-use event::EventHandler;
+use clerks::eth_transfer::EthTransfer;
+use colectivo::MessageKey;
+use domain::ByteAddress;
+use event::*;
+use futures::Future;
+use futures::Stream;
+use futures::future::{Empty, empty};
+use futures::stream::StreamFuture;
 use std::error::Error;
-use web3::api::Web3;
+use std::time;
 use web3::Transport;
-use web3::transports::EventLoopHandle;
-use web3::helpers::CallResult;
 use web3::api::BaseFilter;
 use web3::api::Eth;
-use domain::ByteAddress;
-use futures::Future;
-use futures::stream::StreamFuture;
-use futures::future::{Empty, empty};
-use std::time;
-use futures::Stream;
+use web3::api::Web3;
+use web3::helpers::CallResult;
+use web3::transports::EventLoopHandle;
 use web3::types::*;
 
 pub struct EthereumClerk<T: Transport> {
@@ -25,48 +26,45 @@ pub struct EthereumClerk<T: Transport> {
 impl<T: Transport> EthereumClerk<T> {
     fn subscribe_address(&mut self, address: ByteAddress) {
         let bus_copy = self.bus.clone();
-        let eth = self.web3.eth();
         let filter = FilterBuilder::default()
             .address(vec![address.into()])
             .build();
 
-        self.web3
+        let filter_result = self.web3
             .eth_filter()
             .create_logs_filter(filter)
-            .map(move |event| Self::handle_address_event(bus_copy, eth, event)); 
+            .wait();
+
+        Self::handle_subscribe_address_logs(bus_copy, 
+            self.web3.eth(), 
+            filter_result.unwrap().logs().wait().unwrap());
     }
 
-    fn handle_address_event(bus: Bus, eth: Eth<T>, filter: BaseFilter<T, Log>) -> StreamFuture<T, EthTransfer> {
-        let bus_copy = bus.clone();
-
-        filter
-            .stream(time::Duration::from_secs(0))
-            .filter_map(|log| log.transaction_hash)
-            .map(move |tx_hash| {
-                eth.transaction(TransactionId::Hash(tx_hash))
-            })
-            .map(|r| r.map(|et| Self::to_eth_transfer(et)))
-            .map(|t| t.map(|transfer| Self::confirm_transfer(bus_copy, eth, transfer)))
-            .into_future()
-    }
-
-    fn to_eth_transfer(tx_option: Option<Transaction>) -> Option<EthTransfer> {
-        if let Some(tx) = tx_option {
-            match (tx.block_number, tx.to) {
-                (Some(block), Some(to)) => {
-                    Some(EthTransfer {
-                        block_number: block,
-                        tx_hash: tx.hash,
-                        from: tx.from,
-                        to: to,
-                        value: tx.value
-                    })
-                }
-                _ => None
+    fn handle_subscribe_address_logs(bus: Bus, eth: Eth<T>, logs: Vec<Log>) {
+        let current_block = eth.block_number().wait().unwrap();
+        for log in logs.into_iter() {
+            let (tx_id, block) = match (log.block_number, log.transaction_index, log.transaction_hash, log.block_number) {
+                (_, _, Some(hash), Some(bn)) => (TransactionId::Hash(hash), bn.low_u64()),
+                _ => continue
+            };
+            let block = eth.block(BlockId::Number(BlockNumber::Number(block))).wait().unwrap();
+            let transaction = eth.transaction(tx_id).wait().unwrap().unwrap();
+            let transfer = EthTransfer::from(&transaction, &block).unwrap();
+            let block_number = transfer.block_number; 
+            if (current_block - block_number).low_u64() >= 11 {
+                bus.send(&transfer, &EthereumEventType::TransferConfirmed); 
+            } else {
+                bus.send(&transfer, &EthereumEventType::WaitTransferConfirmation); 
             }
-        } else {
-            None
         }
+    }
+
+    fn handle_transfer_confirmed(transfer: EthTransfer) {
+         
+    }
+
+    fn wait_transfer_confirmation(transfer: EthTransfer) {
+
     }
 
     fn confirm_transfer<E, F>(bus: Bus, eth: Eth<T>, transfer: Option<EthTransfer>) -> Empty<E, F> {
@@ -74,15 +72,6 @@ impl<T: Transport> EthereumClerk<T> {
     }
 }
 
-
-#[derive(Serialize, Deserialize)]
-struct EthTransfer {
-    block_number: U256,
-    tx_hash: H256,
-    from: H160,
-    to: H160,
-    value: U256
-}
 
 fn id<T>(x: T) -> T {
     x

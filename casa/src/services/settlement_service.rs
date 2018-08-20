@@ -62,7 +62,7 @@ impl SettlementService {
         // update criteria to point to the correct eth account
         let eth_account = request.address.get_vec(&mut tx)?
             .into_iter()
-            .filter(|a| a.owner_id == user.owner_id.unwrap())
+            .filter(|a: &EthAccount| a.owner_id == user.owner_id.unwrap())
             //.map(|a| a.id.unwrap())
             .collect::<Vec<EthAccount>>()
             .pop()
