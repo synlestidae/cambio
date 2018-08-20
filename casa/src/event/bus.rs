@@ -40,7 +40,7 @@ impl Bus {
     }
 
     pub fn send<E: EventKey + Serialize + DeserializeOwned, T: Serialize + DeserializeOwned>(&self, obj: &E, ty: &T) -> Result<(), BusSendError> {
-        let bytes = serde_json::to_string(&(ty, obj))?;
+        let bytes = serde_json::to_string(&(obj, ty))?;
         let message = Message::new(obj.key(), bytes);
         self.producer.send(message)?;
         Ok(())

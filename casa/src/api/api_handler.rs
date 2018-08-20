@@ -87,7 +87,7 @@ impl Handler for ApiHandler {
 
         let response = match api_request {
             ApiRequest::User(user_request) => {
-                let mut user_api = UserApi::new(db, self.get_bus("users".into()));
+                let mut user_api = UserApi::new(db, self.get_bus("registration".into()));
                 match user_request {
                     UserRequest::Register(reg) => user_api.put_register(&reg),
                     UserRequest::ResendEmail(email_resend) => {

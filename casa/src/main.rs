@@ -3,6 +3,7 @@
 #![feature(extern_prelude)]
 
 extern crate bcrypt;
+extern crate futures;
 extern crate checkmail;
 extern crate chrono;
 extern crate env_logger;

@@ -9,6 +9,7 @@ iron-test = "0.6.0"
 hyper = "0.10"
 url = "1.7.1"
 url_serde = "0.2.0"
+futures = "0.1.23"
 postgres = {version = "0.15.2", features = ["with-chrono"]}
 bcrypt = "0.2.0"
 router = "*"
