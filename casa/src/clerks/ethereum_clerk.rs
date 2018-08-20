@@ -1,6 +1,5 @@
-use clerks::eth_transfer::EthTransfer;
 use colectivo::MessageKey;
-use domain::ByteAddress;
+use domain::{Order, OrderSettlement, EthAccount, EthTransfer, SettlementPackage, ByteAddress};
 use event::*;
 use futures::Future;
 use futures::Stream;

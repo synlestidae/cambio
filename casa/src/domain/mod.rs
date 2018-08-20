@@ -1,4 +1,6 @@
 mod account;
+mod eth_transfer;
+mod settlement_package;
 mod byte_address;
 mod settlement_transaction;
 mod settlement_criteria;
@@ -127,3 +129,6 @@ pub use self::order_change::OrderChange;
 pub use self::settlement_criteria::SettlementCriteria;
 pub use self::settlement_transaction::SettlementTransaction;
 pub use self::byte_address::ByteAddress;
+
+pub use self::eth_transfer::*;
+pub use self::settlement_package::*;

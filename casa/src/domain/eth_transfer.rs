@@ -1,8 +1,6 @@
 use event::EventKey;
 use colectivo::MessageKey;
-use chrono::prelude::*;
 use web3::types::*;
-use repository::Readable;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct EthTransfer {
