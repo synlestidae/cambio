@@ -57,3 +57,79 @@ impl Order {
         self.status = OrderStatus::Settled;
     }
 }
+
+pub struct OrderBuilder {
+    owner_id: OwnerId
+}
+
+impl OrderBuilder {
+    pub fn new(owner_id: OwnerId) -> Self {
+        Self {
+            owner_id: owner_id
+        }
+    }
+
+    pub fn trade_nzd_eth(self, fiat: Decimal, crypto: BigInteger) -> TradeOrderBuilder {
+        self.trade(fiat, CurrencyCode::NZD, crypto, CryptoType::Ether)
+    }
+
+    pub fn trade(self, 
+        amount_fiat: Decimal,
+        fiat_type: CurrencyCode,
+        amount_crypto: BigInteger,
+        crypto_type: CryptoType) -> TradeOrderBuilder {
+        TradeOrderBuilder {
+            owner_id: self.owner_id,
+            amount_fiat: amount_fiat,
+            fiat_type: fiat_type,
+            amount_crypto: amount_crypto,
+            crypto_type: crypto_type
+        }
+    }
+}
+
+pub struct TradeOrderBuilder {
+    owner_id: OwnerId,
+    amount_fiat: Decimal,
+    fiat_type: CurrencyCode,
+    amount_crypto: BigInteger,
+    crypto_type: CryptoType,
+}
+
+impl TradeOrderBuilder {
+    fn order(self, expiry_minutes: u32, unique_id: &str) -> Order {
+        let expiry = Utc::now() + Duration::minutes(expiry_minutes as i64);
+        Order {
+            id: None,
+            owner_id: self.owner_id,
+            unique_id: unique_id.to_string(),
+            amount_fiat: self.amount_fiat,
+            amount_crypto: self.amount_crypto,
+            crypto_type: self.crypto_type,
+            trade_type: TradeType::BuyCrypto,
+            fiat_type: self.fiat_type,
+            expires_at: expiry,
+            status: OrderStatus::Active
+        }
+    }
+
+    pub fn buy_fiat(self, expiry_minutes: u32, unique_id: &str) -> Order {
+        self.sell_crypto(expiry_minutes, unique_id)
+    }
+
+    pub fn sell_fiat(self, expiry_minutes: u32, unique_id: &str) -> Order {
+        self.buy_crypto(expiry_minutes, unique_id)
+    }
+
+    pub fn buy_crypto(self, expiry_minutes: u32, unique_id: &str) -> Order {
+        let mut order = self.order(expiry_minutes, unique_id);
+        order.trade_type = TradeType::BuyCrypto;
+        order
+    }
+
+    pub fn sell_crypto(self, expiry_minutes: u32, unique_id: &str) -> Order {
+        let mut order = self.order(expiry_minutes, unique_id);
+        order.trade_type = TradeType::SellCrypto;
+        order
+    }
+}

@@ -63,3 +63,62 @@ impl SettlementPackage {
         Ok(())
     }
 }
+
+mod test {
+    use domain::*; 
+    use chrono::prelude::*;
+
+    #[test]
+    fn it_works() {
+        let value: u64 = 0x0FFFFFFFFFFFF;
+        let mut buy = OrderBuilder::new(OwnerId(0))
+            .trade_nzd_eth(Decimal::from_dollars(20), value.into())
+            .buy_fiat(15, "test_buy");
+        let buy_id = OrderId(0);
+        buy.id = Some(buy_id);
+
+        let criteria = SettlementCriteria::criteria_for_buy(
+            buy_id,
+            24 * 60,
+            Decimal::from_dollars(5),
+            EthAccountId(0)
+        );
+
+        let mut sell = OrderBuilder::new(OwnerId(1))
+            .trade_nzd_eth(Decimal::from_dollars(20), value.into())
+            .sell_fiat(15, "test_buy");
+        let sell_id = OrderId(1);
+        sell.id = Some(sell_id);
+
+        let settlement = OrderSettlement::from(
+            UserId(0), 
+            &sell,
+            &buy, 
+            EthAccountId(1)
+        );
+
+        let eth_transfer = EthTransfer {
+            block_number: 0.into(),
+            hash: 0.into(),
+            from: 4.into(),
+            to: 5.into(),
+            value: value.into(),
+            timestamp: Utc::now().timestamp().into()
+        };
+
+        let package = SettlementPackage {
+            settlement: settlement,
+            original_order: buy,
+            settling_order: sell,
+            criteria: criteria,
+            settlement_addr: 4.into(),
+            criteria_addr: 5.into(),
+            eth_transfer: eth_transfer
+        };
+
+        assert!(package.can_proceed());
+        assert!(package.addresses_match());
+        assert!(package.completes_settlement());
+        assert!(package.is_on_time());
+    }
+}

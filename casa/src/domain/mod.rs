@@ -91,7 +91,7 @@ pub use self::id::Id;
 pub use self::identifier_code::IdentifierCode;
 pub use self::media_file_format::MediaFileFormat;
 pub use self::media_resource::MediaResource;
-pub use self::order::Order;
+pub use self::order::*;
 pub use self::order_id::OrderId;
 pub use self::order_settlement::OrderSettlement;
 pub use self::order_settlement_id::OrderSettlementId;
