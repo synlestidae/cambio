@@ -107,13 +107,39 @@ fn build_chain(config: &config::ServerConfig, colectivo: colectivo::Colectivo) -
 
 fn build_clerks(colectivo: &mut colectivo::Colectivo, config: &ServerConfig) {
     use event::EventHandler;
-    let mut email_clerk = clerks::EmailClerk::new(config.get_email_noreply_config());
+
     let email_bus = event::Bus::from_colectivo("registration", colectivo); 
+    let order_bus = event::Bus::from_colectivo("orders", colectivo); 
+    let eth_transfer_bus = event::Bus::from_colectivo("orders", colectivo); 
+
+    let mut email_clerk = clerks::EmailClerk::new(config.get_email_noreply_config());
+    let mut eth_clerk = clerks::EthereumClerk::new(order_bus.clone(), config);
+    let mut eth_settlement_clerk = clerks::EthereumSettlementClerk::new(config);
+
     thread::spawn(move || {
         loop {
-            let (e, t) = email_bus.recv().unwrap(); 
-            info!("Received email message");
-            email_clerk.handle(e, t);
+            match email_bus.recv() {
+                Ok((e, t)) => email_clerk.handle(e, t),
+                Err(err) => {}
+            }
+        }
+    });
+
+    thread::spawn(move || {
+        loop {
+            match order_bus.recv() {
+                Ok((e, t)) => eth_clerk.handle(e, t),
+                Err(err) => {}
+            }
+        }
+    });
+
+    thread::spawn(move || {
+        loop {
+            match eth_transfer_bus.recv() {
+                Ok((e, t)) => eth_settlement_clerk.handle(e, t),
+                Err(err) => {}
+            }
         }
     });
 }

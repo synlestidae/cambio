@@ -14,6 +14,7 @@ use web3::api::Web3;
 use web3::helpers::CallResult;
 use web3::transports::EventLoopHandle;
 use web3::types::*;
+use config::ServerConfig;
 
 pub struct EthereumClerk<T: Transport> {
     bus: Bus,
@@ -22,7 +23,23 @@ pub struct EthereumClerk<T: Transport> {
     filter_count: u64
 }
 
+impl<T: Transport> EventHandler for EthereumClerk<T> {
+    type E = Order;
+    type Ty = OrderEventType;
+
+    fn handle(&mut self, e: Order, ty: OrderEventType) {
+        match ty {
+            OrderEventType::OrderPlaced => {},
+            _ => {}
+        }
+    }
+}
+
 impl<T: Transport> EthereumClerk<T> {
+    pub fn new(bus: Bus, config: &ServerConfig) -> Self {
+        unimplemented!()
+    }
+
     fn subscribe_address(&mut self, address: ByteAddress) {
         info!("Subscribing to address {:?}", address);
 
@@ -59,10 +76,10 @@ impl<T: Transport> EthereumClerk<T> {
             let block_number = transfer.block_number; 
             if (current_block - block_number).low_u64() >= 11 {
                 info!("Transfer is safely confirmed. Broadcasting");
-                bus.send(&transfer, &EthereumEventType::TransferConfirmed); 
+                bus.send(&transfer, &EthereumTransferEvent::TransferConfirmed); 
             } else {
                 info!("Transfer requires confirmation");
-                bus.send(&transfer, &EthereumEventType::WaitTransferConfirmation); 
+                bus.send(&transfer, &EthereumTransferEvent::TransferUnconfirmed); 
             }
         }
     }

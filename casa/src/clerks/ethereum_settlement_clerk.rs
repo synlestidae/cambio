@@ -4,16 +4,39 @@ use domain::*;
 use db::CambioError;
 use repository::*;
 use chrono::Duration;
+use config::ServerConfig;
 
 use web3::types::*;
 use postgres::Error as PostgresError;
 
 pub struct EthereumSettlementClerk<C: GenericConnection> {
-    bus: Bus,
     db: C
 }
 
+impl<C: GenericConnection> EventHandler for EthereumSettlementClerk<C> {
+    type E = EthTransfer;
+    type Ty = EthereumTransferEvent;
+
+    fn handle(&mut self, transfer: EthTransfer, ty: EthereumTransferEvent) {
+        match ty {
+            EthereumTransferEvent::TransferConfirmed => {
+                if self.handle_eth_transfer(transfer).is_ok() {
+                    info!("Transfer handled successfully");
+                } else {
+                    error!("Error handling transfer");
+                }
+            },
+            EthereumTransferEvent::TransferUnconfirmed => 
+                warn!("Unable drop handle transfer unconfirmed event"),
+        }
+    }
+}
+
 impl<C: GenericConnection> EthereumSettlementClerk<C> {
+    pub fn new(config: &ServerConfig) -> Self {
+        unimplemented!()
+    }
+
     pub fn handle_eth_transfer(&mut self, eth_transfer: EthTransfer) -> Result<(), CambioError> {
         info!("Transfer of {} from addr {} to {} confirmed", eth_transfer.value, 
               eth_transfer.from, 
